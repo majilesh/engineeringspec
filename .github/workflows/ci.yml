@@ -1,0 +1,39 @@
+name: CI
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: [20, 22]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run test:conformance
+      - run: npm run build
+      - run: npm pack --dry-run
+      - name: Validate examples
+        run: |
+          node dist/cli.js validate examples/standalone/bug-fix.engineering-spec.md
+          node dist/cli.js validate examples/infrastructure/infrastructure.engineering-spec.md
+          node dist/cli.js validate examples/api-change/customer-api.engineering-spec.md
+          node dist/cli.js validate examples/productspec/ticket-triage.engineering-spec.md
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci
+      - run: npm audit --audit-level=high

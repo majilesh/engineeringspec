@@ -1,0 +1,8 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "$id":"https://engineeringspec.org/schemas/profiles/productspec-0.1.schema.json",
+  "title":"EngineeringSpec ProductSpec profile 0.1",
+  "type":"object",
+  "properties":{"name":{"const":"productspec"},"version":{"const":"0.1"}},
+  "required":["name","version"],"additionalProperties":false
+}

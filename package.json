@@ -1,0 +1,44 @@
+{
+  "name": "@engineeringspec/cli",
+  "version": "0.1.0-rc.1",
+  "description": "EngineeringSpec is an open, agent-neutral format for versioned engineering change contracts.",
+  "license": "MIT",
+  "type": "module",
+  "bin": { "engineeringspec": "dist/cli.js" },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": { ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js" } },
+  "files": ["dist", "schemas", "README.md", "SPEC.md", "LICENSE"],
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "test": "vitest run --coverage",
+    "test:coverage": "vitest run --coverage",
+    "test:conformance": "vitest run test/conformance",
+    "format": "prettier --write ."
+  },
+  "dependencies": {
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1",
+    "commander": "^14.0.0",
+    "minimatch": "^10.0.3",
+    "remark-frontmatter": "^5.0.0",
+    "remark-parse": "^11.0.0",
+    "unified": "^11.0.5",
+    "unist-util-visit": "^5.0.0",
+    "yaml": "^2.8.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.32.0",
+    "@types/mdast": "^4.0.4",
+    "@types/node": "^24.1.0",
+    "@vitest/coverage-v8": "^3.2.4",
+    "eslint": "^9.32.0",
+    "prettier": "^3.6.2",
+    "typescript": "^5.9.2",
+    "typescript-eslint": "^8.38.0",
+    "vitest": "^3.2.4"
+  }
+}

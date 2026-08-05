@@ -1,0 +1,30 @@
+import { describe,expect,it } from "vitest";
+import { parseMarkdown } from "../../src/parser/parseMarkdown.js";
+import { normalize } from "../../src/normalizer/normalize.js";
+import { canonicalJson } from "../../src/normalizer/canonicalize.js";
+import { digest } from "../../src/normalizer/digest.js";
+import { isSafeRelativePath } from "../../src/validator/pathSafety.js";
+import { validateStructure } from "../../src/validator/validateStructure.js";
+import { validateSemantics } from "../../src/validator/validateSemantics.js";
+import { coverage } from "../../src/query/coverage.js";
+import { inspect } from "../../src/query/inspect.js";
+import { isEngineeringSpecId } from "../../src/model/ids.js";
+
+const spec=(fence="```")=>`---\nspec_format: engineering-spec\nspec_format_version: "0.1"\nspec_revision: 1\nid: ES-test\ntitle: Test\nstatus: draft\nowners: [{team: test}]\n---\n\n# Rationale\n\n${fence}engineering-source-refs\n- {id: SRC-1, type: other, ref: test, item_ids: [AC-1]}\n${fence}\n${fence}engineering-targets\n- {id: TARGET-1, paths: [src/**], change_policy: modify}\n${fence}\n${fence}engineering-constraints\n- id: CON-1\n  level: must\n  statement: Safe\n  satisfies: [AC-1]\n  enforcement: {kind: test, verifier_ref: VER-1}\n${fence}\n${fence}engineering-verification\n- id: VER-1\n  proves: [CON-1]\n  kind: test\n  runner: {type: command, argv: [npm, test]}\n${fence}\n`;
+
+describe("parser and normalized model",()=>{
+  it("parses CommonMark fences, prose, and snake_case",()=>{const result=parseMarkdown(spec());expect(result.diagnostics).toEqual([]);expect(result.spec?.targets[0]?.changePolicy).toBe("modify");expect(result.spec?.prose.some(p=>p.markdown.includes("Rationale"))).toBe(true);});
+  it("supports tilde fences and CRLF",()=>{const result=parseMarkdown(spec("~~~").replaceAll("\n","\r\n"));expect(result.diagnostics).toEqual([]);expect(result.spec?.verification[0]?.id).toBe("VER-1");});
+  it("reports duplicate blocks with a related location",()=>{const input=`${spec()}\n\`\`\`engineering-targets\n[]\n\`\`\``;const diagnostic=parseMarkdown(input).diagnostics.find(d=>d.code==="ESP004");expect(diagnostic?.related).toHaveLength(1);expect(diagnostic?.location?.start.line).toBeGreaterThan(1);});
+  it("adds safety defaults and canonicalizes keys",()=>{const parsed=parseMarkdown(spec()).spec!;const value=normalize(parsed);expect(value.constraints?.[0]?.severity).toBe("error");expect(value.verification[0]?.runner?.network).toBe("deny");expect(canonicalJson({z:1,a:2})).toBe('{\n  "a": 2,\n  "z": 1\n}\n');expect(digest({a:1})).toMatch(/^sha256:[a-f0-9]{64}$/);});
+  it("can include retained source locations explicitly",()=>{const parsed=parseMarkdown(spec());const value=normalize(parsed.spec!,{includeSourceLocations:true,sourceLocations:parsed.locations});expect(value.sourceLocations?.["CON-1"]?.start.line).toBeGreaterThan(1);});
+  it("is idempotent",()=>{const once=normalize(parseMarkdown(spec()).spec!);expect(normalize(once)).toEqual(once);});
+});
+
+describe("validation and queries",()=>{
+  it("accepts a complete spec",()=>{const value=parseMarkdown(spec()).spec!;expect(validateStructure(value)).toEqual([]);expect(validateSemantics(value)).toEqual([]);expect(coverage(value).status).toBe("complete");});
+  it("queries path applicability and source traceability",()=>{const value=parseMarkdown(spec()).spec!;expect(inspect(value,{path:"src/a.ts"}).targets?.[0]?.id).toBe("TARGET-1");expect(inspect(value,{sourceItem:"AC-1"}).constraints?.[0]?.id).toBe("CON-1");});
+  it.each([["src/a.ts",true],[".",true],["../secret",false],["/tmp/a",false],["C:\\tmp\\a",false],["a\0b",false]])("checks safe path %s",(value,expected)=>expect(isSafeRelativePath(value)).toBe(expected));
+  it.each([["CON-1",true],["ES-feature.name",true],["lower-1",false],["CON-",false]])("checks ID grammar %s",(value,expected)=>expect(isEngineeringSpecId(value)).toBe(expected));
+  it("finds dangling and duplicate IDs",()=>{const value=parseMarkdown(spec()).spec!;value.targets[0]!.id="SRC-1";value.verification[0]!.proves=["CON-404"];const codes=validateSemantics(value).map(d=>d.code);expect(codes).toContain("ESR001");expect(codes).toContain("ESR003");});
+});

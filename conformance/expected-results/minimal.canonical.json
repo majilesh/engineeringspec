@@ -1,0 +1,52 @@
+{
+  "contracts": [
+    {
+      "id": "CONTRACT-1",
+      "kind": "json_schema",
+      "path": "schema.json"
+    }
+  ],
+  "metadata": {
+    "id": "ES-minimal",
+    "owners": [
+      {
+        "team": "conformance"
+      }
+    ],
+    "specFormat": "engineering-spec",
+    "specFormatVersion": "0.1",
+    "specRevision": 1,
+    "status": "draft",
+    "title": "Minimal"
+  },
+  "prose": [],
+  "sourceRefs": [
+    {
+      "id": "SRC-1",
+      "ref": "fixture",
+      "type": "other"
+    }
+  ],
+  "targets": [
+    {
+      "changePolicy": "modify",
+      "id": "TARGET-1",
+      "paths": [
+        "src/**"
+      ]
+    }
+  ],
+  "verification": [
+    {
+      "id": "VER-1",
+      "kind": "schema_check",
+      "proves": [
+        "CONTRACT-1"
+      ],
+      "runner": {
+        "reference": "schema gate",
+        "type": "reference"
+      }
+    }
+  ]
+}

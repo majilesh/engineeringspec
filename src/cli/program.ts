@@ -1,0 +1,43 @@
+import { writeFile, access } from "node:fs/promises";
+import { constants } from "node:fs";
+import { Command, CommanderError, Option } from "commander";
+import { validateFile, parseFile } from "../index.js";
+import { formatDiagnostics } from "../diagnostics/formatter.js";
+import { normalize } from "../normalizer/normalize.js";
+import { canonicalJson } from "../normalizer/canonicalize.js";
+import { digest } from "../normalizer/digest.js";
+import { inspect } from "../query/inspect.js";
+import { coverage } from "../query/coverage.js";
+import { ExitCode } from "./exitCodes.js";
+import { template, type TemplateName } from "./templates.js";
+
+interface GlobalOptions { format:"text"|"json"; quiet?:boolean; strict?:boolean }
+const counts=(diagnostics:{severity:string}[])=>({errors:diagnostics.filter(d=>d.severity==="error").length,warnings:diagnostics.filter(d=>d.severity==="warning").length});
+function output(value:unknown,format:string):void { console.log(format==="json"?JSON.stringify(value,null,2):typeof value==="string"?value:JSON.stringify(value,null,2)); }
+function validationCode(diagnostics:{code:string;severity:string}[],strict=false):number { if(diagnostics.some(d=>d.code.startsWith("ESV")&&d.severity==="error")) return ExitCode.unsupported; return diagnostics.some(d=>d.severity==="error"||(strict&&d.severity==="warning"))?ExitCode.validation:ExitCode.success; }
+
+export function createProgram(setCode:(code:number)=>void):Command {
+  const program=new Command().name("engineeringspec").description("Validate and inspect versioned engineering change contracts").version("0.1.0-rc.1").option("--format <format>","output format","text").addOption(new Option("--quiet","suppress non-essential output")).option("--strict","treat warnings as failures");
+  program.command("init").argument("[path]","output file","ENGINEERING_SPEC.md").addOption(new Option("--template <name>").choices(["bug-fix","feature","api-change","infrastructure"]).default("feature")).option("--id <id>","spec ID","ES-new-change").option("--title <title>","title","New engineering change").option("--owner <owner>","owner","engineering").option("--force","overwrite an existing file").action(async(file,options)=>{
+    try { if(!options.force) { let exists=true; try { await access(file,constants.F_OK); } catch { exists=false; } if(exists) { console.error(`${file} already exists; use --force to overwrite`); setCode(ExitCode.io); return; } } await writeFile(file,template({template:options.template as TemplateName,id:options.id,title:options.title,owner:options.owner}),"utf8"); const global=program.opts<GlobalOptions>(); if(!global.quiet) output({created:file},global.format); setCode(ExitCode.success); }
+    catch(error) { console.error(error instanceof Error?error.message:String(error)); setCode(ExitCode.io); }
+  });
+  program.command("validate").argument("<file>").option("--strict-external").option("--schema-only").option("--no-profile-resolution").option("--format <format>","output format").action(async(file,options,command)=>{
+    try { const global=command.optsWithGlobals() as GlobalOptions; const result=await validateFile(file,{strictExternal:Boolean(options.strictExternal),schemaOnly:Boolean(options.schemaOnly),resolveProfiles:options.profileResolution!==false}); const count=counts(result.diagnostics); const valid=result.valid&&!(global.strict&&count.warnings); const report={valid,...count,identity:result.spec?{id:result.spec.metadata?.id,revision:result.spec.metadata?.specRevision}:undefined,diagnostics:result.diagnostics}; if(!global.quiet) output(global.format==="json"?report:`${valid?"valid":"invalid"}: ${file} (${count.errors} errors, ${count.warnings} warnings)${result.diagnostics.length?`\n${formatDiagnostics(result.diagnostics)}`:""}`,global.format); setCode(validationCode(result.diagnostics,global.strict)); }
+    catch(error) { console.error(error instanceof Error?error.message:String(error)); setCode(ExitCode.io); }
+  });
+  program.command("normalize").argument("<file>").option("--output <path>").option("--include-source-locations").option("--digest").action(async(file,options)=>{
+    try { const result=await validateFile(file); if(!result.spec||result.diagnostics.some(d=>d.severity==="error")) { console.error(formatDiagnostics(result.diagnostics)); setCode(validationCode(result.diagnostics)); return; } const value=normalize(result.spec,{includeSourceLocations:Boolean(options.includeSourceLocations),...(result.locations?{sourceLocations:result.locations}:{})}); const json=canonicalJson(value); if(options.output) await writeFile(options.output,json,"utf8"); else process.stdout.write(json); if(options.digest) console.error(digest(value)); setCode(ExitCode.success); }
+    catch(error) { console.error(error instanceof Error?error.message:String(error)); setCode(ExitCode.io); }
+  });
+  program.command("inspect").argument("<file>").option("--summary").option("--target <id>").option("--path <path>").option("--constraint <id>").option("--contract <id>").option("--verifier <id>").option("--source-item <id>").action(async(file,options,command)=>{
+    try { const parsed=await parseFile(file); if(!parsed.spec) { console.error(formatDiagnostics(parsed.diagnostics));setCode(ExitCode.validation);return; } const global=command.optsWithGlobals() as GlobalOptions; output(inspect(normalize(parsed.spec),{summary:options.summary||undefined,target:options.target,path:options.path,constraint:options.constraint,contract:options.contract,verifier:options.verifier,sourceItem:options.sourceItem}),global.format); setCode(validationCode(parsed.diagnostics,global.strict)); }
+    catch(error) { console.error(error instanceof Error?error.message:String(error));setCode(ExitCode.io); }
+  });
+  program.command("coverage").argument("<file>").option("--format <format>","output format").addOption(new Option("--fail-on <level>").choices(["partial","unknown","uncovered"])).action(async(file,options,command)=>{
+    try { const result=await validateFile(file); if(!result.spec) { console.error(formatDiagnostics(result.diagnostics));setCode(ExitCode.validation);return; } const global=command.optsWithGlobals() as GlobalOptions; const unknown=result.diagnostics.some(d=>d.code==="ESPR001"); const report=coverage(normalize(result.spec),{unknownExternal:unknown}); const text=`coverage: ${report.status}\nsource items: ${report.sourceItems.filter(i=>i.covered).length}/${report.sourceItems.length}\nconstraints: ${report.constraints.filter(i=>i.covered).length}/${report.constraints.length}\ncontracts: ${report.contracts.filter(i=>i.covered).length}/${report.contracts.length}\nevidence: ${report.evidence.filter(i=>i.covered).length}/${report.evidence.length}`; output(global.format==="json"?report:text,global.format); const fails=options.failOn==="unknown"&&report.status==="unknown"||options.failOn==="partial"&&report.status==="partial"||options.failOn==="uncovered"&&[...report.sourceItems,...report.constraints,...report.contracts,...report.evidence].some(i=>!i.covered); setCode(fails?ExitCode.validation:validationCode(result.diagnostics,global.strict)); }
+    catch(error) { console.error(error instanceof Error?error.message:String(error));setCode(ExitCode.io); }
+  });
+  return program;
+}
+export async function run(argv=process.argv):Promise<number> { let code=0; const program=createProgram(value=>{code=Math.max(code,value);}); program.exitOverride(); try { await program.parseAsync(argv); } catch(error) { if(error instanceof CommanderError) { if(error.code==="commander.helpDisplayed"||error.code==="commander.version") return 0; return ExitCode.usage; } throw error; } return code; }
