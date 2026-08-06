@@ -1,0 +1,8 @@
+---
+description: Apply EngineeringSpec contracts during consequential engineering changes
+alwaysApply: true
+---
+
+Follow @AGENTS.md.
+
+Before modifying code for a consequential change, locate and validate the applicable document under `docs/engineering-specs/`. Inspect affected paths, treat contracts and constraints as binding, and do not claim completion while required verification obligations remain uncovered.

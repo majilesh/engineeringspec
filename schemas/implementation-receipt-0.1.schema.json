@@ -1,6 +1,6 @@
 {
   "$schema":"https://json-schema.org/draft/2020-12/schema",
-  "$id":"https://engineeringspec.org/schemas/implementation-receipt-0.1.schema.json",
+  "$id":"https://engineeringspec.org/schemas/0.1/implementation-receipt.schema.json",
   "title":"EngineeringSpec implementation receipt 0.1",
   "type":"object",
   "required":["receipt_format","receipt_format_version","spec","implementation","verification_results","drift"],
