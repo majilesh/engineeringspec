@@ -5,21 +5,15 @@ on:
     paths: ["site/**", "schemas/**", "SPEC.md", ".github/workflows/pages.yml"]
   workflow_dispatch:
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write
 concurrency:
   group: pages
   cancel-in-progress: true
 jobs:
   deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/configure-pages@v5
       - name: Assemble immutable documentation
         run: |
           mkdir -p _site/schemas/0.1/profiles
@@ -28,7 +22,10 @@ jobs:
           cp schemas/implementation-receipt-0.1.schema.json _site/schemas/0.1/implementation-receipt.schema.json
           cp schemas/profiles/productspec-0.1.schema.json _site/schemas/0.1/profiles/productspec.schema.json
           cp SPEC.md _site/spec/0.1/SPEC.md
-      - uses: actions/upload-pages-artifact@v3
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+      - name: Deploy to gh-pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./_site
+          cname: engineeringspec.org
+          force_orphan: true
