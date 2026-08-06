@@ -1,0 +1,22 @@
+name: Bug report
+description: Report a parser, validator, CLI, schema, or conformance defect
+title: "bug: "
+labels: [bug]
+body:
+  - type: textarea
+    attributes:
+      label: Reproduction
+      description: Include a minimal EngineeringSpec and the exact command used.
+    validations: { required: true }
+  - type: textarea
+    attributes:
+      label: Expected result
+    validations: { required: true }
+  - type: textarea
+    attributes:
+      label: Actual result
+    validations: { required: true }
+  - type: input
+    attributes:
+      label: EngineeringSpec CLI version
+      placeholder: 0.1.0-rc.1

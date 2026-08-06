@@ -1,0 +1,3 @@
+# Invalid fixtures are validated explicitly by the conformance suite.
+examples/invalid/**
+conformance/**

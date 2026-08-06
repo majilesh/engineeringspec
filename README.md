@@ -1,5 +1,8 @@
 # EngineeringSpec
 
+[![CI](https://github.com/majilesh/engineeringspec/actions/workflows/ci.yml/badge.svg)](https://github.com/majilesh/engineeringspec/actions/workflows/ci.yml)
+[![Specification](https://img.shields.io/badge/spec-0.1%20draft-3974d8)](https://engineeringspec.org/spec/0.1/)
+
 EngineeringSpec is an open, agent-neutral format for versioned engineering change contracts. It connects source intent to affected technical surfaces, authoritative contracts, enforceable constraints, verification obligations, rollout controls, and implementation evidence.
 
 This repository contains a **draft open specification and reference implementation**. It is not a project planner, agent runtime, test runner, policy engine, or replacement for ProductSpec, AGENTS.md, ADRs, OpenAPI, AsyncAPI, JSON Schema, Protocol Buffers, SARIF, OPA, SLSA, or in-toto.
@@ -63,16 +66,34 @@ profiles: [{ name: productspec, version: "0.1" }]
 ## Quick start
 
 ```sh
-npm install
-npm run build
-npx engineeringspec init --template feature --id ES-my-change
-npx engineeringspec validate ENGINEERING_SPEC.md
-npx engineeringspec normalize ENGINEERING_SPEC.md --digest
-npx engineeringspec inspect ENGINEERING_SPEC.md --path src/example.ts
-npx engineeringspec coverage ENGINEERING_SPEC.md --fail-on uncovered
+npx @engineeringspec/cli init --template feature --id ES-my-change
+npx @engineeringspec/cli validate ENGINEERING_SPEC.md
+npx @engineeringspec/cli validate docs/engineering-specs
+npx @engineeringspec/cli normalize ENGINEERING_SPEC.md --digest
+npx @engineeringspec/cli inspect ENGINEERING_SPEC.md --path src/example.ts
+npx @engineeringspec/cli coverage ENGINEERING_SPEC.md --fail-on uncovered
 ```
 
-Specifications are untrusted input. Declared commands are inert data: validation never executes them. See [SECURITY.md](SECURITY.md), [SPEC.md](SPEC.md), [maintainer-only roadmap](maintainer-only roadmap), and [CONTRIBUTING.md](CONTRIBUTING.md).
+Directory validation discovers `ENGINEERING_SPEC.md`, `*.engineering-spec.md`, and `*.engineeringspec.md` recursively. Add repository-relative glob patterns to `.engineeringspecignore` to exclude generated content or intentionally invalid fixtures.
+
+## GitHub Action
+
+```yaml
+steps:
+  - uses: actions/checkout@v4
+  - uses: majilesh/engineeringspec@v0.1.0-rc.1
+    with:
+      path: docs/engineering-specs
+      strict: true
+```
+
+The action emits source-positioned workflow annotations and writes a validation table to the job summary. It validates only; it never executes declared verification runners.
+
+## Coding agents
+
+Use [AGENTS.md](AGENTS.md) as the shared workflow for Codex and other compatible agents. [CLAUDE.md](CLAUDE.md) imports the same guidance for Claude Code, and the checked-in [Cursor rule](.cursor/rules/engineering-spec.mdc) applies it in Cursor. See [Agent integration](docs/agent-integration.md) for a reusable setup and prompt.
+
+Specifications are untrusted input. Declared commands are inert data: validation never executes them. See [engineeringspec.org](https://engineeringspec.org), [SECURITY.md](SECURITY.md), [SPEC.md](SPEC.md), [maintainer-only roadmap](maintainer-only roadmap), and [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Status
 

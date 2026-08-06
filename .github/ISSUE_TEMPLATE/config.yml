@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Specification design discussion
+    url: https://github.com/majilesh/engineeringspec/discussions
+    about: Propose open-ended ideas and discuss the direction of the draft standard.

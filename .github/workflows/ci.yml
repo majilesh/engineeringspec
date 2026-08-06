@@ -37,3 +37,11 @@ jobs:
         with: { node-version: 22, cache: npm }
       - run: npm ci
       - run: npm audit --audit-level=high
+  engineering-spec:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./
+        with:
+          path: docs/engineering-specs
+          strict: true

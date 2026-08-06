@@ -1,0 +1,43 @@
+name: EngineeringSpec Validate
+description: Validate EngineeringSpec documents and annotate pull requests
+author: EngineeringSpec contributors
+branding:
+  icon: check-circle
+  color: blue
+inputs:
+  path:
+    description: EngineeringSpec file or directory to validate
+    required: false
+    default: .
+  strict:
+    description: Treat warnings as failures
+    required: false
+    default: "false"
+  strict-external:
+    description: Fail when linked external sources cannot be resolved
+    required: false
+    default: "false"
+runs:
+  using: composite
+  steps:
+    - name: Prepare EngineeringSpec CLI
+      shell: bash
+      run: npm ci --ignore-scripts --prefix "$GITHUB_ACTION_PATH" && npm run build --prefix "$GITHUB_ACTION_PATH"
+    - name: Validate EngineeringSpec documents
+      shell: bash
+      env:
+        INPUT_PATH: ${{ inputs.path }}
+        INPUT_STRICT: ${{ inputs.strict }}
+        INPUT_STRICT_EXTERNAL: ${{ inputs.strict-external }}
+      run: |
+        set -euo pipefail
+        args=()
+        if [[ "$INPUT_STRICT" == "true" ]]; then args+=(--strict); fi
+        if [[ "$INPUT_STRICT_EXTERNAL" == "true" ]]; then args+=(--strict-external); fi
+        if [[ "$INPUT_PATH" = /* ]]; then
+          target="$INPUT_PATH"
+        else
+          target="$GITHUB_WORKSPACE/$INPUT_PATH"
+        fi
+        # Single pass: GitHub annotations on stdout; Markdown summary via GITHUB_STEP_SUMMARY.
+        node "$GITHUB_ACTION_PATH/dist/cli.js" validate "$target" --format github "${args[@]}"
