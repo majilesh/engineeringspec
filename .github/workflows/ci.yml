@@ -63,15 +63,23 @@ jobs:
             echo "expected gate to fail for out-of-scope path" >&2
             exit 1
           fi
-      - name: Gate PR diff against Phase A spec
+      - name: Gate PR diff via Action inputs
         if: github.event_name == 'pull_request'
         run: |
           git fetch origin "${{ github.base_ref }}"
           base="origin/${{ github.base_ref }}"
-          if git diff --name-only "$base"...HEAD | grep -Eq '^(src/gate/|docs/engineering-specs/ES-gate-diff-scope\.engineering-spec\.md$)'; then
-            node dist/cli.js gate docs/engineering-specs/ES-gate-diff-scope.engineering-spec.md \
-              --base "$base" \
-              --format github
+          if git diff --name-only "$base"...HEAD | grep -Eq '^(src/gate/|action\.yml|docs/engineering-specs/ES-gate-diff-scope\.engineering-spec\.md$)'; then
+            echo "GATE=1" >> "$GITHUB_ENV"
+            echo "GATE_BASE=$base" >> "$GITHUB_ENV"
           else
-            echo "Skipping ES-gate-diff-scope gate (PR does not touch gate paths)."
+            echo "GATE=0" >> "$GITHUB_ENV"
+            echo "Skipping ES-gate-diff-scope Action gate (PR does not touch gate paths)."
           fi
+      - name: Run Action gate
+        if: github.event_name == 'pull_request' && env.GATE == '1'
+        uses: ./
+        with:
+          path: docs/engineering-specs
+          strict: true
+          gate-spec: docs/engineering-specs/ES-gate-diff-scope.engineering-spec.md
+          gate-base: ${{ env.GATE_BASE }}

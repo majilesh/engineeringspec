@@ -1,7 +1,7 @@
 ---
 spec_format: engineering-spec
 spec_format_version: "0.1"
-spec_revision: 1
+spec_revision: 2
 id: ES-gate-diff-scope
 title: Fail-closed diff gate against declared targets
 status: proposed
@@ -50,6 +50,7 @@ Add `engineeringspec gate` so CI can reject changes outside declared `TARGET-*` 
     - README.md
     - maintainer-only roadmap
     - SPEC.md
+    - CHANGELOG.md
     - docs/**
   change_policy: modify
 ```
