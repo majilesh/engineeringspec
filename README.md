@@ -96,13 +96,20 @@ Use one EngineeringSpec per consequential change and run `gate` on that file in 
 ```yaml
 steps:
   - uses: actions/checkout@v4
+    with:
+      fetch-depth: 0
   - uses: majilesh/engineeringspec@main
     with:
       path: docs/engineering-specs
       strict: true
+      # Optional fail-closed scope check for a specific change contract:
+      gate-spec: docs/engineering-specs/ES-my-change.engineering-spec.md
+      gate-base: origin/main
 ```
 
-The action emits source-positioned workflow annotations and writes a validation table to the job summary. It validates only; it never executes declared verification runners. Run `gate` as a separate step with the built CLI when a PR is bound to a specific EngineeringSpec.
+The action validates specs (annotations + job summary) and, when `gate-spec` is set, runs `gate` against `gate-base`…`gate-head`. It never executes declared verification runners. Use `fetch-depth: 0` so the base ref exists.
+
+> **Note:** `@engineeringspec/cli` is not on npm yet for this RC. Prefer the GitHub Action (`majilesh/engineeringspec@main`) or build from source until a release is published.
 
 ## Coding agents
 
