@@ -41,7 +41,37 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: ./
         with:
           path: docs/engineering-specs
           strict: true
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci
+      - run: npm run build
+      - name: Gate smoke (pass + fail-closed)
+        run: |
+          node dist/cli.js gate docs/engineering-specs/ES-gate-diff-scope.engineering-spec.md \
+            --changed src/gate/gate.ts \
+            --changed src/cli/program.ts \
+            --format github
+          if node dist/cli.js gate docs/engineering-specs/ES-gate-diff-scope.engineering-spec.md \
+            --changed totally/unrelated.ts \
+            --quiet; then
+            echo "expected gate to fail for out-of-scope path" >&2
+            exit 1
+          fi
+      - name: Gate PR diff against Phase A spec
+        if: github.event_name == 'pull_request'
+        run: |
+          git fetch origin "${{ github.base_ref }}"
+          base="origin/${{ github.base_ref }}"
+          if git diff --name-only "$base"...HEAD | grep -Eq '^(src/gate/|docs/engineering-specs/ES-gate-diff-scope\.engineering-spec\.md$)'; then
+            node dist/cli.js gate docs/engineering-specs/ES-gate-diff-scope.engineering-spec.md \
+              --base "$base" \
+              --format github
+          else
+            echo "Skipping ES-gate-diff-scope gate (PR does not touch gate paths)."
+          fi

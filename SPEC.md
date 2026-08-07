@@ -106,3 +106,15 @@ Recursive directory discovery, ignore files, and multi-document CLI aggregation 
 - Emits diagnostic `ESD001` when a directory or non-matching path yields no documents
 
 Other implementations MAY provide equivalent discovery. They MUST NOT treat discovery policy as part of a document's canonical JSON or digest.
+
+## Diff gate (reference tooling)
+
+Comparing a repository diff to declared targets is **reference-tooling behavior**, not normative document semantics. The TypeScript reference implementation provides `engineeringspec gate`, which:
+
+- Accepts an EngineeringSpec plus either a git `--base`/`--head` range or explicit `--changed` paths
+- Treats paths matching no target as errors (`ESG001`)
+- Rejects changes that only match `read_only` or `observe` targets (`ESG003`)
+- Enforces `change_policy` against added/modified/deleted/renamed files (`ESG002`)
+- MUST NOT execute verification runners or mutate the repository
+
+Other implementations MAY provide equivalent gates. Gate results are not part of canonical JSON or digests.

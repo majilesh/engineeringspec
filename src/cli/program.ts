@@ -10,6 +10,10 @@ import { canonicalJson } from "../normalizer/canonicalize.js";
 import { digest } from "../normalizer/digest.js";
 import { inspect } from "../query/inspect.js";
 import { coverage } from "../query/coverage.js";
+import { collectGitDiff, changedFromPathList } from "../gate/collectDiff.js";
+import { gateDiff } from "../gate/gate.js";
+import type { ChangeKind } from "../gate/types.js";
+import { Codes } from "../diagnostics/codes.js";
 import { ExitCode } from "./exitCodes.js";
 import { template, type TemplateName } from "./templates.js";
 
@@ -176,6 +180,86 @@ export function createProgram(setCode: (code: number) => void): Command {
       setCode(ExitCode.io);
     }
   });
+
+  program
+    .command("gate")
+    .description("Fail closed if git changes fall outside declared targets")
+    .argument("<file>", "EngineeringSpec file")
+    .option("--base <ref>", "git base ref for diff (e.g. origin/main)")
+    .option("--head <ref>", "git head ref", "HEAD")
+    .option("--changed <path>", "explicit changed path (repeatable; skips git)", (value, previous: string[] = []) => previous.concat(value), [])
+    .addOption(new Option("--change-kind <kind>", "kind for --changed paths").choices(["added", "modified", "deleted", "renamed"]).default("modified"))
+    .addOption(new Option("--format <format>", "output format").choices(["text", "json", "github", "markdown"]))
+    .action(async (file, options, command) => {
+      try {
+        const global = command.optsWithGlobals() as GlobalOptions;
+        const result = await validateFile(file);
+        if (!result.spec || result.diagnostics.some((item) => item.severity === "error")) {
+          if (!global.quiet) {
+            if (global.format === "github") for (const diagnostic of result.diagnostics) console.log(formatGitHubDiagnostic(diagnostic));
+            else console.error(formatDiagnostics(result.diagnostics));
+          }
+          setCode(validationCode(result.diagnostics, global.strict));
+          return;
+        }
+        const spec = normalize(result.spec);
+        let changed;
+        try {
+          if (options.changed.length > 0) {
+            changed = changedFromPathList(options.changed, options.changeKind as ChangeKind);
+          } else if (options.base) {
+            changed = await collectGitDiff({ base: options.base, head: options.head });
+          } else {
+            console.error("gate requires --base <ref> or one or more --changed <path>");
+            setCode(ExitCode.usage);
+            return;
+          }
+        } catch (error) {
+          const message = error instanceof Error ? error.message : String(error);
+          const diagnostic = { code: Codes.gateDiff, severity: "error" as const, message, file };
+          if (!global.quiet) {
+            if (global.format === "github") console.log(formatGitHubDiagnostic(diagnostic));
+            else console.error(formatDiagnostics([diagnostic]));
+          }
+          setCode(ExitCode.io);
+          return;
+        }
+
+        const report = gateDiff(spec, changed);
+        report.base = options.base;
+        const text = [
+          `${report.valid ? "gate: pass" : "gate: fail"} — ${report.specId ?? file}`,
+          `changed: ${report.changed.length}, allowed: ${report.allowed.length}, violations: ${report.violations.length}`,
+          ...report.violations.map((item) => `x ${item.message}`),
+        ].join("\n");
+        const markdown = [
+          `## EngineeringSpec gate`,
+          "",
+          report.valid ? `✅ Pass — \`${report.specId ?? file}\`` : `❌ Fail — \`${report.specId ?? file}\``,
+          "",
+          `| Changed | Allowed | Violations |`,
+          `|---:|---:|---:|`,
+          `| ${report.changed.length} | ${report.allowed.length} | ${report.violations.length} |`,
+          ...(report.violations.length
+            ? ["", "### Violations", ...report.violations.map((item) => `- \`${item.file}\`: ${item.message}`)]
+            : []),
+        ].join("\n");
+
+        if (!global.quiet) {
+          if (global.format === "json") output(report, "json");
+          else if (global.format === "github") {
+            for (const diagnostic of report.diagnostics) console.log(formatGitHubDiagnostic(diagnostic));
+            console.log(`::${report.valid ? "notice" : "error"} title=EngineeringSpec gate::${report.violations.length} violation(s)`);
+            if (process.env.GITHUB_STEP_SUMMARY) await appendFile(process.env.GITHUB_STEP_SUMMARY, `${markdown}\n`, "utf8");
+          } else if (global.format === "markdown") output(markdown, "text");
+          else output(text, "text");
+        }
+        setCode(report.valid ? ExitCode.success : ExitCode.validation);
+      } catch (error) {
+        console.error(error instanceof Error ? error.message : String(error));
+        setCode(ExitCode.io);
+      }
+    });
 
   return program;
 }

@@ -41,3 +41,7 @@ For consequential changes, pin every participant to the same spec revision and c
 4. A human approves exceptions and ambiguous obligations.
 
 The read-only MCP adapter planned after v0.1 RC will expose the same parsed contract and queries without replacing the on-disk format.
+
+## Cursor adoption handoff
+
+For adopting EngineeringSpec in another repository (dogfood), use the paste-ready agent brief in [`maintainer-only adoption notes`](maintainer-only adoption notes).
