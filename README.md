@@ -72,22 +72,37 @@ npx @engineeringspec/cli validate docs/engineering-specs
 npx @engineeringspec/cli normalize ENGINEERING_SPEC.md --digest
 npx @engineeringspec/cli inspect ENGINEERING_SPEC.md --path src/example.ts
 npx @engineeringspec/cli coverage ENGINEERING_SPEC.md --fail-on uncovered
+npx @engineeringspec/cli gate ENGINEERING_SPEC.md --base origin/main
 ```
 
 Directory validation discovers `ENGINEERING_SPEC.md`, `*.engineering-spec.md`, and `*.engineeringspec.md` recursively. Add repository-relative glob patterns to `.engineeringspecignore` to exclude generated content or intentionally invalid fixtures.
+
+## Diff gate (fail closed)
+
+`gate` compares a git diff (or explicit `--changed` paths) to declared targets and `change_policy` values. Out-of-scope files, `read_only`/`observe` matches, and policy mismatches fail with `ESG001`–`ESG003`. The gate does not execute verification runners.
+
+```sh
+# PR / branch vs main
+npx @engineeringspec/cli gate docs/engineering-specs/ES-my-change.engineering-spec.md --base origin/main
+
+# Local / CI smoke without git history
+npx @engineeringspec/cli gate docs/engineering-specs/ES-my-change.engineering-spec.md --changed src/api.ts
+```
+
+Use one EngineeringSpec per consequential change and run `gate` on that file in CI so agents and humans cannot merge scope violations.
 
 ## GitHub Action
 
 ```yaml
 steps:
   - uses: actions/checkout@v4
-  - uses: majilesh/engineeringspec@v0.1.0-rc.1
+  - uses: majilesh/engineeringspec@main
     with:
       path: docs/engineering-specs
       strict: true
 ```
 
-The action emits source-positioned workflow annotations and writes a validation table to the job summary. It validates only; it never executes declared verification runners.
+The action emits source-positioned workflow annotations and writes a validation table to the job summary. It validates only; it never executes declared verification runners. Run `gate` as a separate step with the built CLI when a PR is bound to a specific EngineeringSpec.
 
 ## Coding agents
 
@@ -97,4 +112,4 @@ Specifications are untrusted input. Declared commands are inert data: validation
 
 ## Status
 
-The parser, schema, semantic validator, normalizer, query API, ProductSpec profile, CLI, and conformance fixtures form the v0.1 release candidate. A read-only MCP adapter remains deliberately deferred until the file format is stable.
+The parser, schema, semantic validator, normalizer, query API, ProductSpec profile, CLI, conformance fixtures, and fail-closed **diff gate** form the v0.1 release candidate. A read-only MCP adapter remains deliberately deferred until the file format is stable.
