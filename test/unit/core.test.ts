@@ -18,6 +18,12 @@ const spec=(fence="```")=>`---\nspec_format: engineering-spec\nspec_format_versi
 
 describe("parser and normalized model",()=>{
   it("parses CommonMark fences, prose, and snake_case",()=>{const result=parseMarkdown(spec());expect(result.diagnostics).toEqual([]);expect(result.spec?.targets[0]?.changePolicy).toBe("modify");expect(result.spec?.prose.some(p=>p.markdown.includes("Rationale"))).toBe(true);});
+  it("rejects snake_case/camelCase key collisions",()=>{
+    const input=spec().replace("spec_revision: 1","spec_revision: 1\nspecRevision: 999");
+    const result=parseMarkdown(input);
+    expect(result.diagnostics.some(d=>d.code==="ESP009")).toBe(true);
+    expect(result.spec?.metadata.specRevision).toBeUndefined();
+  });
   it("supports tilde fences and CRLF",()=>{const result=parseMarkdown(spec("~~~").replaceAll("\n","\r\n"));expect(result.diagnostics).toEqual([]);expect(result.spec?.verification[0]?.id).toBe("VER-1");});
   it("reports duplicate blocks with a related location",()=>{const input=`${spec()}\n\`\`\`engineering-targets\n[]\n\`\`\``;const diagnostic=parseMarkdown(input).diagnostics.find(d=>d.code==="ESP004");expect(diagnostic?.related).toHaveLength(1);expect(diagnostic?.location?.start.line).toBeGreaterThan(1);});
   it("adds safety defaults and canonicalizes keys",()=>{const parsed=parseMarkdown(spec()).spec!;const value=normalize(parsed);expect(value.constraints?.[0]?.severity).toBe("error");expect(value.verification[0]?.runner?.network).toBe("deny");expect(canonicalJson({z:1,a:2})).toBe('{\n  "a": 2,\n  "z": 1\n}\n');expect(digest({a:1})).toMatch(/^sha256:[a-f0-9]{64}$/);});
@@ -34,6 +40,14 @@ describe("validation and queries",()=>{
   it("queries path applicability and source traceability",()=>{const value=parseMarkdown(spec()).spec!;expect(inspect(value,{path:"src/a.ts"}).targets?.[0]?.id).toBe("TARGET-1");expect(inspect(value,{sourceItem:"AC-1"}).constraints?.[0]?.id).toBe("CON-1");});
   it("supports every direct inspection selector",()=>{const value=parseMarkdown(spec()).spec!;value.contracts=[{id:"CONTRACT-1",kind:"json_schema",path:"schema.json"}];value.constraints![0]!.enforcement={kind:"contract",contractRef:"CONTRACT-1"};expect(inspect(value,{target:"TARGET-1"}).targets).toHaveLength(1);expect(inspect(value,{constraint:"CON-1"}).constraints).toHaveLength(1);expect(inspect(value,{contract:"CONTRACT-1"}).contracts).toHaveLength(1);expect(inspect(value,{verifier:"VER-1"}).verification).toHaveLength(1);expect(inspect(value,{}).targets).toHaveLength(1);expect(inspect(value,{summary:true}).targets).toBeUndefined();});
   it("reports partial, unknown, and not-applicable coverage",()=>{const value=parseMarkdown(spec()).spec!;value.contracts=[{id:"CONTRACT-1",kind:"json_schema",path:"schema.json"}];value.evidence=[{id:"EVIDENCE-1",type:"test_result"}];expect(coverage(value).status).toBe("partial");expect(coverage(value,{unknownExternal:true}).status).toBe("unknown");delete value.sourceRefs[0]!.itemIds;value.constraints=[];value.contracts=[];value.evidence=[];value.verification=[{id:"VER-1",proves:["ES-test"],kind:"human_review"}];expect(coverage(value).status).toBe("not_applicable");});
+  it("treats policy and review enforcement as declared coverage",()=>{
+    const value=parseMarkdown(spec()).spec!;
+    value.constraints=[{id:"CON-1",level:"must",statement:"Safe",enforcement:{kind:"policy",adapter:"semgrep",ruleRef:"rules.yaml"}}];
+    value.verification=[{id:"VER-1",proves:["ES-test"],kind:"human_review"}];
+    expect(coverage(value).constraints.find(c=>c.id==="CON-1")?.covered).toBe(true);
+    value.constraints=[{id:"CON-1",level:"must",statement:"Safe",enforcement:{kind:"review",reviewerRole:"maintainer"}}];
+    expect(coverage(value).constraints.find(c=>c.id==="CON-1")?.covered).toBe(true);
+  });
   it.each([["src/a.ts",true],[".",true],["../secret",false],["/tmp/a",false],["C:\\tmp\\a",false],["a\0b",false]])("checks safe path %s",(value,expected)=>expect(isSafeRelativePath(value)).toBe(expected));
   it.each([["CON-1",true],["ES-feature.name",true],["lower-1",false],["CON-",false]])("checks ID grammar %s",(value,expected)=>expect(isEngineeringSpecId(value)).toBe(expected));
   it("finds dangling and duplicate IDs",()=>{const value=parseMarkdown(spec()).spec!;value.targets[0]!.id="SRC-1";value.verification[0]!.proves=["CON-404"];const codes=validateSemantics(value).map(d=>d.code);expect(codes).toContain("ESR001");expect(codes).toContain("ESR003");});

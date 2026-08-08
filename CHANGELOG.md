@@ -6,6 +6,9 @@ All notable changes to this project are documented here.
 
 ### Changed
 
+- `gate --strict` fails on validation warnings from the loaded contract (not only gate-produced warnings)
+- Coverage treats `policy` / `review` enforcement as declared coverage; advisory `should_not` excluded like `should`
+- Docs: mid-task `gate` self-check in AGENTS.md / agent integration / Cursor rule
 - Canonical JSON key order uses Unicode code-point comparison (not `localeCompare` or UTF-16 code-unit `<`)
 - Target globs reject `..` segments and backslashes in addition to negation/extglob/braces/classes (`ESPTH002`)
 - `inspect` fully validates by default (`--parse-only` for debugging); `coverage` refuses invalid specs before reporting
@@ -21,6 +24,7 @@ All notable changes to this project are documented here.
 
 ### Added
 
+- `ESP009` — reject conflicting snake_case/camelCase key spellings (fail closed)
 - Mixed-case key ordering unit coverage for canonicalization
 - Adversarial gate tests; `--receipt` durable unsigned `gate-receipt.json`
 - Conformance fixtures for incomplete enforcement/runners, forbidden/parent-segment globs, typed-ref mismatches

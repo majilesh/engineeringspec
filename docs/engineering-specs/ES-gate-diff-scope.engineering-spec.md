@@ -1,7 +1,7 @@
 ---
 spec_format: engineering-spec
 spec_format_version: "0.1"
-spec_revision: 7
+spec_revision: 8
 id: ES-gate-diff-scope
 title: Fail-closed diff gate against declared targets
 status: proposed
@@ -42,6 +42,10 @@ Add and harden `engineeringspec gate` so CI can reject changes outside declared 
   type: document
   ref: credibility-cluster
   title: Current Action pin, CI dogfood of spec-from base, codepoint canonicalization
+- id: SRC-7
+  type: document
+  ref: sprint-a-trust-fixes
+  title: Strict gate load warnings, key-collision fail-closed, agent gate self-check
 ```
 
 ## Target surfaces
@@ -62,7 +66,8 @@ Add and harden `engineeringspec gate` so CI can reject changes outside declared 
   paths:
     - src/validator/validateFile.ts
     - src/validator/validateSemantics.ts
-    - src/query/applicability.ts
+    - src/parser/**
+    - src/query/**
     - src/normalizer/**
     - test/unit/core.test.ts
     - test/unit/canonicalize.test.ts
@@ -87,6 +92,8 @@ Add and harden `engineeringspec gate` so CI can reject changes outside declared 
     - action.yml
     - .github/workflows/ci.yml
     - .github/CODEOWNERS
+    - AGENTS.md
+    - .cursor/rules/**
     - README.md
     - maintainer-only roadmap
     - SPEC.md
@@ -169,13 +176,23 @@ Add and harden `engineeringspec gate` so CI can reject changes outside declared 
   statement: Canonical JSON object keys must order by Unicode code point; target globs must reject parent-directory segments.
   applies_to: [TARGET-validator, TARGET-gate]
   enforcement: { kind: test, verifier_ref: VER-1 }
+- id: CON-15
+  level: must
+  statement: Gate --strict must fail on validation warnings from the loaded contract; conflicting snake_case/camelCase keys must be rejected (ESP009).
+  applies_to: [TARGET-cli, TARGET-validator]
+  enforcement: { kind: test, verifier_ref: VER-1 }
+- id: CON-16
+  level: must
+  statement: Agent workflow docs must require a mid-task gate self-check before claiming a consequential change is done.
+  applies_to: [TARGET-ci-docs]
+  enforcement: { kind: review, reviewer_role: maintainer }
 ```
 
 ## Verification
 
 ```engineering-verification
 - id: VER-1
-  proves: [CON-1, CON-2, CON-3, CON-4, CON-5, CON-6, CON-8, CON-9, CON-10, CON-11, CON-12, CON-14]
+  proves: [CON-1, CON-2, CON-3, CON-4, CON-5, CON-6, CON-8, CON-9, CON-10, CON-11, CON-12, CON-14, CON-15]
   kind: test
   runner:
     type: command
@@ -183,11 +200,11 @@ Add and harden `engineeringspec gate` so CI can reject changes outside declared 
     network: deny
   expected: { exit_code: 0 }
 - id: VER-2
-  proves: [CON-7, CON-13]
+  proves: [CON-7, CON-13, CON-16]
   kind: human_review
   runner:
     type: manual
-    reference: maintainer review of production-gate docs, CODEOWNERS, CI dogfood, and Action pin
+    reference: maintainer review of production-gate docs, CODEOWNERS, CI dogfood, Action pin, and agent self-check docs
 ```
 
 ## Rollout
