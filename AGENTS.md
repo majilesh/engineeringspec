@@ -19,12 +19,14 @@ For consequential changes:
 6. **Self-check before ending a turn:** run the diff-scope gate locally so CI is not the first failure:
 
    ```sh
-   node dist/cli.js gate <spec> --base origin/main --strict
-   # or, while drafting without git:
-   node dist/cli.js gate <spec> --changed <path-you-edited> --strict
+   node dist/cli.js check <spec> --base origin/main --strict
+   # check includes committed, staged, unstaged, deleted, renamed, and untracked files
    ```
 
    Fix violations (or update/escalate the contract) before claiming the task is done.
+   If the approved contract needs wider targets, submit and merge that contract-only
+   change before implementing against it; do not authorize implementation from the
+   same workspace contract that widens its scope.
 7. Run repository checks that provide the declared verification evidence through the normal trusted development workflow.
 8. Report satisfied `VER-*`, `CON-*`, and `CONTRACT-*` identifiers in the PR description.
 

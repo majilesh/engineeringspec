@@ -1,6 +1,7 @@
 import { isUtf8 } from "node:buffer";
 import { readFile } from "node:fs/promises";
 import type { ValidationResult } from "../diagnostics/Diagnostic.js";
+import { Codes } from "../diagnostics/codes.js";
 import { parseMarkdown, type ParseResult } from "../parser/parseMarkdown.js";
 import type { ProfileOptions } from "../profiles/productspec/validate.js";
 import { validateProfiles } from "./validateProfiles.js";
@@ -12,20 +13,12 @@ export interface ValidateOptions extends ProfileOptions { schemaOnly?: boolean }
 export async function parseFile(file: string): Promise<ParseResult> {
   const bytes = await readFile(file);
   if (!isUtf8(bytes)) {
-    return { diagnostics: [{ code: "ESP009", severity: "error", message: "Input is not valid UTF-8", file }], locations: new Map() };
+    return { diagnostics: [{ code: Codes.invalidUtf8, severity: "error", message: "Input is not valid UTF-8", file }], locations: new Map() };
   }
   return parseMarkdown(bytes.toString("utf8"), file);
 }
 
 export async function validateMarkdown(content: string, file: string, options: ValidateOptions = {}): Promise<ValidationResult> {
-  const bytes = Buffer.from(content, "utf8");
-  if (!isUtf8(bytes)) {
-    return {
-      valid: false,
-      diagnostics: [{ code: "ESP009", severity: "error", message: "Input is not valid UTF-8", file }],
-      locations: new Map(),
-    };
-  }
   const parsed = parseMarkdown(content, file);
   const diagnostics = [...parsed.diagnostics];
   if (parsed.spec) {
@@ -49,14 +42,17 @@ export async function validateMarkdown(content: string, file: string, options: V
   };
 }
 
-export async function validateFile(file: string, options: ValidateOptions = {}): Promise<ValidationResult> {
-  const bytes = await readFile(file);
+export async function validateBytes(bytes: Uint8Array, file: string, options: ValidateOptions = {}): Promise<ValidationResult> {
   if (!isUtf8(bytes)) {
     return {
       valid: false,
-      diagnostics: [{ code: "ESP009", severity: "error", message: "Input is not valid UTF-8", file }],
+      diagnostics: [{ code: Codes.invalidUtf8, severity: "error", message: "Input is not valid UTF-8", file }],
       locations: new Map(),
     };
   }
-  return validateMarkdown(bytes.toString("utf8"), file, options);
+  return validateMarkdown(Buffer.from(bytes).toString("utf8"), file, options);
+}
+
+export async function validateFile(file: string, options: ValidateOptions = {}): Promise<ValidationResult> {
+  return validateBytes(await readFile(file), file, options);
 }

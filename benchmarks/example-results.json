@@ -1,0 +1,26 @@
+[
+  {
+    "taskId": "example-task",
+    "runId": "example-baseline",
+    "condition": "baseline",
+    "agent": "example-agent",
+    "success": false,
+    "scopeViolations": 2,
+    "reviewCorrections": 2,
+    "durationSeconds": 600,
+    "inputTokens": 10000,
+    "outputTokens": 3000
+  },
+  {
+    "taskId": "example-task",
+    "runId": "example-engineeringspec",
+    "condition": "engineeringspec",
+    "agent": "example-agent",
+    "success": true,
+    "scopeViolations": 0,
+    "reviewCorrections": 1,
+    "durationSeconds": 540,
+    "inputTokens": 11000,
+    "outputTokens": 2800
+  }
+]

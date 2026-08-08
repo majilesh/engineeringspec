@@ -58,6 +58,8 @@ Without this, the gate is advisory only.
 3. Protect `CODEOWNERS` itself with the same owners.
 4. Keep implementation PRs on `gate-spec-from: base` so they are evaluated against the already-merged contract.
 
+Do not switch enforcing CI to `workspace` when a PR changes its own targets. That makes authorization self-widening. Land the reviewed contract-only PR first, then rebase or open the dependent implementation PR against that approved base.
+
 ## What the gate does not prove
 
 Continue running your repository’s normal tests, schema diffs, security scans, and policy checks. Declared `must` / `must_not` constraints, verification runners, evidence, and exceptions are **not** executed or authenticated by `gate`.

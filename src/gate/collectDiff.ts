@@ -3,6 +3,7 @@ import { promisify } from "node:util";
 import type { ChangedFile, ChangeKind } from "./types.js";
 
 const execFileAsync = promisify(execFile);
+const MAX_GIT_OUTPUT = 16 * 1024 * 1024;
 
 export class DiffParseError extends Error {
   constructor(message: string) {
@@ -115,7 +116,7 @@ export async function collectGitDiff(options: {
       ["diff", "-z", "--name-status", "--find-renames", range],
       {
         cwd: options.cwd,
-        maxBuffer: 16 * 1024 * 1024,
+        maxBuffer: MAX_GIT_OUTPUT,
         encoding: "utf8",
       },
     );
@@ -125,6 +126,136 @@ export async function collectGitDiff(options: {
     const detail = error instanceof Error ? error.message : String(error);
     throw new Error(`Unable to read git diff for ${range}: ${detail}`);
   }
+}
+
+async function mergeBase(base: string, head: string, cwd?: string): Promise<string> {
+  try {
+    const { stdout } = await execFileAsync("git", ["merge-base", base, head], {
+      cwd,
+      maxBuffer: MAX_GIT_OUTPUT,
+      encoding: "utf8",
+    });
+    const value = stdout.trim();
+    if (!value) throw new Error("git merge-base returned no commit");
+    return value;
+  } catch (error) {
+    const detail = error instanceof Error ? error.message : String(error);
+    throw new Error(`Unable to resolve merge base for ${base} and ${head}: ${detail}`);
+  }
+}
+
+async function diffAgainstTree(options: {
+  tree: string;
+  cwd?: string;
+  staged?: boolean;
+}): Promise<ChangedFile[]> {
+  const args = ["diff", "-z", "--name-status", "--find-renames"];
+  if (options.staged) args.push("--cached");
+  args.push(options.tree);
+  try {
+    const { stdout } = await execFileAsync("git", args, {
+      cwd: options.cwd,
+      maxBuffer: MAX_GIT_OUTPUT,
+      encoding: "utf8",
+    });
+    return parseNameStatusZ(stdout);
+  } catch (error) {
+    if (error instanceof DiffParseError) throw error;
+    const detail = error instanceof Error ? error.message : String(error);
+    throw new Error(`Unable to read ${options.staged ? "staged" : "working tree"} diff against ${options.tree}: ${detail}`);
+  }
+}
+
+async function untrackedFiles(cwd?: string): Promise<ChangedFile[]> {
+  try {
+    const { stdout } = await execFileAsync("git", ["ls-files", "-z", "--others", "--exclude-standard"], {
+      cwd,
+      maxBuffer: MAX_GIT_OUTPUT,
+      encoding: "utf8",
+    });
+    return stdout
+      .split("\0")
+      .filter(Boolean)
+      .map((filePath) => ({ path: normalizeRepoPath(filePath), kind: "added" as const }));
+  } catch (error) {
+    const detail = error instanceof Error ? error.message : String(error);
+    throw new Error(`Unable to list untracked files: ${detail}`);
+  }
+}
+
+async function gitObjectId(args: string[], cwd?: string): Promise<string> {
+  const { stdout } = await execFileAsync("git", args, {
+    cwd,
+    maxBuffer: MAX_GIT_OUTPUT,
+    encoding: "utf8",
+  });
+  return stdout.trim();
+}
+
+/** Detect exact-content renames whose destination is still untracked without mutating the index. */
+async function promoteUntrackedRenames(
+  tracked: ChangedFile[],
+  untracked: ChangedFile[],
+  tree: string,
+  cwd?: string,
+): Promise<{ tracked: ChangedFile[]; untracked: ChangedFile[] }> {
+  const deleted = tracked.filter((change) => change.kind === "deleted");
+  if (deleted.length === 0 || untracked.length === 0) return { tracked, untracked };
+
+  const deletedByObject = new Map<string, ChangedFile[]>();
+  for (const change of deleted) {
+    const object = await gitObjectId(["rev-parse", "--verify", `${tree}:${change.path}`], cwd);
+    deletedByObject.set(object, [...(deletedByObject.get(object) ?? []), change]);
+  }
+
+  const promoted = new Map<string, ChangedFile>();
+  const remainingUntracked: ChangedFile[] = [];
+  for (const change of untracked) {
+    const object = await gitObjectId(["hash-object", "--", change.path], cwd);
+    const candidates = deletedByObject.get(object);
+    const source = candidates?.shift();
+    if (!source) {
+      remainingUntracked.push(change);
+      continue;
+    }
+    promoted.set(source.path, { path: change.path, kind: "renamed", fromPath: source.path });
+  }
+
+  return {
+    tracked: tracked.flatMap((change) => promoted.has(change.path) ? [promoted.get(change.path)!] : [change]),
+    untracked: remainingUntracked,
+  };
+}
+
+/** Collect committed plus staged changes relative to the selected merge base. */
+export async function collectGitStagedDiff(options: {
+  base?: string;
+  head?: string;
+  cwd?: string;
+} = {}): Promise<ChangedFile[]> {
+  const head = options.head ?? "HEAD";
+  const tree = options.base ? await mergeBase(options.base, head, options.cwd) : head;
+  return diffAgainstTree({ tree, ...(options.cwd ? { cwd: options.cwd } : {}), staged: true });
+}
+
+/**
+ * Collect the complete working state relative to the selected merge base.
+ * Includes committed, staged, unstaged, deleted, renamed, and non-ignored untracked paths.
+ */
+export async function collectGitWorktreeDiff(options: {
+  base?: string;
+  head?: string;
+  cwd?: string;
+} = {}): Promise<ChangedFile[]> {
+  const head = options.head ?? "HEAD";
+  const tree = options.base ? await mergeBase(options.base, head, options.cwd) : head;
+  const [tracked, untracked] = await Promise.all([
+    diffAgainstTree({ tree, ...(options.cwd ? { cwd: options.cwd } : {}) }),
+    untrackedFiles(options.cwd),
+  ]);
+  const promoted = await promoteUntrackedRenames(tracked, untracked, tree, options.cwd);
+  const trackedPaths = new Set(promoted.tracked.flatMap((change) => [change.path, ...(change.fromPath ? [change.fromPath] : [])]));
+  return [...promoted.tracked, ...promoted.untracked.filter((change) => !trackedPaths.has(change.path))];
 }
 
 export function changedFromPathList(paths: string[], kind: ChangeKind = "modified"): ChangedFile[] {

@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://engineeringspec.org/schemas/agent-impact.schema.json",
+  "title": "EngineeringSpec agent-impact benchmark record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "taskId",
+    "runId",
+    "condition",
+    "agent",
+    "success",
+    "scopeViolations",
+    "reviewCorrections",
+    "durationSeconds",
+    "inputTokens",
+    "outputTokens"
+  ],
+  "properties": {
+    "taskId": { "type": "string", "minLength": 1 },
+    "runId": { "type": "string", "minLength": 1 },
+    "condition": { "enum": ["baseline", "engineeringspec"] },
+    "agent": { "type": "string", "minLength": 1 },
+    "success": { "type": "boolean" },
+    "scopeViolations": { "type": "number", "minimum": 0 },
+    "reviewCorrections": { "type": "number", "minimum": 0 },
+    "durationSeconds": { "type": "number", "minimum": 0 },
+    "inputTokens": { "type": "number", "minimum": 0 },
+    "outputTokens": { "type": "number", "minimum": 0 }
+  }
+}

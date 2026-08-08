@@ -73,6 +73,9 @@ npx @engineeringspec/cli@next normalize ENGINEERING_SPEC.md --digest
 npx @engineeringspec/cli@next inspect ENGINEERING_SPEC.md --path src/example.ts
 npx @engineeringspec/cli@next coverage ENGINEERING_SPEC.md --fail-on uncovered
 npx @engineeringspec/cli@next gate ENGINEERING_SPEC.md --base origin/main --receipt gate-receipt.json
+npx @engineeringspec/cli@next check ENGINEERING_SPEC.md --base origin/main --strict
+npx @engineeringspec/cli@next context ENGINEERING_SPEC.md --path src/example.ts --base origin/main --format markdown
+npx @engineeringspec/cli@next explain ENGINEERING_SPEC.md --path src/example.ts --base origin/main
 ```
 
 Directory validation discovers `ENGINEERING_SPEC.md`, `*.engineering-spec.md`, and `*.engineeringspec.md` recursively. Add repository-relative glob patterns to `.engineeringspecignore` to exclude generated content or intentionally invalid fixtures.
@@ -125,8 +128,21 @@ npx @engineeringspec/cli@next validate docs/engineering-specs
 
 Use [AGENTS.md](AGENTS.md) as the shared workflow for Codex and other compatible agents. [CLAUDE.md](CLAUDE.md) imports the same guidance for Claude Code, and the checked-in [Cursor rule](.cursor/rules/engineering-spec.mdc) applies it in Cursor. See [Agent integration](docs/agent-integration.md) for a reusable setup and prompt.
 
+`check` is the agent pre-completion command: it evaluates committed, staged, unstaged, deleted, renamed, and non-ignored untracked paths and defaults to the approved base contract when `--base` is provided. `context` returns the smallest relevant target/constraint/contract/verification set for paths; `explain` gives a deterministic allow/deny reason. None of these commands execute declared runners.
+
+Bootstrap an existing repository without overwriting its agent files by default:
+
+```sh
+npx @engineeringspec/cli@next adopt . \
+  --spec docs/engineering-specs/ES-my-change.engineering-spec.md
+```
+
+The portable [EngineeringSpec skill](skills/engineering-spec/SKILL.md) is the primary integration for skill-aware agents. The generated AGENTS.md, Claude import, and Cursor rule cover file-instruction agents without putting vendor behavior in the format. A plugin or MCP server is not required for the core workflow; add thin adapters only when real usage shows discovery or transport friction.
+
+Measure the effect rather than assuming it: [the agent-impact benchmark](benchmarks/README.md) compares paired tasks on success, scope violations, review corrections, duration, and tokens.
+
 Specifications are untrusted input. Declared commands are inert data: validation never executes them. See [engineeringspec.org](https://engineeringspec.org), [SECURITY.md](SECURITY.md), [SPEC.md](SPEC.md), [maintainer-only roadmap](maintainer-only roadmap), and [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Status
 
-The parser, schema, semantic validator, normalizer, query API, ProductSpec profile, CLI, conformance fixtures, and fail-closed **diff gate** form the v0.1 release candidate. A read-only MCP adapter remains deliberately deferred until the file format is stable.
+The parser, schema, semantic validator, normalizer, query API, ProductSpec profile, CLI, conformance fixtures, fail-closed **diff gate**, agent self-check loop, adoption scaffold, and portable skill form the v0.1 release candidate. A read-only MCP adapter remains deliberately deferred until measured adoption friction warrants another transport.
