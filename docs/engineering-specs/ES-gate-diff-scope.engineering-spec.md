@@ -1,7 +1,7 @@
 ---
 spec_format: engineering-spec
 spec_format_version: "0.1"
-spec_revision: 8
+spec_revision: 9
 id: ES-gate-diff-scope
 title: Fail-closed diff gate against declared targets
 status: proposed
@@ -46,6 +46,10 @@ Add and harden `engineeringspec gate` so CI can reject changes outside declared 
   type: document
   ref: sprint-a-trust-fixes
   title: Strict gate load warnings, key-collision fail-closed, agent gate self-check
+- id: SRC-8
+  type: document
+  ref: agent-first-roadmap
+  title: Worktree-aware agent checks, protected contract evolution, portable skill, and agent benchmark
 ```
 
 ## Target surfaces
@@ -60,6 +64,7 @@ Add and harden `engineeringspec gate` so CI can reject changes outside declared 
     - test/unit/gate.adversarial.test.ts
     - test/unit/targetGlob.test.ts
     - test/unit/receipt.test.ts
+    - test/unit/diagnostic-codes.test.ts
   change_policy: modify
 - id: TARGET-validator
   component: validator
@@ -77,11 +82,10 @@ Add and harden `engineeringspec gate` so CI can reject changes outside declared 
 - id: TARGET-cli
   component: cli-and-exports
   paths:
-    - src/cli/program.ts
-    - src/cli/version.ts
+    - src/cli/**
     - src/diagnostics/codes.ts
     - src/index.ts
-    - test/integration/cli.test.ts
+    - test/integration/**
     - test/unit/version.test.ts
     - vitest.config.ts
     - package.json
@@ -99,6 +103,9 @@ Add and harden `engineeringspec gate` so CI can reject changes outside declared 
     - SPEC.md
     - CHANGELOG.md
     - docs/**
+    - rfcs/**
+    - skills/**
+    - benchmarks/**
     - examples/**
   change_policy: modify
 ```
@@ -186,13 +193,43 @@ Add and harden `engineeringspec gate` so CI can reject changes outside declared 
   statement: Agent workflow docs must require a mid-task gate self-check before claiming a consequential change is done.
   applies_to: [TARGET-ci-docs]
   enforcement: { kind: review, reviewer_role: maintainer }
+- id: CON-17
+  level: must
+  statement: Every stable diagnostic code must identify exactly one condition and be registered centrally.
+  applies_to: [TARGET-validator]
+  enforcement: { kind: test, verifier_ref: VER-1 }
+- id: CON-18
+  level: must
+  statement: Agent self-checks must be able to gate the complete working state, including committed, staged, unstaged, deleted, renamed, and untracked paths.
+  applies_to: [TARGET-gate, TARGET-cli]
+  enforcement: { kind: test, verifier_ref: VER-1 }
+- id: CON-19
+  level: must
+  statement: Contract evolution must not silently replace base authorization with a workspace contract that widens its own implementation scope.
+  applies_to: [TARGET-gate, TARGET-cli, TARGET-ci-docs]
+  enforcement: { kind: test, verifier_ref: VER-1 }
+- id: CON-20
+  level: must_not
+  statement: Agent-oriented check, context, and explanation commands must not execute declared verification runners or mutate the repository.
+  applies_to: [TARGET-cli, TARGET-validator]
+  enforcement: { kind: test, verifier_ref: VER-1 }
+- id: CON-21
+  level: must
+  statement: The reusable agent workflow must remain a thin, agent-neutral consumer of the CLI and shared EngineeringSpec contract.
+  applies_to: [TARGET-ci-docs]
+  enforcement: { kind: review, reviewer_role: maintainer }
+- id: CON-22
+  level: must
+  statement: The agent-impact benchmark must be reproducible, compare equivalent tasks, and report scope, correctness, review, latency, and token outcomes without executing spec-declared runners.
+  applies_to: [TARGET-ci-docs]
+  enforcement: { kind: review, reviewer_role: maintainer }
 ```
 
 ## Verification
 
 ```engineering-verification
 - id: VER-1
-  proves: [CON-1, CON-2, CON-3, CON-4, CON-5, CON-6, CON-8, CON-9, CON-10, CON-11, CON-12, CON-14, CON-15]
+  proves: [CON-1, CON-2, CON-3, CON-4, CON-5, CON-6, CON-8, CON-9, CON-10, CON-11, CON-12, CON-14, CON-15, CON-17, CON-18, CON-19, CON-20]
   kind: test
   runner:
     type: command
@@ -200,7 +237,7 @@ Add and harden `engineeringspec gate` so CI can reject changes outside declared 
     network: deny
   expected: { exit_code: 0 }
 - id: VER-2
-  proves: [CON-7, CON-13, CON-16]
+  proves: [CON-7, CON-13, CON-16, CON-21, CON-22]
   kind: human_review
   runner:
     type: manual
