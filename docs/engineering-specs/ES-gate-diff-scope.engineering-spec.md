@@ -176,7 +176,7 @@ Add and harden `engineeringspec gate` so CI can reject changes outside declared 
   enforcement: { kind: test, verifier_ref: VER-1 }
 - id: CON-13
   level: must
-  statement: Project CI must dogfood gate-spec-from base by default (workspace only when evolving this contract), support merge_group, and keep the documented Action SHA pin current with trust-hardened tip.
+  statement: Project CI must always enforce against the approved base contract, require contract evolution to land before its dependent implementation, support merge_group, and keep the documented Action SHA pin current with trust-hardened tip.
   applies_to: [TARGET-ci-docs]
   enforcement: { kind: review, reviewer_role: maintainer }
 - id: CON-14
@@ -191,7 +191,7 @@ Add and harden `engineeringspec gate` so CI can reject changes outside declared 
   enforcement: { kind: test, verifier_ref: VER-1 }
 - id: CON-16
   level: must
-  statement: Agent workflow docs must require a mid-task gate self-check before claiming a consequential change is done.
+  statement: Agent workflow docs must require a complete-working-state self-check before claiming a consequential change is done.
   applies_to: [TARGET-ci-docs]
   enforcement: { kind: review, reviewer_role: maintainer }
 - id: CON-17
