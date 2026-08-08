@@ -101,7 +101,7 @@ steps:
   - uses: actions/checkout@v4
     with:
       fetch-depth: 0
-  - uses: majilesh/engineeringspec@479d77818669db8a32c515ebfa2a0bb01ca51afb
+  - uses: majilesh/engineeringspec@0f22873b6b036533935fa453a7e27d42ab66da7e
     with:
       path: docs/engineering-specs
       strict: true
@@ -109,9 +109,10 @@ steps:
       gate-base: origin/main
       gate-spec-from: base          # default; do not use workspace for enforcing CI
       gate-require-status: approved # enforcing mode
+      gate-receipt: gate-receipt.json  # optional; re-pin after Action tip adds this input
 ```
 
-The action validates specs (annotations + job summary) and, when `gate-spec` is set, runs `gate` against `gate-base`…`gate-head`. It never executes declared verification runners. Use `fetch-depth: 0` so the base ref exists.
+The action validates specs (annotations + job summary) and, when `gate-spec` is set, runs `gate` against `gate-base`…`gate-head`. It never executes declared verification runners. Use `fetch-depth: 0` so the base ref exists. If you use merge queues, add a `merge_group` trigger on the workflow that runs this Action.
 
 After tagging, `majilesh/engineeringspec@v0.1.0-rc.2` is acceptable for less sensitive repos; SHA pins remain preferred. See [production-gate.md](docs/production-gate.md) for required checks and CODEOWNERS.
 

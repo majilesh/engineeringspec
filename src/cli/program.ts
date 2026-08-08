@@ -155,24 +155,54 @@ export function createProgram(setCode: (code: number) => void): Command {
     }
   });
 
-  program.command("inspect").argument("<file>").option("--summary").option("--target <id>").option("--path <path>").option("--constraint <id>").option("--contract <id>").option("--verifier <id>").option("--source-item <id>").action(async (file, options, command) => {
-    try {
-      const parsed = await parseFile(file);
-      if (!parsed.spec) { console.error(formatDiagnostics(parsed.diagnostics)); setCode(ExitCode.validation); return; }
-      const global = command.optsWithGlobals() as GlobalOptions;
-      output(inspect(normalize(parsed.spec), { summary: options.summary || undefined, target: options.target, path: options.path, constraint: options.constraint, contract: options.contract, verifier: options.verifier, sourceItem: options.sourceItem }), global.format);
-      setCode(validationCode(parsed.diagnostics, global.strict));
-    } catch (error) {
-      console.error(error instanceof Error ? error.message : String(error));
-      setCode(ExitCode.io);
-    }
-  });
+  program
+    .command("inspect")
+    .argument("<file>")
+    .option("--summary")
+    .option("--target <id>")
+    .option("--path <path>")
+    .option("--constraint <id>")
+    .option("--contract <id>")
+    .option("--verifier <id>")
+    .option("--source-item <id>")
+    .option("--parse-only", "skip semantic validation (debugging only)")
+    .action(async (file, options, command) => {
+      try {
+        const global = command.optsWithGlobals() as GlobalOptions;
+        if (options.parseOnly) {
+          const parsed = await parseFile(file);
+          if (!parsed.spec) {
+            console.error(formatDiagnostics(parsed.diagnostics));
+            setCode(ExitCode.validation);
+            return;
+          }
+          output(inspect(normalize(parsed.spec), { summary: options.summary || undefined, target: options.target, path: options.path, constraint: options.constraint, contract: options.contract, verifier: options.verifier, sourceItem: options.sourceItem }), global.format);
+          setCode(validationCode(parsed.diagnostics, global.strict));
+          return;
+        }
+        const result = await validateFile(file);
+        if (!result.spec || result.diagnostics.some((item) => item.severity === "error")) {
+          console.error(formatDiagnostics(result.diagnostics));
+          setCode(validationCode(result.diagnostics, global.strict));
+          return;
+        }
+        output(inspect(normalize(result.spec), { summary: options.summary || undefined, target: options.target, path: options.path, constraint: options.constraint, contract: options.contract, verifier: options.verifier, sourceItem: options.sourceItem }), global.format);
+        setCode(validationCode(result.diagnostics, global.strict));
+      } catch (error) {
+        console.error(error instanceof Error ? error.message : String(error));
+        setCode(ExitCode.io);
+      }
+    });
 
   program.command("coverage").argument("<file>").addOption(new Option("--format <format>", "output format").choices(["text", "json"])).addOption(new Option("--fail-on <level>").choices(["partial", "unknown", "uncovered"])).action(async (file, options, command) => {
     try {
-      const result = await validateFile(file);
-      if (!result.spec) { console.error(formatDiagnostics(result.diagnostics)); setCode(ExitCode.validation); return; }
       const global = command.optsWithGlobals() as GlobalOptions;
+      const result = await validateFile(file);
+      if (!result.spec || result.diagnostics.some((item) => item.severity === "error")) {
+        console.error(formatDiagnostics(result.diagnostics));
+        setCode(validationCode(result.diagnostics, global.strict));
+        return;
+      }
       const unknown = result.diagnostics.some((item) => item.code === "ESPR001");
       const report = coverage(normalize(result.spec), { unknownExternal: unknown });
       const text = `coverage: ${report.status}\nsource items: ${report.sourceItems.filter((item) => item.covered).length}/${report.sourceItems.length}\nconstraints: ${report.constraints.filter((item) => item.covered).length}/${report.constraints.length}\ncontracts: ${report.contracts.filter((item) => item.covered).length}/${report.contracts.length}\nevidence: ${report.evidence.filter((item) => item.covered).length}/${report.evidence.length}`;

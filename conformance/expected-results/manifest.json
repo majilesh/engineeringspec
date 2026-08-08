@@ -26,6 +26,7 @@
     { "file": "invalid-semantics/incomplete-review-enforcement.engineering-spec.md", "valid": false, "codes": ["ESS001"] },
     { "file": "invalid-semantics/incomplete-reference-runner.engineering-spec.md", "valid": false, "codes": ["ESS001"] },
     { "file": "invalid-semantics/forbidden-target-glob.engineering-spec.md", "valid": false, "codes": ["ESPTH002"] },
+    { "file": "invalid-semantics/parent-segment-glob.engineering-spec.md", "valid": false, "codes": ["ESPTH002"] },
     { "file": "invalid-semantics/typed-ref-mismatch.engineering-spec.md", "valid": false, "codes": ["ESR008"] },
     { "file": "invalid-structure/empty-proves.engineering-spec.md", "valid": false, "codes": ["ESS001"] },
     { "file": "invalid-syntax/unsafe-tag.engineering-spec.md", "valid": false, "codes": ["ESP008"] },

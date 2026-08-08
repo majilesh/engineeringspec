@@ -41,4 +41,24 @@ describe("CLI",()=>{
     expect(parsed.result).toBe("pass");
     expect(parsed.tool.version).toBe(JSON.parse(await readFile("package.json","utf8")).version);
   });
+  it("inspect fails closed on invalid semantics unless --parse-only",async()=>{
+    const file="conformance/invalid-semantics/dangling-target.engineering-spec.md";
+    expect(await invoke(["inspect",file,"--quiet"])).toBe(1);
+    expect(await invoke(["inspect",file,"--parse-only","--quiet"])).toBe(0);
+  });
+  it("coverage fails closed on invalid semantics without printing a report body",async()=>{
+    const messages:string[]=[];
+    const originalLog=console.log;
+    const originalErr=console.error;
+    console.log=(message?:unknown)=>{messages.push(`log:${String(message)}`);};
+    console.error=(message?:unknown)=>{messages.push(`err:${String(message)}`);};
+    try {
+      expect(await invoke(["coverage","conformance/invalid-semantics/dangling-target.engineering-spec.md"])).toBe(1);
+    } finally {
+      console.log=originalLog;
+      console.error=originalErr;
+    }
+    expect(messages.some((m)=>m.startsWith("log:coverage:"))).toBe(false);
+    expect(messages.some((m)=>m.includes("ESR001")||m.includes("dangling")||m.includes("TARGET"))).toBe(true);
+  });
 });
