@@ -29,6 +29,14 @@ inputs:
     description: Git head ref for gate
     required: false
     default: "HEAD"
+  gate-spec-from:
+    description: "Load gate contract from workspace or gate-base. Use base in enforcing CI to prevent PR self-widening."
+    required: false
+    default: "base"
+  gate-require-status:
+    description: Optional comma-separated statuses required for enforcing mode (e.g. approved)
+    required: false
+    default: ""
 runs:
   using: composite
   steps:
@@ -59,6 +67,8 @@ runs:
         INPUT_GATE_SPEC: ${{ inputs.gate-spec }}
         INPUT_GATE_BASE: ${{ inputs.gate-base }}
         INPUT_GATE_HEAD: ${{ inputs.gate-head }}
+        INPUT_GATE_SPEC_FROM: ${{ inputs.gate-spec-from }}
+        INPUT_GATE_REQUIRE_STATUS: ${{ inputs.gate-require-status }}
         INPUT_STRICT: ${{ inputs.strict }}
       run: |
         set -euo pipefail
@@ -71,8 +81,17 @@ runs:
         else
           spec="$GITHUB_WORKSPACE/$INPUT_GATE_SPEC"
         fi
-        args=(--base "$INPUT_GATE_BASE" --head "$INPUT_GATE_HEAD" --format github)
+        args=(--base "$INPUT_GATE_BASE" --head "$INPUT_GATE_HEAD" --spec-from "$INPUT_GATE_SPEC_FROM" --format github)
         if [[ "$INPUT_STRICT" == "true" ]]; then args+=(--strict); fi
+        if [[ -n "$INPUT_GATE_REQUIRE_STATUS" ]]; then
+          IFS=',' read -r -a statuses <<< "$INPUT_GATE_REQUIRE_STATUS"
+          for status in "${statuses[@]}"; do
+            status="$(echo "$status" | xargs)"
+            if [[ -n "$status" ]]; then
+              args+=(--require-status "$status")
+            fi
+          done
+        fi
         # Run from the consumer workspace so git diff sees their checkout.
         cd "$GITHUB_WORKSPACE"
         node "$GITHUB_ACTION_PATH/dist/cli.js" gate "$spec" "${args[@]}"

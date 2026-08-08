@@ -13,6 +13,7 @@ export * from "./query/coverage.js";
 export * from "./query/applicability.js";
 export * from "./gate/gate.js";
 export * from "./gate/collectDiff.js";
+export * from "./gate/loadSpec.js";
 export * from "./gate/types.js";
 export * from "./validator/pathSafety.js";
 export * from "./validator/validateFile.js";

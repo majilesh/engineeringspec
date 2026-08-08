@@ -37,4 +37,13 @@ describe("validation and queries",()=>{
   it.each([["src/a.ts",true],[".",true],["../secret",false],["/tmp/a",false],["C:\\tmp\\a",false],["a\0b",false]])("checks safe path %s",(value,expected)=>expect(isSafeRelativePath(value)).toBe(expected));
   it.each([["CON-1",true],["ES-feature.name",true],["lower-1",false],["CON-",false]])("checks ID grammar %s",(value,expected)=>expect(isEngineeringSpecId(value)).toBe(expected));
   it("finds dangling and duplicate IDs",()=>{const value=parseMarkdown(spec()).spec!;value.targets[0]!.id="SRC-1";value.verification[0]!.proves=["CON-404"];const codes=validateSemantics(value).map(d=>d.code);expect(codes).toContain("ESR001");expect(codes).toContain("ESR003");});
+  it("warns on overlapping incompatible target globs",()=>{
+    const value=parseMarkdown(spec()).spec!;
+    value.targets=[
+      {id:"TARGET-general",paths:["src/**"],changePolicy:"modify"},
+      {id:"TARGET-secrets",paths:["src/secrets/**"],changePolicy:"read_only"},
+    ];
+    const diagnostics=validateSemantics(value);
+    expect(diagnostics.some(d=>d.code==="ESR007"&&d.severity==="warning")).toBe(true);
+  });
 });

@@ -15,5 +15,6 @@ describe("CLI",()=>{
     const file="docs/engineering-specs/ES-gate-diff-scope.engineering-spec.md";
     expect(await invoke(["gate",file,"--changed","src/gate/gate.ts","--quiet"])).toBe(0);
     expect(await invoke(["gate",file,"--changed","totally/unrelated.ts","--quiet"])).toBe(1);
+    expect(await invoke(["gate",file,"--changed","src/gate/gate.ts","--require-status","approved","--quiet"])).toBe(1);
   });
 });

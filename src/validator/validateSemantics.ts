@@ -1,13 +1,54 @@
+import { minimatch } from "minimatch";
 import type { Diagnostic } from "../diagnostics/Diagnostic.js";
 import { Codes } from "../diagnostics/codes.js";
-import type { EngineeringSpec } from "../model/types.js";
+import type { EngineeringSpec, TargetSurface } from "../model/types.js";
 import { isSafeRelativePath } from "./pathSafety.js";
 
 const digestPattern=/^sha256:[a-fA-F0-9]{64}$/;
+const FORBIDDEN_POLICIES = new Set(["read_only", "observe"]);
 function digestValid(value:unknown):boolean {
   if(typeof value==="string") return digestPattern.test(value);
   if(value&&typeof value==="object") { const d=value as Record<string,unknown>; return (d.algorithm===undefined||d.algorithm==="sha256")&&typeof d.value==="string"&&/^[a-fA-F0-9]{64}$/.test(d.value); }
   return false;
+}
+
+/** Best-effort probe path for nested glob overlap detection (not a full glob algebra). */
+function probePath(pattern: string): string {
+  return pattern
+    .replace(/\/\*\*$/g, "/__es_probe__")
+    .replace(/\/\*$/g, "/__es_probe__")
+    .replace(/\*\*/g, "__es_dstar__")
+    .replace(/\*/g, "__es_star__")
+    .replace(/\?/g, "x");
+}
+
+function patternsLikelyOverlap(a: string, b: string): boolean {
+  if (a === b) return true;
+  const pa = probePath(a);
+  const pb = probePath(b);
+  return minimatch(pa, b, { dot: true, matchBase: false }) || minimatch(pb, a, { dot: true, matchBase: false });
+}
+
+function policiesIncompatible(a: TargetSurface["changePolicy"], b: TargetSurface["changePolicy"]): boolean {
+  return FORBIDDEN_POLICIES.has(a) !== FORBIDDEN_POLICIES.has(b);
+}
+
+function warnOverlappingTargetPolicies(spec: EngineeringSpec, add: (d: Omit<Diagnostic, "file">) => void): void {
+  const entries = spec.targets.flatMap((target) => target.paths.map((pattern) => ({ target, pattern })));
+  for (let i = 0; i < entries.length; i += 1) {
+    for (let j = i + 1; j < entries.length; j += 1) {
+      const left = entries[i]!;
+      const right = entries[j]!;
+      if (left.pattern === right.pattern) continue; // exact conflicts handled separately as errors
+      if (!policiesIncompatible(left.target.changePolicy, right.target.changePolicy)) continue;
+      if (!patternsLikelyOverlap(left.pattern, right.pattern)) continue;
+      add({
+        code: Codes.conflict,
+        severity: "warning",
+        message: `Target patterns ${JSON.stringify(left.pattern)} (${left.target.changePolicy}, ${left.target.id}) and ${JSON.stringify(right.pattern)} (${right.target.changePolicy}, ${right.target.id}) likely overlap with incompatible policies; gate uses deny-overrides for read_only/observe`,
+      });
+    }
+  }
 }
 export function validateSemantics(spec:EngineeringSpec,file?:string):Diagnostic[] {
   const out:Diagnostic[]=[]; const add=(d:Omit<Diagnostic,"file">)=>out.push({...d,...(file?{file}:{})});
@@ -25,6 +66,7 @@ export function validateSemantics(spec:EngineeringSpec,file?:string):Diagnostic[
   for(const contract of spec.contracts??[]) { if(contract.path) checkPath(contract.path,`Contract ${contract.id} path`); if(contract.digest&&!digestValid(contract.digest)) add({code:Codes.invalidDigest,severity:"error",message:`Contract ${contract.id} has an invalid SHA-256 digest`}); }
   const policies=new Map<string,{id:string;policy:string}>();
   for(const target of spec.targets) for(const p of target.paths) { const previous=policies.get(p); if(previous&&previous.policy!==target.changePolicy) add({code:Codes.conflict,severity:"error",message:`Target path ${JSON.stringify(p)} has conflicting policies ${previous.policy} (${previous.id}) and ${target.changePolicy} (${target.id})`}); else policies.set(p,{id:target.id,policy:target.changePolicy}); }
+  warnOverlappingTargetPolicies(spec, add);
   for(const constraint of spec.constraints??[]) {
     for(const id of constraint.appliesTo??[]) if(!registry.has(id)) add({code:Codes.dangling,severity:"error",message:`Constraint ${constraint.id} references missing target ${JSON.stringify(id)}`});
     for(const id of constraint.satisfies??[]) if(!recognised(id)) add({code:Codes.dangling,severity:"error",message:`Constraint ${constraint.id} satisfies unknown item ${JSON.stringify(id)}`});

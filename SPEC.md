@@ -42,7 +42,7 @@ An unknown `engineering-x-<organization>-<name>` block is a namespaced extension
 
 Source references identify originating intent without copying it. Every source reference requires `id`, `type`, and at least one of `path`, `ref`, or `uri`. Local paths are repository-relative. The ProductSpec profile alone assigns additional meaning to `item_ids` such as `AC-*`, `EVAL-*`, and `SM-*`.
 
-Target surfaces declare repositories, components, and relative paths or globs governed by a change policy. Policies are `modify`, `create`, `delete`, `read_only`, `interface_only`, and `observe`. Identical target paths with conflicting policies are invalid.
+Target surfaces declare repositories, components, and relative paths or globs governed by a change policy. Policies are `modify`, `create`, `delete`, `read_only`, `interface_only`, and `observe`. Identical target paths with conflicting policies are invalid. Nested or overlapping globs with incompatible writable vs `read_only`/`observe` policies SHOULD warn; reference tooling gates MUST apply deny-overrides (any matching `read_only`/`observe` target blocks the path).
 
 Decisions record load-bearing choices and rationale. They are explanatory unless referenced by a contract, constraint, or verification obligation.
 
@@ -109,12 +109,17 @@ Other implementations MAY provide equivalent discovery. They MUST NOT treat disc
 
 ## Diff gate (reference tooling)
 
-Comparing a repository diff to declared targets is **reference-tooling behavior**, not normative document semantics. The TypeScript reference implementation provides `engineeringspec gate`, which:
+Comparing a repository diff to declared targets is **reference-tooling behavior**, not normative document semantics. The TypeScript reference implementation provides `engineeringspec gate`, a **diff-scope gate** (path and change-type allowlist), which:
 
 - Accepts an EngineeringSpec plus either a git `--base`/`--head` range or explicit `--changed` paths
+- May load the contract from the workspace file or from `--spec-from base` (`git show base:path`) so a PR cannot silently widen its own targets
+- May require `metadata.status` via `--require-status` (for example `approved`) in enforcing mode (`ESG005`)
+- Collects diffs with null-delimited `git diff -z --name-status` and rejects unknown or malformed status records (`ESG004`)
 - Treats paths matching no target as errors (`ESG001`)
-- Rejects changes that only match `read_only` or `observe` targets (`ESG003`)
+- Applies **deny-overrides**: any matching `read_only` or `observe` target rejects the path (`ESG003`), even when a broader writable target also matches
 - Enforces `change_policy` against added/modified/deleted/renamed files (`ESG002`)
+- Treats `interface_only` as path-writable and emits `ESG006` (path-scoped only; not interface-aware)
+- Reports optional binding metadata (spec digest, base/head SHAs, changed-file digest) without claiming signed attestation
 - MUST NOT execute verification runners or mutate the repository
 
-Other implementations MAY provide equivalent gates. Gate results are not part of canonical JSON or digests.
+Other implementations MAY provide equivalent gates. Gate results are not part of canonical JSON or digests. Making the gate merge-blocking requires configuring it as a required status check or ruleset in the host forge.

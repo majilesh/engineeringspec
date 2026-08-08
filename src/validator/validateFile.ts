@@ -17,8 +17,16 @@ export async function parseFile(file: string): Promise<ParseResult> {
   return parseMarkdown(bytes.toString("utf8"), file);
 }
 
-export async function validateFile(file: string, options: ValidateOptions = {}): Promise<ValidationResult> {
-  const parsed = await parseFile(file);
+export async function validateMarkdown(content: string, file: string, options: ValidateOptions = {}): Promise<ValidationResult> {
+  const bytes = Buffer.from(content, "utf8");
+  if (!isUtf8(bytes)) {
+    return {
+      valid: false,
+      diagnostics: [{ code: "ESP009", severity: "error", message: "Input is not valid UTF-8", file }],
+      locations: new Map(),
+    };
+  }
+  const parsed = parseMarkdown(content, file);
   const diagnostics = [...parsed.diagnostics];
   if (parsed.spec) {
     diagnostics.push(...validateStructure(parsed.spec, file));
@@ -39,4 +47,16 @@ export async function validateFile(file: string, options: ValidateOptions = {}):
     locations: parsed.locations,
     ...(parsed.spec ? { spec: parsed.spec } : {}),
   };
+}
+
+export async function validateFile(file: string, options: ValidateOptions = {}): Promise<ValidationResult> {
+  const bytes = await readFile(file);
+  if (!isUtf8(bytes)) {
+    return {
+      valid: false,
+      diagnostics: [{ code: "ESP009", severity: "error", message: "Input is not valid UTF-8", file }],
+      locations: new Map(),
+    };
+  }
+  return validateMarkdown(bytes.toString("utf8"), file, options);
 }

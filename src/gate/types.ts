@@ -19,7 +19,7 @@ export interface GateMatch {
 export interface GateViolation {
   file: string;
   kind: ChangeKind;
-  reason: "out_of_scope" | "policy" | "read_only";
+  reason: "out_of_scope" | "policy" | "read_only" | "status";
   message: string;
   targets: Array<Pick<TargetSurface, "id" | "changePolicy">>;
 }
@@ -27,7 +27,14 @@ export interface GateViolation {
 export interface GateReport {
   valid: boolean;
   specId?: string;
+  specStatus?: string;
+  specDigest?: string;
+  specSource?: "workspace" | "base";
   base?: string;
+  head?: string;
+  baseSha?: string;
+  headSha?: string;
+  changedDigest?: string;
   changed: ChangedFile[];
   allowed: GateMatch[];
   violations: GateViolation[];

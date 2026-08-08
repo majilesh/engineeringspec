@@ -2,6 +2,20 @@
 
 All notable changes to this project are documented here.
 
+## [0.1.0-rc.2] - 2026-08-08
+
+### Changed
+
+- **Gate trust hardening (diff-scope gate)**
+  - Deny-overrides: any matching `read_only`/`observe` target rejects the path (`ESG003`), even when a broader writable target also matches
+  - `--spec-from workspace|base` (Action `gate-spec-from`, default `base`) loads the contract from `git show base:path` to prevent PR self-widening
+  - `--require-status` / Action `gate-require-status` for enforcing mode (`ESG005`)
+  - Null-delimited `git diff -z --name-status` with fail-closed unknown/malformed status handling (`ESG004`)
+  - `interface_only` remains path-scoped and emits warning `ESG006`
+  - Gate JSON/text reports bind spec digest, optional base/head SHAs, and changed-file digest
+- Validate warns (`ESR007`) on likely overlapping incompatible target globs
+- Docs: describe the feature as a diff-scope gate; recommend Action SHA pins and required checks; document npm `@next`
+
 ## [0.1.0-rc.1] - 2026-08-07
 
 ### Added
@@ -18,4 +32,3 @@ All notable changes to this project are documented here.
 
 - Validation never executes verification runners; command runners must use `argv` arrays
 - `gate` is reference CI tooling (separate trust boundary from parse/validate)
-- npm package `@engineeringspec/cli` publish is pending for this RC; use the GitHub Action or build from source

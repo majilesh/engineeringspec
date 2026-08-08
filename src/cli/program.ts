@@ -12,10 +12,15 @@ import { inspect } from "../query/inspect.js";
 import { coverage } from "../query/coverage.js";
 import { collectGitDiff, changedFromPathList } from "../gate/collectDiff.js";
 import { gateDiff } from "../gate/gate.js";
+import { readGitBlob, resolveCommitSha, resolveGitRelativePath, type SpecSource } from "../gate/loadSpec.js";
 import type { ChangeKind } from "../gate/types.js";
+import type { Status } from "../model/types.js";
 import { Codes } from "../diagnostics/codes.js";
+import { validateMarkdown } from "../validator/validateFile.js";
 import { ExitCode } from "./exitCodes.js";
 import { template, type TemplateName } from "./templates.js";
+
+const STATUS_VALUES = ["draft", "proposed", "approved", "implemented", "superseded", "rejected"] as const;
 
 type OutputFormat = "text" | "json" | "github" | "markdown";
 interface GlobalOptions { format: OutputFormat; quiet?: boolean; strict?: boolean }
@@ -183,36 +188,43 @@ export function createProgram(setCode: (code: number) => void): Command {
 
   program
     .command("gate")
-    .description("Fail closed if git changes fall outside declared targets")
-    .argument("<file>", "EngineeringSpec file")
+    .description("Fail closed if git changes fall outside declared targets (diff-scope gate)")
+    .argument("<file>", "EngineeringSpec file path (workspace path; content may load from --spec-from)")
     .option("--base <ref>", "git base ref for diff (e.g. origin/main)")
     .option("--head <ref>", "git head ref", "HEAD")
+    .addOption(new Option("--spec-from <source>", "load contract from workspace file or git base ref").choices(["workspace", "base"]).default("workspace"))
+    .option("--require-status <status>", "require metadata.status (repeatable)", (value, previous: string[] = []) => previous.concat(value), [])
     .option("--changed <path>", "explicit changed path (repeatable; skips git)", (value, previous: string[] = []) => previous.concat(value), [])
     .addOption(new Option("--change-kind <kind>", "kind for --changed paths").choices(["added", "modified", "deleted", "renamed"]).default("modified"))
     .addOption(new Option("--format <format>", "output format").choices(["text", "json", "github", "markdown"]))
     .action(async (file, options, command) => {
       try {
         const global = command.optsWithGlobals() as GlobalOptions;
-        const result = await validateFile(file);
-        if (!result.spec || result.diagnostics.some((item) => item.severity === "error")) {
-          if (!global.quiet) {
-            if (global.format === "github") for (const diagnostic of result.diagnostics) console.log(formatGitHubDiagnostic(diagnostic));
-            else console.error(formatDiagnostics(result.diagnostics));
-          }
-          setCode(validationCode(result.diagnostics, global.strict));
+        const specFrom = options.specFrom as SpecSource;
+        if (specFrom === "base" && !options.base) {
+          console.error("gate --spec-from base requires --base <ref>");
+          setCode(ExitCode.usage);
           return;
         }
-        const spec = normalize(result.spec);
-        let changed;
-        try {
-          if (options.changed.length > 0) {
-            changed = changedFromPathList(options.changed, options.changeKind as ChangeKind);
-          } else if (options.base) {
-            changed = await collectGitDiff({ base: options.base, head: options.head });
-          } else {
-            console.error("gate requires --base <ref> or one or more --changed <path>");
+        const requireStatus = (options.requireStatus as string[]).map((value) => value.trim()).filter(Boolean);
+        for (const status of requireStatus) {
+          if (!(STATUS_VALUES as readonly string[]).includes(status)) {
+            console.error(`invalid --require-status ${JSON.stringify(status)}; expected one of ${STATUS_VALUES.join(", ")}`);
             setCode(ExitCode.usage);
             return;
+          }
+        }
+
+        let result;
+        let loadedLabel = file;
+        try {
+          if (specFrom === "base") {
+            const relative = await resolveGitRelativePath(file);
+            const content = await readGitBlob(options.base, relative);
+            loadedLabel = `${options.base}:${relative}`;
+            result = await validateMarkdown(content, loadedLabel);
+          } else {
+            result = await validateFile(file);
           }
         } catch (error) {
           const message = error instanceof Error ? error.message : String(error);
@@ -225,17 +237,76 @@ export function createProgram(setCode: (code: number) => void): Command {
           return;
         }
 
-        const report = gateDiff(spec, changed);
-        report.base = options.base;
+        if (!result.spec || result.diagnostics.some((item) => item.severity === "error")) {
+          if (!global.quiet) {
+            if (global.format === "github") for (const diagnostic of result.diagnostics) console.log(formatGitHubDiagnostic(diagnostic));
+            else console.error(formatDiagnostics(result.diagnostics));
+          }
+          setCode(validationCode(result.diagnostics, global.strict));
+          return;
+        }
+        const spec = normalize(result.spec);
+        const specDigest = digest(spec);
+
+        let changed;
+        let baseSha: string | undefined;
+        let headSha: string | undefined;
+        try {
+          if (options.changed.length > 0) {
+            changed = changedFromPathList(options.changed, options.changeKind as ChangeKind);
+          } else if (options.base) {
+            changed = await collectGitDiff({ base: options.base, head: options.head });
+            baseSha = await resolveCommitSha(options.base);
+            headSha = await resolveCommitSha(options.head);
+          } else {
+            console.error("gate requires --base <ref> or one or more --changed <path>");
+            setCode(ExitCode.usage);
+            return;
+          }
+        } catch (error) {
+          const message = error instanceof Error ? error.message : String(error);
+          const diagnostic = { code: Codes.gateDiff, severity: "error" as const, message, file: loadedLabel };
+          if (!global.quiet) {
+            if (global.format === "github") console.log(formatGitHubDiagnostic(diagnostic));
+            else console.error(formatDiagnostics([diagnostic]));
+          }
+          setCode(ExitCode.io);
+          return;
+        }
+
+        const report = gateDiff(spec, changed, {
+          ...(options.base !== undefined ? { base: options.base as string } : {}),
+          ...(options.head !== undefined ? { head: options.head as string } : {}),
+          ...(baseSha !== undefined ? { baseSha } : {}),
+          ...(headSha !== undefined ? { headSha } : {}),
+          specDigest,
+          specSource: specFrom,
+          ...(requireStatus.length > 0 ? { requireStatus: requireStatus as Status[] } : {}),
+        });
+        const failed =
+          !report.valid ||
+          (global.strict && report.diagnostics.some((item) => item.severity === "warning"));
         const text = [
-          `${report.valid ? "gate: pass" : "gate: fail"} — ${report.specId ?? file}`,
-          `changed: ${report.changed.length}, allowed: ${report.allowed.length}, violations: ${report.violations.length}`,
+          `${failed ? "gate: fail" : "gate: pass"} — ${report.specId ?? loadedLabel}`,
+          `source: ${report.specSource ?? "workspace"}${report.specDigest ? ` digest=${report.specDigest}` : ""}`,
+          report.baseSha || report.headSha
+            ? `commits: base=${report.baseSha ?? "n/a"} head=${report.headSha ?? "n/a"}`
+            : undefined,
+          `changed: ${report.changed.length}, allowed: ${report.allowed.length}, violations: ${report.violations.length}${report.changedDigest ? `, changedDigest=${report.changedDigest}` : ""}`,
           ...report.violations.map((item) => `x ${item.message}`),
-        ].join("\n");
+        ]
+          .filter(Boolean)
+          .join("\n");
         const markdown = [
           `## EngineeringSpec gate`,
           "",
-          report.valid ? `✅ Pass — \`${report.specId ?? file}\`` : `❌ Fail — \`${report.specId ?? file}\``,
+          failed ? `❌ Fail — \`${report.specId ?? loadedLabel}\`` : `✅ Pass — \`${report.specId ?? loadedLabel}\``,
+          "",
+          `- Spec source: \`${report.specSource ?? "workspace"}\``,
+          report.specDigest ? `- Spec digest: \`${report.specDigest}\`` : undefined,
+          report.baseSha ? `- Base: \`${report.baseSha}\`` : undefined,
+          report.headSha ? `- Head: \`${report.headSha}\`` : undefined,
+          report.changedDigest ? `- Changed digest: \`${report.changedDigest}\`` : undefined,
           "",
           `| Changed | Allowed | Violations |`,
           `|---:|---:|---:|`,
@@ -243,18 +314,20 @@ export function createProgram(setCode: (code: number) => void): Command {
           ...(report.violations.length
             ? ["", "### Violations", ...report.violations.map((item) => `- \`${item.file}\`: ${item.message}`)]
             : []),
-        ].join("\n");
+        ]
+          .filter((line) => line !== undefined)
+          .join("\n");
 
         if (!global.quiet) {
           if (global.format === "json") output(report, "json");
           else if (global.format === "github") {
             for (const diagnostic of report.diagnostics) console.log(formatGitHubDiagnostic(diagnostic));
-            console.log(`::${report.valid ? "notice" : "error"} title=EngineeringSpec gate::${report.violations.length} violation(s)`);
+            console.log(`::${failed ? "error" : "notice"} title=EngineeringSpec gate::${report.violations.length} violation(s)`);
             if (process.env.GITHUB_STEP_SUMMARY) await appendFile(process.env.GITHUB_STEP_SUMMARY, `${markdown}\n`, "utf8");
           } else if (global.format === "markdown") output(markdown, "text");
           else output(text, "text");
         }
-        setCode(report.valid ? ExitCode.success : ExitCode.validation);
+        setCode(failed ? ExitCode.validation : ExitCode.success);
       } catch (error) {
         console.error(error instanceof Error ? error.message : String(error));
         setCode(ExitCode.io);
