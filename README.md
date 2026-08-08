@@ -133,9 +133,12 @@ Use [AGENTS.md](AGENTS.md) as the shared workflow for Codex and other compatible
 Bootstrap an existing repository without overwriting its agent files by default:
 
 ```sh
-npx @engineeringspec/cli@next adopt . \
-  --spec docs/engineering-specs/ES-my-change.engineering-spec.md
+npx --yes @engineeringspec/cli@0.1.0-rc.3 adopt . \
+  --spec docs/engineering-specs/ES-my-change.engineering-spec.md \
+  --merge --dry-run
 ```
+
+`adopt` detects the default branch from `origin/HEAD` (falling back to `origin/main`); override it with `--base`. Review the dry-run, then rerun without `--dry-run`. Generated agent commands pin the current CLI version, context is loaded from the approved base, and generated enforcing CI requires an `approved` contract. Merge mode updates AGENTS.md and the Claude import without replacing existing content; existing structured Cursor and workflow files are skipped for manual integration.
 
 The portable [EngineeringSpec skill](skills/engineering-spec/SKILL.md) is the primary integration for skill-aware agents. The generated AGENTS.md, Claude import, and Cursor rule cover file-instruction agents without putting vendor behavior in the format. A plugin or MCP server is not required for the core workflow; add thin adapters only when real usage shows discovery or transport friction.
 

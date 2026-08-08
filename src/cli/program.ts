@@ -227,7 +227,9 @@ export function createProgram(setCode: (code: number) => void): Command {
     .description("Safely scaffold neutral agent and CI integration files")
     .argument("[directory]", "repository directory", ".")
     .requiredOption("--spec <path>", "repository-relative EngineeringSpec path")
+    .option("--base <ref>", "approved base ref (auto-detects origin/HEAD; falls back to origin/main)")
     .option("--force", "overwrite existing integration files")
+    .option("--merge", "merge agent instructions into existing text files; structured files are skipped")
     .option("--dry-run", "report files without writing them")
     .action(async (directory, options, command) => {
       try {
@@ -235,7 +237,9 @@ export function createProgram(setCode: (code: number) => void): Command {
         const result = await adoptRepository({
           root: directory,
           specPath: options.spec,
+          baseRef: options.base,
           force: Boolean(options.force),
+          merge: Boolean(options.merge),
           dryRun: Boolean(options.dryRun),
         });
         if (!global.quiet) output(result, global.format);
