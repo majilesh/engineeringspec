@@ -69,8 +69,7 @@ Add and harden `engineeringspec gate` so CI can reject changes outside declared 
 - id: TARGET-validator
   component: validator
   paths:
-    - src/validator/validateFile.ts
-    - src/validator/validateSemantics.ts
+    - src/validator/**
     - src/parser/**
     - src/query/**
     - src/normalizer/**
