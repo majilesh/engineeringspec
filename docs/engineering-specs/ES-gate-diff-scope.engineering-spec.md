@@ -76,6 +76,7 @@ Add and harden `engineeringspec gate` so CI can reject changes outside declared 
     - src/normalizer/**
     - test/unit/core.test.ts
     - test/unit/canonicalize.test.ts
+    - test/conformance/**
     - schemas/**
     - conformance/**
   change_policy: modify
