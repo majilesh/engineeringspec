@@ -1,7 +1,7 @@
 ---
 spec_format: engineering-spec
 spec_format_version: "0.1"
-spec_revision: 5
+spec_revision: 6
 id: ES-gate-diff-scope
 title: Fail-closed diff gate against declared targets
 status: proposed
@@ -13,7 +13,7 @@ repository:
 
 # Fail-closed diff gate against declared targets
 
-Add and harden `engineeringspec gate` so CI can reject changes outside declared `TARGET-*` paths and change policies. Validation remains inert; the gate is a separate trust boundary over git diffs. Trust hardening, adopter ops, adversarial tests, kind-complete enforcement/runners, and honest `interface_only` labeling.
+Add and harden `engineeringspec gate` so CI can reject changes outside declared `TARGET-*` paths and change policies. Validation remains inert; the gate is a separate trust boundary over git diffs. Includes SHA-first evaluation, restricted globs, typed refs, and durable unsigned receipts.
 
 ## Source intent
 
@@ -34,6 +34,10 @@ Add and harden `engineeringspec gate` so CI can reject changes outside declared 
   type: document
   ref: gate-quality-sprint3
   title: Adversarial tests, kind-complete enforcement, interface_only honesty
+- id: SRC-5
+  type: document
+  ref: gate-authz-sprint4
+  title: SHA-first gate, restricted globs, typed refs, durable receipts
 ```
 
 ## Target surfaces
@@ -43,14 +47,18 @@ Add and harden `engineeringspec gate` so CI can reject changes outside declared 
   component: gate
   paths:
     - src/gate/**
+    - src/path/**
     - test/unit/gate.test.ts
     - test/unit/gate.adversarial.test.ts
+    - test/unit/targetGlob.test.ts
+    - test/unit/receipt.test.ts
   change_policy: modify
 - id: TARGET-validator
   component: validator
   paths:
     - src/validator/validateFile.ts
     - src/validator/validateSemantics.ts
+    - src/query/applicability.ts
     - test/unit/core.test.ts
     - schemas/**
     - conformance/**
@@ -59,9 +67,11 @@ Add and harden `engineeringspec gate` so CI can reject changes outside declared 
   component: cli-and-exports
   paths:
     - src/cli/program.ts
+    - src/cli/version.ts
     - src/diagnostics/codes.ts
     - src/index.ts
     - test/integration/cli.test.ts
+    - test/unit/version.test.ts
     - vitest.config.ts
     - package.json
   change_policy: modify
@@ -128,13 +138,28 @@ Add and harden `engineeringspec gate` so CI can reject changes outside declared 
   statement: Docs and gate diagnostics must treat interface_only as a path-writable label (ESG006), not content-level interface enforcement.
   applies_to: [TARGET-gate, TARGET-ci-docs]
   enforcement: { kind: test, verifier_ref: VER-1 }
+- id: CON-10
+  level: must
+  statement: Gate must resolve immutable base/head SHAs once before loading the contract and collecting the diff.
+  applies_to: [TARGET-gate, TARGET-cli]
+  enforcement: { kind: test, verifier_ref: VER-1 }
+- id: CON-11
+  level: must
+  statement: Target globs must use the restricted EngineeringSpec dialect (ESPTH002); references must be typed (ESR008).
+  applies_to: [TARGET-validator, TARGET-gate]
+  enforcement: { kind: test, verifier_ref: VER-1 }
+- id: CON-12
+  level: must
+  statement: Gate must be able to write a durable unsigned gate-receipt.json binding digest and SHAs.
+  applies_to: [TARGET-gate, TARGET-cli]
+  enforcement: { kind: test, verifier_ref: VER-1 }
 ```
 
 ## Verification
 
 ```engineering-verification
 - id: VER-1
-  proves: [CON-1, CON-2, CON-3, CON-4, CON-5, CON-6, CON-8, CON-9]
+  proves: [CON-1, CON-2, CON-3, CON-4, CON-5, CON-6, CON-8, CON-9, CON-10, CON-11, CON-12]
   kind: test
   runner:
     type: command
@@ -156,5 +181,6 @@ strategy: none
 observability:
   - CI gate smoke (pass + intentional fail)
   - adversarial unit tests for policy composition and -z parsing
-  - conformance fixtures for incomplete enforcement/runners
+  - conformance fixtures for incomplete enforcement/runners, globs, typed refs
+  - optional --receipt artifact in CI
 ```

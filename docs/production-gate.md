@@ -63,9 +63,11 @@ Continue running your repository’s normal tests, schema diffs, security scans,
 ```sh
 npx @engineeringspec/cli@next gate docs/engineering-specs/ES-my-change.engineering-spec.md \
   --base origin/main \
-  --spec-from base \
-  --require-status approved
+  --require-status approved \
+  --receipt gate-receipt.json
 ```
+
+With `--base` set, the CLI defaults to `--spec-from base` and resolves immutable SHAs before loading the contract and collecting the diff. Upload `gate-receipt.json` as a CI artifact (unsigned; not an attestation).
 
 ## Release / npm
 

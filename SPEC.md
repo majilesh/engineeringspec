@@ -44,6 +44,10 @@ Source references identify originating intent without copying it. Every source r
 
 Target surfaces declare repositories, components, and relative paths or globs governed by a change policy. Policies are `modify`, `create`, `delete`, `read_only`, `interface_only`, and `observe`. Identical target paths with conflicting policies are invalid. Nested or overlapping globs with incompatible writable vs `read_only`/`observe` policies SHOULD warn; reference tooling gates MUST apply deny-overrides (any matching `read_only`/`observe` target blocks the path).
 
+Target path patterns use a **restricted EngineeringSpec glob dialect** for authorization interoperability: literal path segments plus `*`, `**`, and `?` only. Leading `!` / `#`, extglob parentheses, brace expansion, and character classes are invalid (`ESPTH002`). Independent implementations MUST interpret this dialect identically; they MUST NOT silently adopt host-library extras.
+
+Among non-forbidden matching targets, the reference gate uses **any-writable-allow** composition: if any matching writable policy permits the Git change kind, the path is allowed. Narrower writable policies such as `create` do not automatically intersect broader `modify` matches. Documents SHOULD avoid overlapping writable policies with incompatible intents.
+
 `interface_only` is a **path-writable label** meaning “intended for interface-surface edits.” Reference tooling MUST NOT treat it as AST/API/ABI enforcement unless a separate adapter (for example OpenAPI or schema diff) is declared and run outside the path gate. The reference gate permits path writes under `interface_only` and emits warning `ESG006`.
 
 Decisions record load-bearing choices and rationale. They are explanatory unless referenced by a contract, constraint, or verification obligation.
@@ -60,7 +64,7 @@ IDs are case-sensitive, document-wide unique, and match `^[A-Z][A-Z0-9]*-[A-Za-z
 
 All local paths MUST be relative, MUST NOT be drive-qualified or absolute, and MUST NOT escape the repository root. Technical definitions are referenced through mature formats rather than embedded mini-languages.
 
-All IDs are globally unique within the document. Every target, contract, constraint, verifier, evidence, and exception reference MUST resolve. External source item identifiers resolve through their declared source reference and optional profile.
+All IDs are globally unique within the document. Every target, contract, constraint, verifier, evidence, and exception reference MUST resolve **with the correct entity type**: `applies_to` → target; test `verifier_ref` / evidence `verifier_ref` → verifier; contract enforcement `contract_ref` → contract; exception `constraint_ref` → constraint. A present ID of the wrong type is invalid (`ESR008`). External source item identifiers resolve through their declared source reference and optional profile.
 
 ## Traceability and coverage
 
@@ -114,14 +118,15 @@ Other implementations MAY provide equivalent discovery. They MUST NOT treat disc
 Comparing a repository diff to declared targets is **reference-tooling behavior**, not normative document semantics. The TypeScript reference implementation provides `engineeringspec gate`, a **diff-scope gate** (path and change-type allowlist), which:
 
 - Accepts an EngineeringSpec plus either a git `--base`/`--head` range or explicit `--changed` paths
-- May load the contract from the workspace file or from `--spec-from base` (`git show base:path`) so a PR cannot silently widen its own targets
+- Defaults `--spec-from base` when `--base` is set (Action default remains `base`); `workspace` remains available for drafting
+- Resolves base/head to immutable commit SHAs **once**, then loads the contract and collects the diff against those SHAs
 - May require `metadata.status` via `--require-status` (for example `approved`) in enforcing mode (`ESG005`)
 - Collects diffs with null-delimited `git diff -z --name-status` and rejects unknown or malformed status records (`ESG004`)
 - Treats paths matching no target as errors (`ESG001`)
 - Applies **deny-overrides**: any matching `read_only` or `observe` target rejects the path (`ESG003`), even when a broader writable target also matches
 - Enforces `change_policy` against added/modified/deleted/renamed files (`ESG002`)
 - Treats `interface_only` as a path-writable label and emits `ESG006` (not interface/AST-aware; pair with a contract adapter for real surface checks)
-- Reports optional binding metadata (spec digest, base/head SHAs, changed-file digest) without claiming signed attestation
+- May write a durable unsigned `gate-receipt.json` via `--receipt` (spec digest, SHAs, changed-set digest, result) without claiming attestation
 - MUST NOT execute verification runners or mutate the repository
 
 Other implementations MAY provide equivalent gates. Gate results are not part of canonical JSON or digests. Making the gate merge-blocking requires configuring it as a required status check or ruleset in the host forge.

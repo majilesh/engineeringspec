@@ -8,11 +8,17 @@ All notable changes to this project are documented here.
 
 - Enforcement and runner kinds are field-complete in schema + semantics (`policy`→adapter/ruleRef, `review`→reviewerRole, `reference`/`external`→reference)
 - Docs clarify `interface_only` as a path-writable label (`ESG006`), not AST/API enforcement
+- CLI `--version` reads `package.json` (no more hard-coded rc.1)
+- Gate resolves base/head SHAs once before loading the contract and collecting the diff
+- Gate defaults `--spec-from base` when `--base` is set
+- Typed reference validation (`ESR008`) for target/verifier/contract/constraint edges
+- Restricted target glob dialect (`ESPTH002`); matching uses nobrace/noext/nonegate
 
 ### Added
 
 - Adversarial gate tests (deny-overrides, hostile `-z` statuses, rename into secrets)
-- Conformance fixtures for incomplete policy/review enforcement and reference runners
+- Conformance fixtures for incomplete enforcement/runners, forbidden globs, typed-ref mismatches
+- `--receipt <path>` durable unsigned `gate-receipt.json`
 
 ## [0.1.0-rc.2] - 2026-08-08
 
