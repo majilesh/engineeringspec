@@ -72,7 +72,7 @@ npx @engineeringspec/cli@next validate docs/engineering-specs
 npx @engineeringspec/cli@next normalize ENGINEERING_SPEC.md --digest
 npx @engineeringspec/cli@next inspect ENGINEERING_SPEC.md --path src/example.ts
 npx @engineeringspec/cli@next coverage ENGINEERING_SPEC.md --fail-on uncovered
-npx @engineeringspec/cli@next gate ENGINEERING_SPEC.md --base origin/main --spec-from base
+npx @engineeringspec/cli@next gate ENGINEERING_SPEC.md --base origin/main --receipt gate-receipt.json
 ```
 
 Directory validation discovers `ENGINEERING_SPEC.md`, `*.engineering-spec.md`, and `*.engineeringspec.md` recursively. Add repository-relative glob patterns to `.engineeringspecignore` to exclude generated content or intentionally invalid fixtures.
@@ -84,7 +84,7 @@ Directory validation discovers `ENGINEERING_SPEC.md`, `*.engineering-spec.md`, a
 ```sh
 # Enforcing CI: load the approved contract from the base branch (prevents PR self-widening)
 npx @engineeringspec/cli@next gate docs/engineering-specs/ES-my-change.engineering-spec.md \
-  --base origin/main --spec-from base --require-status approved
+  --base origin/main --require-status approved --receipt gate-receipt.json
 
 # Local / CI smoke without git history
 npx @engineeringspec/cli@next gate docs/engineering-specs/ES-my-change.engineering-spec.md --changed src/api.ts

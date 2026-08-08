@@ -13,12 +13,14 @@ import { coverage } from "../query/coverage.js";
 import { collectGitDiff, changedFromPathList } from "../gate/collectDiff.js";
 import { gateDiff } from "../gate/gate.js";
 import { readGitBlob, resolveCommitSha, resolveGitRelativePath, type SpecSource } from "../gate/loadSpec.js";
+import { buildGateReceipt, writeGateReceipt } from "../gate/receipt.js";
 import type { ChangeKind } from "../gate/types.js";
 import type { Status } from "../model/types.js";
 import { Codes } from "../diagnostics/codes.js";
 import { validateMarkdown } from "../validator/validateFile.js";
 import { ExitCode } from "./exitCodes.js";
 import { template, type TemplateName } from "./templates.js";
+import { packageVersion } from "./version.js";
 
 const STATUS_VALUES = ["draft", "proposed", "approved", "implemented", "superseded", "rejected"] as const;
 
@@ -66,7 +68,7 @@ export function createProgram(setCode: (code: number) => void): Command {
   const program = new Command()
     .name("engineeringspec")
     .description("Validate and inspect versioned engineering change contracts")
-    .version("0.1.0-rc.1")
+    .version(packageVersion())
     .addOption(formatOption)
     .addOption(new Option("--quiet", "suppress non-essential output"))
     .option("--strict", "treat warnings as failures");
@@ -192,15 +194,22 @@ export function createProgram(setCode: (code: number) => void): Command {
     .argument("<file>", "EngineeringSpec file path (workspace path; content may load from --spec-from)")
     .option("--base <ref>", "git base ref for diff (e.g. origin/main)")
     .option("--head <ref>", "git head ref", "HEAD")
-    .addOption(new Option("--spec-from <source>", "load contract from workspace file or git base ref").choices(["workspace", "base"]).default("workspace"))
+    .addOption(new Option("--spec-from <source>", "load contract from workspace file or git base SHA (default: base when --base is set)").choices(["workspace", "base"]))
     .option("--require-status <status>", "require metadata.status (repeatable)", (value, previous: string[] = []) => previous.concat(value), [])
     .option("--changed <path>", "explicit changed path (repeatable; skips git)", (value, previous: string[] = []) => previous.concat(value), [])
     .addOption(new Option("--change-kind <kind>", "kind for --changed paths").choices(["added", "modified", "deleted", "renamed"]).default("modified"))
+    .option("--receipt <path>", "write durable gate-receipt.json to this path")
     .addOption(new Option("--format <format>", "output format").choices(["text", "json", "github", "markdown"]))
     .action(async (file, options, command) => {
       try {
         const global = command.optsWithGlobals() as GlobalOptions;
-        const specFrom = options.specFrom as SpecSource;
+        const specFromSource = command.getOptionValueSource("specFrom");
+        const specFrom: SpecSource =
+          specFromSource === "cli"
+            ? (options.specFrom as SpecSource)
+            : options.base
+              ? "base"
+              : "workspace";
         if (specFrom === "base" && !options.base) {
           console.error("gate --spec-from base requires --base <ref>");
           setCode(ExitCode.usage);
@@ -215,13 +224,31 @@ export function createProgram(setCode: (code: number) => void): Command {
           }
         }
 
+        let baseSha: string | undefined;
+        let headSha: string | undefined;
+        if (options.base) {
+          try {
+            baseSha = await resolveCommitSha(options.base);
+            headSha = await resolveCommitSha(options.head);
+          } catch (error) {
+            const message = error instanceof Error ? error.message : String(error);
+            const diagnostic = { code: Codes.gateDiff, severity: "error" as const, message, file };
+            if (!global.quiet) {
+              if (global.format === "github") console.log(formatGitHubDiagnostic(diagnostic));
+              else console.error(formatDiagnostics([diagnostic]));
+            }
+            setCode(ExitCode.io);
+            return;
+          }
+        }
+
         let result;
         let loadedLabel = file;
         try {
           if (specFrom === "base") {
             const relative = await resolveGitRelativePath(file);
-            const content = await readGitBlob(options.base, relative);
-            loadedLabel = `${options.base}:${relative}`;
+            const content = await readGitBlob(baseSha!, relative);
+            loadedLabel = `${baseSha}:${relative}`;
             result = await validateMarkdown(content, loadedLabel);
           } else {
             result = await validateFile(file);
@@ -249,15 +276,11 @@ export function createProgram(setCode: (code: number) => void): Command {
         const specDigest = digest(spec);
 
         let changed;
-        let baseSha: string | undefined;
-        let headSha: string | undefined;
         try {
           if (options.changed.length > 0) {
             changed = changedFromPathList(options.changed, options.changeKind as ChangeKind);
-          } else if (options.base) {
-            changed = await collectGitDiff({ base: options.base, head: options.head });
-            baseSha = await resolveCommitSha(options.base);
-            headSha = await resolveCommitSha(options.head);
+          } else if (baseSha && headSha) {
+            changed = await collectGitDiff({ base: baseSha, head: headSha });
           } else {
             console.error("gate requires --base <ref> or one or more --changed <path>");
             setCode(ExitCode.usage);
@@ -286,6 +309,10 @@ export function createProgram(setCode: (code: number) => void): Command {
         const failed =
           !report.valid ||
           (global.strict && report.diagnostics.some((item) => item.severity === "warning"));
+        const receipt = buildGateReceipt(report, { toolVersion: packageVersion() });
+        if (options.receipt) {
+          await writeGateReceipt(options.receipt as string, receipt);
+        }
         const text = [
           `${failed ? "gate: fail" : "gate: pass"} — ${report.specId ?? loadedLabel}`,
           `source: ${report.specSource ?? "workspace"}${report.specDigest ? ` digest=${report.specDigest}` : ""}`,
@@ -293,6 +320,7 @@ export function createProgram(setCode: (code: number) => void): Command {
             ? `commits: base=${report.baseSha ?? "n/a"} head=${report.headSha ?? "n/a"}`
             : undefined,
           `changed: ${report.changed.length}, allowed: ${report.allowed.length}, violations: ${report.violations.length}${report.changedDigest ? `, changedDigest=${report.changedDigest}` : ""}`,
+          options.receipt ? `receipt: ${options.receipt}` : undefined,
           ...report.violations.map((item) => `x ${item.message}`),
         ]
           .filter(Boolean)
@@ -307,6 +335,7 @@ export function createProgram(setCode: (code: number) => void): Command {
           report.baseSha ? `- Base: \`${report.baseSha}\`` : undefined,
           report.headSha ? `- Head: \`${report.headSha}\`` : undefined,
           report.changedDigest ? `- Changed digest: \`${report.changedDigest}\`` : undefined,
+          options.receipt ? `- Receipt: \`${options.receipt}\`` : undefined,
           "",
           `| Changed | Allowed | Violations |`,
           `|---:|---:|---:|`,
@@ -319,7 +348,7 @@ export function createProgram(setCode: (code: number) => void): Command {
           .join("\n");
 
         if (!global.quiet) {
-          if (global.format === "json") output(report, "json");
+          if (global.format === "json") output({ report, receipt }, "json");
           else if (global.format === "github") {
             for (const diagnostic of report.diagnostics) console.log(formatGitHubDiagnostic(diagnostic));
             console.log(`::${failed ? "error" : "notice"} title=EngineeringSpec gate::${report.violations.length} violation(s)`);

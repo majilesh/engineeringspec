@@ -56,4 +56,12 @@ describe("validation and queries",()=>{
     value.verification=[{id:"VER-1",proves:["CON-1"],kind:"test",runner:{type:"reference"}}];
     expect(validateSemantics(value).some(d=>d.code==="ESS001"&&d.message.includes("reference"))).toBe(true);
   });
+  it("rejects wrong-typed references and forbidden globs",()=>{
+    const value=parseMarkdown(spec()).spec!;
+    value.constraints![0]!.appliesTo=["VER-1"];
+    expect(validateSemantics(value).some(d=>d.code==="ESR008")).toBe(true);
+    value.constraints![0]!.appliesTo=["TARGET-1"];
+    value.targets[0]!.paths=["!src/**"];
+    expect(validateSemantics(value).some(d=>d.code==="ESPTH002")).toBe(true);
+  });
 });
