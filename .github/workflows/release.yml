@@ -18,9 +18,16 @@ jobs:
       - name: Verify tag matches package version
         if: startsWith(github.ref, 'refs/tags/')
         run: test "${GITHUB_REF_NAME#v}" = "$(node -p 'require("./package.json").version')"
+      # setup-node writes _authToken=${NODE_AUTH_TOKEN}; empty breaks publish with E404.
+      # With npm Trusted Publishing + id-token, OIDC is used and the value is ignored,
+      # but it must be non-empty. Optional secrets.NPM_TOKEN remains a token fallback.
       - name: Publish release candidate
         if: contains(github.ref_name, '-')
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN || 'oidc-trusted-publishing' }}
         run: npm publish --access public --tag next --provenance
       - name: Publish stable release
         if: ${{ !contains(github.ref_name, '-') }}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN || 'oidc-trusted-publishing' }}
         run: npm publish --access public --provenance
