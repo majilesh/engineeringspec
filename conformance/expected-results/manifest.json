@@ -31,6 +31,7 @@
     { "file": "invalid-semantics/typed-ref-mismatch.engineering-spec.md", "valid": false, "codes": ["ESR008"] },
     { "file": "invalid-structure/empty-proves.engineering-spec.md", "valid": false, "codes": ["ESS001"] },
     { "file": "invalid-syntax/unsafe-tag.engineering-spec.md", "valid": false, "codes": ["ESP008"] },
+    { "file": "invalid-syntax/invalid-utf8.engineering-spec.base64", "encoding": "base64", "valid": false, "codes": ["ESP010"] },
     { "file": "invalid-semantics/invalid-digest.engineering-spec.md", "valid": false, "codes": ["ESEC003"] },
     { "file": "invalid-semantics/dangling-target.engineering-spec.md", "valid": false, "codes": ["ESR003"] },
     { "file": "invalid-semantics/missing-product-item.engineering-spec.md", "valid": false, "codes": ["ESPR004"] },

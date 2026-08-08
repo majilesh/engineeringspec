@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
+import { execFile } from "node:child_process";
+import { mkdir, mkdtemp, rename, unlink, writeFile } from "node:fs/promises";
+import os from "node:os";
+import path from "node:path";
+import { promisify } from "node:util";
 import {
+  collectGitStagedDiff,
+  collectGitWorktreeDiff,
   parseNameStatus,
   parseNameStatusZ,
   normalizeRepoPath,
@@ -8,6 +15,12 @@ import {
 } from "../../src/gate/collectDiff.js";
 import { gateDiff } from "../../src/gate/gate.js";
 import type { EngineeringSpec } from "../../src/model/types.js";
+
+const execFileAsync = promisify(execFile);
+
+async function git(cwd: string, args: string[]): Promise<void> {
+  await execFileAsync("git", args, { cwd });
+}
 
 function spec(targets: EngineeringSpec["targets"], status: EngineeringSpec["metadata"]["status"] = "draft"): EngineeringSpec {
   return {
@@ -61,6 +74,37 @@ describe("gate collectDiff", () => {
   it("normalizes paths", () => {
     expect(normalizeRepoPath(".\\src\\x.ts")).toBe("src/x.ts");
     expect(changedFromPathList(["./a.ts"])[0]?.path).toBe("a.ts");
+  });
+
+  it("collects complete worktree state and staged-only state", async () => {
+    const cwd = await mkdtemp(path.join(os.tmpdir(), "es-worktree-"));
+    await git(cwd, ["init"]);
+    await git(cwd, ["config", "user.email", "test@example.com"]);
+    await git(cwd, ["config", "user.name", "EngineeringSpec Test"]);
+    await mkdir(path.join(cwd, "src"));
+    await writeFile(path.join(cwd, "src", "modified.ts"), "one\n");
+    await writeFile(path.join(cwd, "src", "deleted.ts"), "delete\n");
+    await writeFile(path.join(cwd, "src", "renamed.ts"), "rename\n");
+    await git(cwd, ["add", "."]);
+    await git(cwd, ["commit", "-m", "base"]);
+
+    await writeFile(path.join(cwd, "src", "modified.ts"), "two\n");
+    await unlink(path.join(cwd, "src", "deleted.ts"));
+    await rename(path.join(cwd, "src", "renamed.ts"), path.join(cwd, "src", "moved.ts"));
+    await writeFile(path.join(cwd, "src", "untracked.ts"), "new\n");
+
+    const worktree = await collectGitWorktreeDiff({ cwd });
+    expect(worktree).toEqual(expect.arrayContaining([
+      { path: "src/modified.ts", kind: "modified" },
+      { path: "src/deleted.ts", kind: "deleted" },
+      { path: "src/moved.ts", kind: "renamed", fromPath: "src/renamed.ts" },
+      { path: "src/untracked.ts", kind: "added" },
+    ]));
+
+    await git(cwd, ["add", "src/untracked.ts"]);
+    const staged = await collectGitStagedDiff({ cwd });
+    expect(staged).toContainEqual({ path: "src/untracked.ts", kind: "added" });
+    expect(staged).not.toContainEqual({ path: "src/modified.ts", kind: "modified" });
   });
 });
 

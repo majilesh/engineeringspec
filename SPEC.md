@@ -86,7 +86,7 @@ The optional `{name: productspec, version: "0.1"}` profile resolves local Produc
 
 ## Canonicalization and compatibility
 
-Authoring snake_case keys map to camelCase. Conflicting snake_case and camelCase spellings of the same key in one object are invalid (`ESP009`) and MUST NOT silently prefer one spelling. Canonical JSON sorts object keys, preserves array order, normalizes prose line endings, adds defined safety defaults, excludes source locations unless requested, and never adds timestamps. SHA-256 digests cover canonical JSON bytes.
+Authoring snake_case keys map to camelCase. Conflicting snake_case and camelCase spellings of the same key in one object are invalid (`ESP009`) and MUST NOT silently prefer one spelling. Input that is not valid UTF-8 is invalid (`ESP010`). Each stable diagnostic code identifies one condition. Canonical JSON sorts object keys, preserves array order, normalizes prose line endings, adds defined safety defaults, excludes source locations unless requested, and never adds timestamps. SHA-256 digests cover canonical JSON bytes.
 
 Before 1.0, patches fix implementations, minors add compatible fields or behavior, and breaking draft changes are prominent. Unsupported format versions are rejected; package versions never act as document revisions.
 
@@ -129,5 +129,7 @@ Comparing a repository diff to declared targets is **reference-tooling behavior*
 - May write a durable unsigned `gate-receipt.json` via `--receipt` (spec digest, SHAs, changed-set digest, result) without claiming attestation
 - Under `--strict`, MUST fail when the loaded contract has validation warnings (not only gate-produced warnings)
 - MUST NOT execute verification runners or mutate the repository
+
+The reference CLI also provides read-only agent helpers: `check` gates the complete working state and reports declared coverage, `context` selects obligations relevant to changed paths, and `explain` reports why a path is allowed or denied. Each command loads the contract from the approved base by default when `--base` is supplied. Agent context omits verifier runner payloads. Contract widening and its dependent implementation therefore require separate changes; an implementation MUST NOT authorize itself from a widened workspace contract.
 
 Other implementations MAY provide equivalent gates. Gate results are not part of canonical JSON or digests. Making the gate merge-blocking requires configuring it as a required status check or ruleset in the host forge.

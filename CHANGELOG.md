@@ -8,11 +8,11 @@ All notable changes to this project are documented here.
 
 - `gate --strict` fails on validation warnings from the loaded contract (not only gate-produced warnings)
 - Coverage treats `policy` / `review` enforcement as declared coverage; advisory `should_not` excluded like `should`
-- Docs: mid-task `gate` self-check in AGENTS.md / agent integration / Cursor rule
+- Agent workflow docs use the complete-working-state `check` self-check in AGENTS.md / agent integration / Cursor rule
 - Canonical JSON key order uses Unicode code-point comparison (not `localeCompare` or UTF-16 code-unit `<`)
 - Target globs reject `..` segments and backslashes in addition to negation/extglob/braces/classes (`ESPTH002`)
 - `inspect` fully validates by default (`--parse-only` for debugging); `coverage` refuses invalid specs before reporting
-- Docs Action pin bumped to `4110e47…` (credibility cluster + code-point canonicalization tip); CI dogfoods `--spec-from base` (workspace only when evolving the dogfood contract) and supports `merge_group`
+- Docs Action pin bumped to `4110e47…` (credibility cluster + code-point canonicalization tip); CI always enforces `--spec-from base`, requires two-phase contract evolution, and supports `merge_group`
 - Action exposes `gate-receipt` input
 - Gate resolves base/head SHAs once before loading the contract and collecting the diff
 - Gate defaults `--spec-from base` when `--base` is set
@@ -25,6 +25,11 @@ All notable changes to this project are documented here.
 ### Added
 
 - `ESP009` — reject conflicting snake_case/camelCase key spellings (fail closed)
+- `ESP010` — reject invalid UTF-8 without reusing the key-collision diagnostic
+- Worktree-aware `gate --worktree` / `--staged` collection, including committed, staged, unstaged, deleted, renamed, and untracked paths
+- Read-only, base-pinnable `check`, `context`, and `explain` agent workflows; agent context omits runner command payloads
+- Safe `adopt` scaffolding for AGENTS.md, Claude, Cursor, and merge-queue-aware GitHub CI
+- Portable `skills/engineering-spec` Agent Skill and paired agent-impact benchmark format/summarizer
 - Mixed-case key ordering unit coverage for canonicalization
 - Adversarial gate tests; `--receipt` durable unsigned `gate-receipt.json`
 - Conformance fixtures for incomplete enforcement/runners, forbidden/parent-segment globs, typed-ref mismatches

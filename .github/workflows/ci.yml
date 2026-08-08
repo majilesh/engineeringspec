@@ -98,13 +98,9 @@ jobs:
             echo "GATE=0" >> "$GITHUB_ENV"
             echo "Skipping ES-gate-diff-scope Action gate (PR does not touch gated paths)."
           fi
-          # Dogfood base unless this change evolves the dogfood contract itself.
-          if git diff --name-only "$base"...HEAD | grep -q 'docs/engineering-specs/ES-gate-diff-scope\.engineering-spec\.md'; then
-            echo "GATE_SPEC_FROM=workspace" >> "$GITHUB_ENV"
-            echo "Contract evolution PR: using gate-spec-from=workspace for this run."
-          else
-            echo "GATE_SPEC_FROM=base" >> "$GITHUB_ENV"
-          fi
+          # The approved base contract remains authoritative, including when this PR edits it.
+          # Widen targets in a contract-only PR, merge it, then implement against that new base.
+          echo "GATE_SPEC_FROM=base" >> "$GITHUB_ENV"
       - name: Run Action gate
         if: (github.event_name == 'pull_request' || github.event_name == 'merge_group') && env.GATE == '1'
         uses: ./
