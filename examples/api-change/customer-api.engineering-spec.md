@@ -18,6 +18,7 @@ owners: [{ team: customer-platform }]
 - id: TARGET-1
   paths: [src/api/customers/**]
   change_policy: interface_only
+  notes: Path-writable label only; CONTRACT-1 OpenAPI compatibility is the real interface check. Gate emits ESG006.
 ```
 
 ```engineering-contracts
