@@ -1,7 +1,7 @@
 ---
 spec_format: engineering-spec
 spec_format_version: "0.1"
-spec_revision: 9
+spec_revision: 10
 id: ES-gate-diff-scope
 title: Fail-closed diff gate against declared targets
 status: proposed
@@ -50,6 +50,10 @@ Add and harden `engineeringspec gate` so CI can reject changes outside declared 
   type: document
   ref: agent-first-roadmap
   title: Worktree-aware agent checks, protected contract evolution, portable skill, and agent benchmark
+- id: SRC-9
+  type: document
+  ref: rc3-release-preparation
+  title: Keep package metadata and immutable adopter pins releasable under the base contract
 ```
 
 ## Target surfaces
@@ -89,6 +93,7 @@ Add and harden `engineeringspec gate` so CI can reject changes outside declared 
     - test/unit/version.test.ts
     - vitest.config.ts
     - package.json
+    - package-lock.json
   change_policy: modify
 - id: TARGET-ci-docs
   component: adoption-surface
