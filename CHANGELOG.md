@@ -6,7 +6,7 @@ All notable changes to this project are documented here.
 
 ### Changed
 
-- Canonical JSON key order uses Unicode code-point comparison (not `localeCompare`)
+- Canonical JSON key order uses Unicode code-point comparison (not `localeCompare` or UTF-16 code-unit `<`)
 - Target globs reject `..` segments and backslashes in addition to negation/extglob/braces/classes (`ESPTH002`)
 - `inspect` fully validates by default (`--parse-only` for debugging); `coverage` refuses invalid specs before reporting
 - Docs Action pin bumped to `0f22873…` (Sprint 4 tip); CI dogfoods `--spec-from base` (workspace only when evolving the dogfood contract) and supports `merge_group`

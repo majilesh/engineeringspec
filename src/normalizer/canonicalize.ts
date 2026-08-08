@@ -1,7 +1,16 @@
-/** Unicode code-point order (not locale collation) for deterministic canonical JSON. */
+/** Unicode code-point order (not locale collation, not UTF-16 code-unit order). */
 export function compareCodePoints(a: string, b: string): number {
-  if (a === b) return 0;
-  return a < b ? -1 : 1;
+  let i = 0;
+  let j = 0;
+  while (i < a.length && j < b.length) {
+    const ca = a.codePointAt(i)!;
+    const cb = b.codePointAt(j)!;
+    if (ca !== cb) return ca < cb ? -1 : 1;
+    i += ca > 0xffff ? 2 : 1;
+    j += cb > 0xffff ? 2 : 1;
+  }
+  if (i === a.length && j === b.length) return 0;
+  return i === a.length ? -1 : 1;
 }
 
 export function canonicalize(value: unknown): unknown {
