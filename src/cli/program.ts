@@ -294,7 +294,11 @@ export function createProgram(setCode: (code: number) => void): Command {
           return;
         }
 
-        if (!result.spec || result.diagnostics.some((item) => item.severity === "error")) {
+        const loadFailed =
+          !result.spec ||
+          result.diagnostics.some((item) => item.severity === "error") ||
+          (global.strict && result.diagnostics.some((item) => item.severity === "warning"));
+        if (loadFailed) {
           if (!global.quiet) {
             if (global.format === "github") for (const diagnostic of result.diagnostics) console.log(formatGitHubDiagnostic(diagnostic));
             else console.error(formatDiagnostics(result.diagnostics));
@@ -302,7 +306,7 @@ export function createProgram(setCode: (code: number) => void): Command {
           setCode(validationCode(result.diagnostics, global.strict));
           return;
         }
-        const spec = normalize(result.spec);
+        const spec = normalize(result.spec!);
         const specDigest = digest(spec);
 
         let changed;
@@ -336,6 +340,7 @@ export function createProgram(setCode: (code: number) => void): Command {
           specSource: specFrom,
           ...(requireStatus.length > 0 ? { requireStatus: requireStatus as Status[] } : {}),
         });
+        // Load-time validation warnings already failed closed under --strict above.
         const failed =
           !report.valid ||
           (global.strict && report.diagnostics.some((item) => item.severity === "warning"));

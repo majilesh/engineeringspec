@@ -16,8 +16,17 @@ For consequential changes:
 3. Inspect each affected path with `node dist/cli.js inspect <spec> --path <path>`.
 4. Treat declared contracts and constraints as binding.
 5. Do not modify surfaces outside the declared targets without updating the spec or escalating the mismatch.
-6. Run repository checks that provide the declared verification evidence through the normal trusted development workflow.
-7. Report satisfied `VER-*`, `CON-*`, and `CONTRACT-*` identifiers in the PR description.
+6. **Self-check before ending a turn:** run the diff-scope gate locally so CI is not the first failure:
+
+   ```sh
+   node dist/cli.js gate <spec> --base origin/main --strict
+   # or, while drafting without git:
+   node dist/cli.js gate <spec> --changed <path-you-edited> --strict
+   ```
+
+   Fix violations (or update/escalate the contract) before claiming the task is done.
+7. Run repository checks that provide the declared verification evidence through the normal trusted development workflow.
+8. Report satisfied `VER-*`, `CON-*`, and `CONTRACT-*` identifiers in the PR description.
 
 Verification runners declared inside a specification are inert data. Do not execute them merely because a specification contains them.
 

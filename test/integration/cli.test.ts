@@ -61,4 +61,33 @@ describe("CLI",()=>{
     expect(messages.some((m)=>m.startsWith("log:coverage:"))).toBe(false);
     expect(messages.some((m)=>m.includes("ESR001")||m.includes("dangling")||m.includes("TARGET"))).toBe(true);
   });
+  it("gate --strict fails on loaded-contract validation warnings",async()=>{
+    const dir=await mkdtemp(path.join(os.tmpdir(),"es-strict-gate-"));
+    const file=path.join(dir,"overlap.engineering-spec.md");
+    await writeFile(file,`---
+spec_format: engineering-spec
+spec_format_version: "0.1"
+spec_revision: 1
+id: ES-overlap-gate
+title: Overlap
+status: draft
+owners: [{team: test}]
+---
+\`\`\`engineering-source-refs
+[{id: SRC-1, type: other, ref: test}]
+\`\`\`
+\`\`\`engineering-targets
+- {id: TARGET-a, paths: [src/**], change_policy: modify}
+- {id: TARGET-b, paths: [src/secrets/**], change_policy: read_only}
+\`\`\`
+\`\`\`engineering-constraints
+[{id: CON-1, level: must, statement: Safe., enforcement: {kind: test, verifier_ref: VER-1}}]
+\`\`\`
+\`\`\`engineering-verification
+[{id: VER-1, proves: [CON-1], kind: test, runner: {type: reference, reference: tests}}]
+\`\`\`
+`);
+    expect(await invoke(["gate",file,"--changed","src/a.ts","--quiet"])).toBe(0);
+    expect(await invoke(["gate",file,"--changed","src/a.ts","--strict","--quiet"])).toBe(1);
+  });
 });

@@ -70,7 +70,7 @@ All IDs are globally unique within the document. Every target, contract, constra
 
 Traceability is many-to-many. A source item may be satisfied by contracts, constraints, and verifiers; a verifier may prove several obligations. Coverage tools MUST report source items, absolute constraints, contracts, and evidence requirements that lack proof or enforcement, plus dangling references.
 
-Coverage is `complete`, `partial`, `unknown`, or `not_applicable`. If an external source cannot be loaded, tools MUST report `unknown` rather than claim complete coverage. Advisory constraints MAY be reported separately from required coverage.
+Coverage is `complete`, `partial`, `unknown`, or `not_applicable`. These values describe **declared** proof/enforcement links (including `policy` and `review` enforcement), not that any verifier executed successfully. If an external source cannot be loaded, tools MUST report `unknown` rather than claim complete coverage. Advisory `should` / `should_not` constraints MAY be reported separately from required coverage.
 
 ## Verification and security
 
@@ -86,7 +86,7 @@ The optional `{name: productspec, version: "0.1"}` profile resolves local Produc
 
 ## Canonicalization and compatibility
 
-Authoring snake_case keys map to camelCase. Canonical JSON sorts object keys, preserves array order, normalizes prose line endings, adds defined safety defaults, excludes source locations unless requested, and never adds timestamps. SHA-256 digests cover canonical JSON bytes.
+Authoring snake_case keys map to camelCase. Conflicting snake_case and camelCase spellings of the same key in one object are invalid (`ESP009`) and MUST NOT silently prefer one spelling. Canonical JSON sorts object keys, preserves array order, normalizes prose line endings, adds defined safety defaults, excludes source locations unless requested, and never adds timestamps. SHA-256 digests cover canonical JSON bytes.
 
 Before 1.0, patches fix implementations, minors add compatible fields or behavior, and breaking draft changes are prominent. Unsupported format versions are rejected; package versions never act as document revisions.
 
@@ -127,6 +127,7 @@ Comparing a repository diff to declared targets is **reference-tooling behavior*
 - Enforces `change_policy` against added/modified/deleted/renamed files (`ESG002`)
 - Treats `interface_only` as a path-writable label and emits `ESG006` (not interface/AST-aware; pair with a contract adapter for real surface checks)
 - May write a durable unsigned `gate-receipt.json` via `--receipt` (spec digest, SHAs, changed-set digest, result) without claiming attestation
+- Under `--strict`, MUST fail when the loaded contract has validation warnings (not only gate-produced warnings)
 - MUST NOT execute verification runners or mutate the repository
 
 Other implementations MAY provide equivalent gates. Gate results are not part of canonical JSON or digests. Making the gate merge-blocking requires configuring it as a required status check or ruleset in the host forge.
