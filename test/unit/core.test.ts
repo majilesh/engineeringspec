@@ -46,4 +46,14 @@ describe("validation and queries",()=>{
     const diagnostics=validateSemantics(value);
     expect(diagnostics.some(d=>d.code==="ESR007"&&d.severity==="warning")).toBe(true);
   });
+  it("rejects incomplete enforcement and runner kinds",()=>{
+    const value=parseMarkdown(spec()).spec!;
+    value.constraints=[{id:"CON-1",level:"must",statement:"No SQL",enforcement:{kind:"policy"} as never}];
+    expect(validateSemantics(value).some(d=>d.code==="ESS001"&&d.message.includes("adapter"))).toBe(true);
+    value.constraints=[{id:"CON-1",level:"must",statement:"Review",enforcement:{kind:"review"} as never}];
+    expect(validateSemantics(value).some(d=>d.code==="ESS001"&&d.message.includes("reviewerRole"))).toBe(true);
+    value.constraints=[{id:"CON-1",level:"must",statement:"Safe",enforcement:{kind:"test",verifierRef:"VER-1"}}];
+    value.verification=[{id:"VER-1",proves:["CON-1"],kind:"test",runner:{type:"reference"}}];
+    expect(validateSemantics(value).some(d=>d.code==="ESS001"&&d.message.includes("reference"))).toBe(true);
+  });
 });

@@ -44,13 +44,15 @@ Source references identify originating intent without copying it. Every source r
 
 Target surfaces declare repositories, components, and relative paths or globs governed by a change policy. Policies are `modify`, `create`, `delete`, `read_only`, `interface_only`, and `observe`. Identical target paths with conflicting policies are invalid. Nested or overlapping globs with incompatible writable vs `read_only`/`observe` policies SHOULD warn; reference tooling gates MUST apply deny-overrides (any matching `read_only`/`observe` target blocks the path).
 
+`interface_only` is a **path-writable label** meaning “intended for interface-surface edits.” Reference tooling MUST NOT treat it as AST/API/ABI enforcement unless a separate adapter (for example OpenAPI or schema diff) is declared and run outside the path gate. The reference gate permits path writes under `interface_only` and emits warning `ESG006`.
+
 Decisions record load-bearing choices and rationale. They are explanatory unless referenced by a contract, constraint, or verification obligation.
 
 Contracts reference authoritative OpenAPI, AsyncAPI, JSON Schema, Protocol Buffers, GraphQL, migration, infrastructure, or policy artifacts. Every contract requires a path or URI. EngineeringSpec MUST NOT replace those formats with an embedded API or schema language.
 
-Constraints use the levels `must`, `must_not`, `should`, `should_not`, and `escalate`. Absolute constraints default to error severity; advisory constraints default to warning severity. Enforcement may reference a policy adapter, verifier, contract, reviewer role, or an explicit `none`. An absolute constraint without enforcement is valid but warns. An `escalate` constraint requires named exception authorities.
+Constraints use the levels `must`, `must_not`, `should`, `should_not`, and `escalate`. Absolute constraints default to error severity; advisory constraints default to warning severity. Enforcement may reference a policy adapter, verifier, contract, reviewer role, or an explicit `none`. When present, enforcement is kind-complete: `policy` requires `adapter` and `rule_ref`; `test` requires `verifier_ref`; `contract` requires `contract_ref`; `review` requires `reviewer_role`. An absolute constraint without enforcement is valid but warns. An `escalate` constraint requires named exception authorities.
 
-Verification obligations identify what they prove and how evidence is expected. `proves` is a non-empty list of recognized internal or external IDs. Supported kinds are test, static analysis, schema check, policy, performance, security, AI evaluation, human review, and runtime observation.
+Verification obligations identify what they prove and how evidence is expected. `proves` is a non-empty list of recognized internal or external IDs. Supported kinds are test, static analysis, schema check, policy, performance, security, AI evaluation, human review, and runtime observation. When a runner is present, `command` requires `argv`; `reference` and `external` require `reference`; `manual` may omit `reference`.
 
 Evidence requirements name artifacts needed for approval or implementation. Exceptions reference one existing constraint, name approvers, and may expire. An expired exception is an error for approved or implemented specs and a warning for drafts.
 
@@ -118,7 +120,7 @@ Comparing a repository diff to declared targets is **reference-tooling behavior*
 - Treats paths matching no target as errors (`ESG001`)
 - Applies **deny-overrides**: any matching `read_only` or `observe` target rejects the path (`ESG003`), even when a broader writable target also matches
 - Enforces `change_policy` against added/modified/deleted/renamed files (`ESG002`)
-- Treats `interface_only` as path-writable and emits `ESG006` (path-scoped only; not interface-aware)
+- Treats `interface_only` as a path-writable label and emits `ESG006` (not interface/AST-aware; pair with a contract adapter for real surface checks)
 - Reports optional binding metadata (spec digest, base/head SHAs, changed-file digest) without claiming signed attestation
 - MUST NOT execute verification runners or mutate the repository
 

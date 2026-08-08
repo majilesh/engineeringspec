@@ -1,7 +1,7 @@
 ---
 spec_format: engineering-spec
 spec_format_version: "0.1"
-spec_revision: 4
+spec_revision: 5
 id: ES-gate-diff-scope
 title: Fail-closed diff gate against declared targets
 status: proposed
@@ -13,7 +13,7 @@ repository:
 
 # Fail-closed diff gate against declared targets
 
-Add and harden `engineeringspec gate` so CI can reject changes outside declared `TARGET-*` paths and change policies. Validation remains inert; the gate is a separate trust boundary over git diffs. Trust hardening: deny-overrides for overlapping policies, load approved specs from the base branch, fail-closed git parsing, and optional status enforcement. Adopter ops: SHA pins, CODEOWNERS, and required status checks.
+Add and harden `engineeringspec gate` so CI can reject changes outside declared `TARGET-*` paths and change policies. Validation remains inert; the gate is a separate trust boundary over git diffs. Trust hardening, adopter ops, adversarial tests, kind-complete enforcement/runners, and honest `interface_only` labeling.
 
 ## Source intent
 
@@ -30,6 +30,10 @@ Add and harden `engineeringspec gate` so CI can reject changes outside declared 
   type: document
   ref: gate-adopter-ops-sprint2
   title: Release pins, CODEOWNERS, and required-check adoption docs
+- id: SRC-4
+  type: document
+  ref: gate-quality-sprint3
+  title: Adversarial tests, kind-complete enforcement, interface_only honesty
 ```
 
 ## Target surfaces
@@ -40,6 +44,7 @@ Add and harden `engineeringspec gate` so CI can reject changes outside declared 
   paths:
     - src/gate/**
     - test/unit/gate.test.ts
+    - test/unit/gate.adversarial.test.ts
   change_policy: modify
 - id: TARGET-validator
   component: validator
@@ -47,6 +52,8 @@ Add and harden `engineeringspec gate` so CI can reject changes outside declared 
     - src/validator/validateFile.ts
     - src/validator/validateSemantics.ts
     - test/unit/core.test.ts
+    - schemas/**
+    - conformance/**
   change_policy: modify
 - id: TARGET-cli
   component: cli-and-exports
@@ -69,7 +76,7 @@ Add and harden `engineeringspec gate` so CI can reject changes outside declared 
     - SPEC.md
     - CHANGELOG.md
     - docs/**
-    - examples/adopters/**
+    - examples/**
   change_policy: modify
 ```
 
@@ -111,13 +118,23 @@ Add and harden `engineeringspec gate` so CI can reject changes outside declared 
   statement: Adopter docs must publish an immutable Action SHA pin, CODEOWNERS example, and required-check instructions so the gate can be merge-blocking.
   applies_to: [TARGET-ci-docs]
   enforcement: { kind: review, reviewer_role: maintainer }
+- id: CON-8
+  level: must
+  statement: Enforcement and runner kinds must be field-complete (policy/review/test/contract/reference/external) so empty labels are rejected.
+  applies_to: [TARGET-validator]
+  enforcement: { kind: test, verifier_ref: VER-1 }
+- id: CON-9
+  level: must
+  statement: Docs and gate diagnostics must treat interface_only as a path-writable label (ESG006), not content-level interface enforcement.
+  applies_to: [TARGET-gate, TARGET-ci-docs]
+  enforcement: { kind: test, verifier_ref: VER-1 }
 ```
 
 ## Verification
 
 ```engineering-verification
 - id: VER-1
-  proves: [CON-1, CON-2, CON-3, CON-4, CON-5, CON-6]
+  proves: [CON-1, CON-2, CON-3, CON-4, CON-5, CON-6, CON-8, CON-9]
   kind: test
   runner:
     type: command
@@ -138,7 +155,6 @@ Add and harden `engineeringspec gate` so CI can reject changes outside declared 
 strategy: none
 observability:
   - CI gate smoke (pass + intentional fail)
-  - optional PR gate against this spec with --base origin/main and --spec-from base
-  - docs/production-gate.md SHA pin + required checks
-  - tag v0.1.0-rc.2 and npm @next after merge
+  - adversarial unit tests for policy composition and -z parsing
+  - conformance fixtures for incomplete enforcement/runners
 ```

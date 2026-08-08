@@ -79,7 +79,7 @@ Directory validation discovers `ENGINEERING_SPEC.md`, `*.engineering-spec.md`, a
 
 ## Diff-scope gate
 
-`gate` is a **diff-scope gate**: it compares a git diff (or explicit `--changed` paths) to declared targets and `change_policy` values. It does **not** prove constraints, run verifiers, or inspect file contents. Out-of-scope files, `read_only`/`observe` matches (deny-overrides), and policy mismatches fail with `ESG001`–`ESG003`. Unknown git statuses fail with `ESG004`. Optional `--require-status approved` fails drafts with `ESG005`.
+`gate` is a **diff-scope gate**: it compares a git diff (or explicit `--changed` paths) to declared targets and `change_policy` values. It does **not** prove constraints, run verifiers, or inspect file contents. Out-of-scope files, `read_only`/`observe` matches (deny-overrides), and policy mismatches fail with `ESG001`–`ESG003`. Unknown git statuses fail with `ESG004`. Optional `--require-status approved` fails drafts with `ESG005`. `interface_only` is a path-writable label (warning `ESG006`), not AST/API enforcement—pair it with an OpenAPI/schema adapter.
 
 ```sh
 # Enforcing CI: load the approved contract from the base branch (prevents PR self-widening)

@@ -2,6 +2,18 @@
 
 All notable changes to this project are documented here.
 
+## [Unreleased]
+
+### Changed
+
+- Enforcement and runner kinds are field-complete in schema + semantics (`policy`→adapter/ruleRef, `review`→reviewerRole, `reference`/`external`→reference)
+- Docs clarify `interface_only` as a path-writable label (`ESG006`), not AST/API enforcement
+
+### Added
+
+- Adversarial gate tests (deny-overrides, hostile `-z` statuses, rename into secrets)
+- Conformance fixtures for incomplete policy/review enforcement and reference runners
+
 ## [0.1.0-rc.2] - 2026-08-08
 
 ### Changed

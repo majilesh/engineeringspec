@@ -72,8 +72,17 @@ export function validateSemantics(spec:EngineeringSpec,file?:string):Diagnostic[
     for(const id of constraint.satisfies??[]) if(!recognised(id)) add({code:Codes.dangling,severity:"error",message:`Constraint ${constraint.id} satisfies unknown item ${JSON.stringify(id)}`});
     if(constraint.level==="escalate"&&!(constraint.exceptionRequires?.length)) add({code:Codes.schema,severity:"error",message:`Escalating constraint ${constraint.id} requires exceptionRequires`});
     const e=constraint.enforcement;
-    if(e?.kind==="test"&&!registry.has(e.verifierRef)) add({code:Codes.dangling,severity:"error",message:`Constraint ${constraint.id} references missing verifier ${JSON.stringify(e.verifierRef)}`});
-    if(e?.kind==="contract"&&!registry.has(e.contractRef)) add({code:Codes.dangling,severity:"error",message:`Constraint ${constraint.id} references missing contract ${JSON.stringify(e.contractRef)}`});
+    if(e?.kind==="policy") {
+      if(!e.adapter?.trim()||!e.ruleRef?.trim()) add({code:Codes.schema,severity:"error",message:`Policy enforcement on ${constraint.id} requires adapter and ruleRef`});
+    } else if(e?.kind==="test") {
+      if(!e.verifierRef?.trim()) add({code:Codes.schema,severity:"error",message:`Test enforcement on ${constraint.id} requires verifierRef`});
+      else if(!registry.has(e.verifierRef)) add({code:Codes.dangling,severity:"error",message:`Constraint ${constraint.id} references missing verifier ${JSON.stringify(e.verifierRef)}`});
+    } else if(e?.kind==="contract") {
+      if(!e.contractRef?.trim()) add({code:Codes.schema,severity:"error",message:`Contract enforcement on ${constraint.id} requires contractRef`});
+      else if(!registry.has(e.contractRef)) add({code:Codes.dangling,severity:"error",message:`Constraint ${constraint.id} references missing contract ${JSON.stringify(e.contractRef)}`});
+    } else if(e?.kind==="review") {
+      if(!e.reviewerRole?.trim()) add({code:Codes.schema,severity:"error",message:`Review enforcement on ${constraint.id} requires reviewerRole`});
+    }
     if((constraint.level==="must"||constraint.level==="must_not")&&!constraint.enforcement) add({code:Codes.traceability,severity:"warning",message:`Absolute constraint ${constraint.id} has no declared enforcement`});
     if(e?.kind==="none") add({code:Codes.traceability,severity:"warning",message:`Absolute constraint ${constraint.id} is explicitly unenforced`});
   }
@@ -83,6 +92,9 @@ export function validateSemantics(spec:EngineeringSpec,file?:string):Diagnostic[
     const rawRunner=verifier.runner as unknown as Record<string,unknown>|undefined;
     if(rawRunner&&(typeof rawRunner.command==="string"||typeof rawRunner.shell==="string"||("argv" in rawRunner&&!Array.isArray(rawRunner.argv)))) add({code:Codes.commandString,severity:"error",message:`Shell command strings are not allowed for ${verifier.id}; use argv`});
     if(verifier.runner?.type==="command"&&!verifier.runner.argv?.length) add({code:Codes.commandString,severity:"error",message:`Command verifier ${verifier.id} must declare argv as an array`});
+    if((verifier.runner?.type==="reference"||verifier.runner?.type==="external")&&!verifier.runner.reference?.trim()) {
+      add({code:Codes.schema,severity:"error",message:`${verifier.runner.type} runner on ${verifier.id} requires reference`});
+    }
     if(verifier.kind==="human_review"&&verifier.runner&&!(["manual","reference"] as string[]).includes(verifier.runner.type)) add({code:Codes.schema,severity:"error",message:`Human review verifier ${verifier.id} must use a manual or reference runner`});
     if(verifier.kind==="ai_eval"&&!verifier.definitionRef&&verifier.runner?.type!=="external") add({code:Codes.schema,severity:"error",message:`AI eval verifier ${verifier.id} requires definitionRef or an external runner`});
   }
