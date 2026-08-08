@@ -1,6 +1,6 @@
 {
   "name": "@engineeringspec/cli",
-  "version": "0.1.0-rc.1",
+  "version": "0.1.0-rc.2",
   "description": "EngineeringSpec is an open, agent-neutral format for versioned engineering change contracts.",
   "license": "MIT",
   "homepage": "https://engineeringspec.org",

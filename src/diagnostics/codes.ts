@@ -6,4 +6,5 @@ export const Codes = {
   commandString:"ESEC002", invalidDigest:"ESEC003", expiredException:"ESR006", conflict:"ESR007",
   noDocuments:"ESD001",
   gateOutOfScope:"ESG001", gatePolicy:"ESG002", gateReadOnly:"ESG003", gateDiff:"ESG004",
+  gateStatus:"ESG005", gateInterfaceOnly:"ESG006",
 } as const;

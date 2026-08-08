@@ -63,12 +63,19 @@ jobs:
             echo "expected gate to fail for out-of-scope path" >&2
             exit 1
           fi
+          if node dist/cli.js gate docs/engineering-specs/ES-gate-diff-scope.engineering-spec.md \
+            --changed src/gate/gate.ts \
+            --require-status approved \
+            --quiet; then
+            echo "expected gate to fail for draft status under --require-status approved" >&2
+            exit 1
+          fi
       - name: Gate PR diff via Action inputs
         if: github.event_name == 'pull_request'
         run: |
           git fetch origin "${{ github.base_ref }}"
           base="origin/${{ github.base_ref }}"
-          if git diff --name-only "$base"...HEAD | grep -Eq '^(src/gate/|action\.yml|docs/engineering-specs/ES-gate-diff-scope\.engineering-spec\.md$)'; then
+          if git diff --name-only "$base"...HEAD | grep -Eq '^(src/gate/|src/validator/|src/cli/|src/diagnostics/|src/index\.ts|test/unit/gate\.test\.ts|test/unit/core\.test\.ts|test/integration/cli\.test\.ts|action\.yml|README\.md|SPEC\.md|CHANGELOG\.md|ROADMAP\.md|package\.json|docs/)'; then
             echo "GATE=1" >> "$GITHUB_ENV"
             echo "GATE_BASE=$base" >> "$GITHUB_ENV"
           else
@@ -83,3 +90,5 @@ jobs:
           strict: true
           gate-spec: docs/engineering-specs/ES-gate-diff-scope.engineering-spec.md
           gate-base: ${{ env.GATE_BASE }}
+          # Contract co-evolves in this repo; adopters should prefer gate-spec-from: base.
+          gate-spec-from: workspace

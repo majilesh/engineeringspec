@@ -66,50 +66,57 @@ profiles: [{ name: productspec, version: "0.1" }]
 ## Quick start
 
 ```sh
-npx @engineeringspec/cli init --template feature --id ES-my-change
-npx @engineeringspec/cli validate ENGINEERING_SPEC.md
-npx @engineeringspec/cli validate docs/engineering-specs
-npx @engineeringspec/cli normalize ENGINEERING_SPEC.md --digest
-npx @engineeringspec/cli inspect ENGINEERING_SPEC.md --path src/example.ts
-npx @engineeringspec/cli coverage ENGINEERING_SPEC.md --fail-on uncovered
-npx @engineeringspec/cli gate ENGINEERING_SPEC.md --base origin/main
+npx @engineeringspec/cli@next init --template feature --id ES-my-change
+npx @engineeringspec/cli@next validate ENGINEERING_SPEC.md
+npx @engineeringspec/cli@next validate docs/engineering-specs
+npx @engineeringspec/cli@next normalize ENGINEERING_SPEC.md --digest
+npx @engineeringspec/cli@next inspect ENGINEERING_SPEC.md --path src/example.ts
+npx @engineeringspec/cli@next coverage ENGINEERING_SPEC.md --fail-on uncovered
+npx @engineeringspec/cli@next gate ENGINEERING_SPEC.md --base origin/main --spec-from base
 ```
 
 Directory validation discovers `ENGINEERING_SPEC.md`, `*.engineering-spec.md`, and `*.engineeringspec.md` recursively. Add repository-relative glob patterns to `.engineeringspecignore` to exclude generated content or intentionally invalid fixtures.
 
-## Diff gate (fail closed)
+## Diff-scope gate
 
-`gate` compares a git diff (or explicit `--changed` paths) to declared targets and `change_policy` values. Out-of-scope files, `read_only`/`observe` matches, and policy mismatches fail with `ESG001`–`ESG003`. The gate does not execute verification runners.
+`gate` is a **diff-scope gate**: it compares a git diff (or explicit `--changed` paths) to declared targets and `change_policy` values. It does **not** prove constraints, run verifiers, or inspect file contents. Out-of-scope files, `read_only`/`observe` matches (deny-overrides), and policy mismatches fail with `ESG001`–`ESG003`. Unknown git statuses fail with `ESG004`. Optional `--require-status approved` fails drafts with `ESG005`.
 
 ```sh
-# PR / branch vs main
-npx @engineeringspec/cli gate docs/engineering-specs/ES-my-change.engineering-spec.md --base origin/main
+# Enforcing CI: load the approved contract from the base branch (prevents PR self-widening)
+npx @engineeringspec/cli@next gate docs/engineering-specs/ES-my-change.engineering-spec.md \
+  --base origin/main --spec-from base --require-status approved
 
 # Local / CI smoke without git history
-npx @engineeringspec/cli gate docs/engineering-specs/ES-my-change.engineering-spec.md --changed src/api.ts
+npx @engineeringspec/cli@next gate docs/engineering-specs/ES-my-change.engineering-spec.md --changed src/api.ts
 ```
 
-Use one EngineeringSpec per consequential change and run `gate` on that file in CI so agents and humans cannot merge scope violations.
+Use one EngineeringSpec per consequential change, protect `docs/engineering-specs/**` with CODEOWNERS, and configure the gate job as a **required** status check so failures block merge.
 
 ## GitHub Action
+
+Pin the Action to a full commit SHA for production (mutable `@main` is only for quick trials):
 
 ```yaml
 steps:
   - uses: actions/checkout@v4
     with:
       fetch-depth: 0
-  - uses: majilesh/engineeringspec@main
+  - uses: majilesh/engineeringspec@<full-commit-sha>
     with:
       path: docs/engineering-specs
       strict: true
-      # Optional fail-closed scope check for a specific change contract:
       gate-spec: docs/engineering-specs/ES-my-change.engineering-spec.md
       gate-base: origin/main
+      gate-spec-from: base          # default; do not use workspace for enforcing CI
+      gate-require-status: approved # optional enforcing mode
 ```
 
 The action validates specs (annotations + job summary) and, when `gate-spec` is set, runs `gate` against `gate-base`…`gate-head`. It never executes declared verification runners. Use `fetch-depth: 0` so the base ref exists.
 
-> **Note:** `@engineeringspec/cli` is not on npm yet for this RC. Prefer the GitHub Action (`majilesh/engineeringspec@main`) or build from source until a release is published.
+```sh
+# CLI (npm dist-tag next)
+npx @engineeringspec/cli@next validate docs/engineering-specs
+```
 
 ## Coding agents
 

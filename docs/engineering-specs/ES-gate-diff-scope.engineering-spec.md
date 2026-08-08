@@ -1,7 +1,7 @@
 ---
 spec_format: engineering-spec
 spec_format_version: "0.1"
-spec_revision: 2
+spec_revision: 3
 id: ES-gate-diff-scope
 title: Fail-closed diff gate against declared targets
 status: proposed
@@ -13,7 +13,7 @@ repository:
 
 # Fail-closed diff gate against declared targets
 
-Add `engineeringspec gate` so CI can reject changes outside declared `TARGET-*` paths and change policies. Validation remains inert; the gate is a separate trust boundary over git diffs.
+Add and harden `engineeringspec gate` so CI can reject changes outside declared `TARGET-*` paths and change policies. Validation remains inert; the gate is a separate trust boundary over git diffs. Trust hardening: deny-overrides for overlapping policies, load approved specs from the base branch, fail-closed git parsing, and optional status enforcement.
 
 ## Source intent
 
@@ -22,6 +22,10 @@ Add `engineeringspec gate` so CI can reject changes outside declared `TARGET-*` 
   type: document
   ref: phase-a-runtime-gate
   title: Phase A gate plan (diff vs targets, PatchFlow-inspired)
+- id: SRC-2
+  type: document
+  ref: gate-trust-sprint1
+  title: Gate trust-boundary fixes (deny-wins, spec-from base, -z parsing)
 ```
 
 ## Target surfaces
@@ -33,6 +37,13 @@ Add `engineeringspec gate` so CI can reject changes outside declared `TARGET-*` 
     - src/gate/**
     - test/unit/gate.test.ts
   change_policy: modify
+- id: TARGET-validator
+  component: validator
+  paths:
+    - src/validator/validateFile.ts
+    - src/validator/validateSemantics.ts
+    - test/unit/core.test.ts
+  change_policy: modify
 - id: TARGET-cli
   component: cli-and-exports
   paths:
@@ -41,6 +52,7 @@ Add `engineeringspec gate` so CI can reject changes outside declared `TARGET-*` 
     - src/index.ts
     - test/integration/cli.test.ts
     - vitest.config.ts
+    - package.json
   change_policy: modify
 - id: TARGET-ci-docs
   component: adoption-surface
@@ -73,13 +85,28 @@ Add `engineeringspec gate` so CI can reject changes outside declared `TARGET-*` 
   statement: CI must demonstrate gate pass and fail using explicit --changed paths.
   applies_to: [TARGET-ci-docs]
   enforcement: { kind: test, verifier_ref: VER-1 }
+- id: CON-4
+  level: must
+  statement: When any matching target is read_only or observe, the gate must deny the path even if a broader writable target also matches (deny overrides allow).
+  applies_to: [TARGET-gate]
+  enforcement: { kind: test, verifier_ref: VER-1 }
+- id: CON-5
+  level: must
+  statement: Gate must support loading the contract from the git base ref (--spec-from base) so a PR cannot silently widen its own authorization.
+  applies_to: [TARGET-gate, TARGET-cli]
+  enforcement: { kind: test, verifier_ref: VER-1 }
+- id: CON-6
+  level: must
+  statement: Git diff collection must use null-delimited output and reject unknown or malformed status records (ESG004).
+  applies_to: [TARGET-gate]
+  enforcement: { kind: test, verifier_ref: VER-1 }
 ```
 
 ## Verification
 
 ```engineering-verification
 - id: VER-1
-  proves: [CON-1, CON-2, CON-3]
+  proves: [CON-1, CON-2, CON-3, CON-4, CON-5, CON-6]
   kind: test
   runner:
     type: command
@@ -94,5 +121,6 @@ Add `engineeringspec gate` so CI can reject changes outside declared `TARGET-*` 
 strategy: none
 observability:
   - CI gate smoke (pass + intentional fail)
-  - optional PR gate against this spec with --base origin/main
+  - optional PR gate against this spec with --base origin/main and --spec-from base
+  - adopters should pin the Action to a full commit SHA and require the gate check
 ```
