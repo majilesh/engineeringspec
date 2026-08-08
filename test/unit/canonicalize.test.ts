@@ -18,4 +18,15 @@ describe("canonicalize code-point ordering", () => {
     expect(once.indexOf('"A"')).toBeLessThan(once.indexOf('"B"'));
     expect(once.indexOf('"B"')).toBeLessThan(once.indexOf('"a"'));
   });
+
+  it("orders supplementary-plane keys by code point, not UTF-16 code unit", () => {
+    // U+1D54A (MATHEMATICAL DOUBLE-STRUCK CAPITAL S) > U+E000 (private use)
+    // under true code points, but JS string < puts the surrogate pair first.
+    const astral = "\u{1D54A}";
+    const bmp = "\uE000";
+    expect(astral < bmp).toBe(true);
+    expect(compareCodePoints(astral, bmp)).toBe(1);
+    const keys = Object.keys(canonicalize({ [astral]: 1, [bmp]: 1 }) as object);
+    expect(keys).toEqual([bmp, astral]);
+  });
 });
