@@ -1,7 +1,7 @@
 ---
 spec_format: engineering-spec
 spec_format_version: "0.1"
-spec_revision: 3
+spec_revision: 4
 id: ES-gate-diff-scope
 title: Fail-closed diff gate against declared targets
 status: proposed
@@ -13,7 +13,7 @@ repository:
 
 # Fail-closed diff gate against declared targets
 
-Add and harden `engineeringspec gate` so CI can reject changes outside declared `TARGET-*` paths and change policies. Validation remains inert; the gate is a separate trust boundary over git diffs. Trust hardening: deny-overrides for overlapping policies, load approved specs from the base branch, fail-closed git parsing, and optional status enforcement.
+Add and harden `engineeringspec gate` so CI can reject changes outside declared `TARGET-*` paths and change policies. Validation remains inert; the gate is a separate trust boundary over git diffs. Trust hardening: deny-overrides for overlapping policies, load approved specs from the base branch, fail-closed git parsing, and optional status enforcement. Adopter ops: SHA pins, CODEOWNERS, and required status checks.
 
 ## Source intent
 
@@ -26,6 +26,10 @@ Add and harden `engineeringspec gate` so CI can reject changes outside declared 
   type: document
   ref: gate-trust-sprint1
   title: Gate trust-boundary fixes (deny-wins, spec-from base, -z parsing)
+- id: SRC-3
+  type: document
+  ref: gate-adopter-ops-sprint2
+  title: Release pins, CODEOWNERS, and required-check adoption docs
 ```
 
 ## Target surfaces
@@ -59,11 +63,13 @@ Add and harden `engineeringspec gate` so CI can reject changes outside declared 
   paths:
     - action.yml
     - .github/workflows/ci.yml
+    - .github/CODEOWNERS
     - README.md
     - maintainer-only roadmap
     - SPEC.md
     - CHANGELOG.md
     - docs/**
+    - examples/adopters/**
   change_policy: modify
 ```
 
@@ -100,6 +106,11 @@ Add and harden `engineeringspec gate` so CI can reject changes outside declared 
   statement: Git diff collection must use null-delimited output and reject unknown or malformed status records (ESG004).
   applies_to: [TARGET-gate]
   enforcement: { kind: test, verifier_ref: VER-1 }
+- id: CON-7
+  level: must
+  statement: Adopter docs must publish an immutable Action SHA pin, CODEOWNERS example, and required-check instructions so the gate can be merge-blocking.
+  applies_to: [TARGET-ci-docs]
+  enforcement: { kind: review, reviewer_role: maintainer }
 ```
 
 ## Verification
@@ -113,6 +124,12 @@ Add and harden `engineeringspec gate` so CI can reject changes outside declared 
     argv: [npm, test]
     network: deny
   expected: { exit_code: 0 }
+- id: VER-2
+  proves: [CON-7]
+  kind: human_review
+  runner:
+    type: manual
+    reference: maintainer review of production-gate docs and CODEOWNERS
 ```
 
 ## Rollout
@@ -122,5 +139,6 @@ strategy: none
 observability:
   - CI gate smoke (pass + intentional fail)
   - optional PR gate against this spec with --base origin/main and --spec-from base
-  - adopters should pin the Action to a full commit SHA and require the gate check
+  - docs/production-gate.md SHA pin + required checks
+  - tag v0.1.0-rc.2 and npm @next after merge
 ```

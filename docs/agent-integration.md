@@ -45,3 +45,7 @@ The read-only MCP adapter planned after v0.1 RC will expose the same parsed cont
 ## Cursor adoption handoff
 
 For adopting EngineeringSpec in another repository (dogfood), use the paste-ready agent brief in [`maintainer-only adoption notes`](maintainer-only adoption notes).
+
+## Production gate
+
+For SHA pins, CODEOWNERS, and merge-blocking required checks, follow [`production-gate.md`](production-gate.md).

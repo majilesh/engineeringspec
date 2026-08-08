@@ -1,0 +1,9 @@
+# Default maintainers for this repository.
+* @majilesh
+
+# Protect adoption and trust-boundary surfaces.
+/.github/CODEOWNERS @majilesh
+/.github/workflows/ @majilesh
+/action.yml @majilesh
+/docs/engineering-specs/ @majilesh
+/docs/production-gate.md @majilesh
