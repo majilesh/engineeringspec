@@ -92,7 +92,7 @@ jobs:
             base="origin/$branch"
           fi
           echo "GATE_BASE=$base" >> "$GITHUB_ENV"
-          if git diff --name-only "$base"...HEAD | grep -Eq '^(src/|test/|action\.yml|README\.md|SPEC\.md|CHANGELOG\.md|ROADMAP\.md|package\.json|docs/|schemas/|conformance/|\.github/)'; then
+          if git diff --name-only "$base"...HEAD | grep -Eq '^(src/|test/|action\.yml|README\.md|SPEC\.md|CHANGELOG\.md|ROADMAP\.md|package\.json|package-lock\.json|docs/|schemas/|conformance/|\.github/)'; then
             echo "GATE=1" >> "$GITHUB_ENV"
           else
             echo "GATE=0" >> "$GITHUB_ENV"

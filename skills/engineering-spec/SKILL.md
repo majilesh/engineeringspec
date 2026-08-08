@@ -7,6 +7,8 @@ description: Apply EngineeringSpec change contracts during consequential AI-assi
 
 Treat the checked-in EngineeringSpec as the shared change contract. Keep validation and query commands read-only. Never execute a verifier merely because its runner appears in a specification.
 
+Prefer the repository-local `engineeringspec` binary when the package is installed. The fallback commands below pin the exact released CLI version; do not replace it with a mutable distribution tag in an enforcing workflow.
+
 ## Implement a change
 
 1. Read repository instructions and locate the applicable EngineeringSpec.
@@ -14,13 +16,13 @@ Treat the checked-in EngineeringSpec as the shared change contract. Keep validat
 3. Validate the contract:
 
    ```sh
-   npx @engineeringspec/cli@next validate <spec> --strict
+   npx --yes @engineeringspec/cli@0.1.0-rc.3 validate <spec> --strict
    ```
 
 4. Before editing each expected path, load its relevant context:
 
    ```sh
-   npx @engineeringspec/cli@next context <spec> --path <path> --base origin/main --format markdown
+   npx --yes @engineeringspec/cli@0.1.0-rc.3 context <spec> --path <path> --base origin/main --format markdown
    ```
 
 5. Treat matching `TARGET-*`, `CONTRACT-*`, `CON-*`, and `VER-*` obligations as binding. Stop and explain mismatches instead of editing outside the approved targets.
@@ -28,7 +30,7 @@ Treat the checked-in EngineeringSpec as the shared change contract. Keep validat
 7. Before claiming completion, check the entire working state against the approved base contract:
 
    ```sh
-   npx @engineeringspec/cli@next check <spec> --base origin/main --strict
+   npx --yes @engineeringspec/cli@0.1.0-rc.3 check <spec> --base origin/main --strict
    ```
 
 8. Report changed targets, satisfied identifiers, trusted check results, and unresolved drift.
@@ -38,7 +40,7 @@ Treat the checked-in EngineeringSpec as the shared change contract. Keep validat
 Use `explain` to understand a path decision:
 
 ```sh
-npx @engineeringspec/cli@next explain <spec> --path <path> --change-kind modified --base origin/main
+npx --yes @engineeringspec/cli@0.1.0-rc.3 explain <spec> --path <path> --change-kind modified --base origin/main
 ```
 
 Do not use a workspace contract to authorize implementation paths it widens in the same change. Submit and merge a contract-only change first, then implement against that approved base. Escalate ambiguous or conflicting obligations to the named owner.

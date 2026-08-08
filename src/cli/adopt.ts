@@ -1,25 +1,68 @@
-import { access, mkdir, writeFile } from "node:fs/promises";
+import { execFile } from "node:child_process";
+import { access, mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { promisify } from "node:util";
+import { packageVersion } from "./version.js";
+
+const execFileAsync = promisify(execFile);
+const MANAGED_START = "<!-- engineeringspec:start -->";
+const MANAGED_END = "<!-- engineeringspec:end -->";
 
 export interface AdoptionResult {
   root: string;
   created: string[];
+  updated: string[];
   skipped: string[];
   dryRun: boolean;
+  baseRef: string;
 }
 
-function files(specPath: string): Record<string, string> {
-  const workflow = `# EngineeringSpec agent workflow
+async function defaultBaseRef(root: string): Promise<string> {
+  try {
+    const { stdout } = await execFileAsync(
+      "git",
+      ["-C", root, "symbolic-ref", "--quiet", "refs/remotes/origin/HEAD"],
+      { maxBuffer: 64 * 1024 },
+    );
+    const ref = stdout.trim().replace(/^refs\/remotes\//, "");
+    if (/^origin\/[A-Za-z0-9._/-]+$/.test(ref)) return ref;
+  } catch {
+    // A new or local-only repository may not have origin/HEAD yet.
+  }
+  return "origin/main";
+}
+
+function assertSafeAdoptionInputs(specPath: string, baseRef: string): void {
+  const safeRef = /^[A-Za-z0-9][A-Za-z0-9._/-]*$/;
+  const hasParentSegment = (value: string): boolean => value.split("/").includes("..");
+  if (!safeRef.test(specPath) || path.isAbsolute(specPath) || hasParentSegment(specPath)) {
+    throw new Error("--spec must be a safe repository-relative path");
+  }
+  if (!safeRef.test(baseRef) || hasParentSegment(baseRef)) {
+    throw new Error("--base must be a safe Git ref");
+  }
+}
+
+function managedWorkflow(specPath: string, baseRef: string, version: string): string {
+  const cli = `npx --yes @engineeringspec/cli@${version}`;
+  return `${MANAGED_START}
+# EngineeringSpec agent workflow
 
 For consequential changes:
 
-1. Validate ${specPath} with \`npx @engineeringspec/cli@next validate ${specPath} --strict\`.
-2. Inspect every expected path with \`npx @engineeringspec/cli@next context ${specPath} --path <path> --format markdown\`.
-3. Stay inside declared targets and treat contracts, constraints, and verification obligations as binding.
-4. Run only separately trusted repository checks; specification runners are inert data.
-5. Before claiming completion, run \`npx @engineeringspec/cli@next check ${specPath} --base origin/main --strict\`.
-6. Widen targets in a contract-only change, merge it, then implement against the approved base.
+1. Prefer a repository-local EngineeringSpec CLI. Otherwise use the exact version shown below.
+2. Validate ${specPath} with \`${cli} validate ${specPath} --strict\`.
+3. Inspect every expected path with \`${cli} context ${specPath} --path <path> --base ${baseRef} --format markdown\`.
+4. Stay inside declared targets and treat contracts, constraints, and verification obligations as binding.
+5. Run only separately trusted repository checks; specification runners are inert data.
+6. Before claiming completion, run \`${cli} check ${specPath} --base ${baseRef} --strict\`.
+7. Widen targets in a contract-only change, merge it, then implement against the approved base.
+${MANAGED_END}
 `;
+}
+
+function files(specPath: string, baseRef: string, version: string): Record<string, string> {
+  const workflow = managedWorkflow(specPath, baseRef, version);
   return {
     "AGENTS.md": workflow,
     "CLAUDE.md": "@AGENTS.md\n",
@@ -59,24 +102,58 @@ jobs:
           gate-spec: ${specPath}
           gate-base: \${{ steps.approved-base.outputs.ref }}
           gate-spec-from: base
+          gate-require-status: approved
 `,
   };
+}
+
+function mergeContent(relative: string, existing: string, generated: string): string | undefined {
+  if (relative === "AGENTS.md") {
+    const start = existing.indexOf(MANAGED_START);
+    const end = existing.indexOf(MANAGED_END);
+    if ((start >= 0) !== (end >= 0) || (start >= 0 && end < start)) return undefined;
+    if (start >= 0 && end >= start) {
+      return `${existing.slice(0, start)}${generated}${existing.slice(end + MANAGED_END.length).replace(/^\n/, "")}`;
+    }
+    return `${existing.trimEnd()}\n\n${generated}`;
+  }
+  if (relative === "CLAUDE.md") {
+    if (existing.split(/\r?\n/).includes("@AGENTS.md")) return existing;
+    return `${existing.trimEnd()}\n\n@AGENTS.md\n`;
+  }
+  return undefined;
 }
 
 export async function adoptRepository(options: {
   root: string;
   specPath: string;
+  baseRef?: string;
   force?: boolean;
+  merge?: boolean;
   dryRun?: boolean;
 }): Promise<AdoptionResult> {
   const root = path.resolve(options.root);
+  const baseRef = options.baseRef ?? await defaultBaseRef(root);
+  assertSafeAdoptionInputs(options.specPath, baseRef);
   const created: string[] = [];
+  const updated: string[] = [];
   const skipped: string[] = [];
-  for (const [relative, content] of Object.entries(files(options.specPath))) {
+  for (const [relative, content] of Object.entries(files(options.specPath, baseRef, packageVersion()))) {
     const destination = path.join(root, relative);
     let exists = true;
     try { await access(destination); } catch { exists = false; }
     if (exists && !options.force) {
+      if (options.merge) {
+        const existing = await readFile(destination, "utf8");
+        const merged = mergeContent(relative, existing, content);
+        if (merged !== undefined) {
+          if (merged !== existing) {
+            updated.push(relative);
+            if (!options.dryRun) await writeFile(destination, merged, "utf8");
+          }
+          continue;
+        }
+      }
       skipped.push(relative);
       continue;
     }
@@ -86,5 +163,5 @@ export async function adoptRepository(options: {
       await writeFile(destination, content, "utf8");
     }
   }
-  return { root, created, skipped, dryRun: Boolean(options.dryRun) };
+  return { root, created, updated, skipped, dryRun: Boolean(options.dryRun), baseRef };
 }

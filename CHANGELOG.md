@@ -4,6 +4,12 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+### Changed
+
+- `adopt` generates base-pinned agent context, exact-version CLI commands, and enforcing CI that requires an `approved` contract
+- `adopt` detects `origin/HEAD`, accepts `--base`, and can merge managed AGENTS/Claude guidance without overwriting structured integration files
+- Project CI includes `package-lock.json` changes when deciding whether to run the diff-scope gate
+
 ## [0.1.0-rc.3] - 2026-08-09
 
 ### Changed
