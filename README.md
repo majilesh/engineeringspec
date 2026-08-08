@@ -90,7 +90,7 @@ npx @engineeringspec/cli@next gate docs/engineering-specs/ES-my-change.engineeri
 npx @engineeringspec/cli@next gate docs/engineering-specs/ES-my-change.engineering-spec.md --changed src/api.ts
 ```
 
-Use one EngineeringSpec per consequential change, protect `docs/engineering-specs/**` with CODEOWNERS, and configure the gate job as a **required** status check so failures block merge.
+Use one EngineeringSpec per consequential change, protect `docs/engineering-specs/**` with CODEOWNERS, and configure the gate job as a **required** status check so failures block merge. Full checklist: [Production diff-scope gate](docs/production-gate.md).
 
 ## GitHub Action
 
@@ -101,17 +101,19 @@ steps:
   - uses: actions/checkout@v4
     with:
       fetch-depth: 0
-  - uses: majilesh/engineeringspec@<full-commit-sha>
+  - uses: majilesh/engineeringspec@479d77818669db8a32c515ebfa2a0bb01ca51afb
     with:
       path: docs/engineering-specs
       strict: true
       gate-spec: docs/engineering-specs/ES-my-change.engineering-spec.md
       gate-base: origin/main
       gate-spec-from: base          # default; do not use workspace for enforcing CI
-      gate-require-status: approved # optional enforcing mode
+      gate-require-status: approved # enforcing mode
 ```
 
 The action validates specs (annotations + job summary) and, when `gate-spec` is set, runs `gate` against `gate-base`…`gate-head`. It never executes declared verification runners. Use `fetch-depth: 0` so the base ref exists.
+
+After tagging, `majilesh/engineeringspec@v0.1.0-rc.2` is acceptable for less sensitive repos; SHA pins remain preferred. See [production-gate.md](docs/production-gate.md) for required checks and CODEOWNERS.
 
 ```sh
 # CLI (npm dist-tag next)

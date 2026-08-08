@@ -16,6 +16,12 @@ All notable changes to this project are documented here.
 - Validate warns (`ESR007`) on likely overlapping incompatible target globs
 - Docs: describe the feature as a diff-scope gate; recommend Action SHA pins and required checks; document npm `@next`
 
+### Added
+
+- [docs/production-gate.md](docs/production-gate.md) — SHA pin, required checks, CODEOWNERS pilot recipe
+- `.github/CODEOWNERS` and [examples/adopters/CODEOWNERS.example](examples/adopters/CODEOWNERS.example)
+- Concrete Action pin: `479d77818669db8a32c515ebfa2a0bb01ca51afb` (PR #4 trust hardening)
+
 ## [0.1.0-rc.1] - 2026-08-07
 
 ### Added
