@@ -63,5 +63,7 @@ describe("validation and queries",()=>{
     value.constraints![0]!.appliesTo=["TARGET-1"];
     value.targets[0]!.paths=["!src/**"];
     expect(validateSemantics(value).some(d=>d.code==="ESPTH002")).toBe(true);
+    value.targets[0]!.paths=["src/../secret/**"];
+    expect(validateSemantics(value).some(d=>d.code==="ESPTH002")).toBe(true);
   });
 });

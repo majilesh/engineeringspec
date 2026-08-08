@@ -6,19 +6,24 @@ All notable changes to this project are documented here.
 
 ### Changed
 
-- Enforcement and runner kinds are field-complete in schema + semantics (`policy`→adapter/ruleRef, `review`→reviewerRole, `reference`/`external`→reference)
-- Docs clarify `interface_only` as a path-writable label (`ESG006`), not AST/API enforcement
-- CLI `--version` reads `package.json` (no more hard-coded rc.1)
+- Canonical JSON key order uses Unicode code-point comparison (not `localeCompare`)
+- Target globs reject `..` segments and backslashes in addition to negation/extglob/braces/classes (`ESPTH002`)
+- `inspect` fully validates by default (`--parse-only` for debugging); `coverage` refuses invalid specs before reporting
+- Docs Action pin bumped to `0f22873…` (Sprint 4 tip); CI dogfoods `--spec-from base` (workspace only when evolving the dogfood contract) and supports `merge_group`
+- Action exposes `gate-receipt` input
 - Gate resolves base/head SHAs once before loading the contract and collecting the diff
 - Gate defaults `--spec-from base` when `--base` is set
 - Typed reference validation (`ESR008`) for target/verifier/contract/constraint edges
 - Restricted target glob dialect (`ESPTH002`); matching uses nobrace/noext/nonegate
+- CLI `--version` reads `package.json`
+- Enforcement and runner kinds are field-complete in schema + semantics
+- Docs clarify `interface_only` as a path-writable label (`ESG006`)
 
 ### Added
 
-- Adversarial gate tests (deny-overrides, hostile `-z` statuses, rename into secrets)
-- Conformance fixtures for incomplete enforcement/runners, forbidden globs, typed-ref mismatches
-- `--receipt <path>` durable unsigned `gate-receipt.json`
+- Mixed-case key ordering unit coverage for canonicalization
+- Adversarial gate tests; `--receipt` durable unsigned `gate-receipt.json`
+- Conformance fixtures for incomplete enforcement/runners, forbidden/parent-segment globs, typed-ref mismatches
 
 ## [0.1.0-rc.2] - 2026-08-08
 
@@ -38,7 +43,7 @@ All notable changes to this project are documented here.
 
 - [docs/production-gate.md](docs/production-gate.md) — SHA pin, required checks, CODEOWNERS pilot recipe
 - `.github/CODEOWNERS` and [examples/adopters/CODEOWNERS.example](examples/adopters/CODEOWNERS.example)
-- Concrete Action pin: `479d77818669db8a32c515ebfa2a0bb01ca51afb` (PR #4 trust hardening)
+- Concrete Action pin (at rc.2): `479d77818669db8a32c515ebfa2a0bb01ca51afb` — superseded in Unreleased by Sprint 4 tip
 
 ## [0.1.0-rc.1] - 2026-08-07
 

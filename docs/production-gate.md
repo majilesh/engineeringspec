@@ -4,13 +4,13 @@ EngineeringSpec’s `gate` is a **diff-scope gate** (path + change-type allowlis
 
 ## Recommended pin (immutable Action)
 
-Prefer a full commit SHA. The trust-hardened gate lives at:
+Prefer a full commit SHA. Reviewed Sprint 4 tip (diff-scope hardening through PR #8):
 
 ```text
-majilesh/engineeringspec@479d77818669db8a32c515ebfa2a0bb01ca51afb
+majilesh/engineeringspec@0f22873b6b036533935fa453a7e27d42ab66da7e
 ```
 
-After you cut a release tag, you may also use `majilesh/engineeringspec@v0.1.0-rc.2`, but SHA pins remain the stronger supply-chain default ([GitHub guidance](https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#using-third-party-actions)).
+Re-pin to this repository’s merge tip after each change to `action.yml` or gate semantics (including Action `gate-receipt` wiring). `majilesh/engineeringspec@v0.1.0-rc.2` may lag behind `main`; SHA pins remain the stronger supply-chain default ([GitHub guidance](https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#using-third-party-actions)).
 
 ## Enforcing CI job
 
@@ -21,7 +21,7 @@ engineering-spec:
     - uses: actions/checkout@v4
       with:
         fetch-depth: 0
-    - uses: majilesh/engineeringspec@479d77818669db8a32c515ebfa2a0bb01ca51afb
+    - uses: majilesh/engineeringspec@0f22873b6b036533935fa453a7e27d42ab66da7e
       with:
         path: docs/engineering-specs
         strict: true
@@ -29,13 +29,17 @@ engineering-spec:
         gate-base: origin/main
         gate-spec-from: base
         gate-require-status: approved
+        gate-receipt: gate-receipt.json
 ```
 
 | Input | Enforcing value | Why |
 |---|---|---|
 | `gate-spec-from` | `base` | PR cannot widen its own targets |
 | `gate-require-status` | `approved` | Draft contracts are not authorization |
+| `gate-receipt` | path | Durable unsigned audit artifact |
 | Action ref | full SHA | Avoid mutable `@main` |
+
+If you use GitHub merge queues, include a `merge_group` trigger on the workflow that runs this Action (or the check will never run for queued merges).
 
 ## Make the check merge-blocking
 

@@ -44,7 +44,7 @@ Source references identify originating intent without copying it. Every source r
 
 Target surfaces declare repositories, components, and relative paths or globs governed by a change policy. Policies are `modify`, `create`, `delete`, `read_only`, `interface_only`, and `observe`. Identical target paths with conflicting policies are invalid. Nested or overlapping globs with incompatible writable vs `read_only`/`observe` policies SHOULD warn; reference tooling gates MUST apply deny-overrides (any matching `read_only`/`observe` target blocks the path).
 
-Target path patterns use a **restricted EngineeringSpec glob dialect** for authorization interoperability: literal path segments plus `*`, `**`, and `?` only. Leading `!` / `#`, extglob parentheses, brace expansion, and character classes are invalid (`ESPTH002`). Independent implementations MUST interpret this dialect identically; they MUST NOT silently adopt host-library extras.
+Target path patterns use a **restricted EngineeringSpec glob dialect** for authorization interoperability: literal path segments plus `*`, `**`, and `?` only. Leading `!` / `#`, extglob parentheses, brace expansion, character classes, backslashes, and parent-directory segments (`..`) are invalid (`ESPTH002`). Independent implementations MUST interpret this dialect identically; they MUST NOT silently adopt host-library extras.
 
 Among non-forbidden matching targets, the reference gate uses **any-writable-allow** composition: if any matching writable policy permits the Git change kind, the path is allowed. Narrower writable policies such as `create` do not automatically intersect broader `modify` matches. Documents SHOULD avoid overlapping writable policies with incompatible intents.
 
@@ -90,7 +90,7 @@ Authoring snake_case keys map to camelCase. Canonical JSON sorts object keys, pr
 
 Before 1.0, patches fix implementations, minors add compatible fields or behavior, and breaking draft changes are prominent. Unsupported format versions are rejected; package versions never act as document revisions.
 
-Object keys are ordered lexicographically in canonical JSON. Array order is preserved. Undefined implementation data and internal source locations are excluded unless source locations are explicitly requested. The canonical byte sequence ends with one newline. Digests are lowercase SHA-256 over those canonical JSON bytes, never the original Markdown.
+Object keys are ordered lexicographically by Unicode code point (ascending; not locale collation) in canonical JSON. Array order is preserved. Undefined implementation data and internal source locations are excluded unless source locations are explicitly requested. The canonical byte sequence ends with one newline. Digests are lowercase SHA-256 over those canonical JSON bytes, never the original Markdown.
 
 Versioned schemas under `/schemas/0.1/` are immutable after release. Additive draft changes use a new schema and documented compatibility note rather than silently reinterpreting an existing field.
 

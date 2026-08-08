@@ -2,6 +2,7 @@ name: CI
 on:
   push:
   pull_request:
+  merge_group:
 permissions:
   contents: read
 jobs:
@@ -51,7 +52,7 @@ jobs:
         with: { node-version: 22, cache: npm }
       - run: npm ci
       - run: npm run build
-      - name: Gate smoke (pass + fail-closed)
+      - name: Gate smoke (pass + fail-closed + base-mode dogfood)
         run: |
           node dist/cli.js gate docs/engineering-specs/ES-gate-diff-scope.engineering-spec.md \
             --changed src/gate/gate.ts \
@@ -70,25 +71,47 @@ jobs:
             echo "expected gate to fail for draft status under --require-status approved" >&2
             exit 1
           fi
-      - name: Gate PR diff via Action inputs
-        if: github.event_name == 'pull_request'
+          # Always dogfood --spec-from base against an in-scope path (loads contract from HEAD as base).
+          node dist/cli.js gate docs/engineering-specs/ES-gate-diff-scope.engineering-spec.md \
+            --base HEAD \
+            --spec-from base \
+            --changed src/gate/gate.ts \
+            --receipt gate-receipt.json \
+            --quiet
+          test -f gate-receipt.json
+      - name: Gate PR / merge-group diff via Action inputs
+        if: github.event_name == 'pull_request' || github.event_name == 'merge_group'
         run: |
-          git fetch origin "${{ github.base_ref }}"
-          base="origin/${{ github.base_ref }}"
-          if git diff --name-only "$base"...HEAD | grep -Eq '^(src/gate/|src/validator/|src/cli/|src/diagnostics/|src/index\.ts|test/unit/gate\.test\.ts|test/unit/core\.test\.ts|test/integration/cli\.test\.ts|action\.yml|README\.md|SPEC\.md|CHANGELOG\.md|ROADMAP\.md|package\.json|docs/)'; then
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            git fetch origin "${{ github.base_ref }}"
+            base="origin/${{ github.base_ref }}"
+          else
+            base_ref="${{ github.event.merge_group.base_ref }}"
+            branch="${base_ref#refs/heads/}"
+            git fetch origin "$branch"
+            base="origin/$branch"
+          fi
+          echo "GATE_BASE=$base" >> "$GITHUB_ENV"
+          if git diff --name-only "$base"...HEAD | grep -Eq '^(src/|test/|action\.yml|README\.md|SPEC\.md|CHANGELOG\.md|ROADMAP\.md|package\.json|docs/|schemas/|conformance/|\.github/)'; then
             echo "GATE=1" >> "$GITHUB_ENV"
-            echo "GATE_BASE=$base" >> "$GITHUB_ENV"
           else
             echo "GATE=0" >> "$GITHUB_ENV"
-            echo "Skipping ES-gate-diff-scope Action gate (PR does not touch gate paths)."
+            echo "Skipping ES-gate-diff-scope Action gate (PR does not touch gated paths)."
+          fi
+          # Dogfood base unless this change evolves the dogfood contract itself.
+          if git diff --name-only "$base"...HEAD | grep -q 'docs/engineering-specs/ES-gate-diff-scope\.engineering-spec\.md'; then
+            echo "GATE_SPEC_FROM=workspace" >> "$GITHUB_ENV"
+            echo "Contract evolution PR: using gate-spec-from=workspace for this run."
+          else
+            echo "GATE_SPEC_FROM=base" >> "$GITHUB_ENV"
           fi
       - name: Run Action gate
-        if: github.event_name == 'pull_request' && env.GATE == '1'
+        if: (github.event_name == 'pull_request' || github.event_name == 'merge_group') && env.GATE == '1'
         uses: ./
         with:
           path: docs/engineering-specs
           strict: true
           gate-spec: docs/engineering-specs/ES-gate-diff-scope.engineering-spec.md
           gate-base: ${{ env.GATE_BASE }}
-          # Contract co-evolves in this repo; adopters should prefer gate-spec-from: base.
-          gate-spec-from: workspace
+          gate-spec-from: ${{ env.GATE_SPEC_FROM }}
+          gate-receipt: gate-receipt.json

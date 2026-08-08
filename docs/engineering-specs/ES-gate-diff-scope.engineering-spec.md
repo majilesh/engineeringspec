@@ -1,7 +1,7 @@
 ---
 spec_format: engineering-spec
 spec_format_version: "0.1"
-spec_revision: 6
+spec_revision: 7
 id: ES-gate-diff-scope
 title: Fail-closed diff gate against declared targets
 status: proposed
@@ -13,7 +13,7 @@ repository:
 
 # Fail-closed diff gate against declared targets
 
-Add and harden `engineeringspec gate` so CI can reject changes outside declared `TARGET-*` paths and change policies. Validation remains inert; the gate is a separate trust boundary over git diffs. Includes SHA-first evaluation, restricted globs, typed refs, and durable unsigned receipts.
+Add and harden `engineeringspec gate` so CI can reject changes outside declared `TARGET-*` paths and change policies. Validation remains inert; the gate is a separate trust boundary over git diffs. Includes SHA-first evaluation, restricted globs, typed refs, durable unsigned receipts, and production dogfooding of the safe default.
 
 ## Source intent
 
@@ -38,6 +38,10 @@ Add and harden `engineeringspec gate` so CI can reject changes outside declared 
   type: document
   ref: gate-authz-sprint4
   title: SHA-first gate, restricted globs, typed refs, durable receipts
+- id: SRC-6
+  type: document
+  ref: credibility-cluster
+  title: Current Action pin, CI dogfood of spec-from base, codepoint canonicalization
 ```
 
 ## Target surfaces
@@ -59,7 +63,9 @@ Add and harden `engineeringspec gate` so CI can reject changes outside declared 
     - src/validator/validateFile.ts
     - src/validator/validateSemantics.ts
     - src/query/applicability.ts
+    - src/normalizer/**
     - test/unit/core.test.ts
+    - test/unit/canonicalize.test.ts
     - schemas/**
     - conformance/**
   change_policy: modify
@@ -153,13 +159,23 @@ Add and harden `engineeringspec gate` so CI can reject changes outside declared 
   statement: Gate must be able to write a durable unsigned gate-receipt.json binding digest and SHAs.
   applies_to: [TARGET-gate, TARGET-cli]
   enforcement: { kind: test, verifier_ref: VER-1 }
+- id: CON-13
+  level: must
+  statement: Project CI must dogfood gate-spec-from base by default (workspace only when evolving this contract), support merge_group, and keep the documented Action SHA pin current with trust-hardened tip.
+  applies_to: [TARGET-ci-docs]
+  enforcement: { kind: review, reviewer_role: maintainer }
+- id: CON-14
+  level: must
+  statement: Canonical JSON object keys must order by Unicode code point; target globs must reject parent-directory segments.
+  applies_to: [TARGET-validator, TARGET-gate]
+  enforcement: { kind: test, verifier_ref: VER-1 }
 ```
 
 ## Verification
 
 ```engineering-verification
 - id: VER-1
-  proves: [CON-1, CON-2, CON-3, CON-4, CON-5, CON-6, CON-8, CON-9, CON-10, CON-11, CON-12]
+  proves: [CON-1, CON-2, CON-3, CON-4, CON-5, CON-6, CON-8, CON-9, CON-10, CON-11, CON-12, CON-14]
   kind: test
   runner:
     type: command
@@ -167,11 +183,11 @@ Add and harden `engineeringspec gate` so CI can reject changes outside declared 
     network: deny
   expected: { exit_code: 0 }
 - id: VER-2
-  proves: [CON-7]
+  proves: [CON-7, CON-13]
   kind: human_review
   runner:
     type: manual
-    reference: maintainer review of production-gate docs and CODEOWNERS
+    reference: maintainer review of production-gate docs, CODEOWNERS, CI dogfood, and Action pin
 ```
 
 ## Rollout
@@ -179,8 +195,9 @@ Add and harden `engineeringspec gate` so CI can reject changes outside declared 
 ```engineering-rollout
 strategy: none
 observability:
-  - CI gate smoke (pass + intentional fail)
+  - CI gate smoke (pass + intentional fail + --spec-from base)
   - adversarial unit tests for policy composition and -z parsing
   - conformance fixtures for incomplete enforcement/runners, globs, typed refs
   - optional --receipt artifact in CI
+  - merge_group workflow trigger
 ```

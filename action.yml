@@ -37,6 +37,10 @@ inputs:
     description: Optional comma-separated statuses required for enforcing mode (e.g. approved)
     required: false
     default: ""
+  gate-receipt:
+    description: Optional path (relative to consumer workspace) to write unsigned gate-receipt.json
+    required: false
+    default: ""
 runs:
   using: composite
   steps:
@@ -69,6 +73,7 @@ runs:
         INPUT_GATE_HEAD: ${{ inputs.gate-head }}
         INPUT_GATE_SPEC_FROM: ${{ inputs.gate-spec-from }}
         INPUT_GATE_REQUIRE_STATUS: ${{ inputs.gate-require-status }}
+        INPUT_GATE_RECEIPT: ${{ inputs.gate-receipt }}
         INPUT_STRICT: ${{ inputs.strict }}
       run: |
         set -euo pipefail
@@ -91,6 +96,15 @@ runs:
               args+=(--require-status "$status")
             fi
           done
+        fi
+        if [[ -n "$INPUT_GATE_RECEIPT" ]]; then
+          if [[ "$INPUT_GATE_RECEIPT" = /* ]]; then
+            receipt="$INPUT_GATE_RECEIPT"
+          else
+            receipt="$GITHUB_WORKSPACE/$INPUT_GATE_RECEIPT"
+          fi
+          mkdir -p "$(dirname "$receipt")"
+          args+=(--receipt "$receipt")
         fi
         # Run from the consumer workspace so git diff sees their checkout.
         cd "$GITHUB_WORKSPACE"

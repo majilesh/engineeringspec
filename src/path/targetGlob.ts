@@ -13,10 +13,12 @@ const FORBIDDEN = [
   { re: /[()]/, message: "extglob parentheses are not allowed in target globs" },
   { re: /[{}]/, message: "brace expansion is not allowed in target globs" },
   { re: /[[\]]/, message: "character classes are not allowed in target globs" },
+  { re: /(^|\/)\.\.(\/|$)/, message: "parent-directory segments (..) are not allowed in target globs" },
 ] as const;
 
 export function validateTargetGlob(pattern: string): string | undefined {
   if (!pattern || !pattern.trim()) return "target glob must be non-empty";
+  if (pattern.includes("\\")) return "backslashes are not allowed in target globs; use /";
   for (const rule of FORBIDDEN) {
     if (rule.re.test(pattern)) return rule.message;
   }
