@@ -101,7 +101,7 @@ steps:
   - uses: actions/checkout@v4
     with:
       fetch-depth: 0
-  - uses: majilesh/engineeringspec@0f22873b6b036533935fa453a7e27d42ab66da7e
+  - uses: majilesh/engineeringspec@4110e478d2f0bb39a3e1c92cccfe6b5cec09bc75
     with:
       path: docs/engineering-specs
       strict: true
@@ -109,7 +109,7 @@ steps:
       gate-base: origin/main
       gate-spec-from: base          # default; do not use workspace for enforcing CI
       gate-require-status: approved # enforcing mode
-      gate-receipt: gate-receipt.json  # optional; re-pin after Action tip adds this input
+      gate-receipt: gate-receipt.json  # optional; durable unsigned audit artifact
 ```
 
 The action validates specs (annotations + job summary) and, when `gate-spec` is set, runs `gate` against `gate-base`…`gate-head`. It never executes declared verification runners. Use `fetch-depth: 0` so the base ref exists. If you use merge queues, add a `merge_group` trigger on the workflow that runs this Action.

@@ -4,10 +4,10 @@ EngineeringSpec’s `gate` is a **diff-scope gate** (path + change-type allowlis
 
 ## Recommended pin (immutable Action)
 
-Prefer a full commit SHA. Reviewed Sprint 4 tip (diff-scope hardening through PR #8):
+Prefer a full commit SHA. Reviewed tip (credibility cluster + code-point canonicalization through PR #10):
 
 ```text
-majilesh/engineeringspec@0f22873b6b036533935fa453a7e27d42ab66da7e
+majilesh/engineeringspec@4110e478d2f0bb39a3e1c92cccfe6b5cec09bc75
 ```
 
 Re-pin to this repository’s merge tip after each change to `action.yml` or gate semantics (including Action `gate-receipt` wiring). `majilesh/engineeringspec@v0.1.0-rc.2` may lag behind `main`; SHA pins remain the stronger supply-chain default ([GitHub guidance](https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#using-third-party-actions)).
@@ -21,7 +21,7 @@ engineering-spec:
     - uses: actions/checkout@v4
       with:
         fetch-depth: 0
-    - uses: majilesh/engineeringspec@0f22873b6b036533935fa453a7e27d42ab66da7e
+    - uses: majilesh/engineeringspec@4110e478d2f0bb39a3e1c92cccfe6b5cec09bc75
       with:
         path: docs/engineering-specs
         strict: true
