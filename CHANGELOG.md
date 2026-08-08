@@ -4,6 +4,8 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+## [0.1.0-rc.3] - 2026-08-09
+
 ### Changed
 
 - `gate --strict` fails on validation warnings from the loaded contract (not only gate-produced warnings)
@@ -12,7 +14,7 @@ All notable changes to this project are documented here.
 - Canonical JSON key order uses Unicode code-point comparison (not `localeCompare` or UTF-16 code-unit `<`)
 - Target globs reject `..` segments and backslashes in addition to negation/extglob/braces/classes (`ESPTH002`)
 - `inspect` fully validates by default (`--parse-only` for debugging); `coverage` refuses invalid specs before reporting
-- Docs Action pin bumped to `4110e47…` (credibility cluster + code-point canonicalization tip); CI always enforces `--spec-from base`, requires two-phase contract evolution, and supports `merge_group`
+- Production Action examples pin the reviewed agent-first merge `cecc34d…`; CI always enforces `--spec-from base`, requires two-phase contract evolution, and supports `merge_group`
 - Action exposes `gate-receipt` input
 - Gate resolves base/head SHAs once before loading the contract and collecting the diff
 - Gate defaults `--spec-from base` when `--base` is set

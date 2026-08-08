@@ -104,7 +104,7 @@ steps:
   - uses: actions/checkout@v4
     with:
       fetch-depth: 0
-  - uses: majilesh/engineeringspec@4110e478d2f0bb39a3e1c92cccfe6b5cec09bc75
+  - uses: majilesh/engineeringspec@cecc34d97d581163a4dbd9be0cc2789555196d89
     with:
       path: docs/engineering-specs
       strict: true
@@ -117,7 +117,7 @@ steps:
 
 The action validates specs (annotations + job summary) and, when `gate-spec` is set, runs `gate` against `gate-base`…`gate-head`. It never executes declared verification runners. Use `fetch-depth: 0` so the base ref exists. If you use merge queues, add a `merge_group` trigger on the workflow that runs this Action.
 
-After tagging, `majilesh/engineeringspec@v0.1.0-rc.2` is acceptable for less sensitive repos; SHA pins remain preferred. See [production-gate.md](docs/production-gate.md) for required checks and CODEOWNERS.
+After tagging, `majilesh/engineeringspec@v0.1.0-rc.3` is acceptable for less sensitive repos; SHA pins remain preferred. See [production-gate.md](docs/production-gate.md) for required checks and CODEOWNERS.
 
 ```sh
 # CLI (npm dist-tag next)

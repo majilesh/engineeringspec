@@ -52,7 +52,7 @@ jobs:
           test -n "$branch"
           git fetch origin "$branch"
           echo "ref=origin/$branch" >> "$GITHUB_OUTPUT"
-      - uses: majilesh/engineeringspec@4110e478d2f0bb39a3e1c92cccfe6b5cec09bc75
+      - uses: majilesh/engineeringspec@cecc34d97d581163a4dbd9be0cc2789555196d89
         with:
           path: docs/engineering-specs
           strict: true

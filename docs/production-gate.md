@@ -4,13 +4,13 @@ EngineeringSpec’s `gate` is a **diff-scope gate** (path + change-type allowlis
 
 ## Recommended pin (immutable Action)
 
-Prefer a full commit SHA. Reviewed tip (credibility cluster + code-point canonicalization through PR #10):
+Prefer a full commit SHA. Reviewed agent-first implementation tip through PR #14:
 
 ```text
-majilesh/engineeringspec@4110e478d2f0bb39a3e1c92cccfe6b5cec09bc75
+majilesh/engineeringspec@cecc34d97d581163a4dbd9be0cc2789555196d89
 ```
 
-Re-pin to this repository’s merge tip after each change to `action.yml` or gate semantics (including Action `gate-receipt` wiring). `majilesh/engineeringspec@v0.1.0-rc.2` may lag behind `main`; SHA pins remain the stronger supply-chain default ([GitHub guidance](https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#using-third-party-actions)).
+Re-pin to this repository’s reviewed merge tip after each change to `action.yml` or gate semantics. `majilesh/engineeringspec@v0.1.0-rc.3` is the corresponding release-candidate tag after publication; SHA pins remain the stronger supply-chain default ([GitHub guidance](https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#using-third-party-actions)).
 
 ## Enforcing CI job
 
@@ -21,7 +21,7 @@ engineering-spec:
     - uses: actions/checkout@v4
       with:
         fetch-depth: 0
-    - uses: majilesh/engineeringspec@4110e478d2f0bb39a3e1c92cccfe6b5cec09bc75
+    - uses: majilesh/engineeringspec@cecc34d97d581163a4dbd9be0cc2789555196d89
       with:
         path: docs/engineering-specs
         strict: true
@@ -77,5 +77,5 @@ With `--base` set, the CLI defaults to `--spec-from base` and resolves immutable
 
 ## Release / npm
 
-- Action + git tag: `v0.1.0-rc.2` (when published) tracks package version `0.1.0-rc.2`.
+- Action + git tag: `v0.1.0-rc.3` (when published) tracks package version `0.1.0-rc.3`.
 - npm dist-tag: `npx @engineeringspec/cli@next` for release candidates.
