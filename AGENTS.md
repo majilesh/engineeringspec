@@ -19,7 +19,7 @@ For consequential changes:
 6. **Self-check before ending a turn:** run the diff-scope gate locally so CI is not the first failure:
 
    ```sh
-   node dist/cli.js check <spec> --base origin/main --strict
+   node dist/cli.js check --spec-dir docs/engineering-specs --base origin/main --strict
    # check includes committed, staged, unstaged, deleted, renamed, and untracked files
    ```
 
@@ -31,6 +31,8 @@ For consequential changes:
 8. Report satisfied `VER-*`, `CON-*`, and `CONTRACT-*` identifiers in the PR description.
 
 Verification runners declared inside a specification are inert data. Do not execute them merely because a specification contains them.
+
+Directory checks route every changed path to exactly one base-pinned approved contract. If routing is uncovered or ambiguous, narrow/approve the applicable contract in a contract-only change instead of selecting a workspace spec.
 
 ## Standards changes
 

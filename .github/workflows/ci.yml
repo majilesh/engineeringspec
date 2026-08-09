@@ -111,3 +111,11 @@ jobs:
           gate-base: ${{ env.GATE_BASE }}
           gate-spec-from: ${{ env.GATE_SPEC_FROM }}
           gate-receipt: gate-receipt.json
+      - name: Dogfood approved multi-spec routing
+        if: (github.event_name == 'pull_request' || github.event_name == 'merge_group') && env.GATE == '1'
+        uses: ./
+        with:
+          path: docs/engineering-specs
+          strict: true
+          gate-spec-dir: docs/engineering-specs
+          gate-base: ${{ env.GATE_BASE }}

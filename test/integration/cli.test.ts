@@ -95,7 +95,7 @@ owners: [{team: test}]
   });
   it("provides read-only agent check, context, and explanation workflows",async()=>{
     const file="docs/engineering-specs/ES-gate-diff-scope.engineering-spec.md";
-    expect(await invoke(["check",file,"--spec-from","workspace","--quiet"])).toBe(0);
+    expect(await invoke(["check","docs/engineering-specs/ES-multi-spec-routing.engineering-spec.md","--spec-from","workspace","--quiet"])).toBe(0);
     expect(await invoke(["check","conformance/valid/future-exception.engineering-spec.md","--spec-from","workspace","--strict","--quiet"])).toBe(1);
     expect(await invoke(["context",file,"--path","src/gate/gate.ts","--quiet"])).toBe(0);
     expect(await invoke(["explain",file,"--path","src/gate/gate.ts","--quiet"])).toBe(0);
@@ -149,6 +149,16 @@ owners: [{team: test}]
     expect(workflow).toContain("echo \"GATE_SPEC_FROM=base\"");
     expect(workflow).not.toContain("GATE_SPEC_FROM=workspace");
     expect(workflow).toContain("package-lock\\.json");
+    const action=await readFile("action.yml","utf8");
+    expect(action).toContain("gate-spec-dir:");
+    expect(action).toContain("gate-spec and gate-spec-dir are mutually exclusive");
+    expect(action).toContain('select "$INPUT_GATE_SPEC_DIR"');
+  });
+  it("selects and checks approved contracts from a base-pinned directory",async()=>{
+    expect(await invoke(["select","docs/engineering-specs","--base","origin/main","--changed","src/routing/select.ts","--strict","--quiet"])).toBe(0);
+    expect(await invoke(["select","docs/engineering-specs","--base","origin/main","--changed","outside.txt","--strict","--quiet"])).toBe(1);
+    expect(await invoke(["check","--spec-dir","docs/engineering-specs","--base","origin/main","--strict","--quiet"])).toBe(0);
+    expect(await invoke(["check","--spec-dir","docs/engineering-specs","--quiet"])).toBe(2);
   });
   it("scaffolds adoption files without overwriting by default",async()=>{
     const root=await mkdtemp(path.join(os.tmpdir(),"es-adopt-"));

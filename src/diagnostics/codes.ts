@@ -9,4 +9,6 @@ export const Codes = {
   noDocuments:"ESD001",
   gateOutOfScope:"ESG001", gatePolicy:"ESG002", gateReadOnly:"ESG003", gateDiff:"ESG004",
   gateStatus:"ESG005", gateInterfaceOnly:"ESG006",
+  routingNoEligible:"ESRT001", routingUncovered:"ESRT002", routingAmbiguous:"ESRT003",
+  routingDenied:"ESRT004", routingDuplicateId:"ESRT005",
 } as const;

@@ -10,6 +10,13 @@ All notable changes to this project are documented here.
 - `adopt` detects `origin/HEAD`, accepts `--base`, and can merge managed AGENTS/Claude guidance without overwriting structured integration files
 - Project CI includes `package-lock.json` changes when deciding whether to run the diff-scope gate
 
+### Added
+
+- Deterministic `select` routing over base-pinned approved EngineeringSpec directories
+- Multi-spec `check --spec-dir` with aggregate declared coverage and complete-worktree routing
+- `gate-spec-dir` Action input with strict approved-only selection by default
+- Stable `ESRT001`–`ESRT005` routing diagnostics and cross-contract deny-wins conformance vectors
+
 ## [0.1.0-rc.3] - 2026-08-09
 
 ### Changed

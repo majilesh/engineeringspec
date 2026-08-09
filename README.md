@@ -78,6 +78,15 @@ npx @engineeringspec/cli@next context ENGINEERING_SPEC.md --path src/example.ts 
 npx @engineeringspec/cli@next explain ENGINEERING_SPEC.md --path src/example.ts --base origin/main
 ```
 
+The unreleased multi-spec router can be exercised from a built checkout:
+
+```sh
+node dist/cli.js select docs/engineering-specs --base origin/main --worktree --strict
+node dist/cli.js check --spec-dir docs/engineering-specs --base origin/main --strict
+```
+
+Directory routing enumerates candidates from one resolved base tree, validates them before filtering, considers `approved` contracts by default, and requires every changed path to have exactly one allowing contract. Uncovered paths, ambiguous allows, duplicate IDs, and any matching denial fail closed. The next immutable release will expose the corresponding `gate-spec-dir` Action input and switch generated adoption scaffolds to it.
+
 Directory validation discovers `ENGINEERING_SPEC.md`, `*.engineering-spec.md`, and `*.engineeringspec.md` recursively. Add repository-relative glob patterns to `.engineeringspecignore` to exclude generated content or intentionally invalid fixtures.
 
 ## Diff-scope gate
