@@ -7,7 +7,7 @@ EngineeringSpec is the shared change contract. Agent-specific files only explain
 Generate the starter files safely with:
 
 ```sh
-npx @engineeringspec/cli@next adopt . --spec docs/engineering-specs/ES-change.engineering-spec.md
+npx --yes @engineeringspec/cli@0.1.0-rc.4 adopt . --spec docs/engineering-specs/ES-change.engineering-spec.md
 ```
 
 Existing files are skipped unless `--force` is explicitly supplied. Review generated guidance before committing it.
@@ -35,7 +35,8 @@ change. Treat CONTRACT-*, CON-*, and VER-* obligations as binding. Do not edit
 outside declared targets without explaining the mismatch and updating or
 escalating the contract. Before ending your turn, self-check with:
 
-  npx @engineeringspec/cli@next check <spec-file> --base origin/main --strict
+  npx --yes @engineeringspec/cli@0.1.0-rc.4 check \
+    --spec-dir docs/engineering-specs --base origin/main --strict
 
 Fix gate violations (or update/escalate the contract) before claiming done.
 This checks committed, staged, unstaged, deleted, renamed, and non-ignored
@@ -53,8 +54,8 @@ For implementation and review, pass `--base origin/main` to `context` and `expla
 When a repository can have multiple active change contracts, use the built CLI's base-pinned router:
 
 ```sh
-node dist/cli.js select docs/engineering-specs --base origin/main --worktree --strict
-node dist/cli.js check --spec-dir docs/engineering-specs --base origin/main --strict
+npx --yes @engineeringspec/cli@0.1.0-rc.4 select docs/engineering-specs --base origin/main --worktree --strict
+npx --yes @engineeringspec/cli@0.1.0-rc.4 check --spec-dir docs/engineering-specs --base origin/main --strict
 ```
 
 The router considers approved contracts by default and assigns every changed path to exactly one of them. Treat `ESRT002` as missing scope, `ESRT003` as overlapping ownership, and `ESRT004` as a binding denial. Do not resolve ambiguity by loading a workspace spec or omitting competing candidates. Narrow or approve contracts in a contract-only change, merge it, and retry from the new base.
