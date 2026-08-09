@@ -2,6 +2,26 @@
 
 EngineeringSpec is the shared change contract. Agent-specific files only explain how a tool should discover and consume that contract.
 
+## Shared lifecycle
+
+Codex, Claude Code, Cursor, and human contributors should follow the same thin workflow over the repository files and CLI:
+
+1. **Explore** repository context without granting authority.
+2. **Propose** a draft contract with explicit targets and obligations.
+3. **Approve** the contract in a maintainer-owned, contract-only PR.
+4. **Implement** against the approved contract loaded from the trusted base.
+5. **Verify** with separately trusted checks and the complete-working-state EngineeringSpec check.
+6. **Close** the lifecycle after review; closure alone is not verification evidence.
+
+Start an unfamiliar repository with `doctor`, and use `status` whenever the next lifecycle action is unclear:
+
+```sh
+engineeringspec doctor . --spec-dir docs/engineering-specs --base origin/main --strict
+engineeringspec status --spec-dir docs/engineering-specs --base origin/main --strict
+```
+
+Use these commands from a built checkout until they are included in the next published release candidate. Do not claim they exist in RC5.
+
 ## Repository setup
 
 Generate the starter files safely with:
@@ -11,6 +31,8 @@ npx --yes @engineeringspec/cli@0.1.0-rc.5 adopt . --spec docs/engineering-specs/
 ```
 
 Existing files are skipped unless `--force` is explicitly supplied. Review generated guidance before committing it.
+
+Use `--merge --dry-run` first in established repositories. After applying the scaffold, rerun `doctor`; warnings identify missing agent guidance or merge-blocking CI without changing files.
 
 ```text
 AGENTS.md
@@ -74,6 +96,8 @@ For consequential changes, pin every participant to the same spec revision and c
 4. A human approves exceptions and ambiguous obligations.
 
 The reusable Agent Skill under `skills/engineering-spec/` teaches the same neutral CLI workflow without replacing the on-disk format.
+
+Suggested presentation-layer actions are `engineering-spec:explore`, `:propose`, `:review`, `:implement`, `:verify`, and `:close`. They are workflow prompts, not new authorization mechanisms. An adapter must delegate to the same base-pinned CLI behavior and must not approve contracts, run declared runners, or hide routing failures.
 
 Start with the skill and file-based instructions across ChatGPT/Codex, Claude Code, and Cursor. Build a vendor adapter or read-only MCP transport only when observed onboarding data shows that contract discovery or CLI access is the bottleneck; keep any such adapter a thin consumer of the same CLI and format.
 

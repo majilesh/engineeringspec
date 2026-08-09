@@ -5,4 +5,4 @@ alwaysApply: true
 
 Follow @AGENTS.md.
 
-Before modifying code for a consequential change, locate and validate the applicable document under `docs/engineering-specs/`. Inspect affected paths, treat contracts and constraints as binding, and do not claim completion while required verification obligations remain uncovered. Before ending a turn, run `engineeringspec check <spec> --base origin/main --strict`; it checks the complete working state. Fix or escalate violations. Widen approved targets in a contract-only change before implementing against them.
+Use the shared lifecycle: explore, propose, approve, implement, verify, close. Before modifying code, locate the base-pinned approved contract and inspect affected paths. Treat contracts and constraints as binding. Before ending a turn, run `engineeringspec check --spec-dir docs/engineering-specs --base origin/main --strict`; it checks the complete working state. Fix or escalate violations. Widen approved targets in a contract-only change before implementing against them. Specification-declared runners are inert.

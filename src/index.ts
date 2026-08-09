@@ -15,6 +15,8 @@ export * from "./query/agentContext.js";
 export * from "./cli/agentCheck.js";
 export * from "./cli/adopt.js";
 export * from "./cli/benchmark.js";
+export * from "./cli/doctor.js";
+export * from "./cli/status.js";
 export * from "./gate/gate.js";
 export * from "./gate/collectDiff.js";
 export * from "./gate/loadSpec.js";

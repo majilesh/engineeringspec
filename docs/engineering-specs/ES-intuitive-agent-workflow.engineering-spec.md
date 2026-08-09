@@ -1,14 +1,15 @@
 ---
 spec_format: engineering-spec
 spec_format_version: "0.1"
-spec_revision: 2
+spec_revision: 3
 id: ES-intuitive-agent-workflow
 title: Make the agent workflow intuitive and diagnosable
-status: approved
+status: implemented
 owners:
   - team: EngineeringSpec maintainers
 repository:
   ref: majilesh/engineeringspec
+base_revision: "3466503"
 ---
 
 # Make the agent workflow intuitive and diagnosable

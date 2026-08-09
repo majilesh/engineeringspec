@@ -95,7 +95,6 @@ owners: [{team: test}]
   });
   it("provides read-only agent check, context, and explanation workflows",async()=>{
     const file="docs/engineering-specs/ES-gate-diff-scope.engineering-spec.md";
-    expect(await invoke(["check","docs/engineering-specs/ES-rc5-lifecycle-release.engineering-spec.md","--spec-from","workspace","--quiet"])).toBe(0);
     expect(await invoke(["check","conformance/valid/future-exception.engineering-spec.md","--spec-from","workspace","--strict","--quiet"])).toBe(1);
     expect(await invoke(["context",file,"--path","src/gate/gate.ts","--quiet"])).toBe(0);
     expect(await invoke(["explain",file,"--path","src/gate/gate.ts","--quiet"])).toBe(0);
@@ -144,12 +143,13 @@ owners: [{team: test}]
     expect(await invoke(["check",file,"--spec-from","workspace","--quiet"])).toBe(0);
     expect(await readFile(marker,"utf8").then(()=>true,()=>false)).toBe(false);
   });
-  it("keeps enforcing CI pinned to base authorization",async()=>{
+  it("keeps one approved-only directory authorization decision in CI",async()=>{
     const workflow=await readFile(".github/workflows/ci.yml","utf8");
-    expect(workflow).toContain("echo \"GATE_SPEC_FROM=base\"");
-    expect(workflow).not.toContain("GATE_SPEC_FROM=workspace");
+    expect(workflow).not.toContain("GATE_SPEC_FROM");
     expect(workflow).toContain("package-lock.json");
-    expect(workflow).toContain("gate-spec: docs/engineering-specs/ES-rc5-lifecycle-release.engineering-spec.md");
+    expect(workflow).not.toContain("gate-spec: docs/engineering-specs/ES-rc5-lifecycle-release.engineering-spec.md");
+    expect(workflow.match(/gate-spec-dir:/g)).toHaveLength(1);
+    expect(workflow).toContain("gate-base: ${{ env.GATE_BASE }}");
     expect(workflow).toContain("git diff --name-status -z --find-renames");
     expect(workflow).toContain("docs/engineering-specs/*|rfcs/*");
     expect(workflow).toContain("R*|C*");
@@ -157,6 +157,7 @@ owners: [{team: test}]
     expect(workflow).toContain("env.CONTRACT_ONLY != '1'");
     const action=await readFile("action.yml","utf8");
     expect(action).toContain("gate-spec-dir:");
+    expect(action).toContain("gate-spec:");
     expect(action).toContain("gate-spec and gate-spec-dir are mutually exclusive");
     expect(action).toContain('select "$INPUT_GATE_SPEC_DIR"');
   });
@@ -336,5 +337,13 @@ owners: [{team: test}]
       {taskId:"unpaired",runId:"base",condition:"baseline",agent:"agent",success:true,scopeViolations:0,reviewCorrections:0,durationSeconds:1,inputTokens:1,outputTokens:1},
       {taskId:"other",runId:"spec",condition:"engineeringspec",agent:"agent",success:true,scopeViolations:0,reviewCorrections:0,durationSeconds:1,inputTokens:1,outputTokens:1},
     ])).toThrow("requires both conditions");
+  });
+  it("diagnoses adoption and reports lifecycle status through read-only CLI commands",async()=>{
+    // Keep this CLI wiring smoke self-contained: quality jobs intentionally use
+    // shallow checkouts and do not guarantee a remote-tracking base ref.
+    expect(await invoke(["doctor",".","--spec-dir","docs/engineering-specs","--base","HEAD","--strict","--quiet"])).toBe(0);
+    expect(await invoke(["status","--spec-dir","docs/engineering-specs","--base","HEAD","--no-worktree","--strict","--quiet"])).toBe(0);
+    expect(await invoke(["status","--spec-dir","docs/engineering-specs","--base","HEAD","--changed","outside.txt","--strict","--quiet"])).toBe(1);
+    expect(await invoke(["status","--spec-dir","docs/engineering-specs","--base","HEAD","--changed","README.md","--staged","--quiet"])).toBe(2);
   });
 });
