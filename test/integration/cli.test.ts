@@ -95,7 +95,7 @@ owners: [{team: test}]
   });
   it("provides read-only agent check, context, and explanation workflows",async()=>{
     const file="docs/engineering-specs/ES-gate-diff-scope.engineering-spec.md";
-    expect(await invoke(["check","docs/engineering-specs/ES-multi-spec-routing.engineering-spec.md","--spec-from","workspace","--quiet"])).toBe(0);
+    expect(await invoke(["check","docs/engineering-specs/ES-rc4-routing-release.engineering-spec.md","--spec-from","workspace","--quiet"])).toBe(0);
     expect(await invoke(["check","conformance/valid/future-exception.engineering-spec.md","--spec-from","workspace","--strict","--quiet"])).toBe(1);
     expect(await invoke(["context",file,"--path","src/gate/gate.ts","--quiet"])).toBe(0);
     expect(await invoke(["explain",file,"--path","src/gate/gate.ts","--quiet"])).toBe(0);
@@ -149,7 +149,7 @@ owners: [{team: test}]
     expect(workflow).toContain("echo \"GATE_SPEC_FROM=base\"");
     expect(workflow).not.toContain("GATE_SPEC_FROM=workspace");
     expect(workflow).toContain("package-lock\\.json");
-    expect(workflow).toContain("gate-spec: docs/engineering-specs/ES-multi-spec-routing.engineering-spec.md");
+    expect(workflow).toContain("gate-spec: docs/engineering-specs/ES-rc4-routing-release.engineering-spec.md");
     const action=await readFile("action.yml","utf8");
     expect(action).toContain("gate-spec-dir:");
     expect(action).toContain("gate-spec and gate-spec-dir are mutually exclusive");
@@ -216,10 +216,10 @@ owners: [{team: test}]
     expect(result.skipped).toContain("AGENTS.md");
     expect(await readFile(path.join(root,"AGENTS.md"),"utf8")).toBe("existing\n");
     expect(await readFile(path.join(root,"CLAUDE.md"),"utf8")).toContain("@AGENTS.md");
-    expect(await readFile(path.join(root,".github/workflows/engineering-spec.yml"),"utf8")).toContain("gate-spec-from: base");
+    expect(await readFile(path.join(root,".github/workflows/engineering-spec.yml"),"utf8")).toContain("gate-spec-dir: docs/engineering-specs");
     expect(await readFile(path.join(root,".github/workflows/engineering-spec.yml"),"utf8")).toContain("gate-require-status: approved");
     expect(await readFile(path.join(root,".github/workflows/engineering-spec.yml"),"utf8")).toContain("steps.approved-base.outputs.ref");
-    expect(await readFile(path.join(root,".github/workflows/engineering-spec.yml"),"utf8")).toContain("majilesh/engineeringspec@cecc34d97d581163a4dbd9be0cc2789555196d89");
+    expect(await readFile(path.join(root,".github/workflows/engineering-spec.yml"),"utf8")).toContain("majilesh/engineeringspec@da9b6d7a7fabb17ec2169cdf3a4ca4278cbdeb76");
     expect(await readFile(path.join(root,"CLAUDE.md"),"utf8")).toContain("@AGENTS.md");
     const dry=await adoptRepository({root,specPath:"docs/engineering-specs/ES-change.engineering-spec.md",dryRun:true});
     expect(dry.skipped).toHaveLength(4);
@@ -230,7 +230,9 @@ owners: [{team: test}]
     const agents=await readFile(path.join(root,"AGENTS.md"),"utf8");
     const version=(JSON.parse(await readFile("package.json","utf8")) as {version:string}).version;
     expect(result.baseRef).toBe("upstream/trunk");
-    expect(agents).toContain("context docs/engineering-specs/ES-change.engineering-spec.md --path <path> --base upstream/trunk");
+    expect(agents).toContain("select docs/engineering-specs --base upstream/trunk --worktree --strict");
+    expect(agents).toContain("context <selected-spec> --path <path> --base upstream/trunk");
+    expect(agents).toContain("check --spec-dir docs/engineering-specs --base upstream/trunk --strict");
     expect(agents).toContain(`@engineeringspec/cli@${version}`);
     expect(agents).not.toContain("@next");
     const skill=await readFile("skills/engineering-spec/SKILL.md","utf8");

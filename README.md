@@ -78,14 +78,14 @@ npx @engineeringspec/cli@next context ENGINEERING_SPEC.md --path src/example.ts 
 npx @engineeringspec/cli@next explain ENGINEERING_SPEC.md --path src/example.ts --base origin/main
 ```
 
-The unreleased multi-spec router can be exercised from a built checkout:
+The multi-spec router can be exercised from a built checkout:
 
 ```sh
 node dist/cli.js select docs/engineering-specs --base origin/main --worktree --strict
 node dist/cli.js check --spec-dir docs/engineering-specs --base origin/main --strict
 ```
 
-Directory routing enumerates candidates from one resolved base tree, validates them before filtering, considers `approved` contracts by default, and requires every changed path to have exactly one allowing contract. Uncovered paths, ambiguous allows, duplicate IDs, and any matching denial fail closed. The next immutable release will expose the corresponding `gate-spec-dir` Action input and switch generated adoption scaffolds to it.
+Directory routing enumerates candidates from one resolved base tree, validates them before filtering, considers `approved` contracts by default, and requires every changed path to have exactly one allowing contract. Uncovered paths, ambiguous allows, duplicate IDs, and any matching denial fail closed. RC4 exposes the corresponding `gate-spec-dir` Action input and generated adoption scaffolds use it by default.
 
 Directory validation discovers `ENGINEERING_SPEC.md`, `*.engineering-spec.md`, and `*.engineeringspec.md` recursively. Add repository-relative glob patterns to `.engineeringspecignore` to exclude generated content or intentionally invalid fixtures.
 
@@ -113,20 +113,18 @@ steps:
   - uses: actions/checkout@v4
     with:
       fetch-depth: 0
-  - uses: majilesh/engineeringspec@cecc34d97d581163a4dbd9be0cc2789555196d89
+  - uses: majilesh/engineeringspec@da9b6d7a7fabb17ec2169cdf3a4ca4278cbdeb76
     with:
       path: docs/engineering-specs
       strict: true
-      gate-spec: docs/engineering-specs/ES-my-change.engineering-spec.md
+      gate-spec-dir: docs/engineering-specs
       gate-base: origin/main
-      gate-spec-from: base          # default; do not use workspace for enforcing CI
       gate-require-status: approved # enforcing mode
-      gate-receipt: gate-receipt.json  # optional; durable unsigned audit artifact
 ```
 
-The action validates specs (annotations + job summary) and, when `gate-spec` is set, runs `gate` against `gate-base`…`gate-head`. It never executes declared verification runners. Use `fetch-depth: 0` so the base ref exists. If you use merge queues, add a `merge_group` trigger on the workflow that runs this Action.
+The action validates specs and, when `gate-spec-dir` is set, routes the diff against approved candidates loaded from `gate-base`. The compatible `gate-spec` input remains available for single-spec gates and receipts. It never executes declared verification runners. Use `fetch-depth: 0` so the base ref exists. If you use merge queues, add a `merge_group` trigger on the workflow that runs this Action.
 
-After tagging, `majilesh/engineeringspec@v0.1.0-rc.3` is acceptable for less sensitive repos; SHA pins remain preferred. See [production-gate.md](docs/production-gate.md) for required checks and CODEOWNERS.
+After tagging, `majilesh/engineeringspec@v0.1.0-rc.4` is acceptable for less sensitive repos; SHA pins remain preferred. See [production-gate.md](docs/production-gate.md) for required checks and CODEOWNERS.
 
 ```sh
 # CLI (npm dist-tag next)
@@ -142,7 +140,7 @@ Use [AGENTS.md](AGENTS.md) as the shared workflow for Codex and other compatible
 Bootstrap an existing repository without overwriting its agent files by default:
 
 ```sh
-npx --yes @engineeringspec/cli@0.1.0-rc.3 adopt . \
+npx --yes @engineeringspec/cli@0.1.0-rc.4 adopt . \
   --spec docs/engineering-specs/ES-my-change.engineering-spec.md \
   --merge --dry-run
 ```

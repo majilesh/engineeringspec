@@ -4,11 +4,14 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+## [0.1.0-rc.4] - 2026-08-09
+
 ### Changed
 
 - `adopt` generates base-pinned agent context, exact-version CLI commands, and enforcing CI that requires an `approved` contract
 - `adopt` detects `origin/HEAD`, accepts `--base`, and can merge managed AGENTS/Claude guidance without overwriting structured integration files
 - Project CI includes `package-lock.json` changes when deciding whether to run the diff-scope gate
+- Generated agent and CI scaffolds use base-pinned, approved-only directory routing with immutable RC4 CLI and Action versions
 
 ### Added
 

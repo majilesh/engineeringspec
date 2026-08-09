@@ -4,15 +4,13 @@ EngineeringSpec’s `gate` is a **diff-scope gate** (path + change-type allowlis
 
 ## Recommended pin (immutable Action)
 
-Prefer a full commit SHA. Reviewed agent-first implementation tip through PR #14:
+Prefer a full commit SHA. Reviewed multi-spec routing implementation merge:
 
 ```text
-majilesh/engineeringspec@cecc34d97d581163a4dbd9be0cc2789555196d89
+majilesh/engineeringspec@da9b6d7a7fabb17ec2169cdf3a4ca4278cbdeb76
 ```
 
-Re-pin to this repository’s reviewed merge tip after each change to `action.yml` or gate semantics. `majilesh/engineeringspec@v0.1.0-rc.3` is the corresponding release-candidate tag after publication; SHA pins remain the stronger supply-chain default ([GitHub guidance](https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#using-third-party-actions)).
-
-The source tree now contains the additive `gate-spec-dir` multi-spec input. Do not combine it with the older SHA shown below: that immutable revision predates directory routing. Switch adopters only after this implementation has a reviewed merge SHA and corresponding published CLI version.
+Re-pin to this repository’s reviewed merge tip after each change to `action.yml` or gate semantics. `majilesh/engineeringspec@v0.1.0-rc.4` is the corresponding release-candidate tag after publication; SHA pins remain the stronger supply-chain default ([GitHub guidance](https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#using-third-party-actions)).
 
 ## Enforcing CI job
 
@@ -23,23 +21,22 @@ engineering-spec:
     - uses: actions/checkout@v4
       with:
         fetch-depth: 0
-    - uses: majilesh/engineeringspec@cecc34d97d581163a4dbd9be0cc2789555196d89
+    - uses: majilesh/engineeringspec@da9b6d7a7fabb17ec2169cdf3a4ca4278cbdeb76
       with:
         path: docs/engineering-specs
         strict: true
-        gate-spec: docs/engineering-specs/ES-my-change.engineering-spec.md
+        gate-spec-dir: docs/engineering-specs
         gate-base: origin/main
-        gate-spec-from: base
         gate-require-status: approved
-        gate-receipt: gate-receipt.json
 ```
 
 | Input | Enforcing value | Why |
 |---|---|---|
-| `gate-spec-from` | `base` | PR cannot widen its own targets |
+| `gate-spec-dir` | `docs/engineering-specs` | Discover every candidate from the approved base tree |
 | `gate-require-status` | `approved` | Draft contracts are not authorization |
-| `gate-receipt` | path | Durable unsigned audit artifact |
 | Action ref | full SHA | Avoid mutable `@main` |
+
+Use the compatible single-spec `gate-spec` input when an unsigned `gate-receipt` is required; directory routing does not currently emit a combined receipt.
 
 If you use GitHub merge queues, include a `merge_group` trigger on the workflow that runs this Action (or the check will never run for queued merges).
 
@@ -58,7 +55,7 @@ Without this, the gate is advisory only.
 1. Approve the EngineeringSpec in a **separate PR** before implementation work.
 2. Add CODEOWNERS so contract changes need maintainer review (see [examples/adopters/CODEOWNERS.example](../examples/adopters/CODEOWNERS.example) and this repo’s [`.github/CODEOWNERS`](../.github/CODEOWNERS)).
 3. Protect `CODEOWNERS` itself with the same owners.
-4. Keep implementation PRs on `gate-spec-from: base` so they are evaluated against the already-merged contract.
+4. Keep implementation PRs on base-pinned directory routing so they are evaluated against already-merged approved contracts.
 
 Do not switch enforcing CI to `workspace` when a PR changes its own targets. That makes authorization self-widening. Land the reviewed contract-only PR first, then rebase or open the dependent implementation PR against that approved base.
 
@@ -69,15 +66,15 @@ Continue running your repository’s normal tests, schema diffs, security scans,
 ## CLI equivalent
 
 ```sh
-npx @engineeringspec/cli@next gate docs/engineering-specs/ES-my-change.engineering-spec.md \
-  --base origin/main \
-  --require-status approved \
-  --receipt gate-receipt.json
+npx --yes @engineeringspec/cli@0.1.0-rc.4 select docs/engineering-specs \
+  --base origin/main --worktree --strict
+npx --yes @engineeringspec/cli@0.1.0-rc.4 check \
+  --spec-dir docs/engineering-specs --base origin/main --strict
 ```
 
-With `--base` set, the CLI defaults to `--spec-from base` and resolves immutable SHAs before loading the contract and collecting the diff. Upload `gate-receipt.json` as a CI artifact (unsigned; not an attestation).
+Both commands resolve immutable SHAs before candidate discovery. Candidate specifications are loaded from the base Git tree and approved-only eligibility is the enforcing default.
 
 ## Release / npm
 
-- Action + git tag: `v0.1.0-rc.3` (when published) tracks package version `0.1.0-rc.3`.
+- Action + git tag: `v0.1.0-rc.4` (when published) tracks package version `0.1.0-rc.4`.
 - npm dist-tag: `npx @engineeringspec/cli@next` for release candidates.

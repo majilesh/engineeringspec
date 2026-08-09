@@ -107,7 +107,7 @@ jobs:
         with:
           path: docs/engineering-specs
           strict: true
-          gate-spec: docs/engineering-specs/ES-multi-spec-routing.engineering-spec.md
+          gate-spec: docs/engineering-specs/ES-rc4-routing-release.engineering-spec.md
           gate-base: ${{ env.GATE_BASE }}
           gate-spec-from: ${{ env.GATE_SPEC_FROM }}
           gate-receipt: gate-receipt.json

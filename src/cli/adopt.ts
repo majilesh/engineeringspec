@@ -45,24 +45,27 @@ function assertSafeAdoptionInputs(specPath: string, baseRef: string): void {
 
 function managedWorkflow(specPath: string, baseRef: string, version: string): string {
   const cli = `npx --yes @engineeringspec/cli@${version}`;
+  const specDirectory = path.posix.dirname(specPath);
   return `${MANAGED_START}
 # EngineeringSpec agent workflow
 
 For consequential changes:
 
 1. Prefer a repository-local EngineeringSpec CLI. Otherwise use the exact version shown below.
-2. Validate ${specPath} with \`${cli} validate ${specPath} --strict\`.
-3. Inspect every expected path with \`${cli} context ${specPath} --path <path> --base ${baseRef} --format markdown\`.
-4. Stay inside declared targets and treat contracts, constraints, and verification obligations as binding.
-5. Run only separately trusted repository checks; specification runners are inert data.
-6. Before claiming completion, run \`${cli} check ${specPath} --base ${baseRef} --strict\`.
-7. Widen targets in a contract-only change, merge it, then implement against the approved base.
+2. Validate ${specDirectory} with \`${cli} validate ${specDirectory} --strict\`.
+3. Route the complete working state with \`${cli} select ${specDirectory} --base ${baseRef} --worktree --strict\`.
+4. Inspect every expected path with \`${cli} context <selected-spec> --path <path> --base ${baseRef} --format markdown\`.
+5. Stay inside declared targets and treat contracts, constraints, and verification obligations as binding.
+6. Run only separately trusted repository checks; specification runners are inert data.
+7. Before claiming completion, run \`${cli} check --spec-dir ${specDirectory} --base ${baseRef} --strict\`.
+8. Widen targets in a contract-only change, merge it, then implement against the approved base.
 ${MANAGED_END}
 `;
 }
 
 function files(specPath: string, baseRef: string, version: string): Record<string, string> {
   const workflow = managedWorkflow(specPath, baseRef, version);
+  const specDirectory = path.posix.dirname(specPath);
   return {
     "AGENTS.md": workflow,
     "CLAUDE.md": "@AGENTS.md\n",
@@ -95,13 +98,12 @@ jobs:
           test -n "$branch"
           git fetch origin "$branch"
           echo "ref=origin/$branch" >> "$GITHUB_OUTPUT"
-      - uses: majilesh/engineeringspec@cecc34d97d581163a4dbd9be0cc2789555196d89
+      - uses: majilesh/engineeringspec@da9b6d7a7fabb17ec2169cdf3a4ca4278cbdeb76
         with:
-          path: docs/engineering-specs
+          path: ${specDirectory}
           strict: true
-          gate-spec: ${specPath}
+          gate-spec-dir: ${specDirectory}
           gate-base: \${{ steps.approved-base.outputs.ref }}
-          gate-spec-from: base
           gate-require-status: approved
 `,
   };
