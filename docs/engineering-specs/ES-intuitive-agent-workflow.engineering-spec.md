@@ -1,7 +1,7 @@
 ---
 spec_format: engineering-spec
 spec_format_version: "0.1"
-spec_revision: 1
+spec_revision: 2
 id: ES-intuitive-agent-workflow
 title: Make the agent workflow intuitive and diagnosable
 status: approved
@@ -65,6 +65,11 @@ Turn the existing agent-first controls into a guided, agent-neutral lifecycle wi
   paths:
     - docs/engineering-specs/ES-intuitive-agent-workflow.engineering-spec.md
     - rfcs/0004-intuitive-agent-workflow.md
+  change_policy: modify
+- id: TARGET-ci
+  component: repository-enforcement
+  paths:
+    - .github/workflows/ci.yml
   change_policy: modify
 ```
 
@@ -136,13 +141,18 @@ Turn the existing agent-first controls into a guided, agent-neutral lifecycle wi
   statement: After trusted checks pass, the implementation must transition this contract from approved to implemented without widening its target surfaces.
   applies_to: [TARGET-contract]
   enforcement: { kind: review, reviewer_role: maintainer }
+- id: CON-14
+  level: must
+  statement: Pull-request enforcement must use approved-only base-pinned directory routing as its single authorization decision; compatible single-spec behavior may remain tested but must not be hard-coded to a historical contract for repository PR gating.
+  applies_to: [TARGET-ci, TARGET-tests]
+  enforcement: { kind: test, verifier_ref: VER-1 }
 ```
 
 ## Verification
 
 ```engineering-verification
 - id: VER-1
-  proves: [CON-2, CON-3, CON-4, CON-5, CON-6, CON-10, CON-11]
+  proves: [CON-2, CON-3, CON-4, CON-5, CON-6, CON-10, CON-11, CON-14]
   kind: test
   runner:
     type: command
