@@ -26,6 +26,8 @@ import { buildAgentContext, explainPath } from "../query/agentContext.js";
 import { adoptRepository } from "./adopt.js";
 import { summarizeAgentBenchmark } from "./benchmark.js";
 import { selectSpecs } from "../routing/select.js";
+import { diagnoseRepository } from "./doctor.js";
+import { workflowStatus } from "./status.js";
 
 const STATUS_VALUES = ["draft", "proposed", "approved", "implemented", "superseded", "rejected"] as const;
 
@@ -279,6 +281,84 @@ export function createProgram(setCode: (code: number) => void): Command {
       } catch (error) {
         console.error(error instanceof Error ? error.message : String(error));
         setCode(ExitCode.validation);
+      }
+    });
+
+  program
+    .command("doctor")
+    .description("Diagnose repository readiness without changing files")
+    .argument("[directory]", "repository directory", ".")
+    .option("--spec-dir <directory>", "repository-relative EngineeringSpec directory", "docs/engineering-specs")
+    .option("--base <ref>", "trusted base ref", "origin/main")
+    .addOption(new Option("--format <format>", "output format").choices(["text", "json"]))
+    .action(async (directory, options, command) => {
+      try {
+        const global = command.optsWithGlobals() as GlobalOptions;
+        const report = await diagnoseRepository({
+          root: directory,
+          specDirectory: options.specDir,
+          base: options.base,
+          strict: Boolean(global.strict),
+        });
+        const text = [
+          `doctor: ${report.valid ? "ready" : "needs attention"}`,
+          `base: ${report.baseSha ?? `${report.base} (unresolved)`}`,
+          `contracts: ${report.candidates} (${report.lifecycle.approved} approved, ${report.lifecycle.proposed} proposed, ${report.lifecycle.implemented} implemented)`,
+          ...report.checks.map((check) => `${check.status === "pass" ? "✓" : check.status === "warning" ? "!" : "x"} ${check.id}: ${check.message}${check.remediation ? ` Next: ${check.remediation}` : ""}`),
+        ].join("\n");
+        if (!global.quiet) output(global.format === "json" ? report : text, global.format);
+        setCode(report.valid ? ExitCode.success : ExitCode.validation);
+      } catch (error) {
+        console.error(error instanceof Error ? error.message : String(error));
+        setCode(ExitCode.io);
+      }
+    });
+
+  program
+    .command("status")
+    .description("Summarize contract lifecycle and the complete working state")
+    .option("--spec-dir <directory>", "repository-relative EngineeringSpec directory", "docs/engineering-specs")
+    .requiredOption("--base <ref>", "trusted base ref")
+    .option("--head <ref>", "git head ref", "HEAD")
+    .option("--changed <path>", "explicit changed path (repeatable)", (value, previous: string[] = []) => previous.concat(value), [])
+    .option("--staged", "inspect committed and staged changes only")
+    .option("--no-worktree", "exclude working-tree changes")
+    .addOption(new Option("--change-kind <kind>").choices(["added", "modified", "deleted", "renamed"]).default("modified"))
+    .addOption(new Option("--format <format>", "output format").choices(["text", "json"]))
+    .action(async (options, command) => {
+      try {
+        const global = command.optsWithGlobals() as GlobalOptions;
+        if (options.changed.length > 0 && options.staged) {
+          console.error("status accepts only one of --changed or --staged");
+          setCode(ExitCode.usage);
+          return;
+        }
+        const report = await workflowStatus({
+          specDirectory: options.specDir,
+          base: options.base,
+          head: options.head,
+          strict: Boolean(global.strict),
+          staged: Boolean(options.staged),
+          worktree: options.staged ? false : options.worktree !== false,
+          ...(options.changed.length ? { changed: changedFromPathList(options.changed, options.changeKind as ChangeKind) } : {}),
+        });
+        const lifecycle = STATUS_VALUES.map((status) => `${status}=${report.lifecycle[status]}`).join(", ");
+        const text = [
+          `status: ${report.valid ? "ready" : "blocked"}`,
+          `base: ${report.baseSha}`,
+          `contracts: ${report.candidates} (${lifecycle})`,
+          `working state: ${report.workingState.changed} changed, ${report.workingState.selected} selected, ${report.workingState.violations} violations`,
+          `selected contracts: ${report.selectedContracts.join(", ") || "none"}`,
+          `routed targets: ${report.routedTargets.join(", ") || "none"}`,
+          `declared coverage: ${report.coverage.status}`,
+          `next: ${report.next.stage} — ${report.next.message}`,
+          ...report.routing.diagnostics.map((diagnostic) => `${diagnostic.severity}: ${diagnostic.code} ${diagnostic.message}`),
+        ].join("\n");
+        if (!global.quiet) output(global.format === "json" ? report : text, global.format);
+        setCode(report.valid ? ExitCode.success : ExitCode.validation);
+      } catch (error) {
+        console.error(error instanceof Error ? error.message : String(error));
+        setCode(ExitCode.io);
       }
     });
 

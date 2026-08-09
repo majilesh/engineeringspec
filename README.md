@@ -78,6 +78,21 @@ npx @engineeringspec/cli@next context ENGINEERING_SPEC.md --path src/example.ts 
 npx @engineeringspec/cli@next explain ENGINEERING_SPEC.md --path src/example.ts --base origin/main
 ```
 
+From a built checkout, the next-release workflow diagnostics are available as:
+
+```sh
+node dist/cli.js doctor . --spec-dir docs/engineering-specs --base origin/main --strict
+node dist/cli.js status --spec-dir docs/engineering-specs --base origin/main --strict
+```
+
+For a first adoption, follow [Getting started](docs/getting-started.md) and the [first-change tutorial](docs/first-change-tutorial.md). The memorable workflow is:
+
+```text
+explore -> propose -> approve -> implement -> verify -> close
+```
+
+Exploration and proposal grant no authority. Merge the contract-only approval first; dependent code changes then route against that approved base. `doctor` diagnoses the repository setup, while `status` reports lifecycle counts, complete working-state routing, declared coverage, and the safest next stage. Both are read-only and never execute declared verification runners.
+
 The multi-spec router can be exercised from a built checkout:
 
 ```sh
@@ -152,6 +167,8 @@ npx --yes @engineeringspec/cli@0.1.0-rc.5 adopt . \
 The portable [EngineeringSpec skill](skills/engineering-spec/SKILL.md) is the primary integration for skill-aware agents. The generated AGENTS.md, Claude import, and Cursor rule cover file-instruction agents without putting vendor behavior in the format. A plugin or MCP server is not required for the core workflow; add thin adapters only when real usage shows discovery or transport friction.
 
 Measure the effect rather than assuming it: [the agent-impact benchmark](benchmarks/README.md) compares paired tasks on success, scope violations, review corrections, duration, and tokens.
+
+Private repositories are supported: the CLI and Action operate on the checked-out Git tree and do not upload specification or source content. Normal package installation and GitHub Actions still use their configured package/network access. See [Roles and responsibilities](docs/roles-and-responsibilities.md), [Lifecycle](docs/lifecycle.md), [Maintaining specs](docs/maintaining-specs.md), and [Troubleshooting](docs/troubleshooting.md).
 
 Specifications are untrusted input. Declared commands are inert data: validation never executes them. See [engineeringspec.org](https://engineeringspec.org), [SECURITY.md](SECURITY.md), [SPEC.md](SPEC.md), [maintainer-only roadmap](maintainer-only roadmap), and [CONTRIBUTING.md](CONTRIBUTING.md).
 

@@ -9,9 +9,30 @@ Treat the checked-in EngineeringSpec as the shared change contract. Keep validat
 
 Prefer the repository-local `engineeringspec` binary when the package is installed. The fallback commands below pin the exact released CLI version; do not replace it with a mutable distribution tag in an enforcing workflow.
 
-## Implement a change
+## Explore
 
-1. Read repository instructions and locate the applicable EngineeringSpec.
+Read repository instructions and diagnose the setup:
+
+```sh
+engineeringspec doctor . --spec-dir docs/engineering-specs --base origin/main --strict
+engineeringspec status --spec-dir docs/engineering-specs --base origin/main --strict
+```
+
+These lifecycle commands require the repository-local build until the next release candidate is published. Keep RC5 as the exact fallback only for commands that RC5 contains.
+
+Explore source, dependencies, architecture, and likely paths without editing or claiming authorization. If intent is unclear, explain options and tradeoffs before proposing a contract.
+
+## Propose
+
+Create a draft with `init`, then capture source intent, targets, constraints, contracts, and verification identities. A proposal is planning context, not permission to modify its targets. Keep the proposal/RFC change contract-only.
+
+## Approve and review
+
+A maintainer reviews the contract-only PR, resolves ambiguity, and merges it with `status: approved`. An agent may prepare or review the proposal but must not treat its own workspace edit as approval. If scope changes later, repeat the contract-only approval before dependent code.
+
+## Implement
+
+1. Read repository instructions and locate the applicable approved EngineeringSpec.
 2. Build the CLI when working in the EngineeringSpec repository itself.
 3. Validate the contract:
 
@@ -41,6 +62,14 @@ Prefer the repository-local `engineeringspec` binary when the package is install
 
 9. Report routed specs, changed targets, satisfied identifiers, trusted check results, and unresolved drift.
 
+## Verify
+
+Run only checks trusted by the repository workflow. Then perform the complete-working-state `check`, report selected specs and targets, and map results to `CON-*`, `CONTRACT-*`, and `VER-*`. Declared coverage describes links; it does not claim that a verifier ran successfully.
+
+## Close
+
+After implementation review and trusted checks pass, prepare the lifecycle-only transition from `approved` to `implemented` (or another reviewed terminal state). Do not use closure as evidence, and do not close while the approved contract is still needed to authorize dependent implementation changes.
+
 ## Handle denials and contract evolution
 
 Use `explain` to understand a path decision:
@@ -54,3 +83,5 @@ Do not use a workspace contract to authorize implementation paths it widens in t
 ## Review a change
 
 Run `check` against the intended base, inspect every violation, and compare the implementation with applicable constraints and contracts. Remember that declared coverage reports links, not successful verifier execution.
+
+These sections may be exposed by a tool as `engineering-spec:explore`, `:propose`, `:review`, `:implement`, `:verify`, and `:close`. Such actions are thin prompts over the same files and CLI; they never replace base-pinned approval.

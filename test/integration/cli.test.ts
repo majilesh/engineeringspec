@@ -337,4 +337,10 @@ owners: [{team: test}]
       {taskId:"other",runId:"spec",condition:"engineeringspec",agent:"agent",success:true,scopeViolations:0,reviewCorrections:0,durationSeconds:1,inputTokens:1,outputTokens:1},
     ])).toThrow("requires both conditions");
   });
+  it("diagnoses adoption and reports lifecycle status through read-only CLI commands",async()=>{
+    expect(await invoke(["doctor",".","--spec-dir","docs/engineering-specs","--base","origin/main","--strict","--quiet"])).toBe(0);
+    expect(await invoke(["status","--spec-dir","docs/engineering-specs","--base","origin/main","--changed","README.md","--strict","--quiet"])).toBe(0);
+    expect(await invoke(["status","--spec-dir","docs/engineering-specs","--base","origin/main","--changed","outside.txt","--strict","--quiet"])).toBe(1);
+    expect(await invoke(["status","--spec-dir","docs/engineering-specs","--base","origin/main","--changed","README.md","--staged","--quiet"])).toBe(2);
+  });
 });
