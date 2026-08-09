@@ -95,7 +95,7 @@ owners: [{team: test}]
   });
   it("provides read-only agent check, context, and explanation workflows",async()=>{
     const file="docs/engineering-specs/ES-gate-diff-scope.engineering-spec.md";
-    expect(await invoke(["check","docs/engineering-specs/ES-rc4-routing-release.engineering-spec.md","--spec-from","workspace","--quiet"])).toBe(0);
+    expect(await invoke(["check","docs/engineering-specs/ES-empty-routing-success.engineering-spec.md","--spec-from","workspace","--quiet"])).toBe(0);
     expect(await invoke(["check","conformance/valid/future-exception.engineering-spec.md","--spec-from","workspace","--strict","--quiet"])).toBe(1);
     expect(await invoke(["context",file,"--path","src/gate/gate.ts","--quiet"])).toBe(0);
     expect(await invoke(["explain",file,"--path","src/gate/gate.ts","--quiet"])).toBe(0);
@@ -148,12 +148,64 @@ owners: [{team: test}]
     const workflow=await readFile(".github/workflows/ci.yml","utf8");
     expect(workflow).toContain("echo \"GATE_SPEC_FROM=base\"");
     expect(workflow).not.toContain("GATE_SPEC_FROM=workspace");
-    expect(workflow).toContain("package-lock\\.json");
-    expect(workflow).toContain("gate-spec: docs/engineering-specs/ES-rc4-routing-release.engineering-spec.md");
+    expect(workflow).toContain("package-lock.json");
+    expect(workflow).toContain("gate-spec: docs/engineering-specs/ES-empty-routing-success.engineering-spec.md");
+    expect(workflow).toContain("git diff --name-status -z --find-renames");
+    expect(workflow).toContain("docs/engineering-specs/*|rfcs/*");
+    expect(workflow).toContain("R*|C*");
+    expect(workflow).toContain("CONTRACT_ONLY=1");
+    expect(workflow).toContain("env.CONTRACT_ONLY != '1'");
     const action=await readFile("action.yml","utf8");
     expect(action).toContain("gate-spec-dir:");
     expect(action).toContain("gate-spec and gate-spec-dir are mutually exclusive");
     expect(action).toContain('select "$INPUT_GATE_SPEC_DIR"');
+  });
+  it("limits the contract-only CI lane to complete RFC and contract diffs",async()=>{
+    const workflow=await readFile(".github/workflows/ci.yml","utf8");
+    const start=workflow.indexOf('          diff_file="$(mktemp)"');
+    const end=workflow.indexOf("          # The approved base contract",start);
+    expect(start).toBeGreaterThan(-1);
+    expect(end).toBeGreaterThan(start);
+    const classifier=workflow.slice(start,end).replace(/^ {10}/gm,"");
+    const classify=(root:string,base:string):string=>{
+      const githubEnv=path.join(root,".git","github-env");
+      execFileSync("sh",["-c",': > "$1"',"--",githubEnv]);
+      execFileSync("bash",["-c",`set -euo pipefail
+base="$1"
+${classifier}`,"--",base],{cwd:root,env:{...process.env,GITHUB_ENV:githubEnv}});
+      return execFileSync("sh",["-c",`test -f "$1" && cat "$1" || true`,"--",githubEnv],{encoding:"utf8"});
+    };
+    const root=await mkdtemp(path.join(os.tmpdir(),"es-contract-lane-"));
+    await mkdir(path.join(root,"src"));
+    await writeFile(path.join(root,"src","original.ts"),"export {};\n");
+    execFileSync("git",["init","-q",root]);
+    execFileSync("git",["-C",root,"add","."]);
+    execFileSync("git",["-C",root,"-c","user.name=Test","-c","user.email=test@example.com","commit","-qm","base"]);
+    const base=execFileSync("git",["-C",root,"rev-parse","HEAD"],{encoding:"utf8"}).trim();
+    expect(classify(root,base)).toContain("CONTRACT_ONLY=0");
+    await mkdir(path.join(root,"docs","engineering-specs"),{recursive:true});
+    await mkdir(path.join(root,"rfcs"));
+    await writeFile(path.join(root,"docs","engineering-specs","change.engineering-spec.md"),"contract\n");
+    await writeFile(path.join(root,"rfcs","change.md"),"rfc\n");
+    execFileSync("git",["-C",root,"add","."]);
+    execFileSync("git",["-C",root,"-c","user.name=Test","-c","user.email=test@example.com","commit","-qm","contract"]);
+    expect(classify(root,base)).toContain("CONTRACT_ONLY=1");
+    await writeFile(path.join(root,"src","implementation.ts"),"export {};\n");
+    execFileSync("git",["-C",root,"add","."]);
+    execFileSync("git",["-C",root,"-c","user.name=Test","-c","user.email=test@example.com","commit","-qm","mixed"]);
+    expect(classify(root,base)).toContain("CONTRACT_ONLY=0");
+
+    const renameRoot=await mkdtemp(path.join(os.tmpdir(),"es-contract-rename-"));
+    await mkdir(path.join(renameRoot,"src"));
+    await writeFile(path.join(renameRoot,"src","implementation.ts"),"export {};\n");
+    execFileSync("git",["init","-q",renameRoot]);
+    execFileSync("git",["-C",renameRoot,"add","."]);
+    execFileSync("git",["-C",renameRoot,"-c","user.name=Test","-c","user.email=test@example.com","commit","-qm","base"]);
+    const renameBase=execFileSync("git",["-C",renameRoot,"rev-parse","HEAD"],{encoding:"utf8"}).trim();
+    await mkdir(path.join(renameRoot,"rfcs"));
+    execFileSync("git",["-C",renameRoot,"mv","src/implementation.ts","rfcs/implementation.md"]);
+    execFileSync("git",["-C",renameRoot,"-c","user.name=Test","-c","user.email=test@example.com","commit","-qm","rename"]);
+    expect(classify(renameRoot,renameBase)).toContain("CONTRACT_ONLY=0");
   });
   it("selects and checks approved contracts from a base-pinned directory",async()=>{
     const root=await mkdtemp(path.join(os.tmpdir(),"es-cli-routing-"));
@@ -205,6 +257,12 @@ owners: [{team: test}]
       expect(await invoke(["select","specs","--base","HEAD","--changed","outside.txt","--strict","--quiet"])).toBe(1);
       expect(await invoke(["check","--spec-dir","specs","--base","HEAD","--strict","--quiet"])).toBe(0);
       expect(await invoke(["check","--spec-dir","specs","--quiet"])).toBe(2);
+      await writeFile(path.join(root,"specs","change.engineering-spec.md"),(await readFile(path.join(root,"specs","change.engineering-spec.md"),"utf8")).replace("status: approved","status: implemented"));
+      execFileSync("git",["-C",root,"add","."]);
+      execFileSync("git",["-C",root,"-c","user.name=Test","-c","user.email=test@example.com","commit","-qm","close contract"]);
+      expect(await invoke(["select","specs","--base","HEAD","--strict","--quiet"])).toBe(0);
+      expect(await invoke(["check","--spec-dir","specs","--base","HEAD","--strict","--quiet"])).toBe(0);
+      expect(await invoke(["select","specs","--base","HEAD","--changed","src/a.ts","--strict","--quiet"])).toBe(1);
     } finally {
       process.chdir(original);
     }

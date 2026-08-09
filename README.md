@@ -87,6 +87,8 @@ node dist/cli.js check --spec-dir docs/engineering-specs --base origin/main --st
 
 Directory routing enumerates candidates from one resolved base tree, validates them before filtering, considers `approved` contracts by default, and requires every changed path to have exactly one allowing contract. Uncovered paths, ambiguous allows, duplicate IDs, and any matching denial fail closed. RC4 exposes the corresponding `gate-spec-dir` Action input and generated adoption scaffolds use it by default.
 
+A successfully inspected state with zero changed paths is reported as successful and `not_applicable`, even when all historical contracts are closed. This authorizes nothing: as soon as any path changes, the normal approved-contract requirement and fail-closed routing apply.
+
 Directory validation discovers `ENGINEERING_SPEC.md`, `*.engineering-spec.md`, and `*.engineeringspec.md` recursively. Add repository-relative glob patterns to `.engineeringspecignore` to exclude generated content or intentionally invalid fixtures.
 
 ## Diff-scope gate

@@ -58,7 +58,9 @@ npx --yes @engineeringspec/cli@0.1.0-rc.4 select docs/engineering-specs --base o
 npx --yes @engineeringspec/cli@0.1.0-rc.4 check --spec-dir docs/engineering-specs --base origin/main --strict
 ```
 
-The router considers approved contracts by default and assigns every changed path to exactly one of them. Treat `ESRT002` as missing scope, `ESRT003` as overlapping ownership, and `ESRT004` as a binding denial. Do not resolve ambiguity by loading a workspace spec or omitting competing candidates. Narrow or approve contracts in a contract-only change, merge it, and retry from the new base.
+The router considers approved contracts by default and assigns every changed path to exactly one of them. Treat `ESRT002` as missing scope, `ESRT003` as overlapping ownership, and `ESRT004` as a binding denial. Do not resolve ambiguity by loading a workspace spec or omitting competing candidates. Narrow or approve contracts in a contract-only change, merge it, and retry from the new base. This repository's governance lane accepts only diffs wholly contained under `docs/engineering-specs/` and `rfcs/`; adding any implementation path restores normal approved-base routing.
+
+When the complete working state has no changed paths, `select` and multi-spec `check` succeed with `not_applicable` coverage even if no contract is currently approved. This is a clean-state result, not authorization for future edits; rerun the check after every change.
 
 Keep a contract `approved` while it authorizes its dependent implementation, then move it to `implemented` in a follow-up lifecycle change. Historical draft, implemented, superseded, and rejected contracts are not eligible under the enforcing default. ProductSpec references are not dereferenced from the mutable workspace during base routing; their declared coverage is reported as unknown until a Git-tree profile resolver is available.
 

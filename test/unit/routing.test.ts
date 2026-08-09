@@ -33,8 +33,19 @@ describe("multi-spec routing", () => {
     expect(result.routes[0]).toMatchObject({ decision: "selected", selected: { specId: "ES-a", targetIds: ["TARGET-a"] } });
   });
 
-  it("fails closed for no eligible contract, uncovered paths, and duplicate IDs", () => {
-    expect(routeChanges([candidate("ES-draft", [writable("TARGET", "src/**")], "draft")], []).diagnostics[0]?.code).toBe(Codes.routingNoEligible);
+  it("treats an empty change set without eligible contracts as not applicable", () => {
+    const result = routeChanges([candidate("ES-implemented", [writable("TARGET", "src/**")], "implemented")], []);
+    expect(result.diagnostics).toEqual([]);
+    expect(result.routes).toEqual([]);
+    expect(result.candidates).toMatchObject([{ specId: "ES-implemented", eligible: false }]);
+    expect(result.changedDigest).toBe("sha256:01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b");
+  });
+
+  it("fails closed for non-empty input without an eligible contract, uncovered paths, and duplicate IDs", () => {
+    expect(routeChanges(
+      [candidate("ES-draft", [writable("TARGET", "src/**")], "draft")],
+      [{ path: "src/a.ts", kind: "modified" }],
+    ).diagnostics[0]?.code).toBe(Codes.routingNoEligible);
     expect(routeChanges([candidate("ES-a", [writable("TARGET", "docs/**")])], [{ path: "src/a.ts", kind: "modified" }]).diagnostics[0]?.code).toBe(Codes.routingUncovered);
     expect(routeChanges([
       candidate("ES-duplicate", [writable("TARGET-a", "src/**")]),

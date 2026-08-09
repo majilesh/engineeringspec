@@ -66,6 +66,19 @@ async function repository(policy = "modify"): Promise<{ root: string; baseSha: s
 }
 
 describe("Git-tree multi-spec routing", () => {
+  it("returns a valid not-applicable result after all base contracts close", async () => {
+    const { root } = await repository();
+    await writeFile(path.join(root, "specs", "change.engineering-spec.md"), document({ id: "ES-change", target: "src/**", status: "implemented" }));
+    runGit(root, ["add", "."]);
+    runGit(root, ["-c", "user.name=Test", "-c", "user.email=test@example.com", "commit", "-qm", "close contract"]);
+    const report = await selectSpecs({ directory: "specs", base: "HEAD", cwd: root, changed: [], strict: true });
+    expect(report.valid).toBe(true);
+    expect(report.changed).toEqual([]);
+    expect(report.routes).toEqual([]);
+    expect(report.coverage).toEqual({ status: "not_applicable", specs: [] });
+    expect(report.candidates).toMatchObject([{ specId: "ES-change", status: "implemented", eligible: false }]);
+  });
+
   it("loads candidates only from the resolved base and keeps runners inert", async () => {
     const { root, baseSha, marker } = await repository();
     await unlink(path.join(root, "specs", "change.engineering-spec.md"));

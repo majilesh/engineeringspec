@@ -6,4 +6,5 @@
 /.github/workflows/ @majilesh
 /action.yml @majilesh
 /docs/engineering-specs/ @majilesh
+/rfcs/ @majilesh
 /docs/production-gate.md @majilesh

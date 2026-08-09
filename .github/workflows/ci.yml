@@ -92,7 +92,46 @@ jobs:
             base="origin/$branch"
           fi
           echo "GATE_BASE=$base" >> "$GITHUB_ENV"
-          if git diff --name-only "$base"...HEAD | grep -Eq '^(src/|test/|action\.yml|README\.md|SPEC\.md|CHANGELOG\.md|ROADMAP\.md|package\.json|package-lock\.json|docs/|schemas/|conformance/|\.github/)'; then
+          diff_file="$(mktemp)"
+          trap 'rm -f "$diff_file"' EXIT
+          git diff --name-status -z --find-renames "$base"...HEAD > "$diff_file"
+          changed_count=0
+          gated=0
+          contract_only=1
+          classify_path() {
+            local changed_path="$1"
+            changed_count=$((changed_count + 1))
+            case "$changed_path" in
+              docs/engineering-specs/*|rfcs/*) ;;
+              *) contract_only=0 ;;
+            esac
+            case "$changed_path" in
+              src/*|test/*|action.yml|README.md|SPEC.md|CHANGELOG.md|maintainer-only roadmap|package.json|package-lock.json|docs/*|schemas/*|conformance/*|.github/*) gated=1 ;;
+            esac
+          }
+          while IFS= read -r -d '' change_status; do
+            if ! IFS= read -r -d '' changed_path; then
+              echo "Malformed NUL-delimited Git diff after status $change_status" >&2
+              exit 1
+            fi
+            classify_path "$changed_path"
+            case "$change_status" in
+              R*|C*)
+                if ! IFS= read -r -d '' changed_path; then
+                  echo "Malformed NUL-delimited Git rename/copy record" >&2
+                  exit 1
+                fi
+                classify_path "$changed_path"
+                ;;
+            esac
+          done < "$diff_file"
+          if [[ "$changed_count" -gt 0 && "$contract_only" -eq 1 ]]; then
+            echo "CONTRACT_ONLY=1" >> "$GITHUB_ENV"
+            echo "Contract-only governance diff: strict validation and repository checks remain required; implementation routing is not applicable."
+          else
+            echo "CONTRACT_ONLY=0" >> "$GITHUB_ENV"
+          fi
+          if [[ "$gated" -eq 1 ]]; then
             echo "GATE=1" >> "$GITHUB_ENV"
           else
             echo "GATE=0" >> "$GITHUB_ENV"
@@ -102,17 +141,17 @@ jobs:
           # Widen targets in a contract-only PR, merge it, then implement against that new base.
           echo "GATE_SPEC_FROM=base" >> "$GITHUB_ENV"
       - name: Run Action gate
-        if: (github.event_name == 'pull_request' || github.event_name == 'merge_group') && env.GATE == '1'
+        if: (github.event_name == 'pull_request' || github.event_name == 'merge_group') && env.GATE == '1' && env.CONTRACT_ONLY != '1'
         uses: ./
         with:
           path: docs/engineering-specs
           strict: true
-          gate-spec: docs/engineering-specs/ES-rc4-routing-release.engineering-spec.md
+          gate-spec: docs/engineering-specs/ES-empty-routing-success.engineering-spec.md
           gate-base: ${{ env.GATE_BASE }}
           gate-spec-from: ${{ env.GATE_SPEC_FROM }}
           gate-receipt: gate-receipt.json
       - name: Dogfood approved multi-spec routing
-        if: (github.event_name == 'pull_request' || github.event_name == 'merge_group') && env.GATE == '1'
+        if: (github.event_name == 'pull_request' || github.event_name == 'merge_group') && env.GATE == '1' && env.CONTRACT_ONLY != '1'
         uses: ./
         with:
           path: docs/engineering-specs
