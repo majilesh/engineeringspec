@@ -16,19 +16,19 @@ Prefer the repository-local `engineeringspec` binary when the package is install
 3. Validate the contract:
 
    ```sh
-   npx --yes @engineeringspec/cli@0.1.0-rc.4 validate <spec-directory> --strict
+   npx --yes @engineeringspec/cli@0.1.0-rc.5 validate <spec-directory> --strict
    ```
 
 4. Route the complete working state to one approved base contract per path:
 
    ```sh
-   npx --yes @engineeringspec/cli@0.1.0-rc.4 select <spec-directory> --base origin/main --worktree --strict
+   npx --yes @engineeringspec/cli@0.1.0-rc.5 select <spec-directory> --base origin/main --worktree --strict
    ```
 
 5. Before editing each expected path, load its relevant context from the selected spec:
 
    ```sh
-   npx --yes @engineeringspec/cli@0.1.0-rc.4 context <selected-spec> --path <path> --base origin/main --format markdown
+   npx --yes @engineeringspec/cli@0.1.0-rc.5 context <selected-spec> --path <path> --base origin/main --format markdown
    ```
 
 6. Treat matching `TARGET-*`, `CONTRACT-*`, `CON-*`, and `VER-*` obligations as binding. Stop and explain mismatches instead of editing outside the approved targets.
@@ -36,7 +36,7 @@ Prefer the repository-local `engineeringspec` binary when the package is install
 8. Before claiming completion, check the entire working state against approved base contracts:
 
    ```sh
-   npx --yes @engineeringspec/cli@0.1.0-rc.4 check --spec-dir <spec-directory> --base origin/main --strict
+   npx --yes @engineeringspec/cli@0.1.0-rc.5 check --spec-dir <spec-directory> --base origin/main --strict
    ```
 
 9. Report routed specs, changed targets, satisfied identifiers, trusted check results, and unresolved drift.
@@ -46,7 +46,7 @@ Prefer the repository-local `engineeringspec` binary when the package is install
 Use `explain` to understand a path decision:
 
 ```sh
-npx --yes @engineeringspec/cli@0.1.0-rc.4 explain <selected-spec> --path <path> --change-kind modified --base origin/main
+npx --yes @engineeringspec/cli@0.1.0-rc.5 explain <selected-spec> --path <path> --change-kind modified --base origin/main
 ```
 
 Do not use a workspace contract to authorize implementation paths it widens in the same change. Submit and merge a contract-only change first, then implement against that approved base. Escalate ambiguous or conflicting obligations to the named owner.

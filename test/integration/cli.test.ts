@@ -95,7 +95,7 @@ owners: [{team: test}]
   });
   it("provides read-only agent check, context, and explanation workflows",async()=>{
     const file="docs/engineering-specs/ES-gate-diff-scope.engineering-spec.md";
-    expect(await invoke(["check","docs/engineering-specs/ES-empty-routing-success.engineering-spec.md","--spec-from","workspace","--quiet"])).toBe(0);
+    expect(await invoke(["check","docs/engineering-specs/ES-rc5-lifecycle-release.engineering-spec.md","--spec-from","workspace","--quiet"])).toBe(0);
     expect(await invoke(["check","conformance/valid/future-exception.engineering-spec.md","--spec-from","workspace","--strict","--quiet"])).toBe(1);
     expect(await invoke(["context",file,"--path","src/gate/gate.ts","--quiet"])).toBe(0);
     expect(await invoke(["explain",file,"--path","src/gate/gate.ts","--quiet"])).toBe(0);
@@ -149,7 +149,7 @@ owners: [{team: test}]
     expect(workflow).toContain("echo \"GATE_SPEC_FROM=base\"");
     expect(workflow).not.toContain("GATE_SPEC_FROM=workspace");
     expect(workflow).toContain("package-lock.json");
-    expect(workflow).toContain("gate-spec: docs/engineering-specs/ES-empty-routing-success.engineering-spec.md");
+    expect(workflow).toContain("gate-spec: docs/engineering-specs/ES-rc5-lifecycle-release.engineering-spec.md");
     expect(workflow).toContain("git diff --name-status -z --find-renames");
     expect(workflow).toContain("docs/engineering-specs/*|rfcs/*");
     expect(workflow).toContain("R*|C*");
@@ -277,7 +277,7 @@ owners: [{team: test}]
     expect(await readFile(path.join(root,".github/workflows/engineering-spec.yml"),"utf8")).toContain("gate-spec-dir: docs/engineering-specs");
     expect(await readFile(path.join(root,".github/workflows/engineering-spec.yml"),"utf8")).toContain("gate-require-status: approved");
     expect(await readFile(path.join(root,".github/workflows/engineering-spec.yml"),"utf8")).toContain("steps.approved-base.outputs.ref");
-    expect(await readFile(path.join(root,".github/workflows/engineering-spec.yml"),"utf8")).toContain("majilesh/engineeringspec@da9b6d7a7fabb17ec2169cdf3a4ca4278cbdeb76");
+    expect(await readFile(path.join(root,".github/workflows/engineering-spec.yml"),"utf8")).toContain("majilesh/engineeringspec@e28b124ec2ca2135c4f3ad0f999a7cb9f715365d");
     expect(await readFile(path.join(root,"CLAUDE.md"),"utf8")).toContain("@AGENTS.md");
     const dry=await adoptRepository({root,specPath:"docs/engineering-specs/ES-change.engineering-spec.md",dryRun:true});
     expect(dry.skipped).toHaveLength(4);
