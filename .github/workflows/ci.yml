@@ -96,7 +96,7 @@ jobs:
             echo "GATE=1" >> "$GITHUB_ENV"
           else
             echo "GATE=0" >> "$GITHUB_ENV"
-            echo "Skipping ES-gate-diff-scope Action gate (PR does not touch gated paths)."
+            echo "Skipping EngineeringSpec Action gate (PR does not touch gated paths)."
           fi
           # The approved base contract remains authoritative, including when this PR edits it.
           # Widen targets in a contract-only PR, merge it, then implement against that new base.
@@ -107,7 +107,7 @@ jobs:
         with:
           path: docs/engineering-specs
           strict: true
-          gate-spec: docs/engineering-specs/ES-gate-diff-scope.engineering-spec.md
+          gate-spec: docs/engineering-specs/ES-multi-spec-routing.engineering-spec.md
           gate-base: ${{ env.GATE_BASE }}
           gate-spec-from: ${{ env.GATE_SPEC_FROM }}
           gate-receipt: gate-receipt.json

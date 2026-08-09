@@ -149,6 +149,7 @@ owners: [{team: test}]
     expect(workflow).toContain("echo \"GATE_SPEC_FROM=base\"");
     expect(workflow).not.toContain("GATE_SPEC_FROM=workspace");
     expect(workflow).toContain("package-lock\\.json");
+    expect(workflow).toContain("gate-spec: docs/engineering-specs/ES-multi-spec-routing.engineering-spec.md");
     const action=await readFile("action.yml","utf8");
     expect(action).toContain("gate-spec-dir:");
     expect(action).toContain("gate-spec and gate-spec-dir are mutually exclusive");
