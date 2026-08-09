@@ -49,16 +49,16 @@ function managedWorkflow(specPath: string, baseRef: string, version: string): st
   return `${MANAGED_START}
 # EngineeringSpec agent workflow
 
-For consequential changes:
+Use \`explore -> propose -> approve -> implement -> verify -> close\` for consequential changes. Prefer a repository-local CLI; otherwise use the exact version below.
 
-1. Prefer a repository-local EngineeringSpec CLI. Otherwise use the exact version shown below.
-2. Validate ${specDirectory} with \`${cli} validate ${specDirectory} --strict\`.
-3. Route the complete working state with \`${cli} select ${specDirectory} --base ${baseRef} --worktree --strict\`.
-4. Inspect every expected path with \`${cli} context <selected-spec> --path <path> --base ${baseRef} --format markdown\`.
-5. Stay inside declared targets and treat contracts, constraints, and verification obligations as binding.
-6. Run only separately trusted repository checks; specification runners are inert data.
-7. Before claiming completion, run \`${cli} check --spec-dir ${specDirectory} --base ${baseRef} --strict\`.
-8. Widen targets in a contract-only change, merge it, then implement against the approved base.
+1. **Explore:** diagnose with \`${cli} doctor . --spec-dir ${specDirectory} --base ${baseRef} --strict\` and inspect lifecycle state with \`${cli} status --spec-dir ${specDirectory} --base ${baseRef} --strict\`. Exploration grants no authority.
+2. **Propose:** create or update a draft contract describing intent, targets, constraints, and verification. Keep scope changes contract-only.
+3. **Approve:** merge the reviewed contract with \`status: approved\`. A workspace draft cannot authorize its own implementation.
+4. **Implement:** validate with \`${cli} validate ${specDirectory} --strict\`, route with \`${cli} select ${specDirectory} --base ${baseRef} --worktree --strict\`, and inspect each expected path with \`${cli} context <selected-spec> --path <path> --base ${baseRef} --format markdown\`.
+5. **Verify:** stay inside targets, run only separately trusted repository checks, then run \`${cli} check --spec-dir ${specDirectory} --base ${baseRef} --strict\`. Specification runners are inert data.
+6. **Close:** after review and trusted checks pass, move the contract out of \`approved\` in a lifecycle-only change and report satisfied identifiers.
+
+If targets must widen, merge that contract-only amendment before implementing against the new base.
 ${MANAGED_END}
 `;
 }
@@ -98,7 +98,7 @@ jobs:
           test -n "$branch"
           git fetch origin "$branch"
           echo "ref=origin/$branch" >> "$GITHUB_OUTPUT"
-      - uses: majilesh/engineeringspec@e28b124ec2ca2135c4f3ad0f999a7cb9f715365d
+      - uses: majilesh/engineeringspec@122ec6f0329b19e21a58a2f179aea3328cb8e1ac
         with:
           path: ${specDirectory}
           strict: true

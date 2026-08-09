@@ -13,7 +13,7 @@ Install or invoke the pinned CLI, create `docs/engineering-specs/`, and follow t
 Preview neutral agent and GitHub Actions integration without overwriting existing files:
 
 ```sh
-npx --yes @engineeringspec/cli@0.1.0-rc.5 adopt . \
+npx --yes @engineeringspec/cli@0.1.0-rc.6 adopt . \
   --spec docs/engineering-specs/ES-first-change.engineering-spec.md \
   --merge --dry-run
 ```
@@ -21,13 +21,11 @@ npx --yes @engineeringspec/cli@0.1.0-rc.5 adopt . \
 Review the preview, rerun without `--dry-run`, and diagnose the installation:
 
 ```sh
-engineeringspec doctor . \
+npx --yes @engineeringspec/cli@0.1.0-rc.6 doctor . \
   --spec-dir docs/engineering-specs --base origin/main --strict
 ```
 
 `doctor` is read-only. It checks Git/base availability, workspace validation, base contract lifecycles, AGENTS.md guidance, and approved-only CI configuration. It never executes commands declared inside a spec.
-
-Until the next release candidate is published, build this repository and invoke new `doctor`/`status` commands as `node dist/cli.js`; RC5 does not contain them.
 
 ### Install merge-blocking enforcement
 
@@ -37,15 +35,15 @@ Follow [Production gate](production-gate.md). Protect the EngineeringSpec job as
 
 ```sh
 # Understand the current lifecycle and routing state
-engineeringspec status \
+npx --yes @engineeringspec/cli@0.1.0-rc.6 status \
   --spec-dir docs/engineering-specs --base origin/main --strict
 
 # Load only the obligations relevant to an expected path
-npx --yes @engineeringspec/cli@0.1.0-rc.5 context <approved-spec> \
+npx --yes @engineeringspec/cli@0.1.0-rc.6 context <approved-spec> \
   --path src/example.ts --base origin/main --format markdown
 
 # Check the complete working state before review
-npx --yes @engineeringspec/cli@0.1.0-rc.5 check \
+npx --yes @engineeringspec/cli@0.1.0-rc.6 check \
   --spec-dir docs/engineering-specs --base origin/main --strict
 ```
 

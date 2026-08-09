@@ -66,23 +66,23 @@ profiles: [{ name: productspec, version: "0.1" }]
 ## Quick start
 
 ```sh
-npx @engineeringspec/cli@next init --template feature --id ES-my-change
-npx @engineeringspec/cli@next validate ENGINEERING_SPEC.md
-npx @engineeringspec/cli@next validate docs/engineering-specs
-npx @engineeringspec/cli@next normalize ENGINEERING_SPEC.md --digest
-npx @engineeringspec/cli@next inspect ENGINEERING_SPEC.md --path src/example.ts
-npx @engineeringspec/cli@next coverage ENGINEERING_SPEC.md --fail-on uncovered
-npx @engineeringspec/cli@next gate ENGINEERING_SPEC.md --base origin/main --receipt gate-receipt.json
-npx @engineeringspec/cli@next check ENGINEERING_SPEC.md --base origin/main --strict
-npx @engineeringspec/cli@next context ENGINEERING_SPEC.md --path src/example.ts --base origin/main --format markdown
-npx @engineeringspec/cli@next explain ENGINEERING_SPEC.md --path src/example.ts --base origin/main
+npx --yes @engineeringspec/cli@0.1.0-rc.6 init --template feature --id ES-my-change
+npx --yes @engineeringspec/cli@0.1.0-rc.6 validate ENGINEERING_SPEC.md
+npx --yes @engineeringspec/cli@0.1.0-rc.6 validate docs/engineering-specs
+npx --yes @engineeringspec/cli@0.1.0-rc.6 normalize ENGINEERING_SPEC.md --digest
+npx --yes @engineeringspec/cli@0.1.0-rc.6 inspect ENGINEERING_SPEC.md --path src/example.ts
+npx --yes @engineeringspec/cli@0.1.0-rc.6 coverage ENGINEERING_SPEC.md --fail-on uncovered
+npx --yes @engineeringspec/cli@0.1.0-rc.6 gate ENGINEERING_SPEC.md --base origin/main --receipt gate-receipt.json
+npx --yes @engineeringspec/cli@0.1.0-rc.6 check ENGINEERING_SPEC.md --base origin/main --strict
+npx --yes @engineeringspec/cli@0.1.0-rc.6 context ENGINEERING_SPEC.md --path src/example.ts --base origin/main --format markdown
+npx --yes @engineeringspec/cli@0.1.0-rc.6 explain ENGINEERING_SPEC.md --path src/example.ts --base origin/main
 ```
 
-From a built checkout, the next-release workflow diagnostics are available as:
+Diagnose setup and inspect the current lifecycle with RC6:
 
 ```sh
-node dist/cli.js doctor . --spec-dir docs/engineering-specs --base origin/main --strict
-node dist/cli.js status --spec-dir docs/engineering-specs --base origin/main --strict
+npx --yes @engineeringspec/cli@0.1.0-rc.6 doctor . --spec-dir docs/engineering-specs --base origin/main --strict
+npx --yes @engineeringspec/cli@0.1.0-rc.6 status --spec-dir docs/engineering-specs --base origin/main --strict
 ```
 
 For a first adoption, follow [Getting started](docs/getting-started.md) and the [first-change tutorial](docs/first-change-tutorial.md). The memorable workflow is:
@@ -112,11 +112,11 @@ Directory validation discovers `ENGINEERING_SPEC.md`, `*.engineering-spec.md`, a
 
 ```sh
 # Enforcing CI: load the approved contract from the base branch (prevents PR self-widening)
-npx @engineeringspec/cli@next gate docs/engineering-specs/ES-my-change.engineering-spec.md \
+npx --yes @engineeringspec/cli@0.1.0-rc.6 gate docs/engineering-specs/ES-my-change.engineering-spec.md \
   --base origin/main --require-status approved --receipt gate-receipt.json
 
 # Local / CI smoke without git history
-npx @engineeringspec/cli@next gate docs/engineering-specs/ES-my-change.engineering-spec.md --changed src/api.ts
+npx --yes @engineeringspec/cli@0.1.0-rc.6 gate docs/engineering-specs/ES-my-change.engineering-spec.md --changed src/api.ts
 ```
 
 Use one EngineeringSpec per consequential change, protect `docs/engineering-specs/**` with CODEOWNERS, and configure the gate job as a **required** status check so failures block merge. Full checklist: [Production diff-scope gate](docs/production-gate.md).
@@ -130,7 +130,7 @@ steps:
   - uses: actions/checkout@v4
     with:
       fetch-depth: 0
-  - uses: majilesh/engineeringspec@e28b124ec2ca2135c4f3ad0f999a7cb9f715365d
+  - uses: majilesh/engineeringspec@122ec6f0329b19e21a58a2f179aea3328cb8e1ac
     with:
       path: docs/engineering-specs
       strict: true
@@ -141,11 +141,11 @@ steps:
 
 The action validates specs and, when `gate-spec-dir` is set, routes the diff against approved candidates loaded from `gate-base`. The compatible `gate-spec` input remains available for single-spec gates and receipts. It never executes declared verification runners. Use `fetch-depth: 0` so the base ref exists. If you use merge queues, add a `merge_group` trigger on the workflow that runs this Action.
 
-After tagging, `majilesh/engineeringspec@v0.1.0-rc.5` is acceptable for less sensitive repos; SHA pins remain preferred. See [production-gate.md](docs/production-gate.md) for required checks and CODEOWNERS.
+After tagging, `majilesh/engineeringspec@v0.1.0-rc.6` is acceptable for less sensitive repos; SHA pins remain preferred. See [production-gate.md](docs/production-gate.md) for required checks and CODEOWNERS.
 
 ```sh
-# CLI (npm dist-tag next)
-npx @engineeringspec/cli@next validate docs/engineering-specs
+# CLI (exact RC6 version; npm dist-tag `next` points at the current release candidate)
+npx --yes @engineeringspec/cli@0.1.0-rc.6 validate docs/engineering-specs
 ```
 
 ## Coding agents
@@ -157,7 +157,7 @@ Use [AGENTS.md](AGENTS.md) as the shared workflow for Codex and other compatible
 Bootstrap an existing repository without overwriting its agent files by default:
 
 ```sh
-npx --yes @engineeringspec/cli@0.1.0-rc.5 adopt . \
+npx --yes @engineeringspec/cli@0.1.0-rc.6 adopt . \
   --spec docs/engineering-specs/ES-my-change.engineering-spec.md \
   --merge --dry-run
 ```

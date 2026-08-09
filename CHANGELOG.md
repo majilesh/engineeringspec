@@ -4,6 +4,8 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+## [0.1.0-rc.6] - 2026-08-10
+
 ### Added
 
 - Read-only `doctor` diagnostics for Git, trusted base, specification validation, lifecycle counts, neutral agent guidance, and enforcing CI readiness
@@ -13,6 +15,8 @@ All notable changes to this project are documented here.
 ### Changed
 
 - Repository instructions and the portable Agent Skill now present one agent-neutral lifecycle while preserving contract-only approval and inert specification runners
+- Generated adoption guidance includes the six lifecycle stages plus read-only `doctor` and `status`; production examples pin the reviewed intuitive-workflow merge
+- Repository PR enforcement uses approved-only directory routing as its single authorization decision while retaining compatible single-spec Action inputs
 
 ## [0.1.0-rc.5] - 2026-08-09
 

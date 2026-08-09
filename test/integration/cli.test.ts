@@ -278,7 +278,7 @@ owners: [{team: test}]
     expect(await readFile(path.join(root,".github/workflows/engineering-spec.yml"),"utf8")).toContain("gate-spec-dir: docs/engineering-specs");
     expect(await readFile(path.join(root,".github/workflows/engineering-spec.yml"),"utf8")).toContain("gate-require-status: approved");
     expect(await readFile(path.join(root,".github/workflows/engineering-spec.yml"),"utf8")).toContain("steps.approved-base.outputs.ref");
-    expect(await readFile(path.join(root,".github/workflows/engineering-spec.yml"),"utf8")).toContain("majilesh/engineeringspec@e28b124ec2ca2135c4f3ad0f999a7cb9f715365d");
+    expect(await readFile(path.join(root,".github/workflows/engineering-spec.yml"),"utf8")).toContain("majilesh/engineeringspec@122ec6f0329b19e21a58a2f179aea3328cb8e1ac");
     expect(await readFile(path.join(root,"CLAUDE.md"),"utf8")).toContain("@AGENTS.md");
     const dry=await adoptRepository({root,specPath:"docs/engineering-specs/ES-change.engineering-spec.md",dryRun:true});
     expect(dry.skipped).toHaveLength(4);
@@ -290,13 +290,24 @@ owners: [{team: test}]
     const version=(JSON.parse(await readFile("package.json","utf8")) as {version:string}).version;
     expect(result.baseRef).toBe("upstream/trunk");
     expect(agents).toContain("select docs/engineering-specs --base upstream/trunk --worktree --strict");
+    expect(agents).toContain("doctor . --spec-dir docs/engineering-specs --base upstream/trunk --strict");
+    expect(agents).toContain("status --spec-dir docs/engineering-specs --base upstream/trunk --strict");
     expect(agents).toContain("context <selected-spec> --path <path> --base upstream/trunk");
     expect(agents).toContain("check --spec-dir docs/engineering-specs --base upstream/trunk --strict");
+    expect(agents).toContain("explore -> propose -> approve -> implement -> verify -> close");
     expect(agents).toContain(`@engineeringspec/cli@${version}`);
     expect(agents).not.toContain("@next");
     const skill=await readFile("skills/engineering-spec/SKILL.md","utf8");
     expect(skill).toContain(`@engineeringspec/cli@${version}`);
     expect(skill).not.toContain("@engineeringspec/cli@next");
+    for (const file of ["README.md","docs/agent-integration.md","docs/getting-started.md","docs/production-gate.md","maintainer-only adoption notes"]) {
+      const source=await readFile(file,"utf8");
+      expect(source,file).toContain(`0.1.0-rc.6`);
+      expect(source,file).not.toContain("0.1.0-rc.5");
+    }
+    for (const file of ["README.md","docs/production-gate.md","maintainer-only adoption notes"]) {
+      expect(await readFile(file,"utf8"),file).toContain("122ec6f0329b19e21a58a2f179aea3328cb8e1ac");
+    }
   });
   it("detects origin HEAD and safely merges text guidance",async()=>{
     const root=await mkdtemp(path.join(os.tmpdir(),"es-adopt-merge-"));
