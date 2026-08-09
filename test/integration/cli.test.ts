@@ -339,9 +339,11 @@ owners: [{team: test}]
     ])).toThrow("requires both conditions");
   });
   it("diagnoses adoption and reports lifecycle status through read-only CLI commands",async()=>{
-    expect(await invoke(["doctor",".","--spec-dir","docs/engineering-specs","--base","origin/main","--strict","--quiet"])).toBe(0);
-    expect(await invoke(["status","--spec-dir","docs/engineering-specs","--base","origin/main","--changed","README.md","--strict","--quiet"])).toBe(0);
-    expect(await invoke(["status","--spec-dir","docs/engineering-specs","--base","origin/main","--changed","outside.txt","--strict","--quiet"])).toBe(1);
-    expect(await invoke(["status","--spec-dir","docs/engineering-specs","--base","origin/main","--changed","README.md","--staged","--quiet"])).toBe(2);
+    // Keep this CLI wiring smoke self-contained: quality jobs intentionally use
+    // shallow checkouts and do not guarantee a remote-tracking base ref.
+    expect(await invoke(["doctor",".","--spec-dir","docs/engineering-specs","--base","HEAD","--strict","--quiet"])).toBe(0);
+    expect(await invoke(["status","--spec-dir","docs/engineering-specs","--base","HEAD","--no-worktree","--strict","--quiet"])).toBe(0);
+    expect(await invoke(["status","--spec-dir","docs/engineering-specs","--base","HEAD","--changed","outside.txt","--strict","--quiet"])).toBe(1);
+    expect(await invoke(["status","--spec-dir","docs/engineering-specs","--base","HEAD","--changed","README.md","--staged","--quiet"])).toBe(2);
   });
 });
