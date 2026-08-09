@@ -139,18 +139,7 @@ jobs:
           fi
           # The approved base contract remains authoritative, including when this PR edits it.
           # Widen targets in a contract-only PR, merge it, then implement against that new base.
-          echo "GATE_SPEC_FROM=base" >> "$GITHUB_ENV"
-      - name: Run Action gate
-        if: (github.event_name == 'pull_request' || github.event_name == 'merge_group') && env.GATE == '1' && env.CONTRACT_ONLY != '1'
-        uses: ./
-        with:
-          path: docs/engineering-specs
-          strict: true
-          gate-spec: docs/engineering-specs/ES-rc5-lifecycle-release.engineering-spec.md
-          gate-base: ${{ env.GATE_BASE }}
-          gate-spec-from: ${{ env.GATE_SPEC_FROM }}
-          gate-receipt: gate-receipt.json
-      - name: Dogfood approved multi-spec routing
+      - name: Run approved multi-spec routing
         if: (github.event_name == 'pull_request' || github.event_name == 'merge_group') && env.GATE == '1' && env.CONTRACT_ONLY != '1'
         uses: ./
         with:
