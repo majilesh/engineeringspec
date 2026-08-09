@@ -52,9 +52,15 @@ export function nextLifecycleAction(report: RoutingReport): LifecycleAction {
   if (!report.valid) return { stage: "blocked", message: "Resolve the reported contract or routing diagnostics before changing code." };
   if (report.changed.length > 0) return { stage: "verify", message: "Run separately trusted repository checks, then complete the EngineeringSpec check before review." };
   if (counts.approved > 0) return { stage: "implement", message: "Load base-pinned context for the approved contract before editing its declared targets." };
-  if (counts.proposed > 0) return { stage: "approve", message: "Review and merge the contract-only proposal before implementation begins." };
-  if (counts.draft > 0) return { stage: "propose", message: "Complete and review the draft contract without treating it as implementation authority." };
-  return { stage: "explore", message: "Explore the intended change and create a draft contract when the scope is understood." };
+  if (counts.proposed === 1 && counts.draft === 0) return { stage: "approve", message: "Review and merge the single contract-only proposal before implementation begins." };
+  if (counts.draft === 1 && counts.proposed === 0) return { stage: "propose", message: "Complete and review the single draft contract without treating it as implementation authority." };
+  const pending = counts.draft + counts.proposed;
+  return {
+    stage: "explore",
+    message: pending > 0
+      ? `Explore the intended change and identify the relevant contract; ${pending} draft/proposed candidates are not implementation authority.`
+      : "Explore the intended change and create a draft contract when the scope is understood.",
+  };
 }
 
 export async function workflowStatus(options: WorkflowStatusOptions): Promise<WorkflowStatusReport> {
@@ -90,4 +96,3 @@ export async function workflowStatus(options: WorkflowStatusOptions): Promise<Wo
     routing,
   };
 }
-

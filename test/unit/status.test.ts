@@ -91,5 +91,12 @@ describe("workflow status", () => {
     expect((await workflowStatus({ specDirectory: "specs", base: "HEAD", cwd: draft })).next.stage).toBe("propose");
     const proposed = await repository([contract("ES-proposed", "src/**", "proposed")]);
     expect((await workflowStatus({ specDirectory: "specs", base: "HEAD", cwd: proposed })).next.stage).toBe("approve");
+    const ambiguousProposal = await repository([
+      contract("ES-draft", "src/**", "draft"),
+      contract("ES-proposed", "docs/**", "proposed"),
+    ]);
+    const pending = await workflowStatus({ specDirectory: "specs", base: "HEAD", cwd: ambiguousProposal });
+    expect(pending.next.stage).toBe("explore");
+    expect(pending.next.message).toContain("2 draft/proposed candidates");
   });
 });
