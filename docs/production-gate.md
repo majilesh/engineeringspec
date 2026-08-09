@@ -7,10 +7,10 @@ EngineeringSpec’s `gate` is a **diff-scope gate** (path + change-type allowlis
 Prefer a full commit SHA. Reviewed multi-spec routing implementation merge:
 
 ```text
-majilesh/engineeringspec@da9b6d7a7fabb17ec2169cdf3a4ca4278cbdeb76
+majilesh/engineeringspec@e28b124ec2ca2135c4f3ad0f999a7cb9f715365d
 ```
 
-Re-pin to this repository’s reviewed merge tip after each change to `action.yml` or gate semantics. `majilesh/engineeringspec@v0.1.0-rc.4` is the corresponding release-candidate tag after publication; SHA pins remain the stronger supply-chain default ([GitHub guidance](https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#using-third-party-actions)).
+Re-pin to this repository’s reviewed merge tip after each change to `action.yml` or gate semantics. `majilesh/engineeringspec@v0.1.0-rc.5` is the corresponding release-candidate tag after publication; SHA pins remain the stronger supply-chain default ([GitHub guidance](https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#using-third-party-actions)).
 
 ## Enforcing CI job
 
@@ -21,7 +21,7 @@ engineering-spec:
     - uses: actions/checkout@v4
       with:
         fetch-depth: 0
-    - uses: majilesh/engineeringspec@da9b6d7a7fabb17ec2169cdf3a4ca4278cbdeb76
+    - uses: majilesh/engineeringspec@e28b124ec2ca2135c4f3ad0f999a7cb9f715365d
       with:
         path: docs/engineering-specs
         strict: true
@@ -66,9 +66,9 @@ Continue running your repository’s normal tests, schema diffs, security scans,
 ## CLI equivalent
 
 ```sh
-npx --yes @engineeringspec/cli@0.1.0-rc.4 select docs/engineering-specs \
+npx --yes @engineeringspec/cli@0.1.0-rc.5 select docs/engineering-specs \
   --base origin/main --worktree --strict
-npx --yes @engineeringspec/cli@0.1.0-rc.4 check \
+npx --yes @engineeringspec/cli@0.1.0-rc.5 check \
   --spec-dir docs/engineering-specs --base origin/main --strict
 ```
 
@@ -76,5 +76,5 @@ Both commands resolve immutable SHAs before candidate discovery. Candidate speci
 
 ## Release / npm
 
-- Action + git tag: `v0.1.0-rc.4` (when published) tracks package version `0.1.0-rc.4`.
+- Action + git tag: `v0.1.0-rc.5` (when published) tracks package version `0.1.0-rc.5`.
 - npm dist-tag: `npx @engineeringspec/cli@next` for release candidates.

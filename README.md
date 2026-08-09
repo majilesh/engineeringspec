@@ -115,7 +115,7 @@ steps:
   - uses: actions/checkout@v4
     with:
       fetch-depth: 0
-  - uses: majilesh/engineeringspec@da9b6d7a7fabb17ec2169cdf3a4ca4278cbdeb76
+  - uses: majilesh/engineeringspec@e28b124ec2ca2135c4f3ad0f999a7cb9f715365d
     with:
       path: docs/engineering-specs
       strict: true
@@ -126,7 +126,7 @@ steps:
 
 The action validates specs and, when `gate-spec-dir` is set, routes the diff against approved candidates loaded from `gate-base`. The compatible `gate-spec` input remains available for single-spec gates and receipts. It never executes declared verification runners. Use `fetch-depth: 0` so the base ref exists. If you use merge queues, add a `merge_group` trigger on the workflow that runs this Action.
 
-After tagging, `majilesh/engineeringspec@v0.1.0-rc.4` is acceptable for less sensitive repos; SHA pins remain preferred. See [production-gate.md](docs/production-gate.md) for required checks and CODEOWNERS.
+After tagging, `majilesh/engineeringspec@v0.1.0-rc.5` is acceptable for less sensitive repos; SHA pins remain preferred. See [production-gate.md](docs/production-gate.md) for required checks and CODEOWNERS.
 
 ```sh
 # CLI (npm dist-tag next)
@@ -142,7 +142,7 @@ Use [AGENTS.md](AGENTS.md) as the shared workflow for Codex and other compatible
 Bootstrap an existing repository without overwriting its agent files by default:
 
 ```sh
-npx --yes @engineeringspec/cli@0.1.0-rc.4 adopt . \
+npx --yes @engineeringspec/cli@0.1.0-rc.5 adopt . \
   --spec docs/engineering-specs/ES-my-change.engineering-spec.md \
   --merge --dry-run
 ```
