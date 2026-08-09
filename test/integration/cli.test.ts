@@ -155,9 +155,10 @@ owners: [{team: test}]
     expect(action).toContain('select "$INPUT_GATE_SPEC_DIR"');
   });
   it("selects and checks approved contracts from a base-pinned directory",async()=>{
-    expect(await invoke(["select","docs/engineering-specs","--base","origin/main","--changed","src/routing/select.ts","--strict","--quiet"])).toBe(0);
-    expect(await invoke(["select","docs/engineering-specs","--base","origin/main","--changed","outside.txt","--strict","--quiet"])).toBe(1);
-    expect(await invoke(["check","--spec-dir","docs/engineering-specs","--base","origin/main","--strict","--quiet"])).toBe(0);
+    // GitHub's PR checkout is intentionally self-contained and may not create origin/main.
+    expect(await invoke(["select","docs/engineering-specs","--base","HEAD","--changed","src/routing/select.ts","--strict","--quiet"])).toBe(0);
+    expect(await invoke(["select","docs/engineering-specs","--base","HEAD","--changed","outside.txt","--strict","--quiet"])).toBe(1);
+    expect(await invoke(["check","--spec-dir","docs/engineering-specs","--base","HEAD","--strict","--quiet"])).toBe(0);
     expect(await invoke(["check","--spec-dir","docs/engineering-specs","--quiet"])).toBe(2);
   });
   it("scaffolds adoption files without overwriting by default",async()=>{
