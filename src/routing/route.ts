@@ -79,6 +79,9 @@ export function routeChanges(
   const routes: PathRoute[] = [];
 
   if (eligible.length === 0) {
+    if (changed.length === 0) {
+      return { candidates: summaries, routes, diagnostics, changedDigest: digestRoutedChanges(changed) };
+    }
     diagnostics.push({
       code: Codes.routingNoEligible,
       severity: "error",

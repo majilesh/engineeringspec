@@ -4,6 +4,11 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+### Changed
+
+- Clean multi-spec checks now succeed as `not_applicable` after all contracts close, while every non-empty change without an approved contract still fails with `ESRT001`
+- Repository CI recognizes strictly validated RFC/spec-only governance changes without allowing mixed implementation diffs to self-authorize
+
 ## [0.1.0-rc.4] - 2026-08-09
 
 ### Changed
