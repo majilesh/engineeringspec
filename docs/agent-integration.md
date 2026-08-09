@@ -48,6 +48,19 @@ evidence table mapping changed surfaces and results to the relevant identifiers.
 
 For implementation and review, pass `--base origin/main` to `context` and `explain` as well as `check`. This loads the approved contract. Agent context reports verifier identity and type but deliberately omits runner command payloads.
 
+## Multiple active contracts
+
+When a repository can have multiple active change contracts, use the built CLI's base-pinned router:
+
+```sh
+node dist/cli.js select docs/engineering-specs --base origin/main --worktree --strict
+node dist/cli.js check --spec-dir docs/engineering-specs --base origin/main --strict
+```
+
+The router considers approved contracts by default and assigns every changed path to exactly one of them. Treat `ESRT002` as missing scope, `ESRT003` as overlapping ownership, and `ESRT004` as a binding denial. Do not resolve ambiguity by loading a workspace spec or omitting competing candidates. Narrow or approve contracts in a contract-only change, merge it, and retry from the new base.
+
+Keep a contract `approved` while it authorizes its dependent implementation, then move it to `implemented` in a follow-up lifecycle change. Historical draft, implemented, superseded, and rejected contracts are not eligible under the enforcing default. ProductSpec references are not dereferenced from the mutable workspace during base routing; their declared coverage is reported as unknown until a Git-tree profile resolver is available.
+
 ## Multi-agent workflow
 
 For consequential changes, pin every participant to the same spec revision and canonical digest:

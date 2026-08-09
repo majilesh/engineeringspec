@@ -25,6 +25,7 @@ import { agentCheck } from "./agentCheck.js";
 import { buildAgentContext, explainPath } from "../query/agentContext.js";
 import { adoptRepository } from "./adopt.js";
 import { summarizeAgentBenchmark } from "./benchmark.js";
+import { selectSpecs } from "../routing/select.js";
 
 const STATUS_VALUES = ["draft", "proposed", "approved", "implemented", "superseded", "rejected"] as const;
 
@@ -284,7 +285,8 @@ export function createProgram(setCode: (code: number) => void): Command {
   program
     .command("check")
     .description("Run the read-only agent pre-completion check over the complete working state")
-    .argument("<file>", "EngineeringSpec file")
+    .argument("[file]", "EngineeringSpec file (mutually exclusive with --spec-dir)")
+    .option("--spec-dir <directory>", "base-pinned directory of approved EngineeringSpecs")
     .option("--base <ref>", "approved base ref; loads the contract from base by default")
     .option("--head <ref>", "git head ref", "HEAD")
     .addOption(new Option("--spec-from <source>").choices(["workspace", "base"]))
@@ -294,8 +296,43 @@ export function createProgram(setCode: (code: number) => void): Command {
     .action(async (file, options, command) => {
       try {
         const global = command.optsWithGlobals() as GlobalOptions;
+        if (Boolean(file) === Boolean(options.specDir)) {
+          console.error("check requires exactly one EngineeringSpec file or --spec-dir <directory>");
+          setCode(ExitCode.usage);
+          return;
+        }
+        if (options.specDir) {
+          if (!options.base) {
+            console.error("check --spec-dir requires --base <ref>");
+            setCode(ExitCode.usage);
+            return;
+          }
+          if (options.specFrom) {
+            console.error("check --spec-dir always loads candidates from base; --spec-from is not accepted");
+            setCode(ExitCode.usage);
+            return;
+          }
+          const routed = await selectSpecs({
+            directory: options.specDir as string,
+            base: options.base as string,
+            head: options.head as string,
+            strict: Boolean(global.strict),
+            staged: Boolean(options.staged),
+            worktree: options.staged ? false : options.worktree !== false,
+          });
+          const text = [
+            `check: ${routed.valid ? "pass" : "fail"}`,
+            `contracts: base ${routed.baseSha} (${routed.candidates.filter((item) => item.eligible).length} eligible)`,
+            `working state: ${routed.changed.length} changed, ${routed.routes.filter((item) => item.decision !== "selected").length} violations`,
+            `declared coverage: ${routed.coverage.status}`,
+            ...routed.diagnostics.map((diagnostic) => `${diagnostic.severity}: ${diagnostic.code} ${diagnostic.message}`),
+          ].join("\n");
+          if (!global.quiet) output(global.format === "json" ? routed : text, global.format);
+          setCode(routed.valid ? ExitCode.success : ExitCode.validation);
+          return;
+        }
         const report = await agentCheck({
-          file,
+          file: file as string,
           ...(options.base ? { base: options.base as string } : {}),
           head: options.head as string,
           ...(options.specFrom ? { specFrom: options.specFrom as SpecSource } : {}),
@@ -330,6 +367,64 @@ export function createProgram(setCode: (code: number) => void): Command {
           if (global.format === "json") output(report, "json");
           else if (global.format === "markdown") output(markdown, "text");
           else output(text, "text");
+        }
+        setCode(report.valid ? ExitCode.success : ExitCode.validation);
+      } catch (error) {
+        console.error(error instanceof Error ? error.message : String(error));
+        setCode(ExitCode.io);
+      }
+    });
+
+  program
+    .command("select")
+    .description("Route changed paths to unique approved EngineeringSpecs from an immutable base tree")
+    .argument("<directory>", "repository-relative EngineeringSpec candidate directory")
+    .requiredOption("--base <ref>", "approved Git base ref")
+    .option("--head <ref>", "git head ref", "HEAD")
+    .option("--require-status <status>", "eligible lifecycle status (repeatable; defaults to approved)", (value, previous: string[] = []) => previous.concat(value), [])
+    .option("--changed <path>", "explicit changed path (repeatable)", (value, previous: string[] = []) => previous.concat(value), [])
+    .option("--worktree", "route the complete working state")
+    .option("--staged", "route committed and staged changes")
+    .addOption(new Option("--change-kind <kind>").choices(["added", "modified", "deleted", "renamed"]).default("modified"))
+    .addOption(new Option("--format <format>", "output format").choices(["text", "json", "github", "markdown"]))
+    .action(async (directory, options, command) => {
+      try {
+        const global = command.optsWithGlobals() as GlobalOptions;
+        const sources = [options.changed.length > 0, Boolean(options.worktree), Boolean(options.staged)].filter(Boolean).length;
+        if (sources > 1) {
+          console.error("select accepts only one of --changed, --worktree, or --staged");
+          setCode(ExitCode.usage);
+          return;
+        }
+        const statuses = (options.requireStatus as string[]).map((value) => value.trim()).filter(Boolean);
+        for (const status of statuses) {
+          if (!(STATUS_VALUES as readonly string[]).includes(status)) {
+            console.error(`invalid --require-status ${JSON.stringify(status)}; expected one of ${STATUS_VALUES.join(", ")}`);
+            setCode(ExitCode.usage);
+            return;
+          }
+        }
+        const report = await selectSpecs({
+          directory,
+          base: options.base,
+          head: options.head,
+          strict: Boolean(global.strict),
+          requiredStatuses: (statuses.length ? statuses : ["approved"]) as Status[],
+          ...(options.changed.length ? { changed: changedFromPathList(options.changed, options.changeKind as ChangeKind) } : {}),
+          staged: Boolean(options.staged),
+          worktree: Boolean(options.worktree),
+        });
+        const text = [
+          `select: ${report.valid ? "pass" : "fail"}`,
+          `base: ${report.baseSha}`,
+          `candidates: ${report.candidates.length}, eligible: ${report.candidates.filter((item) => item.eligible).length}`,
+          `changed: ${report.changed.length}, selected: ${report.routes.filter((item) => item.decision === "selected").length}`,
+          ...report.routes.map((route) => `${route.decision === "selected" ? "✓" : "x"} ${route.path} (${route.kind}): ${route.selected?.specId ?? route.decision}`),
+          ...report.diagnostics.map((diagnostic) => `${diagnostic.severity}: ${diagnostic.code} ${diagnostic.message}`),
+        ].join("\n");
+        if (!global.quiet) {
+          if (global.format === "github") for (const diagnostic of report.diagnostics) console.log(formatGitHubDiagnostic(diagnostic));
+          else output(global.format === "json" ? report : text, global.format);
         }
         setCode(report.valid ? ExitCode.success : ExitCode.validation);
       } catch (error) {

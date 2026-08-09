@@ -12,6 +12,8 @@ majilesh/engineeringspec@cecc34d97d581163a4dbd9be0cc2789555196d89
 
 Re-pin to this repository’s reviewed merge tip after each change to `action.yml` or gate semantics. `majilesh/engineeringspec@v0.1.0-rc.3` is the corresponding release-candidate tag after publication; SHA pins remain the stronger supply-chain default ([GitHub guidance](https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#using-third-party-actions)).
 
+The source tree now contains the additive `gate-spec-dir` multi-spec input. Do not combine it with the older SHA shown below: that immutable revision predates directory routing. Switch adopters only after this implementation has a reviewed merge SHA and corresponding published CLI version.
+
 ## Enforcing CI job
 
 ```yaml
