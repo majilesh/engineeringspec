@@ -156,11 +156,58 @@ owners: [{team: test}]
     expect(action).toContain('select "$INPUT_GATE_SPEC_DIR"');
   });
   it("selects and checks approved contracts from a base-pinned directory",async()=>{
-    // GitHub's PR checkout is intentionally self-contained and may not create origin/main.
-    expect(await invoke(["select","docs/engineering-specs","--base","HEAD","--changed","src/routing/select.ts","--strict","--quiet"])).toBe(0);
-    expect(await invoke(["select","docs/engineering-specs","--base","HEAD","--changed","outside.txt","--strict","--quiet"])).toBe(1);
-    expect(await invoke(["check","--spec-dir","docs/engineering-specs","--base","HEAD","--strict","--quiet"])).toBe(0);
-    expect(await invoke(["check","--spec-dir","docs/engineering-specs","--quiet"])).toBe(2);
+    const root=await mkdtemp(path.join(os.tmpdir(),"es-cli-routing-"));
+    await mkdir(path.join(root,"specs"));
+    await writeFile(path.join(root,"specs","change.engineering-spec.md"),`---
+spec_format: engineering-spec
+spec_format_version: "0.1"
+spec_revision: 1
+id: ES-cli-routing
+title: CLI routing fixture
+status: approved
+owners: [{team: test}]
+---
+
+# CLI routing fixture
+
+\`\`\`engineering-source-refs
+- id: SRC-1
+  type: document
+  ref: test
+\`\`\`
+
+\`\`\`engineering-targets
+- id: TARGET-1
+  paths: [src/**]
+  change_policy: modify
+\`\`\`
+
+\`\`\`engineering-constraints
+- id: CON-1
+  level: must
+  statement: Test
+  enforcement: {kind: test, verifier_ref: VER-1}
+\`\`\`
+
+\`\`\`engineering-verification
+- id: VER-1
+  proves: [CON-1]
+  kind: test
+\`\`\`
+`);
+    execFileSync("git",["init","-q",root]);
+    execFileSync("git",["-C",root,"add","."]);
+    execFileSync("git",["-C",root,"-c","user.name=Test","-c","user.email=test@example.com","commit","-qm","fixture"]);
+    const original=process.cwd();
+    process.chdir(root);
+    try {
+      expect(await invoke(["select","specs","--base","HEAD","--changed","src/a.ts","--strict","--quiet"])).toBe(0);
+      expect(await invoke(["select","specs","--base","HEAD","--changed","outside.txt","--strict","--quiet"])).toBe(1);
+      expect(await invoke(["check","--spec-dir","specs","--base","HEAD","--strict","--quiet"])).toBe(0);
+      expect(await invoke(["check","--spec-dir","specs","--quiet"])).toBe(2);
+    } finally {
+      process.chdir(original);
+    }
   });
   it("scaffolds adoption files without overwriting by default",async()=>{
     const root=await mkdtemp(path.join(os.tmpdir(),"es-adopt-"));
