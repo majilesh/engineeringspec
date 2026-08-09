@@ -1,10 +1,10 @@
 ---
 spec_format: engineering-spec
 spec_format_version: "0.1"
-spec_revision: 1
+spec_revision: 2
 id: ES-multi-spec-routing
 title: Deterministic multi-spec routing
-status: approved
+status: implemented
 owners:
   - team: EngineeringSpec maintainers
 repository:
