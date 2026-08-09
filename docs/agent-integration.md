@@ -16,18 +16,16 @@ Codex, Claude Code, Cursor, and human contributors should follow the same thin w
 Start an unfamiliar repository with `doctor`, and use `status` whenever the next lifecycle action is unclear:
 
 ```sh
-engineeringspec doctor . --spec-dir docs/engineering-specs --base origin/main --strict
-engineeringspec status --spec-dir docs/engineering-specs --base origin/main --strict
+npx --yes @engineeringspec/cli@0.1.0-rc.6 doctor . --spec-dir docs/engineering-specs --base origin/main --strict
+npx --yes @engineeringspec/cli@0.1.0-rc.6 status --spec-dir docs/engineering-specs --base origin/main --strict
 ```
-
-Use these commands from a built checkout until they are included in the next published release candidate. Do not claim they exist in RC5.
 
 ## Repository setup
 
 Generate the starter files safely with:
 
 ```sh
-npx --yes @engineeringspec/cli@0.1.0-rc.5 adopt . --spec docs/engineering-specs/ES-change.engineering-spec.md
+npx --yes @engineeringspec/cli@0.1.0-rc.6 adopt . --spec docs/engineering-specs/ES-change.engineering-spec.md
 ```
 
 Existing files are skipped unless `--force` is explicitly supplied. Review generated guidance before committing it.
@@ -57,7 +55,7 @@ change. Treat CONTRACT-*, CON-*, and VER-* obligations as binding. Do not edit
 outside declared targets without explaining the mismatch and updating or
 escalating the contract. Before ending your turn, self-check with:
 
-  npx --yes @engineeringspec/cli@0.1.0-rc.5 check \
+  npx --yes @engineeringspec/cli@0.1.0-rc.6 check \
     --spec-dir docs/engineering-specs --base origin/main --strict
 
 Fix gate violations (or update/escalate the contract) before claiming done.
@@ -76,8 +74,8 @@ For implementation and review, pass `--base origin/main` to `context` and `expla
 When a repository can have multiple active change contracts, use the built CLI's base-pinned router:
 
 ```sh
-npx --yes @engineeringspec/cli@0.1.0-rc.5 select docs/engineering-specs --base origin/main --worktree --strict
-npx --yes @engineeringspec/cli@0.1.0-rc.5 check --spec-dir docs/engineering-specs --base origin/main --strict
+npx --yes @engineeringspec/cli@0.1.0-rc.6 select docs/engineering-specs --base origin/main --worktree --strict
+npx --yes @engineeringspec/cli@0.1.0-rc.6 check --spec-dir docs/engineering-specs --base origin/main --strict
 ```
 
 The router considers approved contracts by default and assigns every changed path to exactly one of them. Treat `ESRT002` as missing scope, `ESRT003` as overlapping ownership, and `ESRT004` as a binding denial. Do not resolve ambiguity by loading a workspace spec or omitting competing candidates. Narrow or approve contracts in a contract-only change, merge it, and retry from the new base. This repository's governance lane accepts only diffs wholly contained under `docs/engineering-specs/` and `rfcs/`; adding any implementation path restores normal approved-base routing.

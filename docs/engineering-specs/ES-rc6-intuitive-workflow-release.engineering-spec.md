@@ -1,14 +1,15 @@
 ---
 spec_format: engineering-spec
 spec_format_version: "0.1"
-spec_revision: 1
+spec_revision: 2
 id: ES-rc6-intuitive-workflow-release
 title: Publish the intuitive agent workflow RC6 release
-status: approved
+status: implemented
 owners:
   - team: EngineeringSpec maintainers
 repository:
   ref: majilesh/engineeringspec
+base_revision: b391a64
 ---
 
 # Publish the intuitive agent workflow RC6 release
