@@ -4,7 +4,7 @@ spec_format_version: "0.1"
 spec_revision: 1
 id: ES-rc8-frictionless-agent-operations
 title: Frictionless agent operations, discovery, and architecture bridge
-status: approved
+status: implemented
 owners:
   - team: EngineeringSpec maintainers
 repository:
