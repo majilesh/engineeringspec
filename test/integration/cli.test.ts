@@ -379,7 +379,9 @@ owners: [{team: test}]
   it("exposes lifecycle, catalogue, and read-only architecture commands",async()=>{
     const root=await mkdtemp(path.join(os.tmpdir(),"es-cli-ops-"));
     const spec=path.join(root,"change.engineering-spec.md");
-    await writeFile(spec,await readFile("docs/engineering-specs/ES-rc8-frictionless-agent-operations.engineering-spec.md","utf8"));
+    const lifecycleFixture=(await readFile("docs/engineering-specs/ES-rc8-frictionless-agent-operations.engineering-spec.md","utf8"))
+      .replace(/^status: (draft|proposed|approved|implemented|superseded|rejected)$/m,"status: approved");
+    await writeFile(spec,lifecycleFixture);
     expect(await invoke(["transition",spec,"--to","implemented","--quiet"])).toBe(0);
     expect((await readFile(spec,"utf8"))).toContain("status: approved");
     expect(await invoke(["catalogue","docs/engineering-specs","--query","architecture","--format","json","--quiet"])).toBe(0);
