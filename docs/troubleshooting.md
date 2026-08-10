@@ -21,6 +21,8 @@ The approved base contains no writable target for the path. Confirm the path is 
 
 If the only changed path is inside the configured specification directory, this may be a proposal, amendment, or closure. Use the repository's reviewed governance policy and `--allow-contract-only`; do not add the specification file to its own implementation targets. If any non-specification path is also changed, `ESRT002` is expected and the changes must be split.
 
+Current CLI versions add an informational diagnostic when specification and non-specification paths are mixed. The safe remediation is always: split the contract change, merge it, update the implementation branch from the trusted base, then continue.
+
 ## Ambiguous path (`ESRT003`)
 
 More than one approved contract claims the same change. Narrow targets or close stale contracts in a governance change. Do not choose a workspace contract or suppress competing candidates.
@@ -40,6 +42,10 @@ Eligible contracts share an ID. Assign durable unique IDs in a contract-only cha
 ## Doctor reports missing guidance or CI
 
 Preview `adopt --merge --dry-run`, review the generated files, then apply them. Existing structured workflow and Cursor files are not overwritten by default and may require a manual merge.
+
+## Doctor reports integration version drift
+
+The installed CLI, managed guidance and immutable Action pin are independent identities. Run `adopt --merge --upgrade --dry-run`, review the result, then apply it. If a structured file is skipped, update it manually rather than forcing an overwrite.
 
 ## A declared verifier did not run
 

@@ -6,6 +6,8 @@ import type { Status } from "../model/types.js";
 import { compareCodePoints } from "../normalizer/canonicalize.js";
 import { selectSpecs } from "../routing/select.js";
 import { validatePath } from "../validator/validatePath.js";
+import { CURRENT_ACTION_SHA, detectIntegrationVersions } from "../adoption/releases.js";
+import { packageVersion } from "./version.js";
 
 const MAX_INTEGRATION_FILE_BYTES = 1024 * 1024;
 const MAX_WORKFLOW_FILES = 1_000;
@@ -13,7 +15,7 @@ const MAX_WORKFLOW_FILES = 1_000;
 export type DoctorCheckStatus = "pass" | "warning" | "fail";
 
 export interface DoctorCheck {
-  id: "git-worktree" | "base-ref" | "spec-directory" | "spec-validation" | "base-contracts" | "agent-guidance" | "enforcing-ci";
+  id: "git-worktree" | "base-ref" | "spec-directory" | "spec-validation" | "base-contracts" | "agent-guidance" | "enforcing-ci" | "integration-versions";
   status: DoctorCheckStatus;
   message: string;
   remediation?: string;
@@ -81,6 +83,23 @@ async function hasEnforcingCi(root: string): Promise<boolean> {
     if (source?.includes("gate-spec-dir:") && source.includes("gate-base:") && source.includes("approved")) return true;
   }
   return false;
+}
+
+async function integrationVersionCheck(root: string): Promise<DoctorCheck> {
+  const files = ["AGENTS.md", "CLAUDE.md", ".cursor/rules/engineering-spec.mdc", ".github/workflows/engineering-spec.yml"];
+  const texts = (await Promise.all(files.map((file) => boundedText(path.join(root, file))))).filter((value): value is string => value !== undefined);
+  const detected = detectIntegrationVersions(texts);
+  const workflow = texts.find((text) => text.includes("gate-spec-dir:"));
+  const expectedCli = packageVersion();
+  const cliDrift = detected.cliVersions.some((version) => version !== expectedCli);
+  const actionDrift = detected.actionPins.some((pin) => pin !== CURRENT_ACTION_SHA) || Boolean(workflow && detected.actionPins.length !== 1);
+  if (cliDrift || actionDrift) return {
+    id: "integration-versions",
+    status: "warning",
+    message: `Integration versions drift from CLI ${expectedCli} and Action ${CURRENT_ACTION_SHA}.`,
+    remediation: "Run adopt --merge --upgrade --dry-run, review the managed changes, then apply without --dry-run.",
+  };
+  return { id: "integration-versions", status: "pass", message: `Managed integrations match CLI ${expectedCli} and the current immutable Action pin.` };
 }
 
 export async function diagnoseRepository(options: DoctorOptions = {}): Promise<DoctorReport> {
@@ -158,6 +177,7 @@ export async function diagnoseRepository(options: DoctorOptions = {}): Promise<D
   checks.push(await hasEnforcingCi(root)
     ? { id: "enforcing-ci", status: "pass", message: "Approved-only directory gating is configured in GitHub Actions." }
     : { id: "enforcing-ci", status: "warning", message: "Approved-only directory gating was not detected in GitHub Actions.", remediation: "Install and protect the generated EngineeringSpec workflow before relying on merge enforcement." });
+  checks.push(await integrationVersionCheck(root));
 
   const invalid = checks.some((check) => check.status === "fail")
     || Boolean(options.strict && checks.some((check) => check.status === "warning"));

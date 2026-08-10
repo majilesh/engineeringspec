@@ -80,6 +80,21 @@ describe("multi-spec routing", () => {
     ]);
   });
 
+  it("explains mixed contract and implementation changes without interrupting fail-closed routing", () => {
+    const result = routeChanges([
+      candidate("ES-a", [writable("TARGET-a", "src/**")]),
+    ], [
+      { path: "specs/change.engineering-spec.md", kind: "modified" },
+      { path: "src/change.ts", kind: "modified" },
+    ]);
+    expect(result.diagnostics).toEqual(expect.arrayContaining([
+      expect.objectContaining({ severity: "info", message: expect.stringContaining("Contract-only handling is unavailable") }),
+      expect.objectContaining({ severity: "error", file: "specs/change.engineering-spec.md" }),
+    ]));
+    expect(result.routes).toHaveLength(2);
+    expect(result.routes.find((route) => route.path === "src/change.ts")?.decision).toBe("selected");
+  });
+
   it("keeps single-contract policy decisions compatible with gate", () => {
     const policies: TargetSurface["changePolicy"][] = ["modify", "create", "delete", "read_only", "interface_only", "observe"];
     const kinds = ["added", "modified", "deleted", "renamed"] as const;

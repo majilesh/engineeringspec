@@ -25,7 +25,7 @@ npx --yes @engineeringspec/cli@0.1.0-rc.7 doctor . \
   --spec-dir docs/engineering-specs --base origin/main --strict
 ```
 
-`doctor` is read-only. It checks Git/base availability, workspace validation, base contract lifecycles, AGENTS.md guidance, and approved-only CI configuration. It never executes commands declared inside a spec.
+`doctor` is read-only. It checks Git/base availability, workspace validation, base contract lifecycles, AGENTS.md guidance, approved-only CI configuration, and drift between the CLI, managed guidance, and immutable Action pin. It never executes commands declared inside a spec.
 
 ### Install merge-blocking enforcement
 
@@ -45,6 +45,14 @@ npx --yes @engineeringspec/cli@0.1.0-rc.7 context <approved-spec> \
 # Check the complete working state before review
 npx --yes @engineeringspec/cli@0.1.0-rc.7 check \
   --spec-dir docs/engineering-specs --base origin/main --allow-contract-only --strict
+
+# Search lifecycle, ownership, obligations and path impact
+npx --yes @engineeringspec/cli@0.1.0-rc.7 catalogue docs/engineering-specs \
+  --path src/example.ts
+
+# Preview a closure without editing; add --write only after review
+npx --yes @engineeringspec/cli@0.1.0-rc.7 transition \
+  docs/engineering-specs/ES-change.engineering-spec.md --to implemented
 ```
 
 RC7 adopters should use `--allow-contract-only` with `status`, directory `select`, and directory `check`, and enable the matching Action input. This lets strictly validated spec-only proposals and closures pass without letting workspace contracts authorize code.
@@ -56,5 +64,6 @@ Use the repository-local binary when installed. Pin an exact package version and
 - A newcomer can explain the six lifecycle stages.
 - Every consequential changed path maps to one approved contract.
 - Reviewers can identify the relevant constraints and verification obligations.
+- Teams can search active and historical contracts by owner, path, component and obligation.
 - Agents fail visibly when scope is missing, ambiguous, or denied.
 - The team records whether scope violations and review corrections decrease over paired tasks.

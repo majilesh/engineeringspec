@@ -32,6 +32,8 @@ Existing files are skipped unless `--force` is explicitly supplied. Review gener
 
 Use `--merge --dry-run` first in established repositories. After applying the scaffold, rerun `doctor`; warnings identify missing agent guidance or merge-blocking CI without changing files.
 
+For upgrades, use `--merge --upgrade --dry-run`. The upgrade path edits only recognisable managed guidance and an exact immutable Action pin; ambiguous structured configuration is skipped.
+
 ```text
 AGENTS.md
 CLAUDE.md
@@ -83,6 +85,8 @@ The router considers approved contracts by default and assigns every implementat
 When the complete working state has no changed paths, `select` and multi-spec `check` succeed with `not_applicable` coverage even if no contract is currently approved. This is a clean-state result, not authorization for future edits; rerun the check after every change.
 
 Keep a contract `approved` while it authorizes its dependent implementation, then move it to `implemented` in a follow-up lifecycle change. Historical draft, implemented, superseded, and rejected contracts are not eligible under the enforcing default. ProductSpec references are not dereferenced from the mutable workspace during base routing; their declared coverage is reported as unknown until a Git-tree profile resolver is available.
+
+Use `catalogue` for deterministic cross-contract search and path impact. Use `architecture` only to import read-only component context for a proposal; neither output can authorize implementation or replace `select`/`check`.
 
 ## Multi-agent workflow
 

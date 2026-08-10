@@ -76,6 +76,7 @@ npx --yes @engineeringspec/cli@0.1.0-rc.7 gate ENGINEERING_SPEC.md --base origin
 npx --yes @engineeringspec/cli@0.1.0-rc.7 check ENGINEERING_SPEC.md --base origin/main --strict
 npx --yes @engineeringspec/cli@0.1.0-rc.7 context ENGINEERING_SPEC.md --path src/example.ts --base origin/main --format markdown
 npx --yes @engineeringspec/cli@0.1.0-rc.7 explain ENGINEERING_SPEC.md --path src/example.ts --base origin/main
+npx --yes @engineeringspec/cli@0.1.0-rc.7 catalogue docs/engineering-specs --query session --format json
 ```
 
 Diagnose setup and inspect the current lifecycle with RC7:
@@ -165,16 +166,16 @@ npx --yes @engineeringspec/cli@0.1.0-rc.7 adopt . \
   --merge --dry-run
 ```
 
-`adopt` detects the default branch from `origin/HEAD` (falling back to `origin/main`); override it with `--base`. Review the dry-run, then rerun without `--dry-run`. Generated agent commands pin the current CLI version, context is loaded from the approved base, and generated enforcing CI requires an `approved` contract. Merge mode updates AGENTS.md and the Claude import without replacing existing content; existing structured Cursor and workflow files are skipped for manual integration.
+`adopt` detects the default branch from `origin/HEAD` (falling back to `origin/main`); override it with `--base`. Review the dry-run, then rerun without `--dry-run`. Generated agent commands pin the current CLI version, context is loaded from the approved base, and generated enforcing CI requires an `approved` contract. Merge mode updates AGENTS.md and the Claude import without replacing existing content. `--upgrade` may additionally update one recognisable immutable Action pin; ambiguous structured files remain untouched.
 
 The portable [EngineeringSpec skill](skills/engineering-spec/SKILL.md) is the primary integration for skill-aware agents. The generated AGENTS.md, Claude import, and Cursor rule cover file-instruction agents without putting vendor behavior in the format. A plugin or MCP server is not required for the core workflow; add thin adapters only when real usage shows discovery or transport friction.
 
 Measure the effect rather than assuming it: [the agent-impact benchmark](benchmarks/README.md) compares paired tasks on success, scope violations, review corrections, duration, and tokens.
 
-Private repositories are supported: the CLI and Action operate on the checked-out Git tree and do not upload specification or source content. Normal package installation and GitHub Actions still use their configured package/network access. See [Roles and responsibilities](docs/roles-and-responsibilities.md), [Lifecycle](docs/lifecycle.md), [Maintaining specs](docs/maintaining-specs.md), and [Troubleshooting](docs/troubleshooting.md).
+Private repositories are supported: the CLI and Action operate on the checked-out Git tree and do not upload specification or source content. Normal package installation and GitHub Actions still use their configured package/network access. See the [CLI reference](docs/cli-reference.md), [coding-agent integrations](docs/integrations.md), [architecture bridge](docs/architecture-bridge.md), [upgrade guide](docs/upgrading.md), [roles and responsibilities](docs/roles-and-responsibilities.md), [lifecycle](docs/lifecycle.md), [maintaining specs](docs/maintaining-specs.md), and [troubleshooting](docs/troubleshooting.md).
 
 Specifications are untrusted input. Declared commands are inert data: validation never executes them. See [engineeringspec.org](https://engineeringspec.org), [SECURITY.md](SECURITY.md), [SPEC.md](SPEC.md), [maintainer-only roadmap](maintainer-only roadmap), and [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Status
 
-The parser, schema, semantic validator, normalizer, query API, ProductSpec profile, CLI, conformance fixtures, fail-closed **diff gate**, agent self-check loop, adoption scaffold, and portable skill form the v0.1 release candidate. A read-only MCP adapter remains deliberately deferred until measured adoption friction warrants another transport.
+The parser, schema, semantic validator, normalizer, query API, ProductSpec profile, CLI, conformance fixtures, fail-closed **diff gate**, agent self-check loop, adoption scaffold, portable skill, deterministic catalogue, static Explorer, and read-only architecture map form the v0.1 release candidate. A read-only MCP adapter remains deliberately deferred until measured adoption friction warrants another transport.

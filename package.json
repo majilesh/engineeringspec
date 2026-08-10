@@ -25,6 +25,7 @@
     "test": "vitest run --coverage",
     "test:coverage": "vitest run --coverage",
     "test:conformance": "vitest run test/conformance",
+    "site:generate": "npm run build && node scripts/generate-site.mjs",
     "format": "prettier --write ."
   },
   "dependencies": {

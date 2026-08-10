@@ -45,8 +45,8 @@ async function repository(source = contract()): Promise<string> {
   await mkdir(path.join(root, "docs", "engineering-specs"), { recursive: true });
   await mkdir(path.join(root, ".github", "workflows"), { recursive: true });
   await writeFile(path.join(root, "docs", "engineering-specs", "change.engineering-spec.md"), source);
-  await writeFile(path.join(root, "AGENTS.md"), "# EngineeringSpec\nRun check before completion.\n");
-  await writeFile(path.join(root, ".github", "workflows", "engineering-spec.yml"), "gate-spec-dir: docs/engineering-specs\ngate-base: origin/main\ngate-require-status: approved\n");
+  await writeFile(path.join(root, "AGENTS.md"), "# EngineeringSpec\nRun npx --yes @engineeringspec/cli@0.1.0-rc.7 check before completion.\n");
+  await writeFile(path.join(root, ".github", "workflows", "engineering-spec.yml"), "gate-spec-dir: docs/engineering-specs\ngate-base: origin/main\ngate-require-status: approved\nuses: majilesh/engineeringspec@0867ea1461f2280a0e0aa1c9bb14fb3d02a33d9b\n");
   execFileSync("git", ["init", "-q", root]);
   execFileSync("git", ["-C", root, "add", "."]);
   execFileSync("git", ["-C", root, "-c", "user.name=Test", "-c", "user.email=test@example.com", "commit", "-qm", "fixture"]);
@@ -95,5 +95,13 @@ describe("repository doctor", () => {
     expect(strict.valid).toBe(false);
     expect(strict.checks).toEqual(expect.arrayContaining([expect.objectContaining({ id: "spec-validation", status: "fail" })]));
   });
-});
 
+  it("detects managed CLI and immutable Action version drift without network access", async () => {
+    const root = await repository();
+    await writeFile(path.join(root, "AGENTS.md"), "# EngineeringSpec\nRun npx --yes @engineeringspec/cli@0.1.0-rc.6 check.\n");
+    await writeFile(path.join(root, ".github", "workflows", "engineering-spec.yml"), "gate-spec-dir: docs/engineering-specs\ngate-base: origin/main\ngate-require-status: approved\nuses: majilesh/engineeringspec@122ec6f0329b19e21a58a2f179aea3328cb8e1ac\n");
+    const report = await diagnoseRepository({ root, base: "HEAD" });
+    expect(report.checks).toEqual(expect.arrayContaining([expect.objectContaining({ id: "integration-versions", status: "warning" })]));
+    expect((await diagnoseRepository({ root, base: "HEAD", strict: true })).valid).toBe(false);
+  });
+});

@@ -18,6 +18,8 @@ npx --yes @engineeringspec/cli@0.1.0-rc.7 doctor . --spec-dir docs/engineering-s
 npx --yes @engineeringspec/cli@0.1.0-rc.7 status --spec-dir docs/engineering-specs --base origin/main --allow-contract-only --strict
 ```
 
+If doctor reports version drift, preview a bounded managed upgrade with `adopt --merge --upgrade --dry-run`. Review skipped structured files manually.
+
 Explore source, dependencies, architecture, and likely paths without editing or claiming authorization. If intent is unclear, explain options and tradeoffs before proposing a contract.
 
 ## Propose
@@ -67,6 +69,15 @@ Run only checks trusted by the repository workflow. Then perform the complete-wo
 ## Close
 
 After implementation review and trusted checks pass, prepare the lifecycle-only transition from `approved` to `implemented` (or another reviewed terminal state). Run directory `check --allow-contract-only` and require the distinct `contract_only` classification. Do not use closure as evidence, and do not close while the approved contract is still needed to authorize dependent implementation changes.
+
+Preview the status-only edit, then write it explicitly after review:
+
+```sh
+npx --yes @engineeringspec/cli@0.1.0-rc.7 transition <spec> --to implemented
+npx --yes @engineeringspec/cli@0.1.0-rc.7 transition <spec> --to implemented --write
+```
+
+For discovery across many contracts, use `catalogue <spec-directory> --query <text> --format json` or `--path <repository-path>`. Use `architecture <catalog-info.yaml> --format json` only as read-only proposal context; it grants no authority.
 
 ## Handle denials and contract evolution
 

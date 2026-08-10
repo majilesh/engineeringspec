@@ -3,6 +3,7 @@ import { access, mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { promisify } from "node:util";
 import { packageVersion } from "./version.js";
+import { CURRENT_ACTION_SHA } from "../adoption/releases.js";
 
 const execFileAsync = promisify(execFile);
 const MANAGED_START = "<!-- engineeringspec:start -->";
@@ -51,14 +52,15 @@ function managedWorkflow(specPath: string, baseRef: string, version: string): st
 
 Use \`explore -> propose -> approve -> implement -> verify -> close\` for consequential changes. Prefer a repository-local CLI; otherwise use the exact version below.
 
-1. **Explore:** diagnose with \`${cli} doctor . --spec-dir ${specDirectory} --base ${baseRef} --strict\` and inspect lifecycle state with \`${cli} status --spec-dir ${specDirectory} --base ${baseRef} --allow-contract-only --strict\`. Exploration grants no authority.
+1. **Explore:** diagnose with \`${cli} doctor . --spec-dir ${specDirectory} --base ${baseRef} --strict\`, inspect lifecycle state with \`${cli} status --spec-dir ${specDirectory} --base ${baseRef} --allow-contract-only --strict\`, and search existing contracts with \`${cli} catalogue ${specDirectory} --query <text>\`. Exploration grants no authority.
 2. **Propose:** create or update a draft contract describing intent, targets, constraints, and verification. Keep scope changes contract-only.
 3. **Approve:** merge the reviewed contract with \`status: approved\`. A workspace draft cannot authorize its own implementation.
 4. **Implement:** validate with \`${cli} validate ${specDirectory} --strict\`, route with \`${cli} select ${specDirectory} --base ${baseRef} --worktree --allow-contract-only --strict\`, and inspect each expected path with \`${cli} context <selected-spec> --path <path> --base ${baseRef} --format markdown\`.
 5. **Verify:** stay inside targets, run only separately trusted repository checks, then run \`${cli} check --spec-dir ${specDirectory} --base ${baseRef} --allow-contract-only --strict\`. Specification runners are inert data.
-6. **Close:** after review and trusted checks pass, move the contract out of \`approved\` in a lifecycle-only change and report satisfied identifiers.
+6. **Close:** after review and trusted checks pass, preview \`${cli} transition <spec> --to implemented\`, then use \`--write\` only for the reviewed lifecycle-only change and report satisfied identifiers. The command performs no Git operation.
 
 If targets must widen, merge that contract-only amendment before implementing against the new base.
+Architecture and catalogue output are read-only context and never grant implementation authority.
 ${MANAGED_END}
 `;
 }
@@ -98,7 +100,7 @@ jobs:
           test -n "$branch"
           git fetch origin "$branch"
           echo "ref=origin/$branch" >> "$GITHUB_OUTPUT"
-      - uses: majilesh/engineeringspec@0867ea1461f2280a0e0aa1c9bb14fb3d02a33d9b
+      - uses: majilesh/engineeringspec@${CURRENT_ACTION_SHA}
         with:
           path: ${specDirectory}
           strict: true
@@ -110,7 +112,7 @@ jobs:
   };
 }
 
-function mergeContent(relative: string, existing: string, generated: string): string | undefined {
+function mergeContent(relative: string, existing: string, generated: string, upgrade = false): string | undefined {
   if (relative === "AGENTS.md") {
     const start = existing.indexOf(MANAGED_START);
     const end = existing.indexOf(MANAGED_END);
@@ -124,6 +126,11 @@ function mergeContent(relative: string, existing: string, generated: string): st
     if (existing.split(/\r?\n/).includes("@AGENTS.md")) return existing;
     return `${existing.trimEnd()}\n\n@AGENTS.md\n`;
   }
+  if (relative === ".github/workflows/engineering-spec.yml" && upgrade) {
+    const pins = [...existing.matchAll(/majilesh\/engineeringspec@([0-9a-f]{40})/gu)];
+    if (pins.length !== 1 || !existing.includes("gate-spec-dir:") || !existing.includes("gate-base:")) return undefined;
+    return existing.replace(/majilesh\/engineeringspec@[0-9a-f]{40}/u, `majilesh/engineeringspec@${CURRENT_ACTION_SHA}`);
+  }
   return undefined;
 }
 
@@ -133,6 +140,7 @@ export async function adoptRepository(options: {
   baseRef?: string;
   force?: boolean;
   merge?: boolean;
+  upgrade?: boolean;
   dryRun?: boolean;
 }): Promise<AdoptionResult> {
   const root = path.resolve(options.root);
@@ -146,9 +154,9 @@ export async function adoptRepository(options: {
     let exists = true;
     try { await access(destination); } catch { exists = false; }
     if (exists && !options.force) {
-      if (options.merge) {
+      if (options.merge || options.upgrade) {
         const existing = await readFile(destination, "utf8");
-        const merged = mergeContent(relative, existing, content);
+        const merged = mergeContent(relative, existing, content, Boolean(options.upgrade));
         if (merged !== undefined) {
           if (merged !== existing) {
             updated.push(relative);
