@@ -1,10 +1,10 @@
 ---
 spec_format: engineering-spec
 spec_format_version: "0.1"
-spec_revision: 1
+spec_revision: 2
 id: ES-rc8-frictionless-ops-release
 title: Publish the frictionless agent operations RC8 release
-status: approved
+status: implemented
 owners:
   - team: EngineeringSpec maintainers
 repository:
@@ -108,7 +108,7 @@ Prepare `v0.1.0-rc.8` from the reviewed frictionless agent-operations implementa
   enforcement: { kind: test, verifier_ref: VER-1 }
 - id: CON-6
   level: must
-  statement: Static site generation must be deterministic, include the implemented RC8 lifecycle and proposed release contract, preserve escaped repository-controlled content, and require no telemetry or hosted runtime.
+  statement: Static site generation must be deterministic, include the implemented RC8 lifecycle and release contract, preserve escaped repository-controlled content, and require no telemetry or hosted runtime.
   applies_to: [TARGET-site, TARGET-notes]
   enforcement: { kind: test, verifier_ref: VER-1 }
 - id: CON-7
