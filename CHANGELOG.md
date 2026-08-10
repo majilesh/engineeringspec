@@ -4,6 +4,8 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+## [0.1.0-rc.7] - 2026-08-10
+
 ### Added
 
 - Explicit `--allow-contract-only` classification for directory `select`, `check`, and `status`, with strict workspace validation and lifecycle-only closure reporting
@@ -13,6 +15,11 @@ All notable changes to this project are documented here.
 ### Security
 
 - Workspace contracts remain non-authoritative; mixed spec-and-code changes, invalid workspace specs, unsafe paths, and cross-boundary renames retain normal fail-closed approved-base routing
+
+### Changed
+
+- Current CLI examples, generated adoption guidance, Agent Skill, and production Action examples now use immutable RC7 identities
+- private consumer dogfood established that a completed lifecycle-only contract transition passes as `contract_only` without selecting implementation authority
 
 ## [0.1.0-rc.6] - 2026-08-10
 

@@ -7,10 +7,10 @@ EngineeringSpec’s `gate` is a **diff-scope gate** (path + change-type allowlis
 Prefer a full commit SHA. Reviewed intuitive-workflow implementation merge:
 
 ```text
-majilesh/engineeringspec@122ec6f0329b19e21a58a2f179aea3328cb8e1ac
+majilesh/engineeringspec@0867ea1461f2280a0e0aa1c9bb14fb3d02a33d9b
 ```
 
-Re-pin to this repository’s reviewed merge tip after each change to `action.yml` or gate semantics. `majilesh/engineeringspec@v0.1.0-rc.6` is the corresponding release-candidate tag after publication; SHA pins remain the stronger supply-chain default ([GitHub guidance](https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#using-third-party-actions)).
+Re-pin to this repository’s reviewed merge tip after each change to `action.yml` or gate semantics. `majilesh/engineeringspec@v0.1.0-rc.7` is the corresponding release-candidate tag after publication; SHA pins remain the stronger supply-chain default ([GitHub guidance](https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#using-third-party-actions)).
 
 ## Enforcing CI job
 
@@ -21,22 +21,21 @@ engineering-spec:
     - uses: actions/checkout@v4
       with:
         fetch-depth: 0
-    - uses: majilesh/engineeringspec@122ec6f0329b19e21a58a2f179aea3328cb8e1ac
+    - uses: majilesh/engineeringspec@0867ea1461f2280a0e0aa1c9bb14fb3d02a33d9b
       with:
         path: docs/engineering-specs
         strict: true
         gate-spec-dir: docs/engineering-specs
         gate-base: origin/main
         gate-require-status: approved
-        # Enable after pinning a release that includes portable governance.
-        # gate-allow-contract-only: true
+        gate-allow-contract-only: true
 ```
 
 | Input | Enforcing value | Why |
 |---|---|---|
 | `gate-spec-dir` | `docs/engineering-specs` | Discover every candidate from the approved base tree |
 | `gate-require-status` | `approved` | Draft contracts are not authorization |
-| `gate-allow-contract-only` | `true` (supported pins only) | Strictly validate spec-directory-only governance without routing it as implementation |
+| `gate-allow-contract-only` | `true` | Strictly validate spec-directory-only governance without routing it as implementation |
 | Action ref | full SHA | Avoid mutable `@main` |
 
 Use the compatible single-spec `gate-spec` input when an unsigned `gate-receipt` is required; directory routing does not currently emit a combined receipt.
@@ -71,9 +70,9 @@ Continue running your repository’s normal tests, schema diffs, security scans,
 ## CLI equivalent
 
 ```sh
-engineeringspec select docs/engineering-specs \
+npx --yes @engineeringspec/cli@0.1.0-rc.7 select docs/engineering-specs \
   --base origin/main --worktree --allow-contract-only --strict
-engineeringspec check --spec-dir docs/engineering-specs \
+npx --yes @engineeringspec/cli@0.1.0-rc.7 check --spec-dir docs/engineering-specs \
   --base origin/main --allow-contract-only --strict
 ```
 
@@ -81,5 +80,5 @@ Both commands resolve immutable SHAs before candidate discovery. Candidate speci
 
 ## Release / npm
 
-- Action + git tag: `v0.1.0-rc.6` (when published) tracks package version `0.1.0-rc.6`.
-- npm dist-tag: `next` identifies the current release candidate; enforcing commands above pin exact version `0.1.0-rc.6`.
+- Action + git tag: `v0.1.0-rc.7` (when published) tracks package version `0.1.0-rc.7`.
+- npm dist-tag: `next` identifies the current release candidate; enforcing commands above pin exact version `0.1.0-rc.7`.

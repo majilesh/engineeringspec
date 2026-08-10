@@ -32,7 +32,7 @@ Use `superseded` when a reviewed replacement contract owns the change. Use `reje
 After the dependent implementation merges, change only the approved contract lifecycle to `implemented` and run:
 
 ```sh
-engineeringspec check --spec-dir docs/engineering-specs \
+npx --yes @engineeringspec/cli@0.1.0-rc.7 check --spec-dir docs/engineering-specs \
   --base origin/main --allow-contract-only --strict
 ```
 

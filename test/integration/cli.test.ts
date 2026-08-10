@@ -285,7 +285,7 @@ owners: [{team: test}]
     expect(await readFile(path.join(root,".github/workflows/engineering-spec.yml"),"utf8")).toContain("gate-require-status: approved");
     expect(await readFile(path.join(root,".github/workflows/engineering-spec.yml"),"utf8")).toContain("gate-allow-contract-only: true");
     expect(await readFile(path.join(root,".github/workflows/engineering-spec.yml"),"utf8")).toContain("steps.approved-base.outputs.ref");
-    expect(await readFile(path.join(root,".github/workflows/engineering-spec.yml"),"utf8")).toContain("majilesh/engineeringspec@122ec6f0329b19e21a58a2f179aea3328cb8e1ac");
+    expect(await readFile(path.join(root,".github/workflows/engineering-spec.yml"),"utf8")).toContain("majilesh/engineeringspec@0867ea1461f2280a0e0aa1c9bb14fb3d02a33d9b");
     expect(await readFile(path.join(root,"CLAUDE.md"),"utf8")).toContain("@AGENTS.md");
     const dry=await adoptRepository({root,specPath:"docs/engineering-specs/ES-change.engineering-spec.md",dryRun:true});
     expect(dry.skipped).toHaveLength(4);
@@ -307,13 +307,13 @@ owners: [{team: test}]
     const skill=await readFile("skills/engineering-spec/SKILL.md","utf8");
     expect(skill).toContain(`@engineeringspec/cli@${version}`);
     expect(skill).not.toContain("@engineeringspec/cli@next");
-    for (const file of ["README.md","docs/agent-integration.md","docs/getting-started.md","docs/production-gate.md","maintainer-only adoption notes"]) {
+    for (const file of ["README.md","docs/agent-integration.md","docs/getting-started.md","docs/first-change-tutorial.md","docs/lifecycle.md","docs/production-gate.md","docs/troubleshooting.md","maintainer-only adoption notes"]) {
       const source=await readFile(file,"utf8");
-      expect(source,file).toContain(`0.1.0-rc.6`);
-      expect(source,file).not.toContain("0.1.0-rc.5");
+      expect(source,file).toContain(`0.1.0-rc.7`);
+      expect(source,file).not.toContain("0.1.0-rc.6");
     }
     for (const file of ["README.md","docs/production-gate.md","maintainer-only adoption notes"]) {
-      expect(await readFile(file,"utf8"),file).toContain("122ec6f0329b19e21a58a2f179aea3328cb8e1ac");
+      expect(await readFile(file,"utf8"),file).toContain("0867ea1461f2280a0e0aa1c9bb14fb3d02a33d9b");
     }
   });
   it("detects origin HEAD and safely merges text guidance",async()=>{
