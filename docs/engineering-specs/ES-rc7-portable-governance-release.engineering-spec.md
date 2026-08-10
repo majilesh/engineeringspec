@@ -1,10 +1,10 @@
 ---
 spec_format: engineering-spec
 spec_format_version: "0.1"
-spec_revision: 1
+spec_revision: 2
 id: ES-rc7-portable-governance-release
 title: Publish the portable contract governance RC7 release
-status: approved
+status: implemented
 owners:
   - team: EngineeringSpec maintainers
 repository:

@@ -13,7 +13,7 @@ Install or invoke the pinned CLI, create `docs/engineering-specs/`, and follow t
 Preview neutral agent and GitHub Actions integration without overwriting existing files:
 
 ```sh
-npx --yes @engineeringspec/cli@0.1.0-rc.6 adopt . \
+npx --yes @engineeringspec/cli@0.1.0-rc.7 adopt . \
   --spec docs/engineering-specs/ES-first-change.engineering-spec.md \
   --merge --dry-run
 ```
@@ -21,7 +21,7 @@ npx --yes @engineeringspec/cli@0.1.0-rc.6 adopt . \
 Review the preview, rerun without `--dry-run`, and diagnose the installation:
 
 ```sh
-npx --yes @engineeringspec/cli@0.1.0-rc.6 doctor . \
+npx --yes @engineeringspec/cli@0.1.0-rc.7 doctor . \
   --spec-dir docs/engineering-specs --base origin/main --strict
 ```
 
@@ -35,19 +35,19 @@ Follow [Production gate](production-gate.md). Protect the EngineeringSpec job as
 
 ```sh
 # Understand the current lifecycle and routing state
-npx --yes @engineeringspec/cli@0.1.0-rc.6 status \
-  --spec-dir docs/engineering-specs --base origin/main --strict
+npx --yes @engineeringspec/cli@0.1.0-rc.7 status \
+  --spec-dir docs/engineering-specs --base origin/main --allow-contract-only --strict
 
 # Load only the obligations relevant to an expected path
-npx --yes @engineeringspec/cli@0.1.0-rc.6 context <approved-spec> \
+npx --yes @engineeringspec/cli@0.1.0-rc.7 context <approved-spec> \
   --path src/example.ts --base origin/main --format markdown
 
 # Check the complete working state before review
-npx --yes @engineeringspec/cli@0.1.0-rc.6 check \
-  --spec-dir docs/engineering-specs --base origin/main --strict
+npx --yes @engineeringspec/cli@0.1.0-rc.7 check \
+  --spec-dir docs/engineering-specs --base origin/main --allow-contract-only --strict
 ```
 
-After upgrading to a release that supports portable governance, add `--allow-contract-only` to `status`, directory `select`, and directory `check`, and enable the matching Action input. This lets strictly validated spec-only proposals and closures pass without letting workspace contracts authorize code.
+RC7 adopters should use `--allow-contract-only` with `status`, directory `select`, and directory `check`, and enable the matching Action input. This lets strictly validated spec-only proposals and closures pass without letting workspace contracts authorize code.
 
 Use the repository-local binary when installed. Pin an exact package version and Action commit in enforcement; avoid mutable tags for trust-sensitive CI.
 
