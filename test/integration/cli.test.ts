@@ -159,6 +159,9 @@ owners: [{team: test}]
     expect(action).toContain("gate-spec-dir:");
     expect(action).toContain("gate-spec:");
     expect(action).toContain("gate-spec and gate-spec-dir are mutually exclusive");
+    expect(action).toContain("gate-allow-contract-only requires gate-spec-dir");
+    expect(action).toContain("args+=(--allow-contract-only)");
+    expect(action).toContain("inputs.gate-allow-contract-only != 'false'");
     expect(action).toContain('select "$INPUT_GATE_SPEC_DIR"');
   });
   it("limits the contract-only CI lane to complete RFC and contract diffs",async()=>{
@@ -259,6 +262,9 @@ owners: [{team: test}]
       expect(await invoke(["check","--spec-dir","specs","--base","HEAD","--strict","--quiet"])).toBe(0);
       expect(await invoke(["check","--spec-dir","specs","--quiet"])).toBe(2);
       await writeFile(path.join(root,"specs","change.engineering-spec.md"),(await readFile(path.join(root,"specs","change.engineering-spec.md"),"utf8")).replace("status: approved","status: implemented"));
+      expect(await invoke(["check","--spec-dir","specs","--base","HEAD","--strict","--quiet"])).toBe(1);
+      expect(await invoke(["check","--spec-dir","specs","--base","HEAD","--allow-contract-only","--strict","--quiet"])).toBe(0);
+      expect(await invoke(["status","--spec-dir","specs","--base","HEAD","--allow-contract-only","--strict","--quiet"])).toBe(0);
       execFileSync("git",["-C",root,"add","."]);
       execFileSync("git",["-C",root,"-c","user.name=Test","-c","user.email=test@example.com","commit","-qm","close contract"]);
       expect(await invoke(["select","specs","--base","HEAD","--strict","--quiet"])).toBe(0);
@@ -277,6 +283,7 @@ owners: [{team: test}]
     expect(await readFile(path.join(root,"CLAUDE.md"),"utf8")).toContain("@AGENTS.md");
     expect(await readFile(path.join(root,".github/workflows/engineering-spec.yml"),"utf8")).toContain("gate-spec-dir: docs/engineering-specs");
     expect(await readFile(path.join(root,".github/workflows/engineering-spec.yml"),"utf8")).toContain("gate-require-status: approved");
+    expect(await readFile(path.join(root,".github/workflows/engineering-spec.yml"),"utf8")).toContain("gate-allow-contract-only: true");
     expect(await readFile(path.join(root,".github/workflows/engineering-spec.yml"),"utf8")).toContain("steps.approved-base.outputs.ref");
     expect(await readFile(path.join(root,".github/workflows/engineering-spec.yml"),"utf8")).toContain("majilesh/engineeringspec@122ec6f0329b19e21a58a2f179aea3328cb8e1ac");
     expect(await readFile(path.join(root,"CLAUDE.md"),"utf8")).toContain("@AGENTS.md");
@@ -289,11 +296,11 @@ owners: [{team: test}]
     const agents=await readFile(path.join(root,"AGENTS.md"),"utf8");
     const version=(JSON.parse(await readFile("package.json","utf8")) as {version:string}).version;
     expect(result.baseRef).toBe("upstream/trunk");
-    expect(agents).toContain("select docs/engineering-specs --base upstream/trunk --worktree --strict");
+    expect(agents).toContain("select docs/engineering-specs --base upstream/trunk --worktree --allow-contract-only --strict");
     expect(agents).toContain("doctor . --spec-dir docs/engineering-specs --base upstream/trunk --strict");
-    expect(agents).toContain("status --spec-dir docs/engineering-specs --base upstream/trunk --strict");
+    expect(agents).toContain("status --spec-dir docs/engineering-specs --base upstream/trunk --allow-contract-only --strict");
     expect(agents).toContain("context <selected-spec> --path <path> --base upstream/trunk");
-    expect(agents).toContain("check --spec-dir docs/engineering-specs --base upstream/trunk --strict");
+    expect(agents).toContain("check --spec-dir docs/engineering-specs --base upstream/trunk --allow-contract-only --strict");
     expect(agents).toContain("explore -> propose -> approve -> implement -> verify -> close");
     expect(agents).toContain(`@engineeringspec/cli@${version}`);
     expect(agents).not.toContain("@next");

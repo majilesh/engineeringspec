@@ -20,6 +20,8 @@ Keep `SRC-*`, `TARGET-*`, `CONTRACT-*`, `CON-*`, and `VER-*` identifiers stable 
 4. Load context from the base and implement.
 5. Close the lifecycle after trusted verification and review.
 
+Repositories using the portable governance lane should enable `gate-allow-contract-only` only with directory routing. Protect the specification directory and enforcement workflow with CODEOWNERS or equivalent maintainer review. The lane classifies review content; it does not approve it.
+
 ## Review checklist
 
 - Source intent is durable and understandable.
@@ -34,4 +36,3 @@ Keep `SRC-*`, `TARGET-*`, `CONTRACT-*`, `CON-*`, and `VER-*` identifiers stable 
 ## Private repositories
 
 Keep specs beside the code when their content is sensitive. The reference CLI reads the local checkout and Git objects; it does not send files to EngineeringSpec services. Apply normal repository access controls, secret scanning, dependency policy, and Action pinning. Do not place credentials or secret values in specs, diagnostics, runner metadata, or evidence links.
-

@@ -16,6 +16,13 @@ export function normalizeRepoPath(filePath: string): string {
   return filePath.replace(/\\/g, "/").replace(/^\.\//, "").replace(/^\/+/, "");
 }
 
+export function assertSafeRepoPath(filePath: string): void {
+  if (!filePath || /[\0\r\n]/u.test(filePath) || filePath.includes("\\")
+    || filePath.startsWith("/") || filePath.split("/").includes("..")) {
+    throw new DiffParseError(`Malformed or unsafe repository path ${JSON.stringify(filePath)}`);
+  }
+}
+
 function kindFromStatus(status: string): { kind: ChangeKind; renameLike: boolean } | undefined {
   const code = status[0];
   if (code === "R" || code === "C") return { kind: "renamed", renameLike: true };
@@ -50,6 +57,8 @@ export function parseNameStatusZ(output: string): ChangedFile[] {
       if (!fromPath || !toPath) {
         throw new DiffParseError(`Malformed rename/copy status record ${JSON.stringify(status)}`);
       }
+      assertSafeRepoPath(fromPath);
+      assertSafeRepoPath(toPath);
       changes.push({
         path: normalizeRepoPath(toPath),
         kind: "renamed",
@@ -62,6 +71,7 @@ export function parseNameStatusZ(output: string): ChangedFile[] {
     if (!filePath) {
       throw new DiffParseError(`Malformed name-status record ${JSON.stringify(status)}`);
     }
+    assertSafeRepoPath(filePath);
     changes.push({ path: normalizeRepoPath(filePath), kind: parsed.kind });
     index += 2;
   }
@@ -91,6 +101,8 @@ export function parseNameStatus(output: string): ChangedFile[] {
       if (!fromPath || !toPath) {
         throw new DiffParseError(`Malformed rename/copy on line ${lineNumber + 1}`);
       }
+      assertSafeRepoPath(fromPath);
+      assertSafeRepoPath(toPath);
       changes.push({
         path: normalizeRepoPath(toPath),
         kind: "renamed",
@@ -98,7 +110,9 @@ export function parseNameStatus(output: string): ChangedFile[] {
       });
       continue;
     }
-    changes.push({ path: normalizeRepoPath(rest.trim()), kind: parsed.kind });
+    const filePath = rest.trim();
+    assertSafeRepoPath(filePath);
+    changes.push({ path: normalizeRepoPath(filePath), kind: parsed.kind });
   }
   return changes;
 }
@@ -176,7 +190,10 @@ async function untrackedFiles(cwd?: string): Promise<ChangedFile[]> {
     return stdout
       .split("\0")
       .filter(Boolean)
-      .map((filePath) => ({ path: normalizeRepoPath(filePath), kind: "added" as const }));
+      .map((filePath) => {
+        assertSafeRepoPath(filePath);
+        return { path: normalizeRepoPath(filePath), kind: "added" as const };
+      });
   } catch (error) {
     const detail = error instanceof Error ? error.message : String(error);
     throw new Error(`Unable to list untracked files: ${detail}`);
@@ -259,5 +276,8 @@ export async function collectGitWorktreeDiff(options: {
 }
 
 export function changedFromPathList(paths: string[], kind: ChangeKind = "modified"): ChangedFile[] {
-  return paths.map((path) => ({ path: normalizeRepoPath(path), kind }));
+  return paths.map((filePath) => {
+    assertSafeRepoPath(filePath);
+    return { path: normalizeRepoPath(filePath), kind };
+  });
 }

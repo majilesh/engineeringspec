@@ -1,6 +1,6 @@
 import { isEngineeringSpecFilename } from "../discovery/discover.js";
 import type { Diagnostic } from "../diagnostics/Diagnostic.js";
-import { collectGitDiff, collectGitStagedDiff, collectGitWorktreeDiff } from "../gate/collectDiff.js";
+import { assertSafeRepoPath, collectGitDiff, collectGitStagedDiff, collectGitWorktreeDiff } from "../gate/collectDiff.js";
 import { listGitTreePaths, readGitBlob, resolveCommitSha, resolveGitRelativeDirectory } from "../gate/loadSpec.js";
 import type { ChangedFile } from "../gate/types.js";
 import type { Status } from "../model/types.js";
@@ -11,6 +11,7 @@ import { coverage, type CoverageLevel } from "../query/coverage.js";
 import { validateMarkdown } from "../validator/validateFile.js";
 import { digestRoutedChanges, routeChanges } from "./route.js";
 import type { LoadedRoutingCandidate, RoutingReport } from "./types.js";
+import { classifyGovernanceChanges, inspectWorkspaceGovernance } from "./governance.js";
 
 const MAX_ROUTING_CANDIDATES = 10_000;
 
@@ -24,6 +25,7 @@ export interface SelectSpecsOptions {
   staged?: boolean;
   worktree?: boolean;
   cwd?: string;
+  allowContractOnly?: boolean;
 }
 
 export async function selectSpecs(options: SelectSpecsOptions): Promise<RoutingReport> {
@@ -57,14 +59,32 @@ export async function selectSpecs(options: SelectSpecsOptions): Promise<RoutingR
       : options.worktree !== false
         ? await collectGitWorktreeDiff({ base: baseSha, head: headSha, ...(options.cwd ? { cwd: options.cwd } : {}) })
         : await collectGitDiff({ base: baseSha, head: headSha, ...(options.cwd ? { cwd: options.cwd } : {}) }));
+  for (const change of collected) {
+    assertSafeRepoPath(change.path);
+    if (change.fromPath) assertSafeRepoPath(change.fromPath);
+  }
   const changed = [...collected]
     .sort((left, right) => compareCodePoints(left.path, right.path)
       || compareCodePoints(left.kind, right.kind)
       || compareCodePoints(left.fromPath ?? "", right.fromPath ?? ""));
+  const classification = options.allowContractOnly
+    ? classifyGovernanceChanges(directory, changed)
+    : changed.length === 0 ? "none" : "implementation";
+  const governanceInspection = classification === "contract_only"
+    ? await inspectWorkspaceGovernance({
+      directory,
+      changed,
+      baseCandidates: candidates,
+      strict: Boolean(options.strict),
+      ...(options.cwd ? { cwd: options.cwd } : {}),
+    })
+    : undefined;
   const routed = loadFailed
     ? { candidates: candidates.map((candidate) => ({ path: candidate.path, digest: candidate.digest, specId: candidate.spec.metadata.id, status: candidate.spec.metadata.status, eligible: requiredStatuses.includes(candidate.spec.metadata.status) })), routes: [], diagnostics: [], changedDigest: digestRoutedChanges(changed) }
-    : routeChanges(candidates, changed, requiredStatuses);
-  const diagnostics = [...loadDiagnostics, ...routed.diagnostics];
+    : classification === "contract_only"
+      ? { ...routeChanges(candidates, [], requiredStatuses), changedDigest: digestRoutedChanges(changed) }
+      : routeChanges(candidates, changed, requiredStatuses);
+  const diagnostics = [...loadDiagnostics, ...routed.diagnostics, ...(governanceInspection?.diagnostics ?? [])];
   const specCoverage = candidates
     .filter((candidate) => requiredStatuses.includes(candidate.spec.metadata.status))
     .map((candidate) => ({
@@ -91,6 +111,7 @@ export async function selectSpecs(options: SelectSpecsOptions): Promise<RoutingR
     requiredStatuses,
     changedDigest: routed.changedDigest,
     changed,
+    governance: governanceInspection?.report ?? { enabled: Boolean(options.allowContractOnly), classification },
     candidates: routed.candidates,
     coverage: { status: coverageStatus, specs: specCoverage },
     routes: loadFailed ? [] : routed.routes,

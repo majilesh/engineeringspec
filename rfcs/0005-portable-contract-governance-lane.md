@@ -51,4 +51,3 @@ This is an additive CLI and Action policy, not a change to EngineeringSpec docum
 2. Implement and test the shared classifier, CLI surfaces, Action input, adoption template, and documentation.
 3. Publish a new release candidate from a separately reviewed release contract.
 4. Upgrade the private consumer consumer and complete its pending Revenue Inbox contract closure without bypassing CI.
-

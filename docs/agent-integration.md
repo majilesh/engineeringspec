@@ -55,8 +55,8 @@ change. Treat CONTRACT-*, CON-*, and VER-* obligations as binding. Do not edit
 outside declared targets without explaining the mismatch and updating or
 escalating the contract. Before ending your turn, self-check with:
 
-  npx --yes @engineeringspec/cli@0.1.0-rc.6 check \
-    --spec-dir docs/engineering-specs --base origin/main --strict
+  engineeringspec check --spec-dir docs/engineering-specs \
+    --base origin/main --allow-contract-only --strict
 
 Fix gate violations (or update/escalate the contract) before claiming done.
 This checks committed, staged, unstaged, deleted, renamed, and non-ignored
@@ -74,11 +74,11 @@ For implementation and review, pass `--base origin/main` to `context` and `expla
 When a repository can have multiple active change contracts, use the built CLI's base-pinned router:
 
 ```sh
-npx --yes @engineeringspec/cli@0.1.0-rc.6 select docs/engineering-specs --base origin/main --worktree --strict
-npx --yes @engineeringspec/cli@0.1.0-rc.6 check --spec-dir docs/engineering-specs --base origin/main --strict
+engineeringspec select docs/engineering-specs --base origin/main --worktree --allow-contract-only --strict
+engineeringspec check --spec-dir docs/engineering-specs --base origin/main --allow-contract-only --strict
 ```
 
-The router considers approved contracts by default and assigns every changed path to exactly one of them. Treat `ESRT002` as missing scope, `ESRT003` as overlapping ownership, and `ESRT004` as a binding denial. Do not resolve ambiguity by loading a workspace spec or omitting competing candidates. Narrow or approve contracts in a contract-only change, merge it, and retry from the new base. This repository's governance lane accepts only diffs wholly contained under `docs/engineering-specs/` and `rfcs/`; adding any implementation path restores normal approved-base routing.
+The router considers approved contracts by default and assigns every implementation path to exactly one of them. Treat `ESRT002` as missing scope, `ESRT003` as overlapping ownership, and `ESRT004` as a binding denial. Do not resolve ambiguity by loading a workspace spec or omitting competing candidates. With explicit `--allow-contract-only`, a strictly valid diff wholly contained under the configured specification directory is classified as governance without being selected by a base contract. Adding any other path or a cross-boundary rename restores normal approved-base routing for the complete change set.
 
 When the complete working state has no changed paths, `select` and multi-spec `check` succeed with `not_applicable` coverage even if no contract is currently approved. This is a clean-state result, not authorization for future edits; rerun the check after every change.
 

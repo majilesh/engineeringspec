@@ -39,6 +39,7 @@ export interface WorkflowStatusOptions {
   worktree?: boolean;
   changed?: ChangedFile[];
   cwd?: string;
+  allowContractOnly?: boolean;
 }
 
 function lifecycleCounts(report: RoutingReport): Record<Status, number> {
@@ -50,6 +51,11 @@ function lifecycleCounts(report: RoutingReport): Record<Status, number> {
 export function nextLifecycleAction(report: RoutingReport): LifecycleAction {
   const counts = lifecycleCounts(report);
   if (!report.valid) return { stage: "blocked", message: "Resolve the reported contract or routing diagnostics before changing code." };
+  if (report.governance.classification === "contract_only") {
+    return report.governance.lifecycleOnly
+      ? { stage: "close", message: "Review and merge the lifecycle-only contract transition; it does not create verification evidence." }
+      : { stage: "approve", message: "Review this contract-only governance change before any dependent implementation begins." };
+  }
   if (report.changed.length > 0) return { stage: "verify", message: "Run separately trusted repository checks, then complete the EngineeringSpec check before review." };
   if (counts.approved > 0) return { stage: "implement", message: "Load base-pinned context for the approved contract before editing its declared targets." };
   if (counts.proposed === 1 && counts.draft === 0) return { stage: "approve", message: "Review and merge the single contract-only proposal before implementation begins." };
@@ -73,6 +79,7 @@ export async function workflowStatus(options: WorkflowStatusOptions): Promise<Wo
     worktree: options.staged ? false : options.worktree !== false,
     ...(options.changed ? { changed: options.changed } : {}),
     ...(options.cwd ? { cwd: options.cwd } : {}),
+    allowContractOnly: Boolean(options.allowContractOnly),
   });
   const selectedRoutes = routing.routes.filter((route) => route.decision === "selected" && route.selected);
   const selectedContracts = [...new Set(selectedRoutes.map((route) => route.selected!.specId))].sort(compareCodePoints);

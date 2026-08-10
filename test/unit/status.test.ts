@@ -1,5 +1,5 @@
 import { execFileSync } from "node:child_process";
-import { mkdir, mkdtemp, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
@@ -68,6 +68,25 @@ describe("workflow status", () => {
     expect(report.selectedContracts).toEqual(["ES-one"]);
     expect(report.routedTargets).toEqual(["TARGET-ES-one"]);
     expect(JSON.stringify(report)).not.toContain("secret-runner-payload");
+  });
+
+  it("reports reviewer-owned closure for a lifecycle-only governance change", async () => {
+    const root = await repository([contract("ES-one")]);
+    const file = path.join(root, "specs", "0.engineering-spec.md");
+    await writeFile(file, (await readFile(file, "utf8")).replace("status: approved", "status: implemented"));
+    const report = await workflowStatus({
+      specDirectory: "specs",
+      base: "HEAD",
+      cwd: root,
+      strict: true,
+      allowContractOnly: true,
+    });
+    expect(report).toMatchObject({
+      valid: true,
+      workingState: { changed: 1, selected: 0, violations: 0 },
+      next: { stage: "close" },
+      routing: { governance: { classification: "contract_only", lifecycleOnly: true } },
+    });
   });
 
   it("fails closed for uncovered and ambiguous non-empty changes", async () => {

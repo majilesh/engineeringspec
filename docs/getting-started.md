@@ -47,6 +47,8 @@ npx --yes @engineeringspec/cli@0.1.0-rc.6 check \
   --spec-dir docs/engineering-specs --base origin/main --strict
 ```
 
+After upgrading to a release that supports portable governance, add `--allow-contract-only` to `status`, directory `select`, and directory `check`, and enable the matching Action input. This lets strictly validated spec-only proposals and closures pass without letting workspace contracts authorize code.
+
 Use the repository-local binary when installed. Pin an exact package version and Action commit in enforcement; avoid mutable tags for trust-sensitive CI.
 
 ## What success looks like
