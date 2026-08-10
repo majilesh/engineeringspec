@@ -4,7 +4,7 @@ spec_format_version: "0.1"
 spec_revision: 1
 id: ES-portable-contract-governance
 title: Make contract lifecycle governance work for adopters
-status: approved
+status: implemented
 owners:
   - team: EngineeringSpec maintainers
 repository:
