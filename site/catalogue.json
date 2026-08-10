@@ -1,7 +1,7 @@
 {
   "valid": true,
   "directory": "docs/engineering-specs",
-  "documents": 12,
+  "documents": 13,
   "entries": [
     {
       "id": "ES-agent-ready-adoption",
@@ -2295,7 +2295,7 @@
     {
       "id": "ES-rc8-frictionless-agent-operations",
       "title": "Frictionless agent operations, discovery, and architecture bridge",
-      "status": "approved",
+      "status": "implemented",
       "file": "ES-rc8-frictionless-agent-operations.engineering-spec.md",
       "owners": [
         "EngineeringSpec maintainers"
@@ -2604,6 +2604,236 @@
           "kind": "human_review",
           "proves": [
             "CON-10"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ES-rc8-frictionless-ops-release",
+      "title": "Publish the frictionless agent operations RC8 release",
+      "status": "implemented",
+      "file": "ES-rc8-frictionless-ops-release.engineering-spec.md",
+      "owners": [
+        "EngineeringSpec maintainers"
+      ],
+      "sourceRefs": [
+        {
+          "id": "SRC-1",
+          "type": "document",
+          "locator": "rfcs/0006-frictionless-agent-operations.md",
+          "title": "Frictionless agent operations RFC"
+        },
+        {
+          "id": "SRC-2",
+          "type": "document",
+          "locator": "39d5f66212a1ea883cca0a599709b9dcd59c064a",
+          "title": "Reviewed frictionless agent-operations implementation merge"
+        },
+        {
+          "id": "SRC-3",
+          "type": "document",
+          "locator": "docs/engineering-specs/ES-rc8-frictionless-agent-operations.engineering-spec.md",
+          "title": "Frictionless agent-operations implementation contract"
+        }
+      ],
+      "targets": [
+        {
+          "id": "TARGET-version",
+          "component": "package-release",
+          "paths": [
+            "package.json",
+            "package-lock.json"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-adopt",
+          "component": "released-adoption-and-agent-surface",
+          "paths": [
+            "src/adoption/releases.ts",
+            "src/cli/adopt.ts",
+            "test/unit/doctor.test.ts",
+            "test/integration/cli.test.ts",
+            "skills/engineering-spec/**",
+            "README.md",
+            "docs/agent-integration.md",
+            "docs/cli-reference.md",
+            "maintainer-only adoption notes",
+            "docs/first-change-tutorial.md",
+            "docs/getting-started.md",
+            "docs/integrations.md",
+            "docs/lifecycle.md",
+            "docs/maintaining-specs.md",
+            "docs/production-gate.md",
+            "docs/troubleshooting.md",
+            "docs/upgrading.md"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-site",
+          "component": "deterministic-documentation-site",
+          "paths": [
+            "site/**"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-notes",
+          "component": "release-and-roadmap-notes",
+          "paths": [
+            "CHANGELOG.md",
+            "maintainer-only roadmap",
+            "docs/engineering-specs/ES-rc8-frictionless-ops-release.engineering-spec.md",
+            "docs/engineering-specs/ES-rc8-frictionless-agent-operations.engineering-spec.md"
+          ],
+          "changePolicy": "modify"
+        }
+      ],
+      "constraints": [
+        {
+          "id": "CON-1",
+          "level": "must",
+          "statement": "package.json and root package-lock metadata must declare version 0.1.0-rc.8.",
+          "appliesTo": [
+            "TARGET-version"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-2",
+          "level": "must",
+          "statement": "Generated and documented production Action examples must pin the full reviewed RC8 implementation merge SHA 39d5f66212a1ea883cca0a599709b9dcd59c064a.",
+          "appliesTo": [
+            "TARGET-adopt"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-3",
+          "level": "must",
+          "statement": "Current generated agent guidance, packaged skill commands, documentation, and public site examples must use exact CLI version 0.1.0-rc.8 rather than RC7 or a mutable distribution tag, without rewriting historical release records.",
+          "appliesTo": [
+            "TARGET-adopt",
+            "TARGET-site",
+            "TARGET-notes"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-4",
+          "level": "must",
+          "statement": "Doctor version-health expectations and safe managed adoption upgrades must recognize the RC8 CLI and immutable Action identities using bounded repository-local reads without network access or mutation outside explicitly managed content.",
+          "appliesTo": [
+            "TARGET-adopt"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-5",
+          "level": "must",
+          "statement": "RC8 package verification must demonstrate the compiled doctor, status, transition, catalogue, and architecture commands; safe adoption upgrade behaviour; schema inclusion; default compatibility; and absence of undeclared package files.",
+          "appliesTo": [
+            "TARGET-version",
+            "TARGET-adopt"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-6",
+          "level": "must",
+          "statement": "Static site generation must be deterministic, include the implemented RC8 lifecycle and release contract, preserve escaped repository-controlled content, and require no telemetry or hosted runtime.",
+          "appliesTo": [
+            "TARGET-site",
+            "TARGET-notes"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-7",
+          "level": "must_not",
+          "statement": "Release preparation must not change EngineeringSpec format 0.1, schemas, routing or governance semantics, diagnostics, runner inertness, architecture authority isolation, or the tag-driven trusted-publishing boundary.",
+          "appliesTo": [
+            "TARGET-version",
+            "TARGET-adopt",
+            "TARGET-site",
+            "TARGET-notes"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-8",
+          "level": "must",
+          "statement": "Release notes must accurately describe frictionless agent operations, deterministic discovery, and the read-only architecture bridge without claiming unmeasured agent impact, broad adoption, or architecture-derived authorization.",
+          "appliesTo": [
+            "TARGET-notes"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-9",
+          "level": "must",
+          "statement": "Publication must remain gated by a version-matching v0.1.0-rc.8 tag created from the reviewed release merge after repository, conformance, package, site, documentation, and private-consumer smoke checks pass.",
+          "appliesTo": [
+            "TARGET-version",
+            "TARGET-site",
+            "TARGET-notes"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-10",
+          "level": "must",
+          "statement": "This release contract must transition from approved to implemented in the release implementation so it cannot remain future implementation authority.",
+          "appliesTo": [
+            "TARGET-notes"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-11",
+          "level": "must",
+          "statement": "The completed ES-rc8-frictionless-agent-operations implementation contract must remain implemented and historical.",
+          "appliesTo": [
+            "TARGET-notes"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-12",
+          "level": "must",
+          "statement": "After publication, a private consumer must upgrade to immutable RC8 CLI and Action identities and smoke-test doctor, status, catalogue, implementation checking, and lifecycle closure before RC8 is recommended broadly.",
+          "appliesTo": [
+            "TARGET-adopt",
+            "TARGET-notes"
+          ],
+          "enforcement": "review"
+        }
+      ],
+      "contracts": [],
+      "verification": [
+        {
+          "id": "VER-1",
+          "kind": "test",
+          "proves": [
+            "CON-1",
+            "CON-2",
+            "CON-3",
+            "CON-4",
+            "CON-5",
+            "CON-6"
+          ]
+        },
+        {
+          "id": "VER-2",
+          "kind": "human_review",
+          "proves": [
+            "CON-7",
+            "CON-8",
+            "CON-9",
+            "CON-10",
+            "CON-11",
+            "CON-12"
           ]
         }
       ]

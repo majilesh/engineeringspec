@@ -3,8 +3,8 @@
 Start with:
 
 ```sh
-npx --yes @engineeringspec/cli@0.1.0-rc.7 doctor . --spec-dir docs/engineering-specs --base origin/main --strict
-npx --yes @engineeringspec/cli@0.1.0-rc.7 status --spec-dir docs/engineering-specs --base origin/main --allow-contract-only --strict
+npx --yes @engineeringspec/cli@0.1.0-rc.8 doctor . --spec-dir docs/engineering-specs --base origin/main --strict
+npx --yes @engineeringspec/cli@0.1.0-rc.8 status --spec-dir docs/engineering-specs --base origin/main --allow-contract-only --strict
 ```
 
 ## Base ref does not resolve

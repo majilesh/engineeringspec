@@ -13,7 +13,7 @@ Install or invoke the pinned CLI, create `docs/engineering-specs/`, and follow t
 Preview neutral agent and GitHub Actions integration without overwriting existing files:
 
 ```sh
-npx --yes @engineeringspec/cli@0.1.0-rc.7 adopt . \
+npx --yes @engineeringspec/cli@0.1.0-rc.8 adopt . \
   --spec docs/engineering-specs/ES-first-change.engineering-spec.md \
   --merge --dry-run
 ```
@@ -21,7 +21,7 @@ npx --yes @engineeringspec/cli@0.1.0-rc.7 adopt . \
 Review the preview, rerun without `--dry-run`, and diagnose the installation:
 
 ```sh
-npx --yes @engineeringspec/cli@0.1.0-rc.7 doctor . \
+npx --yes @engineeringspec/cli@0.1.0-rc.8 doctor . \
   --spec-dir docs/engineering-specs --base origin/main --strict
 ```
 
@@ -35,23 +35,23 @@ Follow [Production gate](production-gate.md). Protect the EngineeringSpec job as
 
 ```sh
 # Understand the current lifecycle and routing state
-npx --yes @engineeringspec/cli@0.1.0-rc.7 status \
+npx --yes @engineeringspec/cli@0.1.0-rc.8 status \
   --spec-dir docs/engineering-specs --base origin/main --allow-contract-only --strict
 
 # Load only the obligations relevant to an expected path
-npx --yes @engineeringspec/cli@0.1.0-rc.7 context <approved-spec> \
+npx --yes @engineeringspec/cli@0.1.0-rc.8 context <approved-spec> \
   --path src/example.ts --base origin/main --format markdown
 
 # Check the complete working state before review
-npx --yes @engineeringspec/cli@0.1.0-rc.7 check \
+npx --yes @engineeringspec/cli@0.1.0-rc.8 check \
   --spec-dir docs/engineering-specs --base origin/main --allow-contract-only --strict
 
 # Search lifecycle, ownership, obligations and path impact
-npx --yes @engineeringspec/cli@0.1.0-rc.7 catalogue docs/engineering-specs \
+npx --yes @engineeringspec/cli@0.1.0-rc.8 catalogue docs/engineering-specs \
   --path src/example.ts
 
 # Preview a closure without editing; add --write only after review
-npx --yes @engineeringspec/cli@0.1.0-rc.7 transition \
+npx --yes @engineeringspec/cli@0.1.0-rc.8 transition \
   docs/engineering-specs/ES-change.engineering-spec.md --to implemented
 ```
 

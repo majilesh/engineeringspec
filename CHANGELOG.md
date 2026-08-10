@@ -4,6 +4,8 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+## [0.1.0-rc.8] - 2026-08-11
+
 ### Added
 
 - Offline CLI/Action/guidance version-health diagnostics and bounded managed integration upgrades
@@ -16,6 +18,7 @@ All notable changes to this project are documented here.
 
 - Mixed specification and implementation changes now include split-change remediation while retaining normal fail-closed routing
 - The portable Agent Skill and generated guidance include catalogue discovery and safe lifecycle closure
+- Current CLI examples, managed adoption guidance, Agent Skill, and production Action examples use immutable RC8 identities
 
 ### Security
 

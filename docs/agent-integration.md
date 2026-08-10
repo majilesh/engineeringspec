@@ -16,8 +16,8 @@ Codex, Claude Code, Cursor, and human contributors should follow the same thin w
 Start an unfamiliar repository with `doctor`, and use `status` whenever the next lifecycle action is unclear:
 
 ```sh
-npx --yes @engineeringspec/cli@0.1.0-rc.7 doctor . --spec-dir docs/engineering-specs --base origin/main --strict
-npx --yes @engineeringspec/cli@0.1.0-rc.7 status --spec-dir docs/engineering-specs --base origin/main --allow-contract-only --strict
+npx --yes @engineeringspec/cli@0.1.0-rc.8 doctor . --spec-dir docs/engineering-specs --base origin/main --strict
+npx --yes @engineeringspec/cli@0.1.0-rc.8 status --spec-dir docs/engineering-specs --base origin/main --allow-contract-only --strict
 ```
 
 ## Repository setup
@@ -25,7 +25,7 @@ npx --yes @engineeringspec/cli@0.1.0-rc.7 status --spec-dir docs/engineering-spe
 Generate the starter files safely with:
 
 ```sh
-npx --yes @engineeringspec/cli@0.1.0-rc.7 adopt . --spec docs/engineering-specs/ES-change.engineering-spec.md
+npx --yes @engineeringspec/cli@0.1.0-rc.8 adopt . --spec docs/engineering-specs/ES-change.engineering-spec.md
 ```
 
 Existing files are skipped unless `--force` is explicitly supplied. Review generated guidance before committing it.
@@ -57,7 +57,7 @@ change. Treat CONTRACT-*, CON-*, and VER-* obligations as binding. Do not edit
 outside declared targets without explaining the mismatch and updating or
 escalating the contract. Before ending your turn, self-check with:
 
-  npx --yes @engineeringspec/cli@0.1.0-rc.7 check --spec-dir docs/engineering-specs \
+  npx --yes @engineeringspec/cli@0.1.0-rc.8 check --spec-dir docs/engineering-specs \
     --base origin/main --allow-contract-only --strict
 
 Fix gate violations (or update/escalate the contract) before claiming done.
@@ -76,8 +76,8 @@ For implementation and review, pass `--base origin/main` to `context` and `expla
 When a repository can have multiple active change contracts, use the built CLI's base-pinned router:
 
 ```sh
-npx --yes @engineeringspec/cli@0.1.0-rc.7 select docs/engineering-specs --base origin/main --worktree --allow-contract-only --strict
-npx --yes @engineeringspec/cli@0.1.0-rc.7 check --spec-dir docs/engineering-specs --base origin/main --allow-contract-only --strict
+npx --yes @engineeringspec/cli@0.1.0-rc.8 select docs/engineering-specs --base origin/main --worktree --allow-contract-only --strict
+npx --yes @engineeringspec/cli@0.1.0-rc.8 check --spec-dir docs/engineering-specs --base origin/main --allow-contract-only --strict
 ```
 
 The router considers approved contracts by default and assigns every implementation path to exactly one of them. Treat `ESRT002` as missing scope, `ESRT003` as overlapping ownership, and `ESRT004` as a binding denial. Do not resolve ambiguity by loading a workspace spec or omitting competing candidates. With explicit `--allow-contract-only`, a strictly valid diff wholly contained under the configured specification directory is classified as governance without being selected by a base contract. Adding any other path or a cross-boundary rename restores normal approved-base routing for the complete change set.
