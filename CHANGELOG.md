@@ -4,6 +4,23 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+### Added
+
+- Offline CLI/Action/guidance version-health diagnostics and bounded managed integration upgrades
+- Validated lifecycle status transition previews with explicit write mode and no Git side effects
+- Deterministic contract catalogue/search JSON, generated static Explorer, and repository path-impact filtering
+- Read-only Backstage component adapter with owners, dependencies, standards, explicit path mappings, and provenance
+- Role-based CLI, integration, upgrade, and architecture-bridge documentation plus Open Graph assets
+
+### Changed
+
+- Mixed specification and implementation changes now include split-change remediation while retaining normal fail-closed routing
+- The portable Agent Skill and generated guidance include catalogue discovery and safe lifecycle closure
+
+### Security
+
+- Catalogue and agent-facing output omit verifier command payloads; architecture imports always declare read-only authority and never participate in routing
+
 ## [0.1.0-rc.7] - 2026-08-10
 
 ### Added

@@ -28,6 +28,9 @@ import { summarizeAgentBenchmark } from "./benchmark.js";
 import { selectSpecs } from "../routing/select.js";
 import { diagnoseRepository } from "./doctor.js";
 import { workflowStatus } from "./status.js";
+import { transitionStatus } from "./transition.js";
+import { buildCatalogue, catalogueHtml } from "./catalogue.js";
+import { importBackstageCatalogue } from "./architecture.js";
 
 const STATUS_VALUES = ["draft", "proposed", "approved", "implemented", "superseded", "rejected"] as const;
 
@@ -233,6 +236,7 @@ export function createProgram(setCode: (code: number) => void): Command {
     .option("--base <ref>", "approved base ref (auto-detects origin/HEAD; falls back to origin/main)")
     .option("--force", "overwrite existing integration files")
     .option("--merge", "merge agent instructions into existing text files; structured files are skipped")
+    .option("--upgrade", "upgrade recognizably managed guidance and immutable Action pins")
     .option("--dry-run", "report files without writing them")
     .action(async (directory, options, command) => {
       try {
@@ -243,6 +247,7 @@ export function createProgram(setCode: (code: number) => void): Command {
           baseRef: options.base,
           force: Boolean(options.force),
           merge: Boolean(options.merge),
+          upgrade: Boolean(options.upgrade),
           dryRun: Boolean(options.dryRun),
         });
         if (!global.quiet) output(result, global.format);
@@ -362,6 +367,83 @@ export function createProgram(setCode: (code: number) => void): Command {
       } catch (error) {
         console.error(error instanceof Error ? error.message : String(error));
         setCode(ExitCode.io);
+      }
+    });
+
+  program
+    .command("transition")
+    .description("Preview or write a validated lifecycle status-only transition")
+    .argument("<file>", "EngineeringSpec file")
+    .requiredOption("--to <status>", "target lifecycle status")
+    .option("--write", "write the status-only transition after validation")
+    .action(async (file, options, command) => {
+      try {
+        const global = command.optsWithGlobals() as GlobalOptions;
+        if (!STATUS_VALUES.includes(options.to as Status)) {
+          console.error(`--to must be one of ${STATUS_VALUES.join(", ")}`);
+          setCode(ExitCode.usage);
+          return;
+        }
+        const result = await transitionStatus(file, options.to as Status, Boolean(options.write));
+        const text = [
+          `transition: ${result.changed ? result.written ? "written" : "preview" : "unchanged"}`,
+          `file: ${result.file}`,
+          `${result.from} -> ${result.to}`,
+          result.preview,
+          result.written ? "next: review and submit this lifecycle-only change; no Git action was performed" : "next: rerun with --write only after review",
+        ].join("\n");
+        if (!global.quiet) output(global.format === "json" ? result : text, global.format);
+        setCode(ExitCode.success);
+      } catch (error) {
+        console.error(error instanceof Error ? error.message : String(error));
+        setCode(ExitCode.validation);
+      }
+    });
+
+  program
+    .command("catalogue")
+    .description("Build a deterministic searchable contract catalogue")
+    .argument("<directory>", "EngineeringSpec directory")
+    .option("--query <text>", "filter catalogue content")
+    .option("--path <path>", "filter contracts that affect a repository path")
+    .addOption(new Option("--format <format>", "output format").choices(["text", "json", "html"]))
+    .action(async (directory, options, command) => {
+      try {
+        const global = command.optsWithGlobals() as GlobalOptions;
+        const report = await buildCatalogue(directory, { query: options.query, path: options.path, strict: Boolean(global.strict) });
+        const format = (options.format ?? (global.format === "json" ? "json" : "text")) as "html" | "json" | "text";
+        if (!global.quiet) {
+          if (format === "html") process.stdout.write(catalogueHtml(report));
+          else if (format === "json") output(report, "json");
+          else output(`catalogue: ${report.valid ? "valid" : "invalid"}\ndocuments: ${report.documents}\nresults: ${report.entries.length}\n${report.entries.map((entry) => `${entry.id}\t${entry.status}\t${entry.title}`).join("\n")}`, "text");
+        }
+        setCode(report.valid ? ExitCode.success : ExitCode.validation);
+      } catch (error) {
+        console.error(error instanceof Error ? error.message : String(error));
+        setCode(ExitCode.validation);
+      }
+    });
+
+  program
+    .command("architecture")
+    .description("Import a read-only architecture map from a Backstage component catalogue")
+    .argument("<file>", "Backstage catalog-info YAML")
+    .addOption(new Option("--format <format>", "output format").choices(["text", "json"]))
+    .action(async (file, _options, command) => {
+      try {
+        const global = command.optsWithGlobals() as GlobalOptions;
+        const report = await importBackstageCatalogue(file);
+        const text = [
+          "architecture: read_only",
+          `components: ${report.components.length}`,
+          ...report.components.map((component) => `${component.id}\towner=${component.owner ?? "unknown"}\tdependencies=${component.dependencies.length}\tpaths=${component.paths.length}`),
+          "authority: none — imported architecture cannot authorize implementation",
+        ].join("\n");
+        if (!global.quiet) output(global.format === "json" ? report : text, global.format);
+        setCode(ExitCode.success);
+      } catch (error) {
+        console.error(error instanceof Error ? error.message : String(error));
+        setCode(ExitCode.validation);
       }
     });
 

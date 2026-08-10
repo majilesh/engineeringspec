@@ -335,6 +335,18 @@ owners: [{team: test}]
     expect(second.updated).toHaveLength(0);
     expect((await readFile(path.join(root,"AGENTS.md"),"utf8")).match(/engineeringspec:start/g)).toHaveLength(1);
   });
+  it("upgrades only recognizable managed integration content",async()=>{
+    const root=await mkdtemp(path.join(os.tmpdir(),"es-adopt-upgrade-"));
+    await mkdir(path.join(root,".github","workflows"),{recursive:true});
+    await writeFile(path.join(root,"AGENTS.md"),`<!-- engineeringspec:start -->\nold @engineeringspec/cli@0.1.0-rc.6\n<!-- engineeringspec:end -->\n`);
+    await writeFile(path.join(root,".github","workflows","engineering-spec.yml"),"gate-spec-dir: docs/engineering-specs\ngate-base: origin/main\nuses: majilesh/engineeringspec@122ec6f0329b19e21a58a2f179aea3328cb8e1ac\n");
+    const dry=await adoptRepository({root,specPath:"docs/engineering-specs/change.engineering-spec.md",baseRef:"origin/main",merge:true,upgrade:true,dryRun:true});
+    expect(dry.updated).toEqual(expect.arrayContaining(["AGENTS.md",".github/workflows/engineering-spec.yml"]));
+    expect(await readFile(path.join(root,"AGENTS.md"),"utf8")).toContain("0.1.0-rc.6");
+    await adoptRepository({root,specPath:"docs/engineering-specs/change.engineering-spec.md",baseRef:"origin/main",merge:true,upgrade:true});
+    expect(await readFile(path.join(root,"AGENTS.md"),"utf8")).toContain("0.1.0-rc.7");
+    expect(await readFile(path.join(root,".github","workflows","engineering-spec.yml"),"utf8")).toContain("0867ea1461f2280a0e0aa1c9bb14fb3d02a33d9b");
+  });
   it("keeps dry-run write-free and rejects unsafe scaffold interpolation",async()=>{
     const root=await mkdtemp(path.join(os.tmpdir(),"es-adopt-dry-"));
     const result=await adoptRepository({root,specPath:"docs/spec.engineering-spec.md",baseRef:"origin/main",dryRun:true});
@@ -363,5 +375,16 @@ owners: [{team: test}]
     expect(await invoke(["status","--spec-dir","docs/engineering-specs","--base","HEAD","--no-worktree","--strict","--quiet"])).toBe(0);
     expect(await invoke(["status","--spec-dir","docs/engineering-specs","--base","HEAD","--changed","outside.txt","--strict","--quiet"])).toBe(1);
     expect(await invoke(["status","--spec-dir","docs/engineering-specs","--base","HEAD","--changed","README.md","--staged","--quiet"])).toBe(2);
+  });
+  it("exposes lifecycle, catalogue, and read-only architecture commands",async()=>{
+    const root=await mkdtemp(path.join(os.tmpdir(),"es-cli-ops-"));
+    const spec=path.join(root,"change.engineering-spec.md");
+    await writeFile(spec,await readFile("docs/engineering-specs/ES-rc8-frictionless-agent-operations.engineering-spec.md","utf8"));
+    expect(await invoke(["transition",spec,"--to","implemented","--quiet"])).toBe(0);
+    expect((await readFile(spec,"utf8"))).toContain("status: approved");
+    expect(await invoke(["catalogue","docs/engineering-specs","--query","architecture","--format","json","--quiet"])).toBe(0);
+    const architecture=path.join(root,"catalog-info.yaml");
+    await writeFile(architecture,"kind: Component\nmetadata:\n  name: api\nspec:\n  owner: team-api\n");
+    expect(await invoke(["architecture",architecture,"--format","json","--quiet"])).toBe(0);
   });
 });

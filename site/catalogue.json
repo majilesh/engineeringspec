@@ -1,0 +1,2613 @@
+{
+  "valid": true,
+  "directory": "docs/engineering-specs",
+  "documents": 12,
+  "entries": [
+    {
+      "id": "ES-agent-ready-adoption",
+      "title": "Agent-neutral repository adoption workflow",
+      "status": "proposed",
+      "file": "agent-ready-adoption.engineering-spec.md",
+      "owners": [
+        "EngineeringSpec maintainers"
+      ],
+      "sourceRefs": [
+        {
+          "id": "SRC-1",
+          "type": "document",
+          "locator": "community-adoption-plan-2026-08-06",
+          "title": "High-value implementation and community adoption plan"
+        }
+      ],
+      "targets": [
+        {
+          "id": "TARGET-1",
+          "component": "recursive-validation",
+          "paths": [
+            "src/discovery/**",
+            "src/validator/validatePath.ts",
+            "src/validator/validateFile.ts",
+            "src/diagnostics/github.ts",
+            "src/diagnostics/codes.ts",
+            "src/cli/program.ts",
+            "src/index.ts",
+            "test/**",
+            "vitest.config.ts",
+            ".engineeringspecignore"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-2",
+          "component": "github-integration",
+          "paths": [
+            "action.yml",
+            ".github/**"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-3",
+          "component": "agent-guidance",
+          "paths": [
+            "AGENTS.md",
+            "CLAUDE.md",
+            ".cursor/**",
+            "docs/**"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-4",
+          "component": "public-identity",
+          "paths": [
+            "site/**",
+            "schemas/**",
+            "package.json",
+            "README.md",
+            "SPEC.md",
+            ".gitignore"
+          ],
+          "changePolicy": "modify"
+        }
+      ],
+      "constraints": [
+        {
+          "id": "CON-1",
+          "level": "must_not",
+          "statement": "Parsing and validation must not execute verification commands or specification content.",
+          "appliesTo": [
+            "TARGET-1",
+            "TARGET-2"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-2",
+          "level": "must",
+          "statement": "Repository validation must discover supported EngineeringSpec filenames deterministically and respect explicit ignore patterns.",
+          "appliesTo": [
+            "TARGET-1"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-3",
+          "level": "must",
+          "statement": "Codex, Claude Code, and Cursor guidance must share one agent-neutral workflow.",
+          "appliesTo": [
+            "TARGET-3"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-4",
+          "level": "must",
+          "statement": "Published versioned schema URLs must remain immutable after release.",
+          "appliesTo": [
+            "TARGET-4"
+          ],
+          "enforcement": "review"
+        }
+      ],
+      "contracts": [],
+      "verification": [
+        {
+          "id": "VER-1",
+          "kind": "test",
+          "proves": [
+            "CON-1",
+            "CON-2"
+          ]
+        },
+        {
+          "id": "VER-2",
+          "kind": "human_review",
+          "proves": [
+            "CON-3",
+            "CON-4"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ES-empty-routing-success",
+      "title": "Handle routing lifecycle edge cases",
+      "status": "implemented",
+      "file": "ES-empty-routing-success.engineering-spec.md",
+      "owners": [
+        "EngineeringSpec maintainers"
+      ],
+      "sourceRefs": [
+        {
+          "id": "SRC-1",
+          "type": "document",
+          "locator": "rfcs/0003-vacuous-empty-routing.md",
+          "title": "Vacuous success for empty routing input RFC"
+        }
+      ],
+      "targets": [
+        {
+          "id": "TARGET-routing",
+          "component": "routing-core",
+          "paths": [
+            "src/routing/route.ts"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-ci",
+          "component": "repository-enforcement",
+          "paths": [
+            ".github/workflows/ci.yml",
+            ".github/CODEOWNERS"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-tests",
+          "component": "routing-verification",
+          "paths": [
+            "test/unit/routing.test.ts",
+            "test/integration/cli.test.ts",
+            "test/integration/routing.test.ts",
+            "test/conformance/routing.test.ts",
+            "conformance/routing/**"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-guidance",
+          "component": "adoption-guidance",
+          "paths": [
+            "README.md",
+            "CHANGELOG.md",
+            "maintainer-only roadmap",
+            "docs/agent-integration.md",
+            "rfcs/0003-vacuous-empty-routing.md",
+            "docs/engineering-specs/ES-empty-routing-success.engineering-spec.md"
+          ],
+          "changePolicy": "modify"
+        }
+      ],
+      "constraints": [
+        {
+          "id": "CON-1",
+          "level": "must",
+          "statement": "A successfully collected zero-path working state must return a successful routing result with zero routes and no ESRT001 diagnostic even when no candidate has a required lifecycle status.",
+          "appliesTo": [
+            "TARGET-routing"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-2",
+          "level": "must",
+          "statement": "Any non-empty changed-path set with no eligible contract must continue to fail closed with ESRT001 before path selection.",
+          "appliesTo": [
+            "TARGET-routing",
+            "TARGET-tests"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-3",
+          "level": "must",
+          "statement": "Base resolution, candidate discovery, candidate validation, strict-warning handling, deterministic summaries, and digest binding must remain active for an empty working state.",
+          "appliesTo": [
+            "TARGET-routing",
+            "TARGET-tests"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-4",
+          "level": "must",
+          "statement": "Duplicate eligible specification IDs must continue to fail with ESRT005 even when there are no changed paths.",
+          "appliesTo": [
+            "TARGET-routing",
+            "TARGET-tests"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-5",
+          "level": "must",
+          "statement": "Multi-spec check must report declared coverage as not_applicable for a successful empty working state, and select, check, and gate-spec-dir must share the same routing decision.",
+          "appliesTo": [
+            "TARGET-routing",
+            "TARGET-tests"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-6",
+          "level": "must_not",
+          "statement": "The change must not weaken non-empty authorization, load workspace contracts as authority, execute specification runners, mutate the repository, or change the EngineeringSpec format or schema.",
+          "appliesTo": [
+            "TARGET-routing",
+            "TARGET-ci",
+            "TARGET-tests",
+            "TARGET-guidance"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-7",
+          "level": "must",
+          "statement": "Existing single-spec gate, check, receipt, diagnostic-code, and exit-code behavior must remain compatible.",
+          "appliesTo": [
+            "TARGET-routing",
+            "TARGET-tests"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-8",
+          "level": "must",
+          "statement": "Guidance must distinguish a clean not-applicable result from authorization and retain the contract-only then implementation lifecycle rule.",
+          "appliesTo": [
+            "TARGET-guidance"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-9",
+          "level": "must",
+          "statement": "The implementation must transition this contract from approved to implemented after all verification passes.",
+          "appliesTo": [
+            "TARGET-guidance"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-10",
+          "level": "must",
+          "statement": "Repository CI may bypass implementation routing only when every base-to-head changed path is under docs/engineering-specs or rfcs; empty, malformed, and mixed diffs must not enter that lane.",
+          "appliesTo": [
+            "TARGET-ci",
+            "TARGET-tests"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-11",
+          "level": "must",
+          "statement": "Contract-only changes must retain strict EngineeringSpec validation, normal repository verification, and explicit maintainer ownership of contracts, RFCs, CI, and CODEOWNERS.",
+          "appliesTo": [
+            "TARGET-ci",
+            "TARGET-guidance"
+          ],
+          "enforcement": "review"
+        }
+      ],
+      "contracts": [],
+      "verification": [
+        {
+          "id": "VER-1",
+          "kind": "test",
+          "proves": [
+            "CON-1",
+            "CON-2",
+            "CON-3",
+            "CON-4",
+            "CON-5",
+            "CON-6",
+            "CON-7",
+            "CON-10"
+          ]
+        },
+        {
+          "id": "VER-2",
+          "kind": "human_review",
+          "proves": [
+            "CON-8",
+            "CON-9",
+            "CON-11"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ES-gate-diff-scope",
+      "title": "Fail-closed diff gate against declared targets",
+      "status": "proposed",
+      "file": "ES-gate-diff-scope.engineering-spec.md",
+      "owners": [
+        "EngineeringSpec maintainers"
+      ],
+      "sourceRefs": [
+        {
+          "id": "SRC-1",
+          "type": "document",
+          "locator": "phase-a-runtime-gate",
+          "title": "Phase A gate plan (diff vs targets, PatchFlow-inspired)"
+        },
+        {
+          "id": "SRC-2",
+          "type": "document",
+          "locator": "gate-trust-sprint1",
+          "title": "Gate trust-boundary fixes (deny-wins, spec-from base, -z parsing)"
+        },
+        {
+          "id": "SRC-3",
+          "type": "document",
+          "locator": "gate-adopter-ops-sprint2",
+          "title": "Release pins, CODEOWNERS, and required-check adoption docs"
+        },
+        {
+          "id": "SRC-4",
+          "type": "document",
+          "locator": "gate-quality-sprint3",
+          "title": "Adversarial tests, kind-complete enforcement, interface_only honesty"
+        },
+        {
+          "id": "SRC-5",
+          "type": "document",
+          "locator": "gate-authz-sprint4",
+          "title": "SHA-first gate, restricted globs, typed refs, durable receipts"
+        },
+        {
+          "id": "SRC-6",
+          "type": "document",
+          "locator": "credibility-cluster",
+          "title": "Current Action pin, CI dogfood of spec-from base, codepoint canonicalization"
+        },
+        {
+          "id": "SRC-7",
+          "type": "document",
+          "locator": "sprint-a-trust-fixes",
+          "title": "Strict gate load warnings, key-collision fail-closed, agent gate self-check"
+        },
+        {
+          "id": "SRC-8",
+          "type": "document",
+          "locator": "agent-first-roadmap",
+          "title": "Worktree-aware agent checks, protected contract evolution, portable skill, and agent benchmark"
+        },
+        {
+          "id": "SRC-9",
+          "type": "document",
+          "locator": "rc3-release-preparation",
+          "title": "Keep package metadata and immutable adopter pins releasable under the base contract"
+        }
+      ],
+      "targets": [
+        {
+          "id": "TARGET-gate",
+          "component": "gate",
+          "paths": [
+            "src/gate/**",
+            "src/path/**",
+            "test/unit/gate.test.ts",
+            "test/unit/gate.adversarial.test.ts",
+            "test/unit/targetGlob.test.ts",
+            "test/unit/receipt.test.ts",
+            "test/unit/diagnostic-codes.test.ts"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-validator",
+          "component": "validator",
+          "paths": [
+            "src/validator/**",
+            "src/parser/**",
+            "src/query/**",
+            "src/normalizer/**",
+            "test/unit/core.test.ts",
+            "test/unit/canonicalize.test.ts",
+            "test/conformance/**",
+            "schemas/**",
+            "conformance/**"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-cli",
+          "component": "cli-and-exports",
+          "paths": [
+            "src/cli/**",
+            "src/diagnostics/codes.ts",
+            "src/index.ts",
+            "test/integration/**",
+            "test/unit/version.test.ts",
+            "vitest.config.ts",
+            "package.json",
+            "package-lock.json"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-ci-docs",
+          "component": "adoption-surface",
+          "paths": [
+            "action.yml",
+            ".github/workflows/ci.yml",
+            ".github/CODEOWNERS",
+            "AGENTS.md",
+            ".cursor/rules/**",
+            "README.md",
+            "maintainer-only roadmap",
+            "SPEC.md",
+            "CHANGELOG.md",
+            "docs/**",
+            "rfcs/**",
+            "skills/**",
+            "benchmarks/**",
+            "examples/**"
+          ],
+          "changePolicy": "modify"
+        }
+      ],
+      "constraints": [
+        {
+          "id": "CON-1",
+          "level": "must",
+          "statement": "Gate fails closed when a changed path matches no writable target.",
+          "appliesTo": [
+            "TARGET-gate"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-2",
+          "level": "must_not",
+          "statement": "Gate must not execute verification runners or mutate the repository.",
+          "appliesTo": [
+            "TARGET-gate",
+            "TARGET-cli"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-3",
+          "level": "must",
+          "statement": "CI must demonstrate gate pass and fail using explicit --changed paths.",
+          "appliesTo": [
+            "TARGET-ci-docs"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-4",
+          "level": "must",
+          "statement": "When any matching target is read_only or observe, the gate must deny the path even if a broader writable target also matches (deny overrides allow).",
+          "appliesTo": [
+            "TARGET-gate"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-5",
+          "level": "must",
+          "statement": "Gate must support loading the contract from the git base ref (--spec-from base) so a PR cannot silently widen its own authorization.",
+          "appliesTo": [
+            "TARGET-gate",
+            "TARGET-cli"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-6",
+          "level": "must",
+          "statement": "Git diff collection must use null-delimited output and reject unknown or malformed status records (ESG004).",
+          "appliesTo": [
+            "TARGET-gate"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-7",
+          "level": "must",
+          "statement": "Adopter docs must publish an immutable Action SHA pin, CODEOWNERS example, and required-check instructions so the gate can be merge-blocking.",
+          "appliesTo": [
+            "TARGET-ci-docs"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-8",
+          "level": "must",
+          "statement": "Enforcement and runner kinds must be field-complete (policy/review/test/contract/reference/external) so empty labels are rejected.",
+          "appliesTo": [
+            "TARGET-validator"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-9",
+          "level": "must",
+          "statement": "Docs and gate diagnostics must treat interface_only as a path-writable label (ESG006), not content-level interface enforcement.",
+          "appliesTo": [
+            "TARGET-gate",
+            "TARGET-ci-docs"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-10",
+          "level": "must",
+          "statement": "Gate must resolve immutable base/head SHAs once before loading the contract and collecting the diff.",
+          "appliesTo": [
+            "TARGET-gate",
+            "TARGET-cli"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-11",
+          "level": "must",
+          "statement": "Target globs must use the restricted EngineeringSpec dialect (ESPTH002); references must be typed (ESR008).",
+          "appliesTo": [
+            "TARGET-validator",
+            "TARGET-gate"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-12",
+          "level": "must",
+          "statement": "Gate must be able to write a durable unsigned gate-receipt.json binding digest and SHAs.",
+          "appliesTo": [
+            "TARGET-gate",
+            "TARGET-cli"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-13",
+          "level": "must",
+          "statement": "Project CI must always enforce against the approved base contract, require contract evolution to land before its dependent implementation, support merge_group, and keep the documented Action SHA pin current with trust-hardened tip.",
+          "appliesTo": [
+            "TARGET-ci-docs"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-14",
+          "level": "must",
+          "statement": "Canonical JSON object keys must order by Unicode code point; target globs must reject parent-directory segments.",
+          "appliesTo": [
+            "TARGET-validator",
+            "TARGET-gate"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-15",
+          "level": "must",
+          "statement": "Gate --strict must fail on validation warnings from the loaded contract; conflicting snake_case/camelCase keys must be rejected (ESP009).",
+          "appliesTo": [
+            "TARGET-cli",
+            "TARGET-validator"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-16",
+          "level": "must",
+          "statement": "Agent workflow docs must require a complete-working-state self-check before claiming a consequential change is done.",
+          "appliesTo": [
+            "TARGET-ci-docs"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-17",
+          "level": "must",
+          "statement": "Every stable diagnostic code must identify exactly one condition and be registered centrally.",
+          "appliesTo": [
+            "TARGET-validator"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-18",
+          "level": "must",
+          "statement": "Agent self-checks must be able to gate the complete working state, including committed, staged, unstaged, deleted, renamed, and untracked paths.",
+          "appliesTo": [
+            "TARGET-gate",
+            "TARGET-cli"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-19",
+          "level": "must",
+          "statement": "Contract evolution must not silently replace base authorization with a workspace contract that widens its own implementation scope.",
+          "appliesTo": [
+            "TARGET-gate",
+            "TARGET-cli",
+            "TARGET-ci-docs"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-20",
+          "level": "must_not",
+          "statement": "Agent-oriented check, context, and explanation commands must not execute declared verification runners or mutate the repository.",
+          "appliesTo": [
+            "TARGET-cli",
+            "TARGET-validator"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-21",
+          "level": "must",
+          "statement": "The reusable agent workflow must remain a thin, agent-neutral consumer of the CLI and shared EngineeringSpec contract.",
+          "appliesTo": [
+            "TARGET-ci-docs"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-22",
+          "level": "must",
+          "statement": "The agent-impact benchmark must be reproducible, compare equivalent tasks, and report scope, correctness, review, latency, and token outcomes without executing spec-declared runners.",
+          "appliesTo": [
+            "TARGET-ci-docs"
+          ],
+          "enforcement": "review"
+        }
+      ],
+      "contracts": [],
+      "verification": [
+        {
+          "id": "VER-1",
+          "kind": "test",
+          "proves": [
+            "CON-1",
+            "CON-2",
+            "CON-3",
+            "CON-4",
+            "CON-5",
+            "CON-6",
+            "CON-8",
+            "CON-9",
+            "CON-10",
+            "CON-11",
+            "CON-12",
+            "CON-14",
+            "CON-15",
+            "CON-17",
+            "CON-18",
+            "CON-19",
+            "CON-20"
+          ]
+        },
+        {
+          "id": "VER-2",
+          "kind": "human_review",
+          "proves": [
+            "CON-7",
+            "CON-13",
+            "CON-16",
+            "CON-21",
+            "CON-22"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ES-intuitive-agent-workflow",
+      "title": "Make the agent workflow intuitive and diagnosable",
+      "status": "implemented",
+      "file": "ES-intuitive-agent-workflow.engineering-spec.md",
+      "owners": [
+        "EngineeringSpec maintainers"
+      ],
+      "sourceRefs": [
+        {
+          "id": "SRC-1",
+          "type": "document",
+          "locator": "rfcs/0004-intuitive-agent-workflow.md",
+          "title": "Intuitive agent workflow RFC"
+        }
+      ],
+      "targets": [
+        {
+          "id": "TARGET-cli",
+          "component": "workflow-cli",
+          "paths": [
+            "src/cli/doctor.ts",
+            "src/cli/status.ts",
+            "src/cli/program.ts",
+            "src/index.ts"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-tests",
+          "component": "workflow-verification",
+          "paths": [
+            "test/unit/doctor.test.ts",
+            "test/unit/status.test.ts",
+            "test/integration/cli.test.ts"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-guidance",
+          "component": "agent-and-team-guidance",
+          "paths": [
+            "README.md",
+            "maintainer-only roadmap",
+            "CHANGELOG.md",
+            "docs/agent-integration.md",
+            "docs/getting-started.md",
+            "docs/first-change-tutorial.md",
+            "docs/lifecycle.md",
+            "docs/roles-and-responsibilities.md",
+            "docs/maintaining-specs.md",
+            "docs/troubleshooting.md",
+            "skills/engineering-spec/SKILL.md",
+            "AGENTS.md",
+            "CLAUDE.md",
+            ".cursor/rules/engineering-spec.mdc"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-contract",
+          "component": "lifecycle-contract",
+          "paths": [
+            "docs/engineering-specs/ES-intuitive-agent-workflow.engineering-spec.md",
+            "rfcs/0004-intuitive-agent-workflow.md"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-ci",
+          "component": "repository-enforcement",
+          "paths": [
+            ".github/workflows/ci.yml"
+          ],
+          "changePolicy": "modify"
+        }
+      ],
+      "constraints": [
+        {
+          "id": "CON-1",
+          "level": "must",
+          "statement": "The documented workflow must use the stages explore, propose, approve, implement, verify, and close while making clear that only a merged approved base contract authorizes implementation.",
+          "appliesTo": [
+            "TARGET-guidance"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-2",
+          "level": "must",
+          "statement": "Doctor must deterministically diagnose Git worktree, base-ref, specification-directory, validation, lifecycle-count, neutral agent-guidance, and enforcing-CI readiness with actionable remediations in text and JSON output.",
+          "appliesTo": [
+            "TARGET-cli",
+            "TARGET-tests"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-3",
+          "level": "must",
+          "statement": "Status must summarize the resolved base, candidate lifecycle counts, complete working-state paths, selected approved contracts, routed targets, declared coverage, and a safe next lifecycle action.",
+          "appliesTo": [
+            "TARGET-cli",
+            "TARGET-tests"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-4",
+          "level": "must",
+          "statement": "For non-empty changes status must reuse approved-only base-pinned routing and fail closed for invalid, strict-warning, duplicate, uncovered, ambiguous, or denied candidates; clean state must be reported as not_applicable rather than authorized.",
+          "appliesTo": [
+            "TARGET-cli",
+            "TARGET-tests"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-5",
+          "level": "must_not",
+          "statement": "Doctor, status, and portable agent actions must not mutate the repository, execute declared runners, contact external providers, load mutable workspace contracts as authority, expose runner payloads, or autonomously approve or close contracts.",
+          "appliesTo": [
+            "TARGET-cli",
+            "TARGET-tests",
+            "TARGET-guidance"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-6",
+          "level": "must",
+          "statement": "Existing validation, gate, select, check, context, explain, adopt, benchmark, routing, diagnostics, and exit-code behavior must remain compatible.",
+          "appliesTo": [
+            "TARGET-cli",
+            "TARGET-tests"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-7",
+          "level": "must",
+          "statement": "The portable Agent Skill and repository guidance must express the same vendor-neutral lifecycle and use thin actions over the on-disk format and CLI rather than vendor-specific core behavior.",
+          "appliesTo": [
+            "TARGET-guidance"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-8",
+          "level": "must",
+          "statement": "Onboarding documentation must include a guided first change, role boundaries, lifecycle maintenance, troubleshooting, private-repository use, and the separately trusted verification rule.",
+          "appliesTo": [
+            "TARGET-guidance"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-9",
+          "level": "must_not",
+          "statement": "This increment must not change the EngineeringSpec format or schema, add a hosted UI or autonomous executor, or allow architecture sources to directly grant implementation authority.",
+          "appliesTo": [
+            "TARGET-cli",
+            "TARGET-tests",
+            "TARGET-guidance",
+            "TARGET-contract"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-10",
+          "level": "must",
+          "statement": "The implementation must include adversarial tests for missing refs and directories, invalid and warning-bearing contracts, non-Git directories, non-empty uncovered or ambiguous changes, ignored untracked files, and clean repositories with no approved contract.",
+          "appliesTo": [
+            "TARGET-tests"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-11",
+          "level": "must",
+          "statement": "Filesystem and Git inspection must be bounded and must not expose repository credentials, environment secrets, verification command payloads, or unrelated file contents.",
+          "appliesTo": [
+            "TARGET-cli",
+            "TARGET-tests"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-12",
+          "level": "must",
+          "statement": "Roadmap and release notes must retain benchmarks, consumer pilots, ProductSpec Git-tree loading, compatibility review, schema adapters, and measured read-only MCP as future work while placing search and architecture adapters after workflow usability evidence.",
+          "appliesTo": [
+            "TARGET-guidance"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-13",
+          "level": "must",
+          "statement": "After trusted checks pass, the implementation must transition this contract from approved to implemented without widening its target surfaces.",
+          "appliesTo": [
+            "TARGET-contract"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-14",
+          "level": "must",
+          "statement": "Pull-request enforcement must use approved-only base-pinned directory routing as its single authorization decision; compatible single-spec behavior may remain tested but must not be hard-coded to a historical contract for repository PR gating.",
+          "appliesTo": [
+            "TARGET-ci",
+            "TARGET-tests"
+          ],
+          "enforcement": "test"
+        }
+      ],
+      "contracts": [],
+      "verification": [
+        {
+          "id": "VER-1",
+          "kind": "test",
+          "proves": [
+            "CON-2",
+            "CON-3",
+            "CON-4",
+            "CON-5",
+            "CON-6",
+            "CON-10",
+            "CON-11",
+            "CON-14"
+          ]
+        },
+        {
+          "id": "VER-2",
+          "kind": "human_review",
+          "proves": [
+            "CON-1",
+            "CON-7",
+            "CON-8",
+            "CON-9",
+            "CON-12",
+            "CON-13"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ES-multi-spec-routing",
+      "title": "Deterministic multi-spec routing",
+      "status": "implemented",
+      "file": "ES-multi-spec-routing.engineering-spec.md",
+      "owners": [
+        "EngineeringSpec maintainers"
+      ],
+      "sourceRefs": [
+        {
+          "id": "SRC-1",
+          "type": "document",
+          "locator": "rfcs/0002-deterministic-multi-spec-routing.md",
+          "title": "Deterministic multi-spec routing RFC"
+        }
+      ],
+      "targets": [
+        {
+          "id": "TARGET-routing",
+          "component": "routing-core",
+          "paths": [
+            "src/routing/**",
+            "src/discovery/**",
+            "src/gate/loadSpec.ts",
+            "src/gate/collectDiff.ts",
+            "src/gate/types.ts",
+            "src/query/**",
+            "src/diagnostics/codes.ts",
+            "src/index.ts"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-cli",
+          "component": "cli-and-action",
+          "paths": [
+            "src/cli/program.ts",
+            "src/cli/agentCheck.ts",
+            "src/cli/adopt.ts",
+            "action.yml"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-tests",
+          "component": "verification",
+          "paths": [
+            "test/**",
+            "conformance/**",
+            "vitest.config.ts"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-guidance",
+          "component": "adoption-guidance",
+          "paths": [
+            "AGENTS.md",
+            "CLAUDE.md",
+            ".cursor/rules/**",
+            ".github/workflows/ci.yml",
+            "README.md",
+            "maintainer-only roadmap",
+            "CHANGELOG.md",
+            "docs/**",
+            "skills/**",
+            "benchmarks/**"
+          ],
+          "changePolicy": "modify"
+        }
+      ],
+      "constraints": [
+        {
+          "id": "CON-1",
+          "level": "must",
+          "statement": "Multi-spec routing must resolve the base SHA once and enumerate and load every candidate from that same immutable Git tree without workspace fallback.",
+          "appliesTo": [
+            "TARGET-routing",
+            "TARGET-cli"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-2",
+          "level": "must",
+          "statement": "Candidate discovery must be recursive, deterministic, restricted to supported EngineeringSpec filenames, null-delimited, bounded, and fail closed on malformed Git output.",
+          "appliesTo": [
+            "TARGET-routing"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-3",
+          "level": "must",
+          "statement": "Every discovered candidate must validate before lifecycle filtering; strict warnings, invalid candidates, duplicate eligible spec IDs, and zero eligible contracts must fail closed.",
+          "appliesTo": [
+            "TARGET-routing",
+            "TARGET-cli"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-4",
+          "level": "must",
+          "statement": "Every changed path must resolve to exactly one allowing approved contract; uncovered paths and multiple allowing claims must fail with stable routing diagnostics.",
+          "appliesTo": [
+            "TARGET-routing",
+            "TARGET-cli"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-5",
+          "level": "must",
+          "statement": "A denying target in any eligible contract must override all allowing claims across the candidate set.",
+          "appliesTo": [
+            "TARGET-routing"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-6",
+          "level": "must",
+          "statement": "Routing output must deterministically bind the resolved base SHA, candidate paths and digests, specification IDs, changed-file digest, per-path decisions, and matching target IDs.",
+          "appliesTo": [
+            "TARGET-routing",
+            "TARGET-cli"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-7",
+          "level": "must_not",
+          "statement": "Selection, multi-spec checking, discovery, validation, and context construction must not execute specification runners or mutate the repository.",
+          "appliesTo": [
+            "TARGET-routing",
+            "TARGET-cli"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-8",
+          "level": "must",
+          "statement": "Multi-spec check must cover the complete working state, including committed, staged, unstaged, deleted, renamed, and non-ignored untracked paths.",
+          "appliesTo": [
+            "TARGET-routing",
+            "TARGET-cli",
+            "TARGET-tests"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-9",
+          "level": "must",
+          "statement": "The Action and generated adoption workflow must use strict, approved-only, base-pinned directory routing while preserving the existing single-spec inputs.",
+          "appliesTo": [
+            "TARGET-cli",
+            "TARGET-guidance"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-10",
+          "level": "must",
+          "statement": "ESRT001 through ESRT005 must each identify exactly one routing failure condition and be registered centrally.",
+          "appliesTo": [
+            "TARGET-routing",
+            "TARGET-tests"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-11",
+          "level": "must",
+          "statement": "Existing single-spec gate, check, receipt, exit-code, and output behavior must remain compatible.",
+          "appliesTo": [
+            "TARGET-routing",
+            "TARGET-cli",
+            "TARGET-tests"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-12",
+          "level": "must",
+          "statement": "Agent guidance must explain approved-contract lifecycle, ambiguity remediation, and the two-phase rule without introducing vendor-specific core behavior.",
+          "appliesTo": [
+            "TARGET-guidance"
+          ],
+          "enforcement": "review"
+        }
+      ],
+      "contracts": [],
+      "verification": [
+        {
+          "id": "VER-1",
+          "kind": "test",
+          "proves": [
+            "CON-1",
+            "CON-2",
+            "CON-3",
+            "CON-4",
+            "CON-5",
+            "CON-6",
+            "CON-7",
+            "CON-8",
+            "CON-9",
+            "CON-10",
+            "CON-11"
+          ]
+        },
+        {
+          "id": "VER-2",
+          "kind": "human_review",
+          "proves": [
+            "CON-12"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ES-portable-contract-governance",
+      "title": "Make contract lifecycle governance work for adopters",
+      "status": "implemented",
+      "file": "ES-portable-contract-governance.engineering-spec.md",
+      "owners": [
+        "EngineeringSpec maintainers"
+      ],
+      "sourceRefs": [
+        {
+          "id": "SRC-1",
+          "type": "document",
+          "locator": "rfcs/0005-portable-contract-governance-lane.md",
+          "title": "Portable contract-governance lane RFC"
+        },
+        {
+          "id": "SRC-2",
+          "type": "document",
+          "locator": "docs/first-change-tutorial.md",
+          "title": "Documented six-stage lifecycle"
+        }
+      ],
+      "targets": [
+        {
+          "id": "TARGET-routing",
+          "component": "contract-governance-classification",
+          "paths": [
+            "src/routing/governance.ts",
+            "src/routing/select.ts",
+            "src/routing/types.ts",
+            "src/gate/collectDiff.ts"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-cli",
+          "component": "lifecycle-cli",
+          "paths": [
+            "src/cli/program.ts",
+            "src/cli/status.ts",
+            "src/index.ts"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-action",
+          "component": "portable-enforcement",
+          "paths": [
+            "action.yml",
+            "src/cli/adopt.ts"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-tests",
+          "component": "governance-verification",
+          "paths": [
+            "test/unit/governance.test.ts",
+            "test/unit/status.test.ts",
+            "test/integration/cli.test.ts",
+            "test/integration/routing.test.ts",
+            "test/conformance/governance.test.ts",
+            "conformance/governance/manifest.json"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-guidance",
+          "component": "adopter-lifecycle-guidance",
+          "paths": [
+            "README.md",
+            "CHANGELOG.md",
+            "maintainer-only roadmap",
+            "docs/agent-integration.md",
+            "docs/getting-started.md",
+            "docs/first-change-tutorial.md",
+            "docs/lifecycle.md",
+            "docs/maintaining-specs.md",
+            "docs/production-gate.md",
+            "docs/troubleshooting.md",
+            "maintainer-only adoption notes",
+            "skills/engineering-spec/SKILL.md"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-contract",
+          "component": "governance-contract",
+          "paths": [
+            "docs/engineering-specs/ES-portable-contract-governance.engineering-spec.md",
+            "rfcs/0005-portable-contract-governance-lane.md"
+          ],
+          "changePolicy": "modify"
+        }
+      ],
+      "constraints": [
+        {
+          "id": "CON-1",
+          "level": "must",
+          "statement": "Contract-only governance must be explicit and must classify a non-empty change only when every old and new changed path is contained within the normalized repository-relative specification directory.",
+          "appliesTo": [
+            "TARGET-routing",
+            "TARGET-cli",
+            "TARGET-action",
+            "TARGET-tests"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-2",
+          "level": "must",
+          "statement": "A classified governance change must strictly validate workspace specifications and report a distinct machine-readable classification without claiming selection by an approved base contract.",
+          "appliesTo": [
+            "TARGET-routing",
+            "TARGET-cli",
+            "TARGET-action",
+            "TARGET-tests"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-3",
+          "level": "must",
+          "statement": "Any mixed specification-and-non-specification change, cross-boundary rename, empty change, unsafe path, invalid contract, or strict validation warning must remain fail closed under existing approved-base routing semantics.",
+          "appliesTo": [
+            "TARGET-routing",
+            "TARGET-cli",
+            "TARGET-action",
+            "TARGET-tests"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-4",
+          "level": "must_not",
+          "statement": "Workspace specification content must not authorize implementation, widen targets for the same review unit, manufacture verification evidence, or execute a declared runner.",
+          "appliesTo": [
+            "TARGET-routing",
+            "TARGET-cli",
+            "TARGET-action",
+            "TARGET-tests",
+            "TARGET-guidance"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-5",
+          "level": "must",
+          "statement": "Existing select, check, status, gate, context, explain, validation, diagnostics, receipts, and default Action behavior must remain compatible when contract-only governance is not explicitly enabled.",
+          "appliesTo": [
+            "TARGET-routing",
+            "TARGET-cli",
+            "TARGET-action",
+            "TARGET-tests"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-6",
+          "level": "must",
+          "statement": "The GitHub Action must expose the policy only with directory routing, delegate classification to the shared CLI implementation, and reject incompatible single-spec configuration.",
+          "appliesTo": [
+            "TARGET-action",
+            "TARGET-tests"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-7",
+          "level": "must",
+          "statement": "Generated adoption workflows and agent guidance must enable and explain the portable governance lane, immutable pins, strict validation, separate implementation PRs, and reviewer-owned lifecycle transitions.",
+          "appliesTo": [
+            "TARGET-action",
+            "TARGET-guidance"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-8",
+          "level": "must",
+          "statement": "Status must identify contract-only governance and recommend closure only when review content represents a valid lifecycle transition out of approved; it must remain read-only and must not infer completion from Git history.",
+          "appliesTo": [
+            "TARGET-cli",
+            "TARGET-tests",
+            "TARGET-guidance"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-9",
+          "level": "must",
+          "statement": "Conformance vectors must cover specification-only, mixed, empty, nested, prefix-confusion, and cross-boundary rename cases.",
+          "appliesTo": [
+            "TARGET-tests"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-10",
+          "level": "must_not",
+          "statement": "This change must not alter EngineeringSpec format 0.1, add an autonomous lifecycle mutation, add a hosted service, or introduce vendor-specific behavior into the core format.",
+          "appliesTo": [
+            "TARGET-routing",
+            "TARGET-cli",
+            "TARGET-action",
+            "TARGET-guidance",
+            "TARGET-contract"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-11",
+          "level": "must",
+          "statement": "Documentation must require CODEOWNERS or equivalent maintainer review and normal trusted repository checks for governance changes because path classification is not approval evidence.",
+          "appliesTo": [
+            "TARGET-guidance"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-12",
+          "level": "must",
+          "statement": "After trusted checks and private consumer dogfood pass, this contract must transition to implemented without widening its targets.",
+          "appliesTo": [
+            "TARGET-contract"
+          ],
+          "enforcement": "review"
+        }
+      ],
+      "contracts": [],
+      "verification": [
+        {
+          "id": "VER-1",
+          "kind": "test",
+          "proves": [
+            "CON-1",
+            "CON-2",
+            "CON-3",
+            "CON-4",
+            "CON-5",
+            "CON-6",
+            "CON-8"
+          ]
+        },
+        {
+          "id": "VER-2",
+          "kind": "test",
+          "proves": [
+            "CON-9"
+          ]
+        },
+        {
+          "id": "VER-3",
+          "kind": "human_review",
+          "proves": [
+            "CON-7",
+            "CON-10",
+            "CON-11",
+            "CON-12"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ES-rc3-release",
+      "title": "Publish the agent-first RC3 release",
+      "status": "proposed",
+      "file": "ES-rc3-release.engineering-spec.md",
+      "owners": [
+        "EngineeringSpec maintainers"
+      ],
+      "sourceRefs": [
+        {
+          "id": "SRC-1",
+          "type": "document",
+          "locator": "agent-first-release-follow-up",
+          "title": "Release the merged agent-first workflow for consumer dogfooding"
+        }
+      ],
+      "targets": [
+        {
+          "id": "TARGET-version",
+          "component": "package-metadata",
+          "paths": [
+            "package.json",
+            "package-lock.json"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-pins",
+          "component": "immutable-adopter-pins",
+          "paths": [
+            "src/cli/adopt.ts",
+            "README.md",
+            "docs/production-gate.md",
+            "maintainer-only adoption notes",
+            "test/integration/cli.test.ts"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-notes",
+          "component": "release-notes",
+          "paths": [
+            "CHANGELOG.md",
+            "maintainer-only roadmap"
+          ],
+          "changePolicy": "modify"
+        }
+      ],
+      "constraints": [
+        {
+          "id": "CON-1",
+          "level": "must",
+          "statement": "package.json and the root package-lock metadata must declare version 0.1.0-rc.3.",
+          "appliesTo": [
+            "TARGET-version"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-2",
+          "level": "must",
+          "statement": "Generated and documented production Action examples must use the full immutable SHA of the reviewed agent-first merge.",
+          "appliesTo": [
+            "TARGET-pins"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-3",
+          "level": "must_not",
+          "statement": "Release preparation must not change the format schema, Action execution semantics, or the tag-driven npm trusted-publishing workflow.",
+          "appliesTo": [
+            "TARGET-version",
+            "TARGET-pins",
+            "TARGET-notes"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-4",
+          "level": "must",
+          "statement": "Release notes must identify the agent-first workflow, trust-boundary hardening, adoption scaffold, skill, and benchmark without claiming measured impact from example data.",
+          "appliesTo": [
+            "TARGET-notes"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-5",
+          "level": "must",
+          "statement": "Publication must remain gated by a version-matching v0.1.0-rc.3 tag after repository checks pass.",
+          "appliesTo": [
+            "TARGET-version",
+            "TARGET-notes"
+          ],
+          "enforcement": "review"
+        }
+      ],
+      "contracts": [],
+      "verification": [
+        {
+          "id": "VER-1",
+          "kind": "test",
+          "proves": [
+            "CON-1",
+            "CON-2"
+          ]
+        },
+        {
+          "id": "VER-2",
+          "kind": "human_review",
+          "proves": [
+            "CON-3",
+            "CON-4",
+            "CON-5"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ES-rc4-routing-release",
+      "title": "Publish the multi-spec routing RC4 release",
+      "status": "implemented",
+      "file": "ES-rc4-routing-release.engineering-spec.md",
+      "owners": [
+        "EngineeringSpec maintainers"
+      ],
+      "sourceRefs": [
+        {
+          "id": "SRC-1",
+          "type": "document",
+          "locator": "rfcs/0002-deterministic-multi-spec-routing.md",
+          "title": "Deterministic multi-spec routing RFC"
+        },
+        {
+          "id": "SRC-2",
+          "type": "document",
+          "locator": "da9b6d7",
+          "title": "Reviewed multi-spec routing implementation merge"
+        }
+      ],
+      "targets": [
+        {
+          "id": "TARGET-version",
+          "component": "package-release",
+          "paths": [
+            "package.json",
+            "package-lock.json",
+            ".github/workflows/release.yml"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-adopt",
+          "component": "immutable-routing-adoption",
+          "paths": [
+            "src/cli/adopt.ts",
+            "test/integration/cli.test.ts",
+            "skills/**",
+            "README.md",
+            "docs/agent-integration.md",
+            "docs/production-gate.md",
+            "maintainer-only adoption notes"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-ci",
+          "component": "repository-enforcement",
+          "paths": [
+            ".github/workflows/ci.yml",
+            "AGENTS.md",
+            "CLAUDE.md",
+            ".cursor/rules/**"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-notes",
+          "component": "release-and-lifecycle-notes",
+          "paths": [
+            "CHANGELOG.md",
+            "maintainer-only roadmap",
+            "docs/engineering-specs/ES-rc4-routing-release.engineering-spec.md"
+          ],
+          "changePolicy": "modify"
+        }
+      ],
+      "constraints": [
+        {
+          "id": "CON-1",
+          "level": "must",
+          "statement": "package.json and root package-lock metadata must declare version 0.1.0-rc.4.",
+          "appliesTo": [
+            "TARGET-version"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-2",
+          "level": "must",
+          "statement": "Generated and documented routing-capable Action examples must pin the full reviewed implementation merge SHA da9b6d7a7fabb17ec2169cdf3a4ca4278cbdeb76.",
+          "appliesTo": [
+            "TARGET-adopt"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-3",
+          "level": "must",
+          "statement": "Generated enforcing CI must use gate-spec-dir over docs/engineering-specs, a resolved approved base, strict mode, and approved-only eligibility without removing compatible single-spec Action inputs.",
+          "appliesTo": [
+            "TARGET-adopt",
+            "TARGET-ci"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-4",
+          "level": "must",
+          "statement": "Generated agent checks must use base-pinned multi-spec check/select, and packaged skill fallback commands must pin exactly 0.1.0-rc.4 rather than a mutable distribution tag.",
+          "appliesTo": [
+            "TARGET-adopt"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-5",
+          "level": "must",
+          "statement": "Repository CI must authorize the release implementation from this approved base contract and continue dogfooding directory routing.",
+          "appliesTo": [
+            "TARGET-ci"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-6",
+          "level": "must_not",
+          "statement": "Release preparation must not change the EngineeringSpec format/schema, routing semantics, runner inertness, or tag-driven trusted-publishing boundary.",
+          "appliesTo": [
+            "TARGET-version",
+            "TARGET-adopt",
+            "TARGET-ci",
+            "TARGET-notes"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-7",
+          "level": "must",
+          "statement": "Release notes must describe routing and adoption capabilities without claiming unmeasured agent impact or external adoption.",
+          "appliesTo": [
+            "TARGET-notes"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-8",
+          "level": "must",
+          "statement": "Publication must remain gated by a version-matching v0.1.0-rc.4 tag after repository checks pass.",
+          "appliesTo": [
+            "TARGET-version",
+            "TARGET-notes"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-9",
+          "level": "must",
+          "statement": "This release contract must transition from approved to implemented in the release implementation so historical contracts do not remain eligible for future routing.",
+          "appliesTo": [
+            "TARGET-notes"
+          ],
+          "enforcement": "review"
+        }
+      ],
+      "contracts": [],
+      "verification": [
+        {
+          "id": "VER-1",
+          "kind": "test",
+          "proves": [
+            "CON-1",
+            "CON-2",
+            "CON-3",
+            "CON-4",
+            "CON-5"
+          ]
+        },
+        {
+          "id": "VER-2",
+          "kind": "human_review",
+          "proves": [
+            "CON-6",
+            "CON-7",
+            "CON-8",
+            "CON-9"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ES-rc5-lifecycle-release",
+      "title": "Publish the routing lifecycle RC5 release",
+      "status": "implemented",
+      "file": "ES-rc5-lifecycle-release.engineering-spec.md",
+      "owners": [
+        "EngineeringSpec maintainers"
+      ],
+      "sourceRefs": [
+        {
+          "id": "SRC-1",
+          "type": "document",
+          "locator": "rfcs/0003-vacuous-empty-routing.md",
+          "title": "Routing lifecycle edge cases RFC"
+        },
+        {
+          "id": "SRC-2",
+          "type": "document",
+          "locator": "e28b124ec2ca2135c4f3ad0f999a7cb9f715365d",
+          "title": "Reviewed routing lifecycle implementation merge"
+        }
+      ],
+      "targets": [
+        {
+          "id": "TARGET-version",
+          "component": "package-release",
+          "paths": [
+            "package.json",
+            "package-lock.json",
+            ".github/workflows/release.yml"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-adopt",
+          "component": "immutable-adopter-pins",
+          "paths": [
+            "src/cli/adopt.ts",
+            "test/integration/cli.test.ts",
+            "skills/engineering-spec/SKILL.md",
+            "README.md",
+            "docs/agent-integration.md",
+            "docs/production-gate.md",
+            "maintainer-only adoption notes"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-ci",
+          "component": "repository-enforcement",
+          "paths": [
+            ".github/workflows/ci.yml"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-notes",
+          "component": "release-and-lifecycle-notes",
+          "paths": [
+            "CHANGELOG.md",
+            "maintainer-only roadmap",
+            "docs/engineering-specs/ES-rc5-lifecycle-release.engineering-spec.md"
+          ],
+          "changePolicy": "modify"
+        }
+      ],
+      "constraints": [
+        {
+          "id": "CON-1",
+          "level": "must",
+          "statement": "package.json and root package-lock metadata must declare version 0.1.0-rc.5.",
+          "appliesTo": [
+            "TARGET-version"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-2",
+          "level": "must",
+          "statement": "Generated and documented routing-capable Action examples must pin the full reviewed lifecycle implementation merge SHA e28b124ec2ca2135c4f3ad0f999a7cb9f715365d.",
+          "appliesTo": [
+            "TARGET-adopt"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-3",
+          "level": "must",
+          "statement": "Generated agent checks and packaged skill fallback commands must pin exactly 0.1.0-rc.5 rather than a mutable distribution tag.",
+          "appliesTo": [
+            "TARGET-adopt"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-4",
+          "level": "must",
+          "statement": "Repository CI must authorize the RC5 implementation from this approved base contract and retain approved-only directory-routing dogfood.",
+          "appliesTo": [
+            "TARGET-ci"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-5",
+          "level": "must_not",
+          "statement": "Release preparation must not change the EngineeringSpec format, schema, routing semantics, contract-only classification, runner inertness, or tag-driven trusted-publishing boundary.",
+          "appliesTo": [
+            "TARGET-version",
+            "TARGET-adopt",
+            "TARGET-ci",
+            "TARGET-notes"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-6",
+          "level": "must",
+          "statement": "Release notes must accurately describe clean-state not-applicable routing and the repository contract-only lane without claiming unmeasured agent impact or external adoption.",
+          "appliesTo": [
+            "TARGET-notes"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-7",
+          "level": "must",
+          "statement": "Publication must remain gated by a version-matching v0.1.0-rc.5 tag after repository checks pass.",
+          "appliesTo": [
+            "TARGET-version",
+            "TARGET-notes"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-8",
+          "level": "must",
+          "statement": "This release contract must transition from approved to implemented in the release implementation.",
+          "appliesTo": [
+            "TARGET-notes"
+          ],
+          "enforcement": "review"
+        }
+      ],
+      "contracts": [],
+      "verification": [
+        {
+          "id": "VER-1",
+          "kind": "test",
+          "proves": [
+            "CON-1",
+            "CON-2",
+            "CON-3",
+            "CON-4"
+          ]
+        },
+        {
+          "id": "VER-2",
+          "kind": "human_review",
+          "proves": [
+            "CON-5",
+            "CON-6",
+            "CON-7",
+            "CON-8"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ES-rc6-intuitive-workflow-release",
+      "title": "Publish the intuitive agent workflow RC6 release",
+      "status": "implemented",
+      "file": "ES-rc6-intuitive-workflow-release.engineering-spec.md",
+      "owners": [
+        "EngineeringSpec maintainers"
+      ],
+      "sourceRefs": [
+        {
+          "id": "SRC-1",
+          "type": "document",
+          "locator": "rfcs/0004-intuitive-agent-workflow.md",
+          "title": "Intuitive agent workflow RFC"
+        },
+        {
+          "id": "SRC-2",
+          "type": "document",
+          "locator": "122ec6f0329b19e21a58a2f179aea3328cb8e1ac",
+          "title": "Reviewed intuitive agent workflow implementation merge"
+        }
+      ],
+      "targets": [
+        {
+          "id": "TARGET-version",
+          "component": "package-release",
+          "paths": [
+            "package.json",
+            "package-lock.json"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-adopt",
+          "component": "released-adoption-surface",
+          "paths": [
+            "src/cli/adopt.ts",
+            "test/integration/cli.test.ts",
+            "skills/engineering-spec/SKILL.md",
+            "README.md",
+            "docs/agent-integration.md",
+            "docs/getting-started.md",
+            "docs/production-gate.md",
+            "maintainer-only adoption notes"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-notes",
+          "component": "release-and-roadmap-notes",
+          "paths": [
+            "CHANGELOG.md",
+            "maintainer-only roadmap",
+            "docs/engineering-specs/ES-rc6-intuitive-workflow-release.engineering-spec.md"
+          ],
+          "changePolicy": "modify"
+        }
+      ],
+      "constraints": [
+        {
+          "id": "CON-1",
+          "level": "must",
+          "statement": "package.json and root package-lock metadata must declare version 0.1.0-rc.6.",
+          "appliesTo": [
+            "TARGET-version"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-2",
+          "level": "must",
+          "statement": "Generated and documented production Action examples must pin the full reviewed intuitive-workflow implementation merge SHA 122ec6f0329b19e21a58a2f179aea3328cb8e1ac.",
+          "appliesTo": [
+            "TARGET-adopt"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-3",
+          "level": "must",
+          "statement": "Current generated agent guidance, packaged skill commands, and current adoption documentation must use exact CLI version 0.1.0-rc.6 rather than RC5 or a mutable distribution tag, without rewriting historical release records.",
+          "appliesTo": [
+            "TARGET-adopt",
+            "TARGET-notes"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-4",
+          "level": "must",
+          "statement": "Generated neutral agent guidance must present explore, propose, approve, implement, verify, and close; include doctor and status; retain base-pinned approved-only selection and complete-working-state check; and keep declared runners inert.",
+          "appliesTo": [
+            "TARGET-adopt"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-5",
+          "level": "must",
+          "statement": "RC6 package verification must demonstrate that the compiled doctor and status commands are present, read-only, and successful for a clean self-contained checkout without requiring a remote-tracking ref.",
+          "appliesTo": [
+            "TARGET-version",
+            "TARGET-adopt"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-6",
+          "level": "must_not",
+          "statement": "Release preparation must not change the EngineeringSpec format, schema, doctor/status semantics, routing rules, runner inertness, directory-only repository authorization, or tag-driven trusted-publishing boundary.",
+          "appliesTo": [
+            "TARGET-version",
+            "TARGET-adopt",
+            "TARGET-notes"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-7",
+          "level": "must",
+          "statement": "Release notes must accurately describe workflow and diagnostics without claiming unmeasured agent impact, enterprise adoption, or architectural enforcement.",
+          "appliesTo": [
+            "TARGET-notes"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-8",
+          "level": "must",
+          "statement": "Publication must remain gated by a version-matching v0.1.0-rc.6 tag created from the reviewed release merge after repository checks pass.",
+          "appliesTo": [
+            "TARGET-version",
+            "TARGET-notes"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-9",
+          "level": "must",
+          "statement": "This release contract must transition from approved to implemented in the release implementation so it cannot remain future implementation authority.",
+          "appliesTo": [
+            "TARGET-notes"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-10",
+          "level": "must",
+          "statement": "Roadmap guidance must make private consumer dogfooding and at least ten paired benchmark tasks the next proof step before hosted UI, broad plugins, MCP, or architecture adapters.",
+          "appliesTo": [
+            "TARGET-notes"
+          ],
+          "enforcement": "review"
+        }
+      ],
+      "contracts": [],
+      "verification": [
+        {
+          "id": "VER-1",
+          "kind": "test",
+          "proves": [
+            "CON-1",
+            "CON-2",
+            "CON-3",
+            "CON-4",
+            "CON-5"
+          ]
+        },
+        {
+          "id": "VER-2",
+          "kind": "human_review",
+          "proves": [
+            "CON-6",
+            "CON-7",
+            "CON-8",
+            "CON-9",
+            "CON-10"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ES-rc7-portable-governance-release",
+      "title": "Publish the portable contract governance RC7 release",
+      "status": "implemented",
+      "file": "ES-rc7-portable-governance-release.engineering-spec.md",
+      "owners": [
+        "EngineeringSpec maintainers"
+      ],
+      "sourceRefs": [
+        {
+          "id": "SRC-1",
+          "type": "document",
+          "locator": "rfcs/0005-portable-contract-governance-lane.md",
+          "title": "Portable contract-governance lane RFC"
+        },
+        {
+          "id": "SRC-2",
+          "type": "document",
+          "locator": "0867ea1461f2280a0e0aa1c9bb14fb3d02a33d9b",
+          "title": "Reviewed portable contract-governance implementation merge"
+        },
+        {
+          "id": "SRC-3",
+          "type": "document",
+          "locator": "docs/engineering-specs/ES-portable-contract-governance.engineering-spec.md",
+          "title": "Portable governance implementation contract"
+        }
+      ],
+      "targets": [
+        {
+          "id": "TARGET-version",
+          "component": "package-release",
+          "paths": [
+            "package.json",
+            "package-lock.json"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-adopt",
+          "component": "released-adoption-surface",
+          "paths": [
+            "src/cli/adopt.ts",
+            "test/integration/cli.test.ts",
+            "skills/engineering-spec/SKILL.md",
+            "README.md",
+            "docs/agent-integration.md",
+            "docs/getting-started.md",
+            "docs/first-change-tutorial.md",
+            "docs/lifecycle.md",
+            "docs/maintaining-specs.md",
+            "docs/production-gate.md",
+            "docs/troubleshooting.md",
+            "maintainer-only adoption notes"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-notes",
+          "component": "release-and-roadmap-notes",
+          "paths": [
+            "CHANGELOG.md",
+            "maintainer-only roadmap",
+            "docs/engineering-specs/ES-rc7-portable-governance-release.engineering-spec.md",
+            "docs/engineering-specs/ES-portable-contract-governance.engineering-spec.md"
+          ],
+          "changePolicy": "modify"
+        }
+      ],
+      "constraints": [
+        {
+          "id": "CON-1",
+          "level": "must",
+          "statement": "package.json and root package-lock metadata must declare version 0.1.0-rc.7.",
+          "appliesTo": [
+            "TARGET-version"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-2",
+          "level": "must",
+          "statement": "Generated and documented production Action examples must pin the full reviewed portable-governance implementation merge SHA 0867ea1461f2280a0e0aa1c9bb14fb3d02a33d9b.",
+          "appliesTo": [
+            "TARGET-adopt"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-3",
+          "level": "must",
+          "statement": "Current generated agent guidance, packaged skill commands, and current adoption documentation must use exact CLI version 0.1.0-rc.7 rather than RC6 or a mutable distribution tag, without rewriting historical release records.",
+          "appliesTo": [
+            "TARGET-adopt",
+            "TARGET-notes"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-4",
+          "level": "must",
+          "statement": "Generated workflow and guidance must enable gate-allow-contract-only and the matching CLI option only for directory routing while retaining strict validation, approved-base implementation routing, complete-working-state checks, and inert declared runners.",
+          "appliesTo": [
+            "TARGET-adopt"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-5",
+          "level": "must",
+          "statement": "RC7 package verification must demonstrate default compatibility, valid contract-only classification and closure status, mixed-change failure, strict workspace validation, and presence of the compiled governance module in the packed artifact.",
+          "appliesTo": [
+            "TARGET-version",
+            "TARGET-adopt"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-6",
+          "level": "must_not",
+          "statement": "Release preparation must not change EngineeringSpec format 0.1, schema, governance classification, routing semantics, diagnostics, runner inertness, or the tag-driven trusted-publishing boundary.",
+          "appliesTo": [
+            "TARGET-version",
+            "TARGET-adopt",
+            "TARGET-notes"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-7",
+          "level": "must",
+          "statement": "Release notes must describe the private consumer-discovered closure gap and the opt-in fail-closed fix without claiming unmeasured agent impact, broad adoption, or architectural enforcement.",
+          "appliesTo": [
+            "TARGET-notes"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-8",
+          "level": "must",
+          "statement": "Publication must remain gated by a version-matching v0.1.0-rc.7 tag created from the reviewed release merge after repository checks pass.",
+          "appliesTo": [
+            "TARGET-version",
+            "TARGET-notes"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-9",
+          "level": "must",
+          "statement": "This release contract must transition from approved to implemented in the release implementation so it cannot remain future implementation authority.",
+          "appliesTo": [
+            "TARGET-notes"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-10",
+          "level": "must",
+          "statement": "The completed ES-portable-contract-governance implementation contract must remain implemented and historical.",
+          "appliesTo": [
+            "TARGET-notes"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-11",
+          "level": "must",
+          "statement": "After publication, private consumer must upgrade to immutable RC7 CLI and Action identities before its pending Revenue Inbox contract closure is merged through the portable governance lane.",
+          "appliesTo": [
+            "TARGET-adopt",
+            "TARGET-notes"
+          ],
+          "enforcement": "review"
+        }
+      ],
+      "contracts": [],
+      "verification": [
+        {
+          "id": "VER-1",
+          "kind": "test",
+          "proves": [
+            "CON-1",
+            "CON-2",
+            "CON-3",
+            "CON-4",
+            "CON-5"
+          ]
+        },
+        {
+          "id": "VER-2",
+          "kind": "human_review",
+          "proves": [
+            "CON-6",
+            "CON-7",
+            "CON-8",
+            "CON-9",
+            "CON-10",
+            "CON-11"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ES-rc8-frictionless-agent-operations",
+      "title": "Frictionless agent operations, discovery, and architecture bridge",
+      "status": "approved",
+      "file": "ES-rc8-frictionless-agent-operations.engineering-spec.md",
+      "owners": [
+        "EngineeringSpec maintainers"
+      ],
+      "sourceRefs": [
+        {
+          "id": "SRC-1",
+          "type": "document",
+          "locator": "maintainer-only roadmap",
+          "title": "EngineeringSpec roadmap after RC7"
+        },
+        {
+          "id": "SRC-2",
+          "type": "other",
+          "locator": "consumer-dogfood-2026-08",
+          "title": "Sanitized private consumer dogfood findings covering version drift, mixed lifecycle changes, and CI remediation"
+        },
+        {
+          "id": "SRC-3",
+          "type": "document",
+          "locator": "rfcs/0001-agent-first-trust-loop.md",
+          "title": "Agent-first trust-loop RFC"
+        },
+        {
+          "id": "SRC-4",
+          "type": "document",
+          "locator": "rfcs/0005-portable-contract-governance-lane.md",
+          "title": "Portable contract-governance lane RFC"
+        }
+      ],
+      "targets": [
+        {
+          "id": "TARGET-adoption-health",
+          "component": "adoption-and-version-health",
+          "paths": [
+            "src/cli/adopt.ts",
+            "src/cli/doctor.ts",
+            "src/cli/version.ts",
+            "src/adoption/**",
+            "test/unit/doctor.test.ts",
+            "test/integration/cli.test.ts"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-lifecycle",
+          "component": "lifecycle-assistance",
+          "paths": [
+            "src/cli/program.ts",
+            "src/cli/status.ts",
+            "src/cli/transition.ts",
+            "test/unit/status.test.ts",
+            "test/unit/transition.test.ts",
+            "test/integration/cli.test.ts"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-diagnostics",
+          "component": "actionable-routing-diagnostics",
+          "paths": [
+            "src/diagnostics/**",
+            "src/routing/governance.ts",
+            "src/routing/route.ts",
+            "src/routing/types.ts",
+            "test/unit/diagnostic-codes.test.ts",
+            "test/unit/governance.test.ts",
+            "test/unit/routing.test.ts",
+            "test/integration/routing.test.ts"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-catalogue",
+          "component": "deterministic-contract-catalogue",
+          "paths": [
+            "src/catalogue/**",
+            "src/cli/catalogue.ts",
+            "src/query/**",
+            "src/index.ts",
+            "test/unit/catalogue.test.ts",
+            "test/integration/catalogue.test.ts",
+            "test/fixtures/catalogue/**"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-architecture",
+          "component": "read-only-architecture-adapters",
+          "paths": [
+            "src/architecture/**",
+            "src/cli/architecture.ts",
+            "schemas/architecture-map-0.1.schema.json",
+            "test/unit/architecture.test.ts",
+            "test/integration/architecture.test.ts",
+            "test/fixtures/architecture/**"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-agent-integrations",
+          "component": "portable-agent-integrations",
+          "paths": [
+            "skills/engineering-spec/**",
+            "integrations/**",
+            "src/cli/templates.ts",
+            "test/integration/cli.test.ts"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-documentation",
+          "component": "documentation-and-static-explorer",
+          "paths": [
+            "README.md",
+            "maintainer-only roadmap",
+            "CHANGELOG.md",
+            "docs/**",
+            "site/**",
+            "scripts/generate-site.mjs",
+            "rfcs/0006-frictionless-agent-operations.md"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-package",
+          "component": "package-surface",
+          "paths": [
+            "package.json",
+            "package-lock.json",
+            "tsconfig.build.json"
+          ],
+          "changePolicy": "modify"
+        }
+      ],
+      "constraints": [
+        {
+          "id": "CON-1",
+          "level": "must",
+          "statement": "Doctor must deterministically detect drift among the running CLI version, managed agent guidance, and immutable GitHub Action pin using only bounded repository-local reads, and must provide exact remediation without network access or mutation.",
+          "appliesTo": [
+            "TARGET-adoption-health"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-2",
+          "level": "must",
+          "statement": "Adoption upgrade must support a dry-run and may update only recognizably managed EngineeringSpec content or exact immutable pins; ambiguous or user-owned structured content must fail closed or remain untouched.",
+          "appliesTo": [
+            "TARGET-adoption-health",
+            "TARGET-agent-integrations"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-3",
+          "level": "must",
+          "statement": "Lifecycle assistance must make proposed, approved, implemented, superseded, and rejected transitions understandable and must offer a deterministic status-only transition preview; filesystem writes require an explicit option, preserve all non-status bytes, validate before and after, and never commit, push, merge, or infer human approval.",
+          "appliesTo": [
+            "TARGET-lifecycle"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-4",
+          "level": "must",
+          "statement": "Mixed contract and implementation changes must retain implementation classification and approved-base enforcement while diagnostics identify why contract-only handling was unavailable and recommend splitting the change without suggesting a bypass.",
+          "appliesTo": [
+            "TARGET-diagnostics",
+            "TARGET-lifecycle"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-5",
+          "level": "must",
+          "statement": "Catalogue and search output must be deterministic, bounded, validation-aware, and available as stable JSON containing lifecycle, ownership, targets, constraints, contracts, verification identities, source references, and path-impact relationships without exposing verifier command payloads in agent-facing summaries.",
+          "appliesTo": [
+            "TARGET-catalogue"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-6",
+          "level": "must",
+          "statement": "The static Explorer must be generated from maintained documentation and deterministic catalogue data, work without a server or telemetry, provide accessible search and lifecycle/ownership/impact views, and escape all repository-controlled content before rendering.",
+          "appliesTo": [
+            "TARGET-catalogue",
+            "TARGET-documentation"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-7",
+          "level": "must",
+          "statement": "The first architecture adapter must consume a bounded Backstage-style component catalogue and emit a deterministic read-only architecture map of components, owners, dependencies, standards, and explicitly annotated path mappings with source provenance.",
+          "appliesTo": [
+            "TARGET-architecture"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-8",
+          "level": "must_not",
+          "statement": "Architecture metadata, imported mappings, catalogue results, UI state, skills, adapters, and plugins must never grant implementation authority, alter routing decisions, execute declared runners, or silently write EngineeringSpec contracts; they may only explain existing authority or propose reviewable contract-only changes.",
+          "appliesTo": [
+            "TARGET-architecture",
+            "TARGET-catalogue",
+            "TARGET-agent-integrations",
+            "TARGET-diagnostics"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-9",
+          "level": "must",
+          "statement": "Agent integrations must keep one concise portable Agent Skill as the primary workflow, generate neutral AGENTS.md guidance, document tested setup for Codex, Claude Code, Cursor, and ChatGPT-compatible repository workflows, and isolate any vendor adapter or plugin from the core format and authorization logic.",
+          "appliesTo": [
+            "TARGET-agent-integrations",
+            "TARGET-documentation"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-10",
+          "level": "must",
+          "statement": "Documentation must provide a role-based quick start, first-change tutorial, lifecycle and maintenance runbooks, upgrade guidance, complete CLI reference, architecture-bridge threat model, integration matrix, troubleshooting decision tree, and copy-paste examples that use immutable released identities where enforcement matters.",
+          "appliesTo": [
+            "TARGET-documentation",
+            "TARGET-agent-integrations"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-11",
+          "level": "must",
+          "statement": "All new query, doctor, catalogue, architecture, transition-preview, parsing, validation, and inspection paths must use bounded inputs and remain inert with respect to specification-declared runners and external commands.",
+          "appliesTo": [
+            "TARGET-adoption-health",
+            "TARGET-lifecycle",
+            "TARGET-catalogue",
+            "TARGET-architecture"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-12",
+          "level": "must",
+          "statement": "The implementation must preserve format 0.1 compatibility, existing CLI defaults, exact diagnostics already covered by conformance, empty-routing success, deny-overrides, base-pinned authorization, and the opt-in contract-only governance boundary.",
+          "appliesTo": [
+            "TARGET-adoption-health",
+            "TARGET-lifecycle",
+            "TARGET-diagnostics",
+            "TARGET-catalogue",
+            "TARGET-architecture",
+            "TARGET-agent-integrations",
+            "TARGET-package"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-13",
+          "level": "must",
+          "statement": "RFC 0006 and the roadmap must separate shipped capability from hypotheses, define measurable adoption outcomes, and defer broad vendor plugins or bidirectional architecture synchronization until evidence demonstrates value.",
+          "appliesTo": [
+            "TARGET-documentation"
+          ],
+          "enforcement": "review"
+        }
+      ],
+      "contracts": [],
+      "verification": [
+        {
+          "id": "VER-1",
+          "kind": "test",
+          "proves": [
+            "CON-1",
+            "CON-2",
+            "CON-3",
+            "CON-4",
+            "CON-5",
+            "CON-6",
+            "CON-7",
+            "CON-11"
+          ]
+        },
+        {
+          "id": "VER-2",
+          "kind": "test",
+          "proves": [
+            "CON-12"
+          ]
+        },
+        {
+          "id": "VER-3",
+          "kind": "human_review",
+          "proves": [
+            "CON-8",
+            "CON-9",
+            "CON-13"
+          ]
+        },
+        {
+          "id": "VER-4",
+          "kind": "human_review",
+          "proves": [
+            "CON-10"
+          ]
+        }
+      ]
+    }
+  ],
+  "diagnostics": []
+}

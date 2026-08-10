@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import type { Diagnostic } from "../diagnostics/Diagnostic.js";
 import { Codes } from "../diagnostics/codes.js";
+import { isEngineeringSpecFilename } from "../discovery/discover.js";
 import type { ChangedFile, ChangeKind } from "../gate/types.js";
 import type { EngineeringSpec, Status, TargetSurface } from "../model/types.js";
 import { compareCodePoints } from "../normalizer/canonicalize.js";
@@ -78,6 +79,16 @@ export function routeChanges(
   const diagnostics: Diagnostic[] = [];
   const routes: PathRoute[] = [];
 
+  if (changed.some((change) => isEngineeringSpecFilename(change.path))
+    && changed.some((change) => !isEngineeringSpecFilename(change.path))) {
+    diagnostics.push({
+      code: Codes.routingUncovered,
+      severity: "info",
+      message: "Contract-only handling is unavailable because this change also contains non-contract paths.",
+      hint: "Split specification lifecycle or scope changes into a contract-only PR, merge it, then update the implementation branch from the trusted base.",
+    });
+  }
+
   if (eligible.length === 0) {
     if (changed.length === 0) {
       return { candidates: summaries, routes, diagnostics, changedDigest: digestRoutedChanges(changed) };
@@ -100,7 +111,7 @@ export function routeChanges(
       message: `Eligible EngineeringSpec id ${JSON.stringify(id)} is duplicated by ${duplicates.map((item) => item.path).join(", ")}`,
     });
   }
-  if (diagnostics.length > 0) return { candidates: summaries, routes, diagnostics, changedDigest: digestRoutedChanges(changed) };
+  if (diagnostics.some((item) => item.severity === "error")) return { candidates: summaries, routes, diagnostics, changedDigest: digestRoutedChanges(changed) };
 
   const entries = expandedChanges(changed).sort((left, right) => compareCodePoints(left.path, right.path) || compareCodePoints(left.kind, right.kind));
   for (const entry of entries) {

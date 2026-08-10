@@ -1,4 +1,4 @@
 interface:
   display_name: "EngineeringSpec"
   short_description: "Keep AI coding changes inside approved contracts"
-  default_prompt: "Use $engineering-spec to implement this change within its declared contract and self-check the complete working state."
+  default_prompt: "Use $engineering-spec to explore this repository, follow its approved change contract, and self-check the complete working state."

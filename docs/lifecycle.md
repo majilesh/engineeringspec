@@ -37,3 +37,12 @@ npx --yes @engineeringspec/cli@0.1.0-rc.7 check --spec-dir docs/engineering-spec
 ```
 
 The result must say `change classification: contract_only`. Require normal repository checks and maintainer review before merging. If any implementation path is present, the governance classification is unavailable and approved-base routing applies to the entire change.
+
+Avoid manual frontmatter edits by previewing the exact status-only transition first:
+
+```sh
+engineeringspec transition docs/engineering-specs/change.engineering-spec.md --to implemented
+engineeringspec transition docs/engineering-specs/change.engineering-spec.md --to implemented --write
+```
+
+The command validates before and after, preserves every non-status byte, and performs no Git operation. Human review and merge remain required.

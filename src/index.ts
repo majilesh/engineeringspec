@@ -12,6 +12,8 @@ export * from "./query/inspect.js";
 export * from "./query/coverage.js";
 export * from "./query/applicability.js";
 export * from "./query/agentContext.js";
+export * from "./catalogue/catalogue.js";
+export * from "./architecture/backstage.js";
 export * from "./cli/agentCheck.js";
 export * from "./cli/adopt.js";
 export * from "./cli/benchmark.js";
