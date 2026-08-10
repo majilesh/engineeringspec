@@ -66,6 +66,60 @@ async function repository(policy = "modify"): Promise<{ root: string; baseSha: s
 }
 
 describe("Git-tree multi-spec routing", () => {
+  it("accepts a strictly validated lifecycle-only change only when explicitly enabled", async () => {
+    const { root, baseSha } = await repository();
+    const file = path.join(root, "specs", "change.engineering-spec.md");
+    await writeFile(file, (await readFile(file, "utf8")).replace("status: approved", "status: implemented"));
+
+    const legacy = await selectSpecs({ directory: "specs", base: baseSha, cwd: root, strict: true });
+    expect(legacy.valid).toBe(false);
+    expect(legacy.governance.classification).toBe("implementation");
+    expect(legacy.diagnostics.some((item) => item.code === "ESRT002")).toBe(true);
+
+    const governance = await selectSpecs({ directory: "specs", base: baseSha, cwd: root, strict: true, allowContractOnly: true });
+    expect(governance.valid).toBe(true);
+    expect(governance.routes).toEqual([]);
+    expect(governance.governance).toMatchObject({
+      enabled: true,
+      classification: "contract_only",
+      lifecycleOnly: true,
+      transitions: [{ path: "specs/change.engineering-spec.md", from: "approved", to: "implemented" }],
+    });
+  });
+
+  it("keeps mixed changes and invalid workspace governance fail closed", async () => {
+    const { root, baseSha } = await repository();
+    const file = path.join(root, "specs", "change.engineering-spec.md");
+    await writeFile(file, (await readFile(file, "utf8")).replace("status: approved", "status: implemented"));
+    await writeFile(path.join(root, "outside.ts"), "export {};\n");
+    const mixed = await selectSpecs({ directory: "specs", base: baseSha, cwd: root, strict: true, allowContractOnly: true });
+    expect(mixed.valid).toBe(false);
+    expect(mixed.governance.classification).toBe("implementation");
+    expect(mixed.diagnostics.some((item) => item.code === "ESRT002")).toBe(true);
+
+    await unlink(path.join(root, "outside.ts"));
+    await writeFile(file, "# invalid\n");
+    const invalid = await selectSpecs({ directory: "specs", base: baseSha, cwd: root, strict: true, allowContractOnly: true });
+    expect(invalid.valid).toBe(false);
+    expect(invalid.governance.classification).toBe("contract_only");
+    expect(invalid.governance.workspaceErrors).toBeGreaterThan(0);
+  });
+
+  it("treats workspace governance warnings as failures only in strict mode", async () => {
+    const { root, baseSha } = await repository();
+    const file = path.join(root, "specs", "change.engineering-spec.md");
+    const source = await readFile(file, "utf8");
+    await writeFile(file, source.replace(
+      "- id: TARGET-1\n  paths: [src/**]\n  change_policy: modify",
+      "- id: TARGET-1\n  paths: [src/**]\n  change_policy: modify\n- id: TARGET-2\n  paths: [src/private/**]\n  change_policy: read_only",
+    ));
+    const loose = await selectSpecs({ directory: "specs", base: baseSha, cwd: root, allowContractOnly: true });
+    const strict = await selectSpecs({ directory: "specs", base: baseSha, cwd: root, strict: true, allowContractOnly: true });
+    expect(loose.valid).toBe(true);
+    expect(loose.governance.workspaceWarnings).toBeGreaterThan(0);
+    expect(strict.valid).toBe(false);
+  });
+
   it("returns a valid not-applicable result after all base contracts close", async () => {
     const { root } = await repository();
     await writeFile(path.join(root, "specs", "change.engineering-spec.md"), document({ id: "ES-change", target: "src/**", status: "implemented" }));

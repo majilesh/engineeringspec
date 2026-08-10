@@ -25,6 +25,10 @@ inputs:
     description: Optional base-pinned directory of approved EngineeringSpecs for deterministic multi-spec routing
     required: false
     default: ""
+  gate-allow-contract-only:
+    description: Allow strictly validated, specification-directory-only governance changes; requires gate-spec-dir
+    required: false
+    default: "false"
   gate-base:
     description: Git base ref for gate (e.g. origin/main). Required when gate-spec or gate-spec-dir is set. Use actions/checkout fetch-depth 0.
     required: false
@@ -69,11 +73,12 @@ runs:
         fi
         node "$GITHUB_ACTION_PATH/dist/cli.js" validate "$target" --format github "${args[@]}"
     - name: Gate diff against EngineeringSpec targets
-      if: ${{ inputs.gate-spec != '' || inputs.gate-spec-dir != '' }}
+      if: ${{ inputs.gate-spec != '' || inputs.gate-spec-dir != '' || inputs.gate-allow-contract-only != 'false' }}
       shell: bash
       env:
         INPUT_GATE_SPEC: ${{ inputs.gate-spec }}
         INPUT_GATE_SPEC_DIR: ${{ inputs.gate-spec-dir }}
+        INPUT_GATE_ALLOW_CONTRACT_ONLY: ${{ inputs.gate-allow-contract-only }}
         INPUT_GATE_BASE: ${{ inputs.gate-base }}
         INPUT_GATE_HEAD: ${{ inputs.gate-head }}
         INPUT_GATE_SPEC_FROM: ${{ inputs.gate-spec-from }}
@@ -84,6 +89,14 @@ runs:
         set -euo pipefail
         if [[ -n "$INPUT_GATE_SPEC" && -n "$INPUT_GATE_SPEC_DIR" ]]; then
           echo "gate-spec and gate-spec-dir are mutually exclusive" >&2
+          exit 2
+        fi
+        if [[ "$INPUT_GATE_ALLOW_CONTRACT_ONLY" != "true" && "$INPUT_GATE_ALLOW_CONTRACT_ONLY" != "false" ]]; then
+          echo "gate-allow-contract-only must be true or false" >&2
+          exit 2
+        fi
+        if [[ "$INPUT_GATE_ALLOW_CONTRACT_ONLY" == "true" && -z "$INPUT_GATE_SPEC_DIR" ]]; then
+          echo "gate-allow-contract-only requires gate-spec-dir and is incompatible with gate-spec" >&2
           exit 2
         fi
         if [[ -z "$INPUT_GATE_BASE" ]]; then
@@ -111,6 +124,7 @@ runs:
             exit 2
           fi
           cd "$GITHUB_WORKSPACE"
+          if [[ "$INPUT_GATE_ALLOW_CONTRACT_ONLY" == "true" ]]; then args+=(--allow-contract-only); fi
           node "$GITHUB_ACTION_PATH/dist/cli.js" select "$INPUT_GATE_SPEC_DIR" "${args[@]}"
           exit 0
         fi

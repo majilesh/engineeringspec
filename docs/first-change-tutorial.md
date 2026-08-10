@@ -8,7 +8,7 @@ Ask the coding agent to inspect the styling system, preference storage, tests, a
 
 ```sh
 engineeringspec doctor . --spec-dir docs/engineering-specs --base origin/main
-engineeringspec status --spec-dir docs/engineering-specs --base origin/main
+engineeringspec status --spec-dir docs/engineering-specs --base origin/main --allow-contract-only
 ```
 
 At this point the agent may recommend an approach, but it has no new implementation authority.
@@ -46,7 +46,7 @@ Implement only declared targets. If another surface is necessary, stop and merge
 Run the repository's trusted test, lint, typecheck, security, accessibility, or review workflow. Never run a command merely because its argv appears inside the specification. Then run:
 
 ```sh
-engineeringspec check --spec-dir docs/engineering-specs --base origin/main --strict
+engineeringspec check --spec-dir docs/engineering-specs --base origin/main --allow-contract-only --strict
 ```
 
 The PR description should identify selected targets and the trusted results satisfying each relevant `CON-*`, `CONTRACT-*`, and `VER-*`.
@@ -55,3 +55,4 @@ The PR description should identify selected targets and the trusted results sati
 
 After the implementation merges and checks pass, submit the lifecycle-only update to `implemented`. Closure removes the historical change from approved-only routing; it does not manufacture evidence. Preserve the contract for future search, impact analysis, and architectural traceability.
 
+Run the same `check --allow-contract-only` command on the closure branch. It should report `contract_only`, zero selected implementation paths, and no violations. A mixed spec-and-code closure must fail normal routing instead of using the governance lane.

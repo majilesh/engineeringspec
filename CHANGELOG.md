@@ -4,6 +4,16 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+### Added
+
+- Explicit `--allow-contract-only` classification for directory `select`, `check`, and `status`, with strict workspace validation and lifecycle-only closure reporting
+- Opt-in `gate-allow-contract-only` Action policy and generated adopter configuration
+- Governance conformance vectors for mixed changes, prefix confusion, empty state, nested specs, and cross-boundary renames
+
+### Security
+
+- Workspace contracts remain non-authoritative; mixed spec-and-code changes, invalid workspace specs, unsafe paths, and cross-boundary renames retain normal fail-closed approved-base routing
+
 ## [0.1.0-rc.6] - 2026-08-10
 
 ### Added

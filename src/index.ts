@@ -25,6 +25,7 @@ export * from "./gate/types.js";
 export * from "./routing/types.js";
 export * from "./routing/route.js";
 export * from "./routing/select.js";
+export * from "./routing/governance.js";
 export * from "./path/targetGlob.js";
 export * from "./validator/pathSafety.js";
 export * from "./validator/validateFile.js";

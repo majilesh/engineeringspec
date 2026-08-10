@@ -1,0 +1,71 @@
+[
+  {
+    "name": "specification-only",
+    "directory": "docs/engineering-specs",
+    "changed": [{ "path": "docs/engineering-specs/change.engineering-spec.md", "kind": "modified" }],
+    "expected": "contract_only"
+  },
+  {
+    "name": "nested-specification-only",
+    "directory": "docs/engineering-specs",
+    "changed": [{ "path": "docs/engineering-specs/team/change.engineering-spec.md", "kind": "added" }],
+    "expected": "contract_only"
+  },
+  {
+    "name": "empty-is-not-governance",
+    "directory": "docs/engineering-specs",
+    "changed": [],
+    "expected": "none"
+  },
+  {
+    "name": "mixed-change-is-implementation",
+    "directory": "docs/engineering-specs",
+    "changed": [
+      { "path": "docs/engineering-specs/change.engineering-spec.md", "kind": "modified" },
+      { "path": "src/change.ts", "kind": "modified" }
+    ],
+    "expected": "implementation"
+  },
+  {
+    "name": "prefix-confusion-is-implementation",
+    "directory": "docs/engineering-specs",
+    "changed": [{ "path": "docs/engineering-specs-archive/change.engineering-spec.md", "kind": "modified" }],
+    "expected": "implementation"
+  },
+  {
+    "name": "non-spec-file-inside-directory-is-implementation",
+    "directory": "docs/engineering-specs",
+    "changed": [{ "path": "docs/engineering-specs/README.md", "kind": "modified" }],
+    "expected": "implementation"
+  },
+  {
+    "name": "rename-within-directory",
+    "directory": "docs/engineering-specs",
+    "changed": [{
+      "path": "docs/engineering-specs/new.engineering-spec.md",
+      "fromPath": "docs/engineering-specs/old.engineering-spec.md",
+      "kind": "renamed"
+    }],
+    "expected": "contract_only"
+  },
+  {
+    "name": "rename-into-directory-is-implementation",
+    "directory": "docs/engineering-specs",
+    "changed": [{
+      "path": "docs/engineering-specs/change.engineering-spec.md",
+      "fromPath": "src/change.ts",
+      "kind": "renamed"
+    }],
+    "expected": "implementation"
+  },
+  {
+    "name": "rename-out-of-directory-is-implementation",
+    "directory": "docs/engineering-specs",
+    "changed": [{
+      "path": "archive/change.engineering-spec.md",
+      "fromPath": "docs/engineering-specs/change.engineering-spec.md",
+      "kind": "renamed"
+    }],
+    "expected": "implementation"
+  }
+]

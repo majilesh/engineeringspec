@@ -323,6 +323,7 @@ export function createProgram(setCode: (code: number) => void): Command {
     .option("--changed <path>", "explicit changed path (repeatable)", (value, previous: string[] = []) => previous.concat(value), [])
     .option("--staged", "inspect committed and staged changes only")
     .option("--no-worktree", "exclude working-tree changes")
+    .option("--allow-contract-only", "allow strictly validated specification-directory-only governance changes")
     .addOption(new Option("--change-kind <kind>").choices(["added", "modified", "deleted", "renamed"]).default("modified"))
     .addOption(new Option("--format <format>", "output format").choices(["text", "json"]))
     .action(async (options, command) => {
@@ -341,6 +342,7 @@ export function createProgram(setCode: (code: number) => void): Command {
           staged: Boolean(options.staged),
           worktree: options.staged ? false : options.worktree !== false,
           ...(options.changed.length ? { changed: changedFromPathList(options.changed, options.changeKind as ChangeKind) } : {}),
+          allowContractOnly: Boolean(options.allowContractOnly),
         });
         const lifecycle = STATUS_VALUES.map((status) => `${status}=${report.lifecycle[status]}`).join(", ");
         const text = [
@@ -351,6 +353,7 @@ export function createProgram(setCode: (code: number) => void): Command {
           `selected contracts: ${report.selectedContracts.join(", ") || "none"}`,
           `routed targets: ${report.routedTargets.join(", ") || "none"}`,
           `declared coverage: ${report.coverage.status}`,
+          `change classification: ${report.routing.governance.classification}`,
           `next: ${report.next.stage} — ${report.next.message}`,
           ...report.routing.diagnostics.map((diagnostic) => `${diagnostic.severity}: ${diagnostic.code} ${diagnostic.message}`),
         ].join("\n");
@@ -372,6 +375,7 @@ export function createProgram(setCode: (code: number) => void): Command {
     .addOption(new Option("--spec-from <source>").choices(["workspace", "base"]))
     .option("--staged", "check committed and staged changes only")
     .option("--no-worktree", "exclude working-tree changes and check committed changes only")
+    .option("--allow-contract-only", "allow strictly validated specification-directory-only governance changes")
     .addOption(new Option("--format <format>", "output format").choices(["text", "json", "markdown"]))
     .action(async (file, options, command) => {
       try {
@@ -399,12 +403,14 @@ export function createProgram(setCode: (code: number) => void): Command {
             strict: Boolean(global.strict),
             staged: Boolean(options.staged),
             worktree: options.staged ? false : options.worktree !== false,
+            allowContractOnly: Boolean(options.allowContractOnly),
           });
           const text = [
             `check: ${routed.valid ? "pass" : "fail"}`,
             `contracts: base ${routed.baseSha} (${routed.candidates.filter((item) => item.eligible).length} eligible)`,
             `working state: ${routed.changed.length} changed, ${routed.routes.filter((item) => item.decision !== "selected").length} violations`,
             `declared coverage: ${routed.coverage.status}`,
+            `change classification: ${routed.governance.classification}`,
             ...routed.diagnostics.map((diagnostic) => `${diagnostic.severity}: ${diagnostic.code} ${diagnostic.message}`),
           ].join("\n");
           if (!global.quiet) output(global.format === "json" ? routed : text, global.format);
@@ -465,6 +471,7 @@ export function createProgram(setCode: (code: number) => void): Command {
     .option("--changed <path>", "explicit changed path (repeatable)", (value, previous: string[] = []) => previous.concat(value), [])
     .option("--worktree", "route the complete working state")
     .option("--staged", "route committed and staged changes")
+    .option("--allow-contract-only", "allow strictly validated specification-directory-only governance changes")
     .addOption(new Option("--change-kind <kind>").choices(["added", "modified", "deleted", "renamed"]).default("modified"))
     .addOption(new Option("--format <format>", "output format").choices(["text", "json", "github", "markdown"]))
     .action(async (directory, options, command) => {
@@ -493,12 +500,14 @@ export function createProgram(setCode: (code: number) => void): Command {
           ...(options.changed.length ? { changed: changedFromPathList(options.changed, options.changeKind as ChangeKind) } : {}),
           staged: Boolean(options.staged),
           worktree: Boolean(options.worktree),
+          allowContractOnly: Boolean(options.allowContractOnly),
         });
         const text = [
           `select: ${report.valid ? "pass" : "fail"}`,
           `base: ${report.baseSha}`,
           `candidates: ${report.candidates.length}, eligible: ${report.candidates.filter((item) => item.eligible).length}`,
           `changed: ${report.changed.length}, selected: ${report.routes.filter((item) => item.decision === "selected").length}`,
+          `change classification: ${report.governance.classification}`,
           ...report.routes.map((route) => `${route.decision === "selected" ? "✓" : "x"} ${route.path} (${route.kind}): ${route.selected?.specId ?? route.decision}`),
           ...report.diagnostics.map((diagnostic) => `${diagnostic.severity}: ${diagnostic.code} ${diagnostic.message}`),
         ].join("\n");

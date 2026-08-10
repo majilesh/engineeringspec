@@ -28,12 +28,15 @@ engineering-spec:
         gate-spec-dir: docs/engineering-specs
         gate-base: origin/main
         gate-require-status: approved
+        # Enable after pinning a release that includes portable governance.
+        # gate-allow-contract-only: true
 ```
 
 | Input | Enforcing value | Why |
 |---|---|---|
 | `gate-spec-dir` | `docs/engineering-specs` | Discover every candidate from the approved base tree |
 | `gate-require-status` | `approved` | Draft contracts are not authorization |
+| `gate-allow-contract-only` | `true` (supported pins only) | Strictly validate spec-directory-only governance without routing it as implementation |
 | Action ref | full SHA | Avoid mutable `@main` |
 
 Use the compatible single-spec `gate-spec` input when an unsigned `gate-receipt` is required; directory routing does not currently emit a combined receipt.
@@ -59,6 +62,8 @@ Without this, the gate is advisory only.
 
 Do not switch enforcing CI to `workspace` when a PR changes its own targets. That makes authorization self-widening. Land the reviewed contract-only PR first, then rebase or open the dependent implementation PR against that approved base.
 
+When `gate-allow-contract-only` is enabled, protect both the specification directory and workflow with required maintainer review. The option is valid only with `gate-spec-dir`. It classifies a non-empty, strictly valid specification-directory-only diff; a mixed change or cross-boundary rename returns to normal approved-base routing.
+
 ## What the gate does not prove
 
 Continue running your repository’s normal tests, schema diffs, security scans, and policy checks. Declared `must` / `must_not` constraints, verification runners, evidence, and exceptions are **not** executed or authenticated by `gate`.
@@ -66,10 +71,10 @@ Continue running your repository’s normal tests, schema diffs, security scans,
 ## CLI equivalent
 
 ```sh
-npx --yes @engineeringspec/cli@0.1.0-rc.6 select docs/engineering-specs \
-  --base origin/main --worktree --strict
-npx --yes @engineeringspec/cli@0.1.0-rc.6 check \
-  --spec-dir docs/engineering-specs --base origin/main --strict
+engineeringspec select docs/engineering-specs \
+  --base origin/main --worktree --allow-contract-only --strict
+engineeringspec check --spec-dir docs/engineering-specs \
+  --base origin/main --allow-contract-only --strict
 ```
 
 Both commands resolve immutable SHAs before candidate discovery. Candidate specifications are loaded from the base Git tree and approved-only eligibility is the enforcing default.

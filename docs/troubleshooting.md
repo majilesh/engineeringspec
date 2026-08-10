@@ -4,7 +4,7 @@ Start with:
 
 ```sh
 engineeringspec doctor . --spec-dir docs/engineering-specs --base origin/main --strict
-engineeringspec status --spec-dir docs/engineering-specs --base origin/main --strict
+engineeringspec status --spec-dir docs/engineering-specs --base origin/main --allow-contract-only --strict
 ```
 
 ## Base ref does not resolve
@@ -18,6 +18,8 @@ For a non-empty change, approve and merge the applicable contract-only PR first.
 ## Uncovered path (`ESRT002`)
 
 The approved base contains no writable target for the path. Confirm the path is actually needed. If so, merge a contract-only target amendment before implementation.
+
+If the only changed path is inside the configured specification directory, this may be a proposal, amendment, or closure. Use the repository's reviewed governance policy and `--allow-contract-only`; do not add the specification file to its own implementation targets. If any non-specification path is also changed, `ESRT002` is expected and the changes must be split.
 
 ## Ambiguous path (`ESRT003`)
 
@@ -42,4 +44,3 @@ Preview `adopt --merge --dry-run`, review the generated files, then apply them. 
 ## A declared verifier did not run
 
 Expected behavior: declarations are inert data. Run only checks selected by the repository's trusted development or CI workflow, then report their results against the verifier identities.
-

@@ -41,7 +41,7 @@ A maintainer reviews the contract-only PR, resolves ambiguity, and merges it wit
 4. Route the complete working state to one approved base contract per path:
 
    ```sh
-   npx --yes @engineeringspec/cli@0.1.0-rc.6 select <spec-directory> --base origin/main --worktree --strict
+   engineeringspec select <spec-directory> --base origin/main --worktree --allow-contract-only --strict
    ```
 
 5. Before editing each expected path, load its relevant context from the selected spec:
@@ -55,7 +55,7 @@ A maintainer reviews the contract-only PR, resolves ambiguity, and merges it wit
 8. Before claiming completion, check the entire working state against approved base contracts:
 
    ```sh
-   npx --yes @engineeringspec/cli@0.1.0-rc.6 check --spec-dir <spec-directory> --base origin/main --strict
+   engineeringspec check --spec-dir <spec-directory> --base origin/main --allow-contract-only --strict
    ```
 
 9. Report routed specs, changed targets, satisfied identifiers, trusted check results, and unresolved drift.
@@ -66,7 +66,7 @@ Run only checks trusted by the repository workflow. Then perform the complete-wo
 
 ## Close
 
-After implementation review and trusted checks pass, prepare the lifecycle-only transition from `approved` to `implemented` (or another reviewed terminal state). Do not use closure as evidence, and do not close while the approved contract is still needed to authorize dependent implementation changes.
+After implementation review and trusted checks pass, prepare the lifecycle-only transition from `approved` to `implemented` (or another reviewed terminal state). Run directory `check --allow-contract-only` and require the distinct `contract_only` classification. Do not use closure as evidence, and do not close while the approved contract is still needed to authorize dependent implementation changes.
 
 ## Handle denials and contract evolution
 

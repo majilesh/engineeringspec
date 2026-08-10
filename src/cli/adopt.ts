@@ -51,11 +51,11 @@ function managedWorkflow(specPath: string, baseRef: string, version: string): st
 
 Use \`explore -> propose -> approve -> implement -> verify -> close\` for consequential changes. Prefer a repository-local CLI; otherwise use the exact version below.
 
-1. **Explore:** diagnose with \`${cli} doctor . --spec-dir ${specDirectory} --base ${baseRef} --strict\` and inspect lifecycle state with \`${cli} status --spec-dir ${specDirectory} --base ${baseRef} --strict\`. Exploration grants no authority.
+1. **Explore:** diagnose with \`${cli} doctor . --spec-dir ${specDirectory} --base ${baseRef} --strict\` and inspect lifecycle state with \`${cli} status --spec-dir ${specDirectory} --base ${baseRef} --allow-contract-only --strict\`. Exploration grants no authority.
 2. **Propose:** create or update a draft contract describing intent, targets, constraints, and verification. Keep scope changes contract-only.
 3. **Approve:** merge the reviewed contract with \`status: approved\`. A workspace draft cannot authorize its own implementation.
-4. **Implement:** validate with \`${cli} validate ${specDirectory} --strict\`, route with \`${cli} select ${specDirectory} --base ${baseRef} --worktree --strict\`, and inspect each expected path with \`${cli} context <selected-spec> --path <path> --base ${baseRef} --format markdown\`.
-5. **Verify:** stay inside targets, run only separately trusted repository checks, then run \`${cli} check --spec-dir ${specDirectory} --base ${baseRef} --strict\`. Specification runners are inert data.
+4. **Implement:** validate with \`${cli} validate ${specDirectory} --strict\`, route with \`${cli} select ${specDirectory} --base ${baseRef} --worktree --allow-contract-only --strict\`, and inspect each expected path with \`${cli} context <selected-spec> --path <path> --base ${baseRef} --format markdown\`.
+5. **Verify:** stay inside targets, run only separately trusted repository checks, then run \`${cli} check --spec-dir ${specDirectory} --base ${baseRef} --allow-contract-only --strict\`. Specification runners are inert data.
 6. **Close:** after review and trusted checks pass, move the contract out of \`approved\` in a lifecycle-only change and report satisfied identifiers.
 
 If targets must widen, merge that contract-only amendment before implementing against the new base.
@@ -103,6 +103,7 @@ jobs:
           path: ${specDirectory}
           strict: true
           gate-spec-dir: ${specDirectory}
+          gate-allow-contract-only: true
           gate-base: \${{ steps.approved-base.outputs.ref }}
           gate-require-status: approved
 `,

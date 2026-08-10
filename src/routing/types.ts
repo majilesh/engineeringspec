@@ -2,6 +2,7 @@ import type { Diagnostic } from "../diagnostics/Diagnostic.js";
 import type { ChangedFile, ChangeKind } from "../gate/types.js";
 import type { EngineeringSpec, Status } from "../model/types.js";
 import type { CoverageLevel } from "../query/coverage.js";
+import type { GovernanceReport } from "./governance.js";
 
 export interface LoadedRoutingCandidate {
   path: string;
@@ -41,6 +42,7 @@ export interface RoutingReport {
   requiredStatuses: Status[];
   changedDigest: string;
   changed: ChangedFile[];
+  governance: GovernanceReport;
   candidates: RoutingCandidateSummary[];
   coverage: {
     status: CoverageLevel;

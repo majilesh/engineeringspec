@@ -96,13 +96,15 @@ Exploration and proposal grant no authority. Merge the contract-only approval fi
 The multi-spec router can be exercised from a built checkout:
 
 ```sh
-node dist/cli.js select docs/engineering-specs --base origin/main --worktree --strict
-node dist/cli.js check --spec-dir docs/engineering-specs --base origin/main --strict
+node dist/cli.js select docs/engineering-specs --base origin/main --worktree --allow-contract-only --strict
+node dist/cli.js check --spec-dir docs/engineering-specs --base origin/main --allow-contract-only --strict
 ```
 
 Directory routing enumerates candidates from one resolved base tree, validates them before filtering, considers `approved` contracts by default, and requires every changed path to have exactly one allowing contract. Uncovered paths, ambiguous allows, duplicate IDs, and any matching denial fail closed. RC4 exposes the corresponding `gate-spec-dir` Action input and generated adoption scaffolds use it by default.
 
 A successfully inspected state with zero changed paths is reported as successful and `not_applicable`, even when all historical contracts are closed. This authorizes nothing: as soon as any path changes, the normal approved-contract requirement and fail-closed routing apply.
+
+The additive `--allow-contract-only` policy classifies a non-empty change as governance only when every old and new path remains under the configured specification directory and workspace specs validate strictly. It reports `contract_only` without claiming selection by a base contract. Mixed changes, cross-boundary renames, invalid specs, and unsafe paths retain normal fail-closed routing. Keep this lane reviewer-owned with CODEOWNERS and required checks.
 
 Directory validation discovers `ENGINEERING_SPEC.md`, `*.engineering-spec.md`, and `*.engineeringspec.md` recursively. Add repository-relative glob patterns to `.engineeringspecignore` to exclude generated content or intentionally invalid fixtures.
 
@@ -135,11 +137,13 @@ steps:
       path: docs/engineering-specs
       strict: true
       gate-spec-dir: docs/engineering-specs
+      # Available from the next release candidate; keep disabled on RC6 pins.
+      # gate-allow-contract-only: true
       gate-base: origin/main
       gate-require-status: approved # enforcing mode
 ```
 
-The action validates specs and, when `gate-spec-dir` is set, routes the diff against approved candidates loaded from `gate-base`. The compatible `gate-spec` input remains available for single-spec gates and receipts. It never executes declared verification runners. Use `fetch-depth: 0` so the base ref exists. If you use merge queues, add a `merge_group` trigger on the workflow that runs this Action.
+The action validates specs and, when `gate-spec-dir` is set, routes the diff against approved candidates loaded from `gate-base`. Newer Action pins may explicitly enable `gate-allow-contract-only`; it is incompatible with `gate-spec` and never authorizes mixed implementation changes. The compatible `gate-spec` input remains available for single-spec gates and receipts. It never executes declared verification runners. Use `fetch-depth: 0` so the base ref exists. If you use merge queues, add a `merge_group` trigger on the workflow that runs this Action.
 
 After tagging, `majilesh/engineeringspec@v0.1.0-rc.6` is acceptable for less sensitive repos; SHA pins remain preferred. See [production-gate.md](docs/production-gate.md) for required checks and CODEOWNERS.
 
