@@ -8,10 +8,13 @@ All notable changes to this project are documented here.
 
 - Deterministic `prepare` pre-code briefs for one explicitly identified approved base contract, with text, Markdown, and JSON output
 - Clear writable, protected, and repository-read boundaries plus source intent, constraint, verifier identity, digest, and unresolved-question reporting
+- Backward-compatible paired benchmark observations for contract effort, amendments, first-pass gating, review cycles, exploration breadth, unauthorized paths, and concrete-path scope precision
+- Consent-aware external adopter pilot kit with an honest zero-observation status, onboarding-failure capture, sanitization rules, and negative-result publication policy
 
 ### Security
 
 - `prepare` fails closed for missing, ambiguous, invalid, draft, proposed, implemented, superseded, or rejected authority and never exposes or executes verifier runner payloads
+- Benchmark summaries retain failed, slower, amended, incomplete, and catch-all runs while preventing synthetic or uninformative authority from being presented as measured impact
 
 ## [0.1.0-rc.9] - 2026-08-12
 

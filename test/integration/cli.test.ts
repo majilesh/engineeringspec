@@ -399,7 +399,7 @@ owners: [{team: test}]
     expect(()=>summarizeAgentBenchmark([
       {taskId:"unpaired",runId:"base",condition:"baseline",agent:"agent",success:true,scopeViolations:0,reviewCorrections:0,durationSeconds:1,inputTokens:1,outputTokens:1},
       {taskId:"other",runId:"spec",condition:"engineeringspec",agent:"agent",success:true,scopeViolations:0,reviewCorrections:0,durationSeconds:1,inputTokens:1,outputTokens:1},
-    ])).toThrow("requires both conditions");
+    ])).toThrow("requires exactly one run in each condition");
   });
   it("diagnoses adoption and reports lifecycle status through read-only CLI commands",async()=>{
     // Keep this CLI wiring smoke self-contained: quality jobs intentionally use

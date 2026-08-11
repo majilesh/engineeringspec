@@ -80,6 +80,8 @@ A maintainer reviews the contract-only PR, resolves ambiguity, and merges it wit
 
 Run only checks trusted by the repository workflow. Then perform the complete-working-state `check`, report selected specs and targets, and map results to `CON-*`, `CONTRACT-*`, and `VER-*`. Declared coverage describes links; it does not claim that a verifier ran successfully.
 
+When participating in a paired pilot, do not self-certify success or silently omit a failed, slower, amended, or incomplete run. Preserve the pinned revision, prompt intent, model, permissions, trusted checks, agent configuration, explored paths, and changed paths for the independent harness or reviewer. Never label synthetic examples or agent estimates as observed evidence.
+
 ## Close
 
 After implementation review and trusted checks pass, prepare the lifecycle-only transition from `approved` to `implemented` (or another reviewed terminal state). Run directory `check --allow-contract-only` and require the distinct `contract_only` classification. Do not use closure as evidence, and do not close while the approved contract is still needed to authorize dependent implementation changes.

@@ -35,6 +35,7 @@ npx --yes @engineeringspec/cli@0.1.0-rc.9 adopt . \
 | `context` | Return bounded agent context for one path without runner commands |
 | `explain` | Explain why a path and change kind are allowed or denied |
 | `review` | Explain complete-state routing, obligations, coverage, and verifier identities from the approved base |
+| `benchmark` | Summarize retained paired agent runs, missing observations, scope precision, and evidence limitations |
 
 Examples:
 
@@ -65,3 +66,4 @@ For directory routing, `--allow-contract-only` is opt-in. It accepts only a non-
 - Architecture and catalogue output never grants authority.
 - `transition --write` changes only the frontmatter status after validating before and after; it performs no Git operation.
 - JSON intended for agents omits verifier command payloads.
+- `benchmark` preserves negative, slower, amended, catch-all, and incomplete runs; its summary explicitly disclaims causal inference.

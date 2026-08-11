@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://engineeringspec.org/schemas/agent-impact.schema.json",
-  "title": "EngineeringSpec agent-impact benchmark record",
+  "title": "EngineeringSpec paired agent-impact benchmark record",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -19,13 +19,47 @@
   "properties": {
     "taskId": { "type": "string", "minLength": 1 },
     "runId": { "type": "string", "minLength": 1 },
+    "pairId": { "type": "string", "minLength": 1 },
     "condition": { "enum": ["baseline", "engineeringspec"] },
+    "conditionIdentity": { "type": "string", "minLength": 1 },
+    "evidenceClass": { "enum": ["observed", "example"] },
+    "repositoryRevision": { "type": "string", "minLength": 1 },
     "agent": { "type": "string", "minLength": 1 },
+    "model": { "type": "string", "minLength": 1 },
+    "promptIntent": { "type": "string", "minLength": 1 },
+    "permissions": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true },
+    "trustedChecks": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true },
+    "agentConfiguration": { "type": "string", "minLength": 1 },
     "success": { "type": "boolean" },
     "scopeViolations": { "type": "number", "minimum": 0 },
     "reviewCorrections": { "type": "number", "minimum": 0 },
     "durationSeconds": { "type": "number", "minimum": 0 },
     "inputTokens": { "type": "number", "minimum": 0 },
-    "outputTokens": { "type": "number", "minimum": 0 }
+    "outputTokens": { "type": "number", "minimum": 0 },
+    "contractAuthoringSeconds": { "type": ["number", "null"], "minimum": 0 },
+    "contractReviewSeconds": { "type": ["number", "null"], "minimum": 0 },
+    "contractAmendments": { "type": ["integer", "null"], "minimum": 0 },
+    "firstPassGateSuccess": { "oneOf": [{ "type": "boolean" }, { "const": "not_applicable" }, { "type": "null" }] },
+    "reviewCycles": { "type": ["integer", "null"], "minimum": 0 },
+    "exploredPaths": { "type": ["integer", "null"], "minimum": 0 },
+    "unauthorizedPathsChanged": { "type": ["integer", "null"], "minimum": 0 },
+    "unauthorizedPathsMerged": { "type": ["integer", "null"], "minimum": 0 },
+    "scope": {
+      "oneOf": [
+        { "type": "null" },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["unit", "methodVersion", "approvedWritablePaths", "actualChangedPaths", "catchAllTarget"],
+          "properties": {
+            "unit": { "const": "repository_path" },
+            "methodVersion": { "const": "concrete-paths-v1" },
+            "approvedWritablePaths": { "type": "integer", "minimum": 0 },
+            "actualChangedPaths": { "type": "integer", "minimum": 0 },
+            "catchAllTarget": { "type": "boolean" }
+          }
+        }
+      ]
+    }
   }
 }

@@ -286,13 +286,28 @@ export function createProgram(setCode: (code: number) => void): Command {
         }
         const report = summarizeAgentBenchmark(records);
         const percent = (value: number): string => `${(value * 100).toFixed(1)}%`;
+        const optional = (value: number | null, suffix = ""): string => value === null ? "missing" : `${value.toFixed(2)}${suffix}`;
+        const missing = Object.values(report.missingData).reduce((total, value) => total + value, 0);
         const text = [
-          `benchmark: ${report.tasks} task(s), ${report.baseline.runs + report.engineeringspec.runs} run(s)`,
+          `benchmark: ${report.tasks} task(s), ${report.pairs} pair(s), ${report.runs} run(s)`,
+          `evidence: ${report.interpretation.resultClass}; observed ${report.evidence.observedRuns}, example ${report.evidence.exampleRuns}, unclassified ${report.evidence.unclassifiedRuns}`,
           `success: ${percent(report.baseline.successRate)} -> ${percent(report.engineeringspec.successRate)} (${percent(report.delta.successRate)})`,
+          `failed runs retained: baseline ${report.baseline.failedRuns}, engineeringspec ${report.engineeringspec.failedRuns}`,
           `scope violations reduced: ${report.delta.scopeViolationReduction.toFixed(2)} per run`,
+          `scope precision: ${report.delta.scopePrecision === null ? "not interpretable" : percent(report.delta.scopePrecision)} (${report.engineeringspec.scope.assessment}; ${report.engineeringspec.scope.catchAllRuns} catch-all run(s))`,
+          `unauthorized paths changed reduction: ${optional(report.delta.unauthorizedPathsChangedReduction)}`,
+          `unauthorized paths merged reduction: ${optional(report.delta.unauthorizedPathsMergedReduction)}`,
           `review corrections reduced: ${report.delta.reviewCorrectionReduction.toFixed(2)} per run`,
+          `review cycles: ${optional(report.engineeringspec.averageReviewCycles)}`,
+          `contract authoring/review: ${optional(report.engineeringspec.averageContractAuthoringSeconds, "s")} / ${optional(report.engineeringspec.averageContractReviewSeconds, "s")}`,
+          `amended engineeringspec runs: ${report.pairedOutcomes.amendedEngineeringSpecRuns}`,
+          `first-pass gate success: ${report.engineeringspec.firstPassGateSuccessRate === null ? "missing" : percent(report.engineeringspec.firstPassGateSuccessRate)}`,
+          `exploration breadth: ${optional(report.engineeringspec.averageExploredPaths, " paths")}`,
           `duration delta: ${report.delta.durationSeconds.toFixed(1)}s`,
+          `slower engineeringspec runs retained: ${report.pairedOutcomes.slowerEngineeringSpecRuns}`,
           `token delta: ${report.delta.tokens.toFixed(0)}`,
+          `missing optional observations: ${missing}`,
+          `interpretation: ${report.interpretation.note}`,
         ].join("\n");
         if (!global.quiet) output(global.format === "json" ? report : text, global.format);
         setCode(ExitCode.success);

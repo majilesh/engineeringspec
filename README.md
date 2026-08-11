@@ -177,7 +177,7 @@ The portable [EngineeringSpec skill](skills/engineering-spec/SKILL.md) is the pr
 
 Thin setup notes are available for [Codex](integrations/codex/README.md), [Claude Code](integrations/claude/README.md), [Cursor](integrations/cursor/README.md), [GitHub Copilot](integrations/copilot/README.md), and [generic agents](integrations/generic/README.md). All use the same CLI decision; none can approve or widen a contract. Run the [local fail-closed demo](examples/demo/README.md) with `npm run demo`.
 
-Measure the effect rather than assuming it: [the agent-impact benchmark](benchmarks/README.md) compares paired tasks on success, scope violations, review corrections, duration, and tokens.
+Measure the effect rather than assuming it: [the agent-impact benchmark](benchmarks/README.md) retains paired success, failures, scope precision, unauthorized paths, review effort, amendments, exploration breadth, duration, and tokens. The [external pilot](maintainer-only pilot notes) currently reports zero retained external pairs; synthetic examples are never presented as observed impact.
 
 Private repositories are supported: the CLI and Action operate on the checked-out Git tree and do not upload specification or source content. Normal package installation and GitHub Actions still use their configured package/network access. See the [CLI reference](docs/cli-reference.md), [coding-agent integrations](docs/integrations.md), [architecture bridge](docs/architecture-bridge.md), [upgrade guide](docs/upgrading.md), [roles and responsibilities](docs/roles-and-responsibilities.md), [lifecycle](docs/lifecycle.md), [maintaining specs](docs/maintaining-specs.md), and [troubleshooting](docs/troubleshooting.md).
 
