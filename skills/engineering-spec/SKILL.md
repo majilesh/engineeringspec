@@ -46,27 +46,35 @@ A maintainer reviews the contract-only PR, resolves ambiguity, and merges it wit
    npx --yes @engineeringspec/cli@0.1.0-rc.9 validate <spec-directory> --strict
    ```
 
-4. Route the complete working state to one approved base contract per path:
+4. With a repository-local build that supports it, load the exact approved contract as a pre-code brief:
+
+   ```sh
+   engineeringspec prepare <contract-id> --spec-dir <spec-directory> --base origin/main --strict --format markdown
+   ```
+
+   Stop when the result is blocked. Reading repository code for correctness remains allowed; only the reported writable surfaces grant edit permission. Never reproduce or infer this decision in the skill.
+
+5. Route the complete working state to one approved base contract per path:
 
    ```sh
    npx --yes @engineeringspec/cli@0.1.0-rc.9 select <spec-directory> --base origin/main --worktree --allow-contract-only --strict
    ```
 
-5. Before editing each expected path, load its relevant context from the selected spec:
+6. Before editing each expected path, load its relevant context from the selected spec:
 
    ```sh
    npx --yes @engineeringspec/cli@0.1.0-rc.9 context <selected-spec> --path <path> --base origin/main --format markdown
    ```
 
-6. Treat matching `TARGET-*`, `CONTRACT-*`, `CON-*`, and `VER-*` obligations as binding. Stop and explain mismatches instead of editing outside the approved targets.
-7. Run only the repository's separately trusted checks.
-8. Before claiming completion, check the entire working state against approved base contracts:
+7. Treat matching `TARGET-*`, `CONTRACT-*`, `CON-*`, and `VER-*` obligations as binding. Stop and explain mismatches instead of editing outside the approved targets.
+8. Run only the repository's separately trusted checks.
+9. Before claiming completion, check the entire working state against approved base contracts:
 
    ```sh
    npx --yes @engineeringspec/cli@0.1.0-rc.9 check --spec-dir <spec-directory> --base origin/main --allow-contract-only --strict
    ```
 
-9. Report routed specs, changed targets, satisfied identifiers, trusted check results, and unresolved drift.
+10. Report routed specs, changed targets, satisfied identifiers, trusted check results, and unresolved drift.
 
 ## Verify
 

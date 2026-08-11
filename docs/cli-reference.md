@@ -31,6 +31,7 @@ npx --yes @engineeringspec/cli@0.1.0-rc.9 adopt . \
 | `coverage` | Report declared traceability coverage; it does not run evidence |
 | `catalogue` | Build deterministic search, lifecycle, ownership and path-impact JSON |
 | `architecture` | Import a read-only architecture map from Backstage component YAML |
+| `prepare` *(unreleased)* | Load one explicitly identified approved base contract as a deterministic pre-code brief |
 | `context` | Return bounded agent context for one path without runner commands |
 | `explain` | Explain why a path and change kind are allowed or denied |
 | `review` | Explain complete-state routing, obligations, coverage, and verifier identities from the approved base |
@@ -42,6 +43,7 @@ engineeringspec catalogue docs/engineering-specs --query payments --format json
 engineeringspec catalogue docs/engineering-specs --path src/payments/card.ts
 engineeringspec catalogue docs/engineering-specs --format html > explorer.html
 engineeringspec architecture catalog-info.yaml --format json
+node dist/cli.js prepare ES-payments-change --spec-dir docs/engineering-specs --base origin/main --strict --format markdown
 ```
 
 ## Enforce and self-check
@@ -56,7 +58,8 @@ For directory routing, `--allow-contract-only` is opt-in. It accepts only a non-
 
 ## Safety invariants
 
-- Parsing, validation, doctor, status, catalogue, architecture, inspect, context and explain do not execute declared runners.
+- Parsing, validation, doctor, status, catalogue, architecture, inspect, prepare, context and explain do not execute declared runners.
+- `prepare` requires an exact contract ID, loads only from the resolved base tree, grants permission only for `approved`, and never restricts repository reading needed for correctness.
 - `propose` emits only `status: draft`, performs no network request, and grants no implementation authority.
 - `review` is read-only, base-pinned, and omits verifier runner payloads in every format.
 - Architecture and catalogue output never grants authority.

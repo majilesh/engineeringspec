@@ -4,6 +4,15 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+### Added
+
+- Deterministic `prepare` pre-code briefs for one explicitly identified approved base contract, with text, Markdown, and JSON output
+- Clear writable, protected, and repository-read boundaries plus source intent, constraint, verifier identity, digest, and unresolved-question reporting
+
+### Security
+
+- `prepare` fails closed for missing, ambiguous, invalid, draft, proposed, implemented, superseded, or rejected authority and never exposes or executes verifier runner payloads
+
 ## [0.1.0-rc.9] - 2026-08-12
 
 ### Added
