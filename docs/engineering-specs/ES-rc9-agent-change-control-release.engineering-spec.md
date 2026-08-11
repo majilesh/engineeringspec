@@ -4,7 +4,7 @@ spec_format_version: "0.1"
 spec_revision: 1
 id: ES-rc9-agent-change-control-release
 title: Publish the agent change-control workflow RC9 release
-status: approved
+status: implemented
 owners:
   - team: EngineeringSpec maintainers
 repository:

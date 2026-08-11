@@ -7,7 +7,7 @@ CLI packages, generated guidance and the GitHub Action are independent identitie
 3. Preview managed changes:
 
    ```sh
-   npx --yes @engineeringspec/cli@0.1.0-rc.8 adopt . \
+   npx --yes @engineeringspec/cli@0.1.0-rc.9 adopt . \
      --spec docs/engineering-specs/change.engineering-spec.md \
      --merge --upgrade --dry-run
    ```
