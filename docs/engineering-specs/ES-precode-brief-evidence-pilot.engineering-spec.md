@@ -4,7 +4,7 @@ spec_format_version: "0.1"
 spec_revision: 1
 id: ES-precode-brief-evidence-pilot
 title: Pre-code work brief and adoption evidence pilot
-status: draft
+status: approved
 owners:
   - team: EngineeringSpec maintainers
 repository:
