@@ -7,10 +7,10 @@ EngineeringSpec’s `gate` is a **diff-scope gate** (path + change-type allowlis
 Prefer a full commit SHA. Reviewed intuitive-workflow implementation merge:
 
 ```text
-majilesh/engineeringspec@39d5f66212a1ea883cca0a599709b9dcd59c064a
+majilesh/engineeringspec@85f42b2cd3c9ef6513de1a9a3ccfd8e12a9dd756
 ```
 
-Re-pin to this repository’s reviewed merge tip after each change to `action.yml` or gate semantics. `majilesh/engineeringspec@v0.1.0-rc.8` is the corresponding release-candidate tag after publication; SHA pins remain the stronger supply-chain default ([GitHub guidance](https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#using-third-party-actions)).
+Re-pin to this repository’s reviewed merge tip after each change to `action.yml` or gate semantics. `majilesh/engineeringspec@v0.1.0-rc.9` is the corresponding release-candidate tag after publication; SHA pins remain the stronger supply-chain default ([GitHub guidance](https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#using-third-party-actions)).
 
 ## Enforcing CI job
 
@@ -21,7 +21,7 @@ engineering-spec:
     - uses: actions/checkout@v4
       with:
         fetch-depth: 0
-    - uses: majilesh/engineeringspec@39d5f66212a1ea883cca0a599709b9dcd59c064a
+    - uses: majilesh/engineeringspec@85f42b2cd3c9ef6513de1a9a3ccfd8e12a9dd756
       with:
         path: docs/engineering-specs
         strict: true
@@ -70,9 +70,9 @@ Continue running your repository’s normal tests, schema diffs, security scans,
 ## CLI equivalent
 
 ```sh
-npx --yes @engineeringspec/cli@0.1.0-rc.8 select docs/engineering-specs \
+npx --yes @engineeringspec/cli@0.1.0-rc.9 select docs/engineering-specs \
   --base origin/main --worktree --allow-contract-only --strict
-npx --yes @engineeringspec/cli@0.1.0-rc.8 check --spec-dir docs/engineering-specs \
+npx --yes @engineeringspec/cli@0.1.0-rc.9 check --spec-dir docs/engineering-specs \
   --base origin/main --allow-contract-only --strict
 ```
 
@@ -80,5 +80,5 @@ Both commands resolve immutable SHAs before candidate discovery. Candidate speci
 
 ## Release / npm
 
-- Action + git tag: `v0.1.0-rc.8` (when published) tracks package version `0.1.0-rc.8`.
-- npm dist-tag: `next` identifies the current release candidate; enforcing commands above pin exact version `0.1.0-rc.8`.
+- Action + git tag: `v0.1.0-rc.9` (when published) tracks package version `0.1.0-rc.9`.
+- npm dist-tag: `next` identifies the current release candidate; enforcing commands above pin exact version `0.1.0-rc.9`.

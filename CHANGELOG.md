@@ -1,14 +1,24 @@
 # Changelog
 
-## Unreleased
-
-- Add deterministic draft proposal and base-pinned review commands.
-- Add a safe quickstart scaffold with draft contract, CODEOWNERS, neutral agent handoffs, and immutable CI.
-- Add GitHub job summaries, a runnable fail-closed demo, thin coding-agent integration notes, and transparent launch/evidence guidance.
-
 All notable changes to this project are documented here.
 
 ## [Unreleased]
+
+## [0.1.0-rc.9] - 2026-08-12
+
+### Added
+
+- Deterministic draft `propose` generation from explicit paths or the complete local Git state
+- Base-pinned `review` reports in text, Markdown, JSON, and GitHub job summaries without runner payloads
+- Dry-run-first `adopt --quickstart` scaffolding with a draft contract, CODEOWNERS, immutable CI, and neutral agent handoffs
+- Thin Codex, Claude Code, Cursor, GitHub Copilot, and generic integrations over one portable workflow
+- A credential-free demo that fails an uncovered change and passes it only after separate base approval
+- Evidence-first launch, case-study, and paired-pilot guidance without unmeasured outcome claims
+
+### Security
+
+- Proposals remain drafts, immutable base contracts remain the sole implementation authority, and GitHub summaries require no pull-request write permission
+- Review, integration, and demo surfaces keep specification runners inert and omit secret-bearing runner command payloads
 
 ## [0.1.0-rc.8] - 2026-08-11
 

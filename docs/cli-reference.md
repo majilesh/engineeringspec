@@ -15,7 +15,7 @@ Use a repository-local installation when available. In enforcement and durable g
 Preview a managed upgrade before applying it:
 
 ```sh
-npx --yes @engineeringspec/cli@0.1.0-rc.8 adopt . \
+npx --yes @engineeringspec/cli@0.1.0-rc.9 adopt . \
   --spec docs/engineering-specs/change.engineering-spec.md \
   --merge --upgrade --dry-run
 ```
