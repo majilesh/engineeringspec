@@ -4,7 +4,7 @@ spec_format_version: "0.1"
 spec_revision: 1
 id: ES-frictionless-adoption-launch
 title: Frictionless adoption and launch proof
-status: draft
+status: approved
 owners:
   - team: EngineeringSpec maintainers
 repository:
