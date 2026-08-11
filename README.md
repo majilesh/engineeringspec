@@ -97,7 +97,7 @@ For a first adoption, follow [Getting started](docs/getting-started.md) and the 
 explore -> propose -> approve -> implement -> verify -> close
 ```
 
-Exploration and proposal grant no authority. Merge the contract-only approval first; dependent code changes then route against that approved base. The unreleased `prepare` command is available from a built source checkout; before editing, it loads one explicitly named approved contract from the immutable base and presents its writable surfaces, read boundary, obligations, verifier identities, source intent, digests, and unresolved questions. It does not infer scope, expose runner payloads, or edit files. `doctor` diagnoses the repository setup, while `status` reports lifecycle counts, complete working-state routing, declared coverage, and the safest next stage.
+Exploration and proposal grant no authority. Merge the contract-only approval first; dependent code changes then route against that approved base. The unreleased `prepare` command is available from a built source checkout; before editing, it loads one explicitly named approved contract from the immutable base and presents its writable surfaces, read boundary, technical contracts, obligations, verifier identities, source intent, digests, and unresolved questions. It does not infer scope, expose runner payloads, or edit files. `interface_only` remains path-level access, and final authorization for actual paths remains subject to multi-contract routing. `doctor` diagnoses the repository setup, while `status` reports lifecycle counts, complete working-state routing, declared coverage, and the safest next stage.
 
 The multi-spec router can be exercised from a built checkout:
 

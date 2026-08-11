@@ -3,7 +3,7 @@ import { listGitTreePaths, readGitBlob, resolveCommitSha, resolveGitRelativeDire
 import { compareCodePoints } from "../normalizer/canonicalize.js";
 import { digest } from "../normalizer/digest.js";
 import { normalize } from "../normalizer/normalize.js";
-import { buildChangeBrief, type ChangeBrief } from "../query/changeBrief.js";
+import { briefDisplaySafe, buildChangeBrief, type ChangeBrief } from "../query/changeBrief.js";
 import { validateMarkdown } from "../validator/validateFile.js";
 
 const MAX_PREPARE_CANDIDATES = 10_000;
@@ -44,16 +44,21 @@ function blocked(
   return {
     result: "blocked",
     permission: "none",
-    reason,
-    action,
+    reason: briefDisplaySafe(reason),
+    action: briefDisplaySafe(action),
     authority: {
       kind: "base_pinned",
-      baseRef: options.base,
-      baseSha,
-      specDirectory: directory,
+      baseRef: briefDisplaySafe(options.base),
+      baseSha: briefDisplaySafe(baseSha),
+      specDirectory: briefDisplaySafe(directory),
     },
-    contract: { id: options.contractId },
-    diagnostics,
+    contract: { id: briefDisplaySafe(options.contractId) },
+    diagnostics: diagnostics.map((item) => ({
+      code: briefDisplaySafe(item.code),
+      severity: briefDisplaySafe(item.severity),
+      message: briefDisplaySafe(item.message),
+      ...(item.file ? { file: briefDisplaySafe(item.file) } : {}),
+    })),
   };
 }
 
@@ -133,12 +138,17 @@ export async function prepareChange(options: PrepareOptions): Promise<PrepareRep
   });
 }
 
-function oneLine(value: string): string {
-  return value.replace(/[\r\n]+/gu, " ");
+function displaySafe(value: string): string {
+  return briefDisplaySafe(value);
 }
 
 function markdownSafe(value: string): string {
-  return oneLine(value).replaceAll("|", "\\|").replaceAll("`", "\\`");
+  return displaySafe(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll("|", "\\|")
+    .replaceAll("`", "\\`");
 }
 
 export function prepareText(report: PrepareReport): string {
@@ -146,27 +156,39 @@ export function prepareText(report: PrepareReport): string {
     return [
       "prepare: blocked",
       "permission: none",
-      `contract: ${oneLine(report.contract.id)}`,
-      `authority: base ${report.authority.baseSha}`,
-      `reason: ${oneLine(report.reason ?? "Implementation authority is unavailable.")}`,
-      `action: ${oneLine(report.action ?? "Resolve the contract lifecycle or base authority and rerun prepare.")}`,
-      ...("diagnostics" in report ? report.diagnostics.map((item) => `${item.severity}: ${item.code} ${oneLine(item.message)}`) : []),
+      `contract: ${displaySafe(report.contract.id)}`,
+      `authority: base ${displaySafe(report.authority.baseSha)}`,
+      `reason: ${displaySafe(report.reason ?? "Implementation authority is unavailable.")}`,
+      `action: ${displaySafe(report.action ?? "Resolve the contract lifecycle or base authority and rerun prepare.")}`,
+      ...("diagnostics" in report ? report.diagnostics.map((item) => `${displaySafe(item.severity)}: ${displaySafe(item.code)} ${displaySafe(item.message)}`) : []),
     ].join("\n");
   }
   return [
     "prepare: ready",
     "permission: implementation",
-    `contract: ${report.contract.id} revision ${report.contract.specRevision} (${report.contract.status})`,
-    `authority: base ${report.authority.baseSha}; ${report.authority.specPath}; ${report.authority.specDigest}`,
+    `contract: ${displaySafe(report.contract.id)} — ${displaySafe(report.contract.title)}; revision ${report.contract.specRevision} (${displaySafe(report.contract.status)})`,
+    `authority: base ${displaySafe(report.authority.baseSha)}; ${displaySafe(report.authority.specPath)}; ${displaySafe(report.authority.specDigest)}`,
+    ...(report.contract.repository ? [`repository: ${displaySafe(report.contract.repository)}`] : []),
+    ...(report.contract.declaredBaseRevision ? [`declared base revision: ${displaySafe(report.contract.declaredBaseRevision)}`] : []),
     "read access: repository reading is allowed for correctness",
     "write access: only the declared writable surfaces below; all other paths are not writable",
-    ...report.writableSurfaces.map((item) => `writable: ${item.id} (${item.changePolicy}) ${item.paths.join(", ")}`),
-    ...report.protectedSurfaces.map((item) => `protected: ${item.id} (${item.changePolicy}) ${item.paths.join(", ")}`),
-    ...report.constraints.map((item) => `obligation: ${item.id} (${item.level}) ${oneLine(item.statement)}`),
-    ...report.verification.map((item) => `verification: ${item.id} (${item.kind}; runner inert) proves ${item.proves.join(", ")}`),
-    ...report.sourceIntent.map((item) => `source: ${item.id} (${item.type}) ${item.locator}${item.digest ? `; ${item.digest}` : "; digest unavailable"}`),
+    "routing: final path authorization remains subject to multi-contract select/check",
+    ...report.writableSurfaces.flatMap((item) => [
+      `writable: ${displaySafe(item.id)} (${displaySafe(item.changePolicy)}) ${item.paths.map(displaySafe).join(", ")}`,
+      ...(item.component ? [`writable component: ${displaySafe(item.id)} ${displaySafe(item.component)}`] : []),
+      ...(item.notes ? [`writable note: ${displaySafe(item.id)} ${displaySafe(item.notes)}`] : []),
+      ...(item.enforcementNote ? [`writable enforcement note: ${displaySafe(item.id)} ${displaySafe(item.enforcementNote)}`] : []),
+    ]),
+    ...report.protectedSurfaces.flatMap((item) => [
+      `protected: ${displaySafe(item.id)} (${displaySafe(item.changePolicy)}) ${item.paths.map(displaySafe).join(", ")}`,
+      ...(item.notes ? [`protected note: ${displaySafe(item.id)} ${displaySafe(item.notes)}`] : []),
+    ]),
+    ...report.constraints.map((item) => `obligation: ${displaySafe(item.id)} (${displaySafe(item.level)}) ${displaySafe(item.statement)}`),
+    ...report.technicalContracts.map((item) => `technical contract: ${displaySafe(item.id)} (${displaySafe(item.kind)})${item.locator ? ` ${displaySafe(item.locator)}` : ""}${item.compatibility ? `; compatibility ${displaySafe(item.compatibility)}` : ""}`),
+    ...report.verification.map((item) => `verification: ${displaySafe(item.id)} (${displaySafe(item.kind)}; runner inert) proves ${item.proves.map(displaySafe).join(", ")}`),
+    ...report.sourceIntent.map((item) => `source: ${displaySafe(item.id)} (${displaySafe(item.type)}) ${displaySafe(item.locator)}${item.title ? `; ${displaySafe(item.title)}` : ""}${item.revision !== undefined ? `; revision ${displaySafe(String(item.revision))}` : ""}${item.digest ? `; ${displaySafe(item.digest)}` : "; digest unavailable"}`),
     ...(report.unresolvedQuestions.length > 0
-      ? report.unresolvedQuestions.map((item) => `unresolved: ${item.id} ${oneLine(item.question)}`)
+      ? report.unresolvedQuestions.map((item) => `unresolved: ${displaySafe(item.id)} ${displaySafe(item.question)}`)
       : ["unresolved: none declared"]),
   ].join("\n");
 }
@@ -182,7 +204,7 @@ export function prepareMarkdown(report: PrepareReport): string {
       "❌ **Implementation is blocked**",
       "",
       `- Contract: \`${markdownSafe(report.contract.id)}\``,
-      `- Authority: base \`${report.authority.baseSha}\``,
+      `- Authority: base \`${markdownSafe(report.authority.baseSha)}\``,
       `- Reason: ${markdownSafe(report.reason ?? "Implementation authority is unavailable.")}`,
       `- Next action: ${markdownSafe(report.action ?? "Resolve the contract lifecycle or base authority and rerun prepare.")}`,
       ...diagnostics,
@@ -194,26 +216,41 @@ export function prepareMarkdown(report: PrepareReport): string {
     "",
     "✅ **Base-pinned implementation authority is ready**",
     "",
-    `- Contract: \`${markdownSafe(report.contract.id)}\` revision ${report.contract.specRevision} (\`${report.contract.status}\`)`,
-    `- Base authority: \`${report.authority.baseSha}\``,
+    `- Contract: \`${markdownSafe(report.contract.id)}\` — ${markdownSafe(report.contract.title)}; revision ${report.contract.specRevision} (\`${markdownSafe(report.contract.status)}\`)`,
+    `- Base authority: \`${markdownSafe(report.authority.baseSha)}\``,
     `- Contract path: \`${markdownSafe(report.authority.specPath)}\``,
-    `- Contract digest: \`${report.authority.specDigest}\``,
+    `- Contract digest: \`${markdownSafe(report.authority.specDigest)}\``,
+    ...(report.contract.repository ? [`- Repository: ${markdownSafe(report.contract.repository)}`] : []),
+    ...(report.contract.declaredBaseRevision ? [`- Declared base revision: \`${markdownSafe(report.contract.declaredBaseRevision)}\``] : []),
     "- Reading: repository reading is allowed when needed for correctness",
     "- Writing: only the declared writable surfaces below; all other paths are not writable",
+    "- Routing: final path authorization remains subject to multi-contract `select`/`check`",
     "",
     "### Writable surfaces",
     "",
     "| Target | Policy | Paths |",
     "| --- | --- | --- |",
-    ...report.writableSurfaces.map((item) => `| \`${markdownSafe(item.id)}\` | ${item.changePolicy} | ${item.paths.map((path) => `\`${markdownSafe(path)}\``).join("<br>")} |`),
+    ...report.writableSurfaces.map((item) => `| \`${markdownSafe(item.id)}\` | ${markdownSafe(item.changePolicy)} | ${item.paths.map((path) => `\`${markdownSafe(path)}\``).join("<br>")} |`),
   ];
   if (report.writableSurfaces.length === 0) lines.push("| — | — | none | ");
+  const writableNotes = report.writableSurfaces.flatMap((item) => [
+    ...(item.component ? [`- \`${markdownSafe(item.id)}\` component: ${markdownSafe(item.component)}`] : []),
+    ...(item.notes ? [`- \`${markdownSafe(item.id)}\` note: ${markdownSafe(item.notes)}`] : []),
+    ...(item.enforcementNote ? [`- \`${markdownSafe(item.id)}\` enforcement: **${markdownSafe(item.enforcementNote)}**`] : []),
+  ]);
+  if (writableNotes.length > 0) lines.push("", "#### Writable-surface notes", "", ...writableNotes);
   if (report.protectedSurfaces.length > 0) {
-    lines.push("", "### Protected or read-only surfaces", "", ...report.protectedSurfaces.map((item) => `- \`${markdownSafe(item.id)}\` (${item.changePolicy}): ${item.paths.map((path) => `\`${markdownSafe(path)}\``).join(", ")}`));
+    lines.push("", "### Protected or read-only surfaces", "", ...report.protectedSurfaces.flatMap((item) => [
+      `- \`${markdownSafe(item.id)}\` (${markdownSafe(item.changePolicy)}): ${item.paths.map((path) => `\`${markdownSafe(path)}\``).join(", ")}`,
+      ...(item.notes ? [`  - Note: ${markdownSafe(item.notes)}`] : []),
+    ]));
   }
-  lines.push("", "### Obligations", "", ...report.constraints.map((item) => `- **${markdownSafe(item.id)}** (${item.level}): ${markdownSafe(item.statement)}`));
-  lines.push("", "### Verification identities", "", ...report.verification.map((item) => `- \`${markdownSafe(item.id)}\` (${item.kind}; runner inert): proves ${item.proves.map((id) => `\`${markdownSafe(id)}\``).join(", ")}`));
-  lines.push("", "### Source intent", "", ...report.sourceIntent.map((item) => `- \`${markdownSafe(item.id)}\` (${item.type}): ${markdownSafe(item.locator)}${item.digest ? ` — \`${item.digest}\`` : " — digest unavailable"}`));
+  lines.push("", "### Obligations", "", ...report.constraints.map((item) => `- **${markdownSafe(item.id)}** (${markdownSafe(item.level)}): ${markdownSafe(item.statement)}`));
+  lines.push("", "### Technical contracts", "", ...(report.technicalContracts.length > 0
+    ? report.technicalContracts.map((item) => `- \`${markdownSafe(item.id)}\` (${markdownSafe(item.kind)})${item.locator ? `: ${markdownSafe(item.locator)}` : ""}${item.compatibility ? ` — compatibility \`${markdownSafe(item.compatibility)}\`` : ""}`)
+    : ["None declared."]));
+  lines.push("", "### Verification identities", "", ...report.verification.map((item) => `- \`${markdownSafe(item.id)}\` (${markdownSafe(item.kind)}; runner inert): proves ${item.proves.map((id) => `\`${markdownSafe(id)}\``).join(", ")}`));
+  lines.push("", "### Source intent", "", ...report.sourceIntent.map((item) => `- \`${markdownSafe(item.id)}\` (${markdownSafe(item.type)}): ${markdownSafe(item.locator)}${item.title ? ` — ${markdownSafe(item.title)}` : ""}${item.revision !== undefined ? ` — revision ${markdownSafe(String(item.revision))}` : ""}${item.digest ? ` — \`${markdownSafe(item.digest)}\`` : " — digest unavailable"}`));
   lines.push("", "### Unresolved questions", "", ...(report.unresolvedQuestions.length > 0
     ? report.unresolvedQuestions.map((item) => `- **${markdownSafe(item.id)}** ${markdownSafe(item.question)}`)
     : ["None declared through an `escalate` constraint."]));

@@ -61,6 +61,7 @@ For directory routing, `--allow-contract-only` is opt-in. It accepts only a non-
 
 - Parsing, validation, doctor, status, catalogue, architecture, inspect, prepare, context and explain do not execute declared runners.
 - `prepare` requires an exact contract ID, loads only from the resolved base tree, grants permission only for `approved`, and never restricts repository reading needed for correctness.
+- `interface_only` in a preparation brief is path-level write access, not semantic interface enforcement; use separately trusted API/schema verification. `prepare` does not infer glob overlap across other approved contracts, so final path authorization remains subject to directory `select` and `check`.
 - `propose` emits only `status: draft`, performs no network request, and grants no implementation authority.
 - `review` is read-only, base-pinned, and omits verifier runner payloads in every format.
 - Architecture and catalogue output never grants authority.
