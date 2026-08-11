@@ -15,6 +15,7 @@ All notable changes to this project are documented here.
 
 - `prepare` fails closed for missing, ambiguous, invalid, draft, proposed, implemented, superseded, or rejected authority and never exposes or executes verifier runner payloads
 - Benchmark summaries retain failed, slower, amended, incomplete, and catch-all runs while preventing synthetic or uninformative authority from being presented as measured impact
+- Human-facing `prepare` output strips terminal, newline, and bidirectional control characters; renders technical contracts consistently; explains `interface_only` as path-level access; and defers final path authorization to multi-contract routing
 
 ## [0.1.0-rc.9] - 2026-08-12
 

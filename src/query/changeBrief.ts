@@ -10,6 +10,29 @@ import { compareCodePoints } from "../normalizer/canonicalize.js";
 
 const WRITABLE_POLICIES = new Set<TargetSurface["changePolicy"]>(["modify", "create", "delete", "interface_only"]);
 
+export function briefDisplaySafe(value: string): string {
+  const withoutControls = [...value].map((character) => {
+    const codePoint = character.codePointAt(0)!;
+    const unsafe = codePoint <= 0x1f
+      || (codePoint >= 0x7f && codePoint <= 0x9f)
+      || codePoint === 0x200e
+      || codePoint === 0x200f
+      || (codePoint >= 0x202a && codePoint <= 0x202e)
+      || (codePoint >= 0x2066 && codePoint <= 0x2069);
+    return unsafe ? " " : character;
+  }).join("");
+  return withoutControls.replace(/\s+/gu, " ").trim();
+}
+
+function sanitizeBriefValue<T>(value: T): T {
+  if (typeof value === "string") return briefDisplaySafe(value) as T;
+  if (Array.isArray(value)) return value.map((item) => sanitizeBriefValue(item)) as T;
+  if (value && typeof value === "object") {
+    return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, sanitizeBriefValue(item)])) as T;
+  }
+  return value;
+}
+
 export interface ChangeBriefAuthority {
   baseRef: string;
   baseSha: string;
@@ -23,6 +46,7 @@ export interface BriefSurface {
   paths: string[];
   changePolicy: TargetSurface["changePolicy"];
   notes?: string;
+  enforcementNote?: string;
 }
 
 export interface BriefConstraint {
@@ -83,6 +107,7 @@ export interface ChangeBrief {
     reading: "repository_reading_allowed_for_correctness";
     writing: "only_declared_writable_surfaces" | "not_authorized";
     outsideDeclaredTargets: "not_writable";
+    finalPathAuthorization: "subject_to_multi_contract_routing";
   };
   writableSurfaces: BriefSurface[];
   protectedSurfaces: BriefSurface[];
@@ -100,6 +125,9 @@ function surface(target: TargetSurface): BriefSurface {
     paths: [...target.paths].sort(compareCodePoints),
     changePolicy: target.changePolicy,
     ...(target.notes ? { notes: target.notes } : {}),
+    ...(target.changePolicy === "interface_only" ? {
+      enforcementNote: "interface_only grants path-level write access only; this brief does not verify interface semantics. Use separately trusted API or schema verification.",
+    } : {}),
   };
 }
 
@@ -138,7 +166,7 @@ export function buildChangeBrief(spec: EngineeringSpec, authority: ChangeBriefAu
   const sourceIntent = [...spec.sourceRefs]
     .sort((left, right) => compareCodePoints(left.id, right.id));
 
-  return {
+  const report: ChangeBrief = {
     result: approved ? "ready" : "blocked",
     permission: approved ? "implementation" : "none",
     ...(!approved ? {
@@ -164,6 +192,7 @@ export function buildChangeBrief(spec: EngineeringSpec, authority: ChangeBriefAu
       reading: "repository_reading_allowed_for_correctness",
       writing: approved ? "only_declared_writable_surfaces" : "not_authorized",
       outsideDeclaredTargets: "not_writable",
+      finalPathAuthorization: "subject_to_multi_contract_routing",
     },
     writableSurfaces: approved
       ? targets.filter((target) => WRITABLE_POLICIES.has(target.changePolicy)).map(surface)
@@ -198,4 +227,5 @@ export function buildChangeBrief(spec: EngineeringSpec, authority: ChangeBriefAu
       .filter((item) => item.level === "escalate")
       .map((item) => ({ id: item.id, question: item.statement })),
   };
+  return sanitizeBriefValue(report);
 }
