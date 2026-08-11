@@ -126,6 +126,15 @@ runs:
           cd "$GITHUB_WORKSPACE"
           if [[ "$INPUT_GATE_ALLOW_CONTRACT_ONLY" == "true" ]]; then args+=(--allow-contract-only); fi
           node "$GITHUB_ACTION_PATH/dist/cli.js" select "$INPUT_GATE_SPEC_DIR" "${args[@]}"
+          normalized_status="$(echo "$INPUT_GATE_REQUIRE_STATUS" | tr -d '[:space:]')"
+          if [[ -z "$normalized_status" || "$normalized_status" == "approved" ]]; then
+            review_args=(--spec-dir "$INPUT_GATE_SPEC_DIR" --base "$INPUT_GATE_BASE" --head "$INPUT_GATE_HEAD" --no-worktree --format github)
+            if [[ "$INPUT_STRICT" == "true" ]]; then review_args+=(--strict); fi
+            if [[ "$INPUT_GATE_ALLOW_CONTRACT_ONLY" == "true" ]]; then review_args+=(--allow-contract-only); fi
+            node "$GITHUB_ACTION_PATH/dist/cli.js" review "${review_args[@]}"
+          else
+            echo "::notice title=EngineeringSpec review::Detailed summary is available for the default approved-only policy; enforcement still completed for the requested statuses."
+          fi
           exit 0
         fi
         if [[ "$INPUT_GATE_SPEC" = /* ]]; then

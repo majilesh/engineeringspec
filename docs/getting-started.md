@@ -8,6 +8,15 @@ EngineeringSpec gives product, architecture, engineering, coding agents, reviewe
 
 Install or invoke the pinned CLI, create `docs/engineering-specs/`, and follow the [first-change tutorial](first-change-tutorial.md). Keep enforcement advisory until the team understands the two-PR lifecycle.
 
+Preview the complete safe scaffold:
+
+```sh
+npx --yes @engineeringspec/cli@0.1.0-rc.8 adopt . --quickstart \
+  --maintainer @your-org/platform --dry-run
+```
+
+This creates a **draft** first contract, CODEOWNERS, neutral agent handoffs, and immutable GitHub enforcement. Review the output and rerun without `--dry-run`; it never approves the draft or overwrites existing files by default.
+
 ### Adopt in an established repository
 
 Preview neutral agent and GitHub Actions integration without overwriting existing files:
@@ -45,6 +54,10 @@ npx --yes @engineeringspec/cli@0.1.0-rc.8 context <approved-spec> \
 # Check the complete working state before review
 npx --yes @engineeringspec/cli@0.1.0-rc.8 check \
   --spec-dir docs/engineering-specs --base origin/main --allow-contract-only --strict
+
+# Produce the same deterministic explanation for humans or a CI job summary
+npx --yes @engineeringspec/cli@0.1.0-rc.8 review \
+  --spec-dir docs/engineering-specs --base origin/main --strict --format markdown
 
 # Search lifecycle, ownership, obligations and path impact
 npx --yes @engineeringspec/cli@0.1.0-rc.8 catalogue docs/engineering-specs \

@@ -31,6 +31,8 @@ import { workflowStatus } from "./status.js";
 import { transitionStatus } from "./transition.js";
 import { buildCatalogue, catalogueHtml } from "./catalogue.js";
 import { importBackstageCatalogue } from "./architecture.js";
+import { proposeDraft } from "./propose.js";
+import { buildReview, reviewMarkdown, reviewText } from "./review.js";
 
 const STATUS_VALUES = ["draft", "proposed", "approved", "implemented", "superseded", "rejected"] as const;
 
@@ -232,7 +234,12 @@ export function createProgram(setCode: (code: number) => void): Command {
     .command("adopt")
     .description("Safely scaffold neutral agent and CI integration files")
     .argument("[directory]", "repository directory", ".")
-    .requiredOption("--spec <path>", "repository-relative EngineeringSpec path")
+    .option("--spec <path>", "repository-relative EngineeringSpec path")
+    .option("--quickstart", "create a draft first contract, neutral agent guidance, CI, and CODEOWNERS")
+    .option("--id <id>", "quickstart draft identifier", "ES-first-change")
+    .option("--title <title>", "quickstart draft title", "First governed engineering change")
+    .option("--owner <owner>", "quickstart owning team", "engineering")
+    .option("--maintainer <github-owner>", "CODEOWNERS user or org/team; inferred from GitHub origin when possible")
     .option("--base <ref>", "approved base ref (auto-detects origin/HEAD; falls back to origin/main)")
     .option("--force", "overwrite existing integration files")
     .option("--merge", "merge agent instructions into existing text files; structured files are skipped")
@@ -243,12 +250,17 @@ export function createProgram(setCode: (code: number) => void): Command {
         const global = command.optsWithGlobals() as GlobalOptions;
         const result = await adoptRepository({
           root: directory,
-          specPath: options.spec,
+          ...(options.spec ? { specPath: options.spec } : {}),
           baseRef: options.base,
           force: Boolean(options.force),
           merge: Boolean(options.merge),
           upgrade: Boolean(options.upgrade),
           dryRun: Boolean(options.dryRun),
+          quickstart: Boolean(options.quickstart),
+          id: options.id,
+          title: options.title,
+          owner: options.owner,
+          ...(options.maintainer ? { maintainer: options.maintainer } : {}),
         });
         if (!global.quiet) output(result, global.format);
         setCode(ExitCode.success);
@@ -397,6 +409,104 @@ export function createProgram(setCode: (code: number) => void): Command {
       } catch (error) {
         console.error(error instanceof Error ? error.message : String(error));
         setCode(ExitCode.validation);
+      }
+    });
+
+  program
+    .command("propose")
+    .description("Generate a deterministic draft contract from bounded local intent")
+    .requiredOption("--id <id>", "EngineeringSpec identifier")
+    .requiredOption("--title <title>", "change title")
+    .option("--owner <owner>", "owning team", "engineering")
+    .option("--output <path>", "repository-relative output path")
+    .option("--issue <reference>", "inert issue reference; no network request is made")
+    .option("--base <ref>", "base ref used by --from-diff")
+    .option("--path <path>", "explicit target path (repeatable)", (value, previous: string[] = []) => previous.concat(value), [])
+    .option("--from-diff", "infer exact paths from the complete Git working state")
+    .option("--dry-run", "print the draft without writing it")
+    .addOption(new Option("--format <format>", "output format").choices(["text", "json", "markdown"]))
+    .action(async (options, command) => {
+      try {
+        const global = command.optsWithGlobals() as GlobalOptions;
+        if (!options.fromDiff && options.path.length === 0) {
+          console.error("propose requires --path <path> or --from-diff");
+          setCode(ExitCode.usage);
+          return;
+        }
+        const destination = options.output ?? `docs/engineering-specs/${options.id}.engineeringspec.md`;
+        const { result, markdown } = await proposeDraft({
+          id: options.id,
+          title: options.title,
+          owner: options.owner,
+          output: destination,
+          ...(options.issue ? { issue: options.issue } : {}),
+          ...(options.base ? { base: options.base } : {}),
+          paths: options.path,
+          fromDiff: Boolean(options.fromDiff),
+          dryRun: Boolean(options.dryRun),
+        });
+        if (!global.quiet) {
+          if (global.format === "json") output(result, "json");
+          else if (global.format === "markdown" || options.dryRun) output(markdown, "text");
+          else output([
+            "propose: draft",
+            `output: ${result.output}`,
+            `targets: ${result.paths.length}`,
+            `source: ${result.source}`,
+            "authority: none — review and merge an approved contract before implementation",
+          ].join("\n"), "text");
+        }
+        setCode(ExitCode.success);
+      } catch (error) {
+        console.error(error instanceof Error ? error.message : String(error));
+        setCode(ExitCode.validation);
+      }
+    });
+
+  program
+    .command("review")
+    .description("Explain the base-pinned authorization decision for the complete working state")
+    .option("--spec-dir <directory>", "repository-relative EngineeringSpec directory", "docs/engineering-specs")
+    .requiredOption("--base <ref>", "trusted base ref")
+    .option("--head <ref>", "Git head ref", "HEAD")
+    .option("--changed <path>", "explicit changed path (repeatable)", (value, previous: string[] = []) => previous.concat(value), [])
+    .option("--staged", "inspect committed and staged changes only")
+    .option("--no-worktree", "exclude working-tree changes")
+    .option("--allow-contract-only", "allow strictly validated specification-directory-only governance changes")
+    .addOption(new Option("--change-kind <kind>").choices(["added", "modified", "deleted", "renamed"]).default("modified"))
+    .addOption(new Option("--format <format>", "output format").choices(["text", "json", "github", "markdown"]))
+    .action(async (options, command) => {
+      try {
+        const global = command.optsWithGlobals() as GlobalOptions;
+        if (options.changed.length > 0 && options.staged) {
+          console.error("review accepts only one of --changed or --staged");
+          setCode(ExitCode.usage);
+          return;
+        }
+        const report = await buildReview({
+          specDirectory: options.specDir,
+          base: options.base,
+          head: options.head,
+          strict: Boolean(global.strict),
+          staged: Boolean(options.staged),
+          worktree: options.staged ? false : options.worktree !== false,
+          ...(options.changed.length ? { changed: changedFromPathList(options.changed, options.changeKind as ChangeKind) } : {}),
+          allowContractOnly: Boolean(options.allowContractOnly),
+        });
+        const markdown = reviewMarkdown(report);
+        if (!global.quiet) {
+          if (global.format === "json") output(report, "json");
+          else if (global.format === "markdown") output(markdown, "text");
+          else if (global.format === "github") {
+            for (const diagnostic of report.diagnostics) console.log(formatGitHubDiagnostic(diagnostic));
+            console.log(`::${report.valid ? "notice" : "error"} title=EngineeringSpec review::${report.workingState.violations} violation(s)`);
+            if (process.env.GITHUB_STEP_SUMMARY) await appendFile(process.env.GITHUB_STEP_SUMMARY, `${markdown}\n`, "utf8");
+          } else output(reviewText(report), "text");
+        }
+        setCode(report.valid ? ExitCode.success : ExitCode.validation);
+      } catch (error) {
+        console.error(error instanceof Error ? error.message : String(error));
+        setCode(ExitCode.io);
       }
     });
 
