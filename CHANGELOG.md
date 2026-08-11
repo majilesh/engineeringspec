@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- Add deterministic draft proposal and base-pinned review commands.
+- Add a safe quickstart scaffold with draft contract, CODEOWNERS, neutral agent handoffs, and immutable CI.
+- Add GitHub job summaries, a runnable fail-closed demo, thin coding-agent integration notes, and transparent launch/evidence guidance.
+
 All notable changes to this project are documented here.
 
 ## [Unreleased]

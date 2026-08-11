@@ -24,7 +24,13 @@ Explore source, dependencies, architecture, and likely paths without editing or 
 
 ## Propose
 
-Create a draft with `init`, then capture source intent, targets, constraints, contracts, and verification identities. A proposal is planning context, not permission to modify its targets. Keep the proposal/RFC change contract-only.
+Create a deterministic draft from explicit paths or the local Git working state:
+
+```sh
+npx --yes @engineeringspec/cli@0.1.0-rc.8 propose --id ES-change --title "Change title" --owner engineering --from-diff --base origin/main --dry-run
+```
+
+Review the output, then rerun without `--dry-run` when the target list is correct. The command never fetches issue content and only emits `status: draft`. A proposal is planning context, not permission to modify its targets. Keep the proposal/RFC change contract-only.
 
 ## Approve and review
 
@@ -91,6 +97,6 @@ Do not use a workspace contract to authorize implementation paths it widens in t
 
 ## Review a change
 
-Run `check` against the intended base, inspect every violation, and compare the implementation with applicable constraints and contracts. Remember that declared coverage reports links, not successful verifier execution.
+Run `review --spec-dir <directory> --base origin/main --strict --format markdown` against the intended base, inspect every violation, and compare the implementation with the listed constraints and verifier identities. The report omits runner payloads. Remember that declared coverage reports links, not successful verifier execution.
 
 These sections may be exposed by a tool as `engineering-spec:explore`, `:propose`, `:review`, `:implement`, `:verify`, and `:close`. Such actions are thin prompts over the same files and CLI; they never replace base-pinned approval.

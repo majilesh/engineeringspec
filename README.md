@@ -66,6 +66,9 @@ profiles: [{ name: productspec, version: "0.1" }]
 ## Quick start
 
 ```sh
+npx --yes @engineeringspec/cli@0.1.0-rc.8 adopt . --quickstart --maintainer @your-org/platform --dry-run
+npx --yes @engineeringspec/cli@0.1.0-rc.8 propose --id ES-my-change --title "My change" --from-diff --base origin/main --dry-run
+npx --yes @engineeringspec/cli@0.1.0-rc.8 review --spec-dir docs/engineering-specs --base origin/main --strict --format markdown
 npx --yes @engineeringspec/cli@0.1.0-rc.8 init --template feature --id ES-my-change
 npx --yes @engineeringspec/cli@0.1.0-rc.8 validate ENGINEERING_SPEC.md
 npx --yes @engineeringspec/cli@0.1.0-rc.8 validate docs/engineering-specs
@@ -143,7 +146,7 @@ steps:
       gate-require-status: approved # enforcing mode
 ```
 
-The action validates specs and, when `gate-spec-dir` is set, routes implementation diffs against approved candidates loaded from `gate-base`. `gate-allow-contract-only` explicitly accepts only strictly valid EngineeringSpec-only governance diffs; it is incompatible with `gate-spec` and never authorizes mixed implementation changes. The compatible `gate-spec` input remains available for single-spec gates and receipts. It never executes declared verification runners. Use `fetch-depth: 0` so the base ref exists. If you use merge queues, add a `merge_group` trigger on the workflow that runs this Action.
+The action validates specs and, when `gate-spec-dir` is set, routes implementation diffs against approved candidates loaded from `gate-base`. It also writes the deterministic base-pinned review report to the GitHub job summary; it does not edit pull requests and needs no write permission. `gate-allow-contract-only` explicitly accepts only strictly valid EngineeringSpec-only governance diffs; it is incompatible with `gate-spec` and never authorizes mixed implementation changes. The compatible `gate-spec` input remains available for single-spec gates and receipts. It never executes declared verification runners. Use `fetch-depth: 0` so the base ref exists. If you use merge queues, add a `merge_group` trigger on the workflow that runs this Action.
 
 After tagging, `majilesh/engineeringspec@v0.1.0-rc.8` is acceptable for less sensitive repos; SHA pins remain preferred. See [production-gate.md](docs/production-gate.md) for required checks and CODEOWNERS.
 
@@ -169,6 +172,8 @@ npx --yes @engineeringspec/cli@0.1.0-rc.8 adopt . \
 `adopt` detects the default branch from `origin/HEAD` (falling back to `origin/main`); override it with `--base`. Review the dry-run, then rerun without `--dry-run`. Generated agent commands pin the current CLI version, context is loaded from the approved base, and generated enforcing CI requires an `approved` contract. Merge mode updates AGENTS.md and the Claude import without replacing existing content. `--upgrade` may additionally update one recognisable immutable Action pin; ambiguous structured files remain untouched.
 
 The portable [EngineeringSpec skill](skills/engineering-spec/SKILL.md) is the primary integration for skill-aware agents. The generated AGENTS.md, Claude import, and Cursor rule cover file-instruction agents without putting vendor behavior in the format. A plugin or MCP server is not required for the core workflow; add thin adapters only when real usage shows discovery or transport friction.
+
+Thin setup notes are available for [Codex](integrations/codex/README.md), [Claude Code](integrations/claude/README.md), [Cursor](integrations/cursor/README.md), [GitHub Copilot](integrations/copilot/README.md), and [generic agents](integrations/generic/README.md). All use the same CLI decision; none can approve or widen a contract. Run the [local fail-closed demo](examples/demo/README.md) with `npm run demo`.
 
 Measure the effect rather than assuming it: [the agent-impact benchmark](benchmarks/README.md) compares paired tasks on success, scope violations, review corrections, duration, and tokens.
 

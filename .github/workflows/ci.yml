@@ -23,6 +23,7 @@ jobs:
       - run: npm test
       - run: npm run test:conformance
       - run: npm run build
+      - run: node scripts/demo.mjs
       - run: npm pack --dry-run
       - name: Validate examples
         run: |

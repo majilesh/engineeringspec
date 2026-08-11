@@ -1,6 +1,74 @@
-export type TemplateName="bug-fix"|"feature"|"api-change"|"infrastructure";
-export function template(options:{template:TemplateName;id:string;title:string;owner:string}):string {
-  const contract=options.template==="api-change"?`\n## Contracts\n\n\`\`\`engineering-contracts\n- id: CONTRACT-1\n  kind: openapi\n  path: contracts/openapi.yaml\n  compatibility: backward_compatible\n\`\`\`\n`:`\n## Constraints\n\n\`\`\`engineering-constraints\n- id: CON-1\n  level: must\n  statement: The change must preserve existing documented behaviour.\n  enforcement:\n    kind: test\n    verifier_ref: VER-1\n\`\`\`\n`;
-  const proof=options.template==="api-change"?"CONTRACT-1":"CON-1";
-  return `---\nspec_format: engineering-spec\nspec_format_version: "0.1"\nspec_revision: 1\nid: ${options.id}\ntitle: ${JSON.stringify(options.title)}\nstatus: draft\nowners:\n  - team: ${options.owner}\n---\n\n# ${options.title}\n\nDescribe the engineering context and rationale here.\n\n## Source intent\n\n\`\`\`engineering-source-refs\n- id: SRC-1\n  type: other\n  ref: local-intent\n\`\`\`\n\n## Targets\n\n\`\`\`engineering-targets\n- id: TARGET-1\n  component: ${options.template}\n  paths: [src/**]\n  change_policy: modify\n\`\`\`\n${contract}\n## Verification\n\n\`\`\`engineering-verification\n- id: VER-1\n  proves: [${proof}]\n  kind: test\n  runner:\n    type: reference\n    reference: project test suite\n\`\`\`\n`;
+export type TemplateName = "bug-fix" | "feature" | "api-change" | "infrastructure";
+
+export function template(options: { template: TemplateName; id: string; title: string; owner: string }): string {
+  const title = options.title.trim().replace(/[\r\n]+/gu, " ");
+  const owner = options.owner.trim().replace(/[\r\n]+/gu, " ");
+  if (!title || !owner) throw new Error("template title and owner must not be empty");
+  const contract = options.template === "api-change"
+    ? `
+## Contracts
+
+\`\`\`engineering-contracts
+- id: CONTRACT-1
+  kind: openapi
+  path: contracts/openapi.yaml
+  compatibility: backward_compatible
+\`\`\`
+`
+    : `
+## Constraints
+
+\`\`\`engineering-constraints
+- id: CON-1
+  level: must
+  statement: The change must preserve existing documented behaviour.
+  enforcement:
+    kind: test
+    verifier_ref: VER-1
+\`\`\`
+`;
+  const proof = options.template === "api-change" ? "CONTRACT-1" : "CON-1";
+  return `---
+spec_format: engineering-spec
+spec_format_version: "0.1"
+spec_revision: 1
+id: ${options.id}
+title: ${JSON.stringify(title)}
+status: draft
+owners:
+  - team: ${JSON.stringify(owner)}
+---
+
+# ${title}
+
+Describe the engineering context and rationale here.
+
+## Source intent
+
+\`\`\`engineering-source-refs
+- id: SRC-1
+  type: other
+  ref: local-intent
+\`\`\`
+
+## Targets
+
+\`\`\`engineering-targets
+- id: TARGET-1
+  component: ${options.template}
+  paths: [src/**]
+  change_policy: modify
+\`\`\`
+${contract}
+## Verification
+
+\`\`\`engineering-verification
+- id: VER-1
+  proves: [${proof}]
+  kind: test
+  runner:
+    type: reference
+    reference: project test suite
+\`\`\`
+`;
 }

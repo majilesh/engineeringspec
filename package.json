@@ -16,7 +16,7 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": { ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js" } },
-  "files": ["dist", "schemas", "skills", "benchmarks", "README.md", "SPEC.md", "LICENSE", "action.yml"],
+  "files": ["dist", "schemas", "skills", "integrations", "examples/demo", "scripts/demo.mjs", "benchmarks", "README.md", "SPEC.md", "LICENSE", "action.yml"],
   "engines": { "node": ">=20" },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
@@ -25,6 +25,7 @@
     "test": "vitest run --coverage",
     "test:coverage": "vitest run --coverage",
     "test:conformance": "vitest run test/conformance",
+    "demo": "npm run build && node scripts/demo.mjs",
     "site:generate": "npm run build && node scripts/generate-site.mjs",
     "format": "prettier --write ."
   },

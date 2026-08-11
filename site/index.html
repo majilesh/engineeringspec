@@ -19,16 +19,16 @@
 <main>
   <nav><span class="brand">EngineeringSpec</span><span><a href="explorer.html">Explorer</a><a href="https://github.com/majilesh/engineeringspec/tree/main/docs">Guides</a><a href="https://github.com/majilesh/engineeringspec">GitHub</a><a href="spec/0.1/">Specification</a></span></nav>
   <h1>One engineering contract. Any coding agent.</h1>
-  <p class="lead">Connect source intent to affected surfaces, authoritative contracts, enforceable constraints, verification obligations, rollout controls, and implementation evidence.</p>
+  <p class="lead">Give coding agents, reviewers, and CI one reviewed, base-pinned answer to what may change and which engineering obligations apply.</p>
   <div class="actions"><a class="button" href="https://github.com/majilesh/engineeringspec/blob/main/docs/getting-started.md">Get started</a><a class="button secondary" href="explorer.html">Explore contracts</a><a class="button secondary" href="https://github.com/majilesh/engineeringspec/tree/main/examples">View examples</a></div>
   <section class="grid">
     <article class="card"><h2>Agent-neutral</h2><p>The same on-disk contract can guide Codex, Claude Code, Cursor, CI, and human review.</p></article>
-    <article class="card"><h2>Machine-verifiable</h2><p>JSON Schema, semantic validation, traceability coverage, and stable diagnostics.</p></article>
+    <article class="card"><h2>Fail closed</h2><p>Uncovered, ambiguous, or denied paths cannot borrow authority from a workspace proposal.</p></article>
     <article class="card"><h2>Standards-friendly</h2><p>Reference OpenAPI, JSON Schema, SARIF, JUnit, OPA, and other authoritative formats.</p></article>
   </section>
-  <pre><code>npx --yes @engineeringspec/cli@0.1.0-rc.8 doctor . --spec-dir docs/engineering-specs --base origin/main --strict
-npx --yes @engineeringspec/cli@0.1.0-rc.8 catalogue docs/engineering-specs --query payments
-npx --yes @engineeringspec/cli@0.1.0-rc.8 check --spec-dir docs/engineering-specs --base origin/main --strict</code></pre>
+  <pre><code>npx --yes @engineeringspec/cli@0.1.0-rc.8 adopt . --quickstart --maintainer @your-org/platform --dry-run
+npx --yes @engineeringspec/cli@0.1.0-rc.8 propose --id ES-change --title "Change" --from-diff --base origin/main --dry-run
+npx --yes @engineeringspec/cli@0.1.0-rc.8 review --spec-dir docs/engineering-specs --base origin/main --strict --format markdown</code></pre>
   <footer>Draft open specification and reference implementation · MIT licensed</footer>
 </main>
 </body>
