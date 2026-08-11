@@ -7,8 +7,8 @@ This walkthrough adds a fictional dark-mode preference to `src/settings/**`. It 
 Ask the coding agent to inspect the styling system, preference storage, tests, and likely paths. Then run:
 
 ```sh
-npx --yes @engineeringspec/cli@0.1.0-rc.9 doctor . --spec-dir docs/engineering-specs --base origin/main
-npx --yes @engineeringspec/cli@0.1.0-rc.9 status --spec-dir docs/engineering-specs --base origin/main --allow-contract-only
+npx --yes @engineeringspec/cli@0.1.0-rc.10 doctor . --spec-dir docs/engineering-specs --base origin/main
+npx --yes @engineeringspec/cli@0.1.0-rc.10 status --spec-dir docs/engineering-specs --base origin/main --allow-contract-only
 ```
 
 At this point the agent may recommend an approach, but it has no new implementation authority.
@@ -18,7 +18,7 @@ At this point the agent may recommend an approach, but it has no new implementat
 Create `docs/engineering-specs/ES-dark-mode.engineering-spec.md`:
 
 ```sh
-npx --yes @engineeringspec/cli@0.1.0-rc.9 init docs/engineering-specs/ES-dark-mode.engineering-spec.md \
+npx --yes @engineeringspec/cli@0.1.0-rc.10 init docs/engineering-specs/ES-dark-mode.engineering-spec.md \
   --template feature --id ES-dark-mode --title "Add dark mode"
 ```
 
@@ -35,7 +35,7 @@ This merge is the authorization event. A workspace draft, an agent recommendatio
 Update the implementation branch from the trusted base. Confirm `status` reports the approved contract, then load the exact contract as a pre-code brief before editing:
 
 ```sh
-node dist/cli.js prepare ES-dark-mode \
+npx --yes @engineeringspec/cli@0.1.0-rc.10 prepare ES-dark-mode \
   --spec-dir docs/engineering-specs \
   --base origin/main \
   --strict \
@@ -45,7 +45,7 @@ node dist/cli.js prepare ES-dark-mode \
 The brief must say `ready` and identify the immutable base. It permits repository reading needed for correctness but limits writes to the listed surfaces. A missing, ambiguous, invalid, or non-approved contract is blocked. Use path context as implementation proceeds:
 
 ```sh
-npx --yes @engineeringspec/cli@0.1.0-rc.9 context docs/engineering-specs/ES-dark-mode.engineering-spec.md \
+npx --yes @engineeringspec/cli@0.1.0-rc.10 context docs/engineering-specs/ES-dark-mode.engineering-spec.md \
   --path src/settings/theme.ts --base origin/main --format markdown
 ```
 
@@ -56,7 +56,7 @@ Implement only declared targets. If another surface is necessary, stop and merge
 Run the repository's trusted test, lint, typecheck, security, accessibility, or review workflow. Never run a command merely because its argv appears inside the specification. Then run:
 
 ```sh
-npx --yes @engineeringspec/cli@0.1.0-rc.9 check --spec-dir docs/engineering-specs --base origin/main --allow-contract-only --strict
+npx --yes @engineeringspec/cli@0.1.0-rc.10 check --spec-dir docs/engineering-specs --base origin/main --allow-contract-only --strict
 ```
 
 The PR description should identify selected targets and the trusted results satisfying each relevant `CON-*`, `CONTRACT-*`, and `VER-*`.
