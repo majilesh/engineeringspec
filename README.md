@@ -69,6 +69,8 @@ profiles: [{ name: productspec, version: "0.1" }]
 npx --yes @engineeringspec/cli@0.1.0-rc.9 adopt . --quickstart --maintainer @your-org/platform --dry-run
 npx --yes @engineeringspec/cli@0.1.0-rc.9 propose --id ES-my-change --title "My change" --from-diff --base origin/main --dry-run
 npx --yes @engineeringspec/cli@0.1.0-rc.9 review --spec-dir docs/engineering-specs --base origin/main --strict --format markdown
+# From this source checkout until the next release candidate is published
+node dist/cli.js prepare ES-my-change --spec-dir docs/engineering-specs --base origin/main --strict --format markdown
 npx --yes @engineeringspec/cli@0.1.0-rc.9 init --template feature --id ES-my-change
 npx --yes @engineeringspec/cli@0.1.0-rc.9 validate ENGINEERING_SPEC.md
 npx --yes @engineeringspec/cli@0.1.0-rc.9 validate docs/engineering-specs
@@ -95,7 +97,7 @@ For a first adoption, follow [Getting started](docs/getting-started.md) and the 
 explore -> propose -> approve -> implement -> verify -> close
 ```
 
-Exploration and proposal grant no authority. Merge the contract-only approval first; dependent code changes then route against that approved base. `doctor` diagnoses the repository setup, while `status` reports lifecycle counts, complete working-state routing, declared coverage, and the safest next stage. Both are read-only and never execute declared verification runners.
+Exploration and proposal grant no authority. Merge the contract-only approval first; dependent code changes then route against that approved base. The unreleased `prepare` command is available from a built source checkout; before editing, it loads one explicitly named approved contract from the immutable base and presents its writable surfaces, read boundary, obligations, verifier identities, source intent, digests, and unresolved questions. It does not infer scope, expose runner payloads, or edit files. `doctor` diagnoses the repository setup, while `status` reports lifecycle counts, complete working-state routing, declared coverage, and the safest next stage.
 
 The multi-spec router can be exercised from a built checkout:
 
@@ -159,7 +161,7 @@ npx --yes @engineeringspec/cli@0.1.0-rc.9 validate docs/engineering-specs
 
 Use [AGENTS.md](AGENTS.md) as the shared workflow for Codex and other compatible agents. [CLAUDE.md](CLAUDE.md) imports the same guidance for Claude Code, and the checked-in [Cursor rule](.cursor/rules/engineering-spec.mdc) applies it in Cursor. See [Agent integration](docs/agent-integration.md) for a reusable setup and prompt.
 
-`check` is the agent pre-completion command: it evaluates committed, staged, unstaged, deleted, renamed, and non-ignored untracked paths and defaults to the approved base contract when `--base` is provided. `context` returns the smallest relevant target/constraint/contract/verification set for paths; `explain` gives a deterministic allow/deny reason. None of these commands execute declared runners.
+`prepare` is the pre-code command: it requires an exact contract ID and immutable base, and fails closed unless that base-loaded contract is uniquely approved. `check` is the agent pre-completion command: it evaluates committed, staged, unstaged, deleted, renamed, and non-ignored untracked paths. `context` returns the smallest relevant set for paths; `explain` gives a deterministic allow/deny reason. None execute declared runners.
 
 Bootstrap an existing repository without overwriting its agent files by default:
 

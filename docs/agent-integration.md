@@ -69,7 +69,7 @@ repository checks that are separately trusted and approved. Finish with an
 evidence table mapping changed surfaces and results to the relevant identifiers.
 ```
 
-For implementation and review, pass `--base origin/main` to `context` and `explain` as well as `check`. This loads the approved contract. Agent context reports verifier identity and type but deliberately omits runner command payloads.
+For implementation with a build that includes the unreleased command, first run `engineeringspec prepare <contract-id> --spec-dir docs/engineering-specs --base origin/main --strict`. It requires one exact base-loaded approved contract and distinguishes unrestricted reading for correctness from the only surfaces that may be written. It reports source intent, constraints, verifier identities and unresolved questions without exposing runner payloads. Continue to pass `--base origin/main` to `context`, `explain`, and `check` for path-level work and final verification.
 
 ## Multiple active contracts
 

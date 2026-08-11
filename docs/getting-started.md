@@ -51,6 +51,10 @@ npx --yes @engineeringspec/cli@0.1.0-rc.9 status \
 npx --yes @engineeringspec/cli@0.1.0-rc.9 context <approved-spec> \
   --path src/example.ts --base origin/main --format markdown
 
+# Before editing, load the complete approved pre-code brief from the trusted base
+node dist/cli.js prepare ES-change \
+  --spec-dir docs/engineering-specs --base origin/main --strict --format markdown
+
 # Check the complete working state before review
 npx --yes @engineeringspec/cli@0.1.0-rc.9 check \
   --spec-dir docs/engineering-specs --base origin/main --allow-contract-only --strict

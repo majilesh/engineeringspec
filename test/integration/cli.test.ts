@@ -264,6 +264,18 @@ owners: [{team: test}]
       expect(await invoke(["review","--spec-dir","specs","--base","HEAD","--changed","outside.txt","--strict","--quiet"])).toBe(1);
       expect(await invoke(["select","specs","--base","HEAD","--changed","src/a.ts","--strict","--quiet"])).toBe(0);
       expect(await invoke(["select","specs","--base","HEAD","--changed","outside.txt","--strict","--quiet"])).toBe(1);
+      const prepareOutput:string[]=[];
+      const originalLog=console.log;
+      console.log=(message?:unknown)=>{prepareOutput.push(String(message));};
+      try {
+        expect(await invoke(["prepare","ES-cli-routing","--spec-dir","specs","--base","HEAD","--strict","--format","json"])).toBe(0);
+      } finally {
+        console.log=originalLog;
+      }
+      const prepared=JSON.parse(prepareOutput.join("\n")) as {result:string;permission:string;authority:{kind:string};verification:Array<Record<string,unknown>>};
+      expect(prepared).toMatchObject({result:"ready",permission:"implementation",authority:{kind:"base_pinned"}});
+      expect(JSON.stringify(prepared.verification)).not.toContain("argv");
+      expect(await invoke(["prepare","ES-missing","--spec-dir","specs","--base","HEAD","--strict","--quiet"])).toBe(1);
       expect(await invoke(["check","--spec-dir","specs","--base","HEAD","--strict","--quiet"])).toBe(0);
       expect(await invoke(["check","--spec-dir","specs","--quiet"])).toBe(2);
       await writeFile(path.join(root,"specs","change.engineering-spec.md"),(await readFile(path.join(root,"specs","change.engineering-spec.md"),"utf8")).replace("status: approved","status: implemented"));

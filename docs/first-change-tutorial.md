@@ -32,7 +32,17 @@ This merge is the authorization event. A workspace draft, an agent recommendatio
 
 ## 4. Implement
 
-Update the implementation branch from the trusted base. Confirm `status` reports the approved contract, then load context before editing:
+Update the implementation branch from the trusted base. Confirm `status` reports the approved contract, then load the exact contract as a pre-code brief before editing:
+
+```sh
+node dist/cli.js prepare ES-dark-mode \
+  --spec-dir docs/engineering-specs \
+  --base origin/main \
+  --strict \
+  --format markdown
+```
+
+The brief must say `ready` and identify the immutable base. It permits repository reading needed for correctness but limits writes to the listed surfaces. A missing, ambiguous, invalid, or non-approved contract is blocked. Use path context as implementation proceeds:
 
 ```sh
 npx --yes @engineeringspec/cli@0.1.0-rc.9 context docs/engineering-specs/ES-dark-mode.engineering-spec.md \

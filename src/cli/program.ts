@@ -33,6 +33,7 @@ import { buildCatalogue, catalogueHtml } from "./catalogue.js";
 import { importBackstageCatalogue } from "./architecture.js";
 import { proposeDraft } from "./propose.js";
 import { buildReview, reviewMarkdown, reviewText } from "./review.js";
+import { prepareChange, prepareMarkdown, prepareText } from "./prepare.js";
 
 const STATUS_VALUES = ["draft", "proposed", "approved", "implemented", "superseded", "rejected"] as const;
 
@@ -708,6 +709,34 @@ export function createProgram(setCode: (code: number) => void): Command {
           else output(global.format === "json" ? report : text, global.format);
         }
         setCode(report.valid ? ExitCode.success : ExitCode.validation);
+      } catch (error) {
+        console.error(error instanceof Error ? error.message : String(error));
+        setCode(ExitCode.io);
+      }
+    });
+
+  program
+    .command("prepare")
+    .description("Load one approved base contract as a concise pre-code implementation brief")
+    .argument("<contract-id>", "exact EngineeringSpec contract ID")
+    .requiredOption("--spec-dir <directory>", "base-pinned EngineeringSpec directory")
+    .requiredOption("--base <ref>", "approved Git base ref")
+    .addOption(new Option("--format <format>", "output format").choices(["text", "json", "markdown"]))
+    .action(async (contractId, options, command) => {
+      try {
+        const global = command.optsWithGlobals() as GlobalOptions;
+        const report = await prepareChange({
+          contractId,
+          specDirectory: options.specDir,
+          base: options.base,
+          strict: Boolean(global.strict),
+        });
+        if (!global.quiet) {
+          if (global.format === "json") output(report, "json");
+          else if (global.format === "markdown") output(prepareMarkdown(report), "text");
+          else output(prepareText(report), "text");
+        }
+        setCode(report.result === "ready" ? ExitCode.success : ExitCode.validation);
       } catch (error) {
         console.error(error instanceof Error ? error.message : String(error));
         setCode(ExitCode.io);

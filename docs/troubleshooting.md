@@ -1,5 +1,9 @@
 # Troubleshooting
 
+## `prepare` is blocked
+
+`prepare` intentionally accepts only one exact contract ID loaded from the resolved Git base. Check the reported base SHA and contract ID. If the contract is missing or not `approved`, merge the separate approval-only change and update the base before retrying. If it is ambiguous, remove the duplicate identity through a contract-only governance PR. Do not point `prepare` at a mutable workspace document or bypass it with inferred targets.
+
 Start with:
 
 ```sh

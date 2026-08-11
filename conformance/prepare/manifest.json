@@ -1,0 +1,35 @@
+[
+  {
+    "name": "approved contract grants bounded implementation permission",
+    "status": "approved",
+    "expected": {
+      "result": "ready",
+      "permission": "implementation",
+      "writableTargetIds": ["TARGET-write"],
+      "protectedTargetIds": ["TARGET-protected"],
+      "verificationIds": ["VER-1"]
+    }
+  },
+  {
+    "name": "proposed contract grants no implementation permission",
+    "status": "proposed",
+    "expected": {
+      "result": "blocked",
+      "permission": "none",
+      "writableTargetIds": [],
+      "protectedTargetIds": ["TARGET-protected"],
+      "verificationIds": ["VER-1"]
+    }
+  },
+  {
+    "name": "implemented contract grants no implementation permission",
+    "status": "implemented",
+    "expected": {
+      "result": "blocked",
+      "permission": "none",
+      "writableTargetIds": [],
+      "protectedTargetIds": ["TARGET-protected"],
+      "verificationIds": ["VER-1"]
+    }
+  }
+]

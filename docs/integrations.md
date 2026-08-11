@@ -15,6 +15,6 @@ Run `adopt --quickstart --maintainer @owner --dry-run` for a new setup or `adopt
 
 ## Skill versus plugin
 
-The portable Agent Skill is the primary integration because it works without a hosted service and keeps the contract on disk. A vendor plugin is justified only when it adds genuine discovery, UI, or tool transport over stable CLI/JSON surfaces. It must remain a consumer of EngineeringSpec and must never implement its own authorization semantics.
+The portable Agent Skill is the primary integration because it works without a hosted service and keeps the contract on disk. Once `prepare` is released, every adapter should delegate to the same `prepare <contract-id> --spec-dir <directory> --base <ref>` decision and stop on a blocked result. A vendor plugin is justified only when it adds genuine discovery, UI, or tool transport over stable CLI/JSON surfaces. It must remain a consumer of EngineeringSpec and must never implement its own authorization semantics.
 
 The deterministic `catalogue --format json` output is the supported foundation for future MCP resources, IDE panels, review bots and plugins.

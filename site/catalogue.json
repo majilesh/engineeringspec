@@ -1770,7 +1770,7 @@
     {
       "id": "ES-precode-brief-evidence-pilot",
       "title": "Pre-code work brief and adoption evidence pilot",
-      "status": "proposed",
+      "status": "approved",
       "file": "ES-precode-brief-evidence-pilot.engineering-spec.md",
       "owners": [
         "EngineeringSpec maintainers"
