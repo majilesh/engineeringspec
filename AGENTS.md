@@ -14,7 +14,7 @@ Use the lifecycle `explore -> propose -> approve -> implement -> verify -> close
 1. **Explore:** read repository context and run `node dist/cli.js status --spec-dir docs/engineering-specs --base origin/main --strict`. Exploration grants no implementation authority.
 2. **Propose:** create or update a draft contract describing the intended targets, constraints, and verification. Do not mix newly widened scope with dependent implementation.
 3. **Approve:** merge the reviewed contract-only change with `status: approved`. Only the merged base contract authorizes implementation.
-4. **Implement:** validate the contract, then load its base-pinned pre-code brief before editing: `node dist/cli.js prepare <contract-id> --spec-dir docs/engineering-specs --base origin/main --strict`. Treat the reported writable surfaces, constraints, and verifier identities as binding. Repository reading remains allowed when needed for correctness; writing outside the declared surfaces does not.
+4. **Implement:** validate the contract, then load its base-pinned pre-code brief before editing: `npx --yes @engineeringspec/cli@0.1.0-rc.10 prepare <contract-id> --spec-dir docs/engineering-specs --base origin/main --strict`. Treat the reported writable surfaces, constraints, and verifier identities as binding. Repository reading remains allowed when needed for correctness; writing outside the declared surfaces does not.
 5. **Verify:** run separately trusted repository checks and then the complete-working-state check so CI is not the first failure:
 
    ```sh

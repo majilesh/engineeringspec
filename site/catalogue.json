@@ -1,7 +1,7 @@
 {
   "valid": true,
   "directory": "docs/engineering-specs",
-  "documents": 16,
+  "documents": 17,
   "entries": [
     {
       "id": "ES-agent-ready-adoption",
@@ -1770,7 +1770,7 @@
     {
       "id": "ES-precode-brief-evidence-pilot",
       "title": "Pre-code work brief and adoption evidence pilot",
-      "status": "approved",
+      "status": "proposed",
       "file": "ES-precode-brief-evidence-pilot.engineering-spec.md",
       "owners": [
         "EngineeringSpec maintainers"
@@ -2058,6 +2058,249 @@
             "CON-11",
             "CON-12",
             "CON-13"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ES-rc10-precode-brief-release",
+      "title": "Publish the base-pinned pre-code brief RC10 release",
+      "status": "implemented",
+      "file": "ES-rc10-precode-brief-release.engineering-spec.md",
+      "owners": [
+        "EngineeringSpec maintainers"
+      ],
+      "sourceRefs": [
+        {
+          "id": "SRC-1",
+          "type": "document",
+          "locator": "d372a74d8948d525727ed5ed04e2aa4442a72b1a",
+          "title": "Reviewed base-pinned prepare implementation merge"
+        },
+        {
+          "id": "SRC-2",
+          "type": "document",
+          "locator": "1fb498de6d47f3f95473abbb6bb5c9e3959469b6",
+          "title": "Reviewed evidence-quality benchmark and pilot-kit merge"
+        },
+        {
+          "id": "SRC-3",
+          "type": "document",
+          "locator": "adca902af74aa0d6369c168bd9115341e46b492f",
+          "title": "Reviewed prepare output hardening merge"
+        },
+        {
+          "id": "SRC-4",
+          "type": "document",
+          "locator": "docs/engineering-specs/ES-precode-brief-evidence-pilot.engineering-spec.md",
+          "title": "Paused pre-code brief and evidence pilot contract"
+        },
+        {
+          "id": "SRC-5",
+          "type": "document",
+          "locator": "docs/engineering-specs/ES-rc9-agent-change-control-release.engineering-spec.md",
+          "title": "Previous immutable release process"
+        }
+      ],
+      "targets": [
+        {
+          "id": "TARGET-version",
+          "component": "package-release",
+          "paths": [
+            "package.json",
+            "package-lock.json"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-pins",
+          "component": "immutable-adoption-identities",
+          "paths": [
+            "src/adoption/releases.ts",
+            "src/cli/adopt.ts",
+            "test/unit/doctor.test.ts",
+            "test/integration/cli.test.ts",
+            "skills/engineering-spec/**",
+            "AGENTS.md",
+            "CLAUDE.md",
+            ".cursor/rules/**",
+            "integrations/**"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-documentation",
+          "component": "released-prepare-and-evidence-guidance",
+          "paths": [
+            "README.md",
+            "CHANGELOG.md",
+            "maintainer-only roadmap",
+            "docs/agent-integration.md",
+            "docs/cli-reference.md",
+            "maintainer-only adoption notes",
+            "docs/first-change-tutorial.md",
+            "docs/getting-started.md",
+            "docs/integrations.md",
+            "docs/lifecycle.md",
+            "docs/maintaining-specs.md",
+            "docs/production-gate.md",
+            "docs/troubleshooting.md",
+            "docs/upgrading.md",
+            "maintainer-only launch notes/**"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-site",
+          "component": "deterministic-release-site",
+          "paths": [
+            "site/**",
+            "scripts/generate-site.mjs"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-release-contract",
+          "component": "release-lifecycle",
+          "paths": [
+            "docs/engineering-specs/ES-rc10-precode-brief-release.engineering-spec.md"
+          ],
+          "changePolicy": "modify"
+        }
+      ],
+      "constraints": [
+        {
+          "id": "CON-1",
+          "level": "must",
+          "statement": "package.json and root package-lock metadata must declare version 0.1.0-rc.10 and the compiled CLI must report the same version.",
+          "appliesTo": [
+            "TARGET-version"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-2",
+          "level": "must",
+          "statement": "Generated and documented production Action examples must pin the full reviewed prepare hardening merge SHA adca902af74aa0d6369c168bd9115341e46b492f.",
+          "appliesTo": [
+            "TARGET-pins",
+            "TARGET-documentation"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-3",
+          "level": "must",
+          "statement": "Current generated agent guidance, packaged skill commands, current documentation, integrations, and public site examples must use exact CLI version 0.1.0-rc.10 without rewriting historical release contracts, changelog entries, retained benchmark records, or pilot observations.",
+          "appliesTo": [
+            "TARGET-pins",
+            "TARGET-documentation",
+            "TARGET-site"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-4",
+          "level": "must",
+          "statement": "Release verification must cover base-pinned prepare authority, blocked lifecycle states, runner-payload omission, output sanitization, interface-only wording, technical-contract rendering, final-routing caveats, benchmark missing-data retention, scope precision, and existing change-control behavior.",
+          "appliesTo": [
+            "TARGET-version",
+            "TARGET-pins",
+            "TARGET-documentation",
+            "TARGET-site"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-5",
+          "level": "must",
+          "statement": "Static site generation and package inspection must remain deterministic, include prepare and the intended packaged benchmark and integration assets, and require no telemetry, hosted runtime, or external evidence claim.",
+          "appliesTo": [
+            "TARGET-version",
+            "TARGET-site"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-6",
+          "level": "must_not",
+          "statement": "Release preparation must not change format 0.1, schemas, routing or governance semantics, diagnostics, runner inertness, architecture authority isolation, current Action enforcement, retained benchmark inputs, pilot observations, or the tag-driven trusted-publishing boundary.",
+          "appliesTo": [
+            "TARGET-version",
+            "TARGET-pins",
+            "TARGET-documentation",
+            "TARGET-site"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-7",
+          "level": "must",
+          "statement": "Release notes must describe prepare as pre-code guidance over immutable approved authority with select, check, and CI remaining final enforcement, and must not claim measured productivity, correctness, adoption, star growth, autonomous approval, inferred authority, or external-pilot success.",
+          "appliesTo": [
+            "TARGET-documentation"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-8",
+          "level": "must",
+          "statement": "Publication must remain gated by a version-matching v0.1.0-rc.10 tag created from the reviewed release merge after repository, conformance, package, site, documentation, demo, and clean-install smoke checks pass.",
+          "appliesTo": [
+            "TARGET-version",
+            "TARGET-documentation",
+            "TARGET-site"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-9",
+          "level": "must",
+          "statement": "The RC10 release contract must transition from approved to implemented in the reviewed release implementation without widening authority.",
+          "appliesTo": [
+            "TARGET-release-contract"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-10",
+          "level": "must",
+          "statement": "The pre-code evidence pilot contract must remain proposed throughout release preparation and may be reapproved only after RC10 publication is verified; release activity must not close the unfinished pilot or present its zero-observation state as completed evidence.",
+          "appliesTo": [
+            "TARGET-release-contract",
+            "TARGET-documentation"
+          ],
+          "enforcement": "review"
+        }
+      ],
+      "contracts": [],
+      "verification": [
+        {
+          "id": "VER-1",
+          "kind": "test",
+          "proves": [
+            "CON-1",
+            "CON-2",
+            "CON-3",
+            "CON-4",
+            "CON-5"
+          ]
+        },
+        {
+          "id": "VER-2",
+          "kind": "test",
+          "proves": [
+            "CON-6"
+          ]
+        },
+        {
+          "id": "VER-3",
+          "kind": "human_review",
+          "proves": [
+            "CON-7",
+            "CON-8",
+            "CON-9",
+            "CON-10"
           ]
         }
       ]

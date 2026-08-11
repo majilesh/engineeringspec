@@ -15,7 +15,7 @@ Use a repository-local installation when available. In enforcement and durable g
 Preview a managed upgrade before applying it:
 
 ```sh
-npx --yes @engineeringspec/cli@0.1.0-rc.9 adopt . \
+npx --yes @engineeringspec/cli@0.1.0-rc.10 adopt . \
   --spec docs/engineering-specs/change.engineering-spec.md \
   --merge --upgrade --dry-run
 ```
@@ -31,7 +31,7 @@ npx --yes @engineeringspec/cli@0.1.0-rc.9 adopt . \
 | `coverage` | Report declared traceability coverage; it does not run evidence |
 | `catalogue` | Build deterministic search, lifecycle, ownership and path-impact JSON |
 | `architecture` | Import a read-only architecture map from Backstage component YAML |
-| `prepare` *(unreleased)* | Load one explicitly identified approved base contract as a deterministic pre-code brief |
+| `prepare` | Load one explicitly identified approved base contract as a deterministic pre-code brief |
 | `context` | Return bounded agent context for one path without runner commands |
 | `explain` | Explain why a path and change kind are allowed or denied |
 | `review` | Explain complete-state routing, obligations, coverage, and verifier identities from the approved base |
@@ -44,7 +44,7 @@ engineeringspec catalogue docs/engineering-specs --query payments --format json
 engineeringspec catalogue docs/engineering-specs --path src/payments/card.ts
 engineeringspec catalogue docs/engineering-specs --format html > explorer.html
 engineeringspec architecture catalog-info.yaml --format json
-node dist/cli.js prepare ES-payments-change --spec-dir docs/engineering-specs --base origin/main --strict --format markdown
+npx --yes @engineeringspec/cli@0.1.0-rc.10 prepare ES-payments-change --spec-dir docs/engineering-specs --base origin/main --strict --format markdown
 ```
 
 ## Enforce and self-check

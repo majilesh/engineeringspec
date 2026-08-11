@@ -4,6 +4,8 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+## [0.1.0-rc.10] - 2026-08-12
+
 ### Added
 
 - Deterministic `prepare` pre-code briefs for one explicitly identified approved base contract, with text, Markdown, and JSON output
