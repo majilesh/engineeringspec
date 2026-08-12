@@ -4,7 +4,7 @@ spec_format_version: "0.1"
 spec_revision: 1
 id: ES-rc11-evidence-integrity-release
 title: Publish the evidence-integrity RC11 release
-status: approved
+status: implemented
 owners:
   - team: EngineeringSpec maintainers
 repository:

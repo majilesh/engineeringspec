@@ -15,7 +15,7 @@ Use a repository-local installation when available. In enforcement and durable g
 Preview a managed upgrade before applying it:
 
 ```sh
-npx --yes @engineeringspec/cli@0.1.0-rc.10 adopt . \
+npx --yes @engineeringspec/cli@0.1.0-rc.11 adopt . \
   --spec docs/engineering-specs/change.engineering-spec.md \
   --merge --upgrade --dry-run
 ```
@@ -45,7 +45,7 @@ engineeringspec catalogue docs/engineering-specs --query payments --format json
 engineeringspec catalogue docs/engineering-specs --path src/payments/card.ts
 engineeringspec catalogue docs/engineering-specs --format html > explorer.html
 engineeringspec architecture catalog-info.yaml --format json
-npx --yes @engineeringspec/cli@0.1.0-rc.10 prepare ES-payments-change --spec-dir docs/engineering-specs --base origin/main --strict --format markdown
+npx --yes @engineeringspec/cli@0.1.0-rc.11 prepare ES-payments-change --spec-dir docs/engineering-specs --base origin/main --strict --format markdown
 engineeringspec measure ES-payments-change --spec-dir docs/engineering-specs --base <base-sha> --head <head-sha> --strict --format json
 engineeringspec benchmark benchmarks/results/*.json --require-publishable --format json
 ```
