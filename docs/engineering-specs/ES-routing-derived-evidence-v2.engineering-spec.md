@@ -152,7 +152,7 @@ Make enforcement and evidence share one immutable, repository-wide authorization
   enforcement: { kind: test, verifier_ref: VER-1 }
 - id: CON-11
   level: must
-  statement: benchmark --require-publishable must require deterministic concrete-paths-v2 receipts for every retained record making a scope claim, validate receipt and legacy-field agreement, and reject records selected for another contract, denied, ambiguous, uncovered, or otherwise inconsistent for a single-intended-contract scope comparison. Manual and v1 scope evidence remains summarizable but non-publishable.
+  statement: benchmark --require-publishable must require deterministic concrete-paths-v2 receipts for every retained record making a scope claim and validate receipt and legacy-field agreement. Manual and v1 scope evidence remains summarizable but non-publishable. Complete negative outcomes containing paths selected for another contract, denied, ambiguous, or uncovered must remain publishable as retained outcomes when otherwise valid, but single-intended-contract scope precision for those records must be null and explicitly ineligible rather than numeric.
   applies_to: [TARGET-benchmark]
   enforcement: { kind: test, verifier_ref: VER-1 }
 - id: CON-12
