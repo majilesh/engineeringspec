@@ -4,7 +4,7 @@ spec_format_version: "0.1"
 spec_revision: 1
 id: ES-routing-derived-evidence-v2
 title: Derive pilot evidence from repository routing
-status: approved
+status: implemented
 owners:
   - team: EngineeringSpec maintainers
 repository:
