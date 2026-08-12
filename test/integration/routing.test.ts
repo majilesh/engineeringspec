@@ -74,7 +74,11 @@ describe("Git-tree multi-spec routing", () => {
     const legacy = await selectSpecs({ directory: "specs", base: baseSha, cwd: root, strict: true });
     expect(legacy.valid).toBe(false);
     expect(legacy.governance.classification).toBe("implementation");
-    expect(legacy.diagnostics.some((item) => item.code === "ESRT002")).toBe(true);
+    expect(legacy.diagnostics).toContainEqual(expect.objectContaining({
+      code: "ESRT002",
+      file: "specs/change.engineering-spec.md",
+      hint: expect.stringContaining("--allow-contract-only"),
+    }));
 
     const governance = await selectSpecs({ directory: "specs", base: baseSha, cwd: root, strict: true, allowContractOnly: true });
     expect(governance.valid).toBe(true);
@@ -95,7 +99,12 @@ describe("Git-tree multi-spec routing", () => {
     const mixed = await selectSpecs({ directory: "specs", base: baseSha, cwd: root, strict: true, allowContractOnly: true });
     expect(mixed.valid).toBe(false);
     expect(mixed.governance.classification).toBe("implementation");
-    expect(mixed.diagnostics.some((item) => item.code === "ESRT002")).toBe(true);
+    expect(mixed.diagnostics).toContainEqual(expect.objectContaining({
+      code: "ESRT002",
+      file: "specs/change.engineering-spec.md",
+      hint: expect.stringContaining("Split specification"),
+    }));
+    expect(mixed.diagnostics.find((item) => item.file === "specs/change.engineering-spec.md")?.hint).not.toContain("--allow-contract-only");
 
     await unlink(path.join(root, "outside.ts"));
     await writeFile(file, "# invalid\n");
@@ -103,6 +112,25 @@ describe("Git-tree multi-spec routing", () => {
     expect(invalid.valid).toBe(false);
     expect(invalid.governance.classification).toBe("contract_only");
     expect(invalid.governance.workspaceErrors).toBeGreaterThan(0);
+    expect(invalid.diagnostics).toContainEqual(expect.objectContaining({
+      code: "ESRT002",
+      file: "specs/change.engineering-spec.md",
+      hint: expect.stringContaining("Fix the specification's validation errors"),
+    }));
+  });
+
+  it("does not recommend contract-only handling for spec-named paths outside the configured directory", async () => {
+    const { root, baseSha } = await repository();
+    await mkdir(path.join(root, "outside"));
+    await writeFile(path.join(root, "outside", "change.engineering-spec.md"), document({ id: "ES-outside", target: "outside/**" }));
+
+    const report = await selectSpecs({ directory: "specs", base: baseSha, cwd: root, strict: true, allowContractOnly: true });
+    const uncovered = report.diagnostics.find((item) => item.file === "outside/change.engineering-spec.md");
+    expect(report.valid).toBe(false);
+    expect(report.governance.classification).toBe("implementation");
+    expect(uncovered).toMatchObject({ code: "ESRT002", severity: "error" });
+    expect(uncovered?.hint).toBe("Merge a contract-only target amendment before implementing this path.");
+    expect(uncovered?.hint).not.toContain("--allow-contract-only");
   });
 
   it("treats workspace governance warnings as failures only in strict mode", async () => {

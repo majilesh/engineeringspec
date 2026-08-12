@@ -17,7 +17,8 @@ export function formatGitHubDiagnostic(diagnostic: Diagnostic): string {
     diagnostic.location ? `col=${diagnostic.location.start.column}` : undefined,
     `title=${escapeProperty(diagnostic.code)}`,
   ].filter((value): value is string => Boolean(value));
-  return `::${command} ${properties.join(",")}::${escapeData(diagnostic.message)}`;
+  const message = diagnostic.hint ? `${diagnostic.message} (hint: ${diagnostic.hint})` : diagnostic.message;
+  return `::${command} ${properties.join(",")}::${escapeData(message)}`;
 }
 
 export function formatValidationMarkdown(report: PathValidationReport): string {

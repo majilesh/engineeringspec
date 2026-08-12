@@ -78,9 +78,11 @@ export function routeChanges(
   const eligible = ordered.filter((candidate) => required.has(candidate.spec.metadata.status));
   const diagnostics: Diagnostic[] = [];
   const routes: PathRoute[] = [];
+  const hasSpecificationChanges = changed.some((change) => isEngineeringSpecFilename(change.path));
+  const hasNonSpecificationChanges = changed.some((change) => !isEngineeringSpecFilename(change.path));
+  const hasMixedChanges = hasSpecificationChanges && hasNonSpecificationChanges;
 
-  if (changed.some((change) => isEngineeringSpecFilename(change.path))
-    && changed.some((change) => !isEngineeringSpecFilename(change.path))) {
+  if (hasMixedChanges) {
     diagnostics.push({
       code: Codes.routingUncovered,
       severity: "info",
@@ -131,7 +133,10 @@ export function routeChanges(
       diagnostics.push({ code: Codes.routingDenied, severity: "error", file: entry.path, message: `${entry.path} (${entry.kind}) is denied by ${sortedDenies.map((item) => item.specId).join(", ")}; deny overrides allow` });
     } else if (sortedAllows.length === 0) {
       routes.push({ path: entry.path, kind: entry.kind, decision: "uncovered", allows: [], denies: [], claims: [] });
-      diagnostics.push({ code: Codes.routingUncovered, severity: "error", file: entry.path, message: `${entry.path} (${entry.kind}) is not claimed by any eligible EngineeringSpec` });
+      const hint = isEngineeringSpecFilename(entry.path) && hasMixedChanges
+        ? "Split specification lifecycle or scope changes into a contract-only PR, merge it, then update the implementation branch from the trusted base."
+        : "Merge a contract-only target amendment before implementing this path.";
+      diagnostics.push({ code: Codes.routingUncovered, severity: "error", file: entry.path, message: `${entry.path} (${entry.kind}) is not claimed by any eligible EngineeringSpec`, hint });
     } else if (sortedAllows.length > 1) {
       routes.push({ path: entry.path, kind: entry.kind, decision: "ambiguous", allows: sortedAllows, denies: [], claims: sortedAllows });
       diagnostics.push({ code: Codes.routingAmbiguous, severity: "error", file: entry.path, message: `${entry.path} (${entry.kind}) is allowed by multiple EngineeringSpecs: ${sortedAllows.map((item) => item.specId).join(", ")}` });
