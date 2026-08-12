@@ -4,19 +4,24 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+## [0.1.0-rc.11] - 2026-08-12
+
 ### Added
 
-- Deterministic read-only `measure` receipts pinned to one exact approved base contract and committed base/head revisions
-- Benchmark publishability enforcement, explicit authority breadth, paired time-limit/reviewer/order metadata, and embedded-receipt consistency checks
+- Deterministic, read-only `measure` receipts pinned to one exact approved base contract and committed base/head revisions
+- Benchmark evidence-quality reporting and opt-in `--require-publishable` enforcement with paired time-limit, opaque reviewer, and condition-order metadata
+- Explicit finite, open-create-namespace, and repository-wide authority classification plus embedded receipt consistency checks
 
 ### Changed
 
 - `ESG006` is informational, so strict mode accepts `interface_only` path authorization while continuing to disclose that semantic interface verification is separate
+- Current agent guidance, documentation, generated site, CLI examples, and adoption scaffolding use immutable RC11 identities
 
 ### Security
 
+- Scope receipts omit individual paths by default, load authority only from immutable Git state, execute no runners or trusted checks, grant no authorization, and reject impossible counts
 - Shared `prepare` and `review` rendering removes the complete Unicode Bidi_Control set and safely renders arbitrary inline-code backtick runs
-- Scope receipts omit individual paths by default, grant no authority, execute no runners or trusted checks, and reject impossible or contradictory counts
+- Publishability remains an evidence-completeness policy rather than a correctness, causality, or external-impact claim; the external pilot still has zero retained observations
 
 ## [0.1.0-rc.10] - 2026-08-12
 

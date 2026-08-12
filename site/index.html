@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="description" content="EngineeringSpec is an open, agent-neutral format for versioned engineering change contracts.">
+  <meta name="description" content="EngineeringSpec is the open change-control layer for AI coding agents, powered by an agent-neutral contract format.">
   <meta property="og:title" content="EngineeringSpec — one engineering contract, any coding agent">
   <meta property="og:description" content="Base-pinned change authority, deterministic agent context, lifecycle guidance, searchable contracts, and architecture-to-guardrail proposals.">
   <meta property="og:type" content="website">
@@ -19,17 +19,18 @@
 <main>
   <nav><span class="brand">EngineeringSpec</span><span><a href="explorer.html">Explorer</a><a href="https://github.com/majilesh/engineeringspec/tree/main/docs">Guides</a><a href="https://github.com/majilesh/engineeringspec">GitHub</a><a href="spec/0.1/">Specification</a></span></nav>
   <h1>One engineering contract. Any coding agent.</h1>
-  <p class="lead">Give coding agents, reviewers, and CI one reviewed, base-pinned answer to what may change and which engineering obligations apply.</p>
+  <p class="lead">The open change-control layer gives coding agents, reviewers, and CI one reviewed, base-pinned answer to what may change and which engineering obligations apply.</p>
   <div class="actions"><a class="button" href="https://github.com/majilesh/engineeringspec/blob/main/docs/getting-started.md">Get started</a><a class="button secondary" href="explorer.html">Explore contracts</a><a class="button secondary" href="https://github.com/majilesh/engineeringspec/tree/main/examples">View examples</a></div>
   <section class="grid">
     <article class="card"><h2>Agent-neutral</h2><p>The same on-disk contract can guide Codex, Claude Code, Cursor, CI, and human review.</p></article>
     <article class="card"><h2>Fail closed</h2><p>Uncovered, ambiguous, or denied paths cannot borrow authority from a workspace proposal.</p></article>
     <article class="card"><h2>Standards-friendly</h2><p>Reference OpenAPI, JSON Schema, SARIF, JUnit, OPA, and other authoritative formats.</p></article>
   </section>
-  <pre><code>npx --yes @engineeringspec/cli@0.1.0-rc.10 adopt . --quickstart --maintainer @your-org/platform --dry-run
-npx --yes @engineeringspec/cli@0.1.0-rc.10 propose --id ES-change --title "Change" --from-diff --base origin/main --dry-run
-npx --yes @engineeringspec/cli@0.1.0-rc.10 review --spec-dir docs/engineering-specs --base origin/main --strict --format markdown
-npx --yes @engineeringspec/cli@0.1.0-rc.10 prepare ES-change --spec-dir docs/engineering-specs --base origin/main --strict --format markdown</code></pre>
+  <pre><code>npx --yes @engineeringspec/cli@0.1.0-rc.11 adopt . --quickstart --maintainer @your-org/platform --dry-run
+npx --yes @engineeringspec/cli@0.1.0-rc.11 propose --id ES-change --title "Change" --from-diff --base origin/main --dry-run
+npx --yes @engineeringspec/cli@0.1.0-rc.11 review --spec-dir docs/engineering-specs --base origin/main --strict --format markdown
+npx --yes @engineeringspec/cli@0.1.0-rc.11 prepare ES-change --spec-dir docs/engineering-specs --base origin/main --strict --format markdown
+npx --yes @engineeringspec/cli@0.1.0-rc.11 measure ES-change --spec-dir docs/engineering-specs --base &lt;base-sha&gt; --head &lt;head-sha&gt; --format json</code></pre>
   <footer>Draft open specification and reference implementation · MIT licensed</footer>
 </main>
 </body>

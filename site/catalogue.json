@@ -1,7 +1,7 @@
 {
   "valid": true,
   "directory": "docs/engineering-specs",
-  "documents": 17,
+  "documents": 19,
   "entries": [
     {
       "id": "ES-agent-ready-adoption",
@@ -324,6 +324,289 @@
             "CON-8",
             "CON-9",
             "CON-11"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ES-evidence-integrity-before-pilot",
+      "title": "Harden evidence integrity before the external pilot",
+      "status": "implemented",
+      "file": "ES-evidence-integrity-before-pilot.engineering-spec.md",
+      "owners": [
+        "EngineeringSpec maintainers"
+      ],
+      "sourceRefs": [
+        {
+          "id": "SRC-1",
+          "type": "document",
+          "locator": "rfcs/0008-evidence-integrity-before-pilot.md",
+          "title": "Evidence integrity before the external pilot RFC"
+        },
+        {
+          "id": "SRC-2",
+          "type": "document",
+          "locator": "rfcs/0007-precode-brief-evidence-pilot.md",
+          "title": "Pre-code brief and adoption evidence pilot RFC"
+        },
+        {
+          "id": "SRC-3",
+          "type": "document",
+          "locator": "maintainer-only pilot protocol",
+          "title": "Ten-task paired adoption pilot"
+        },
+        {
+          "id": "SRC-4",
+          "type": "document",
+          "locator": "e98b26d6889faefa1a1dbb745def35dd97305f23",
+          "title": "RC10 release merge"
+        },
+        {
+          "id": "SRC-5",
+          "type": "other",
+          "locator": "rc10-independent-review-2026-08-12",
+          "title": "Independent RC10 evidence and semantics review"
+        }
+      ],
+      "targets": [
+        {
+          "id": "TARGET-benchmark",
+          "component": "evidence-validation-and-publishability",
+          "paths": [
+            "src/cli/benchmark.ts",
+            "benchmarks/**",
+            "test/unit/benchmark.test.ts",
+            "test/integration/cli.test.ts"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-measure",
+          "component": "deterministic-scope-receipt",
+          "paths": [
+            "src/cli/measure.ts",
+            "src/measurement/**",
+            "src/cli/program.ts",
+            "src/index.ts",
+            "schemas/scope-measurement-0.1.schema.json",
+            "test/unit/measure.test.ts",
+            "test/integration/measure.test.ts",
+            "test/integration/cli.test.ts"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-interface-semantics",
+          "component": "interface-only-informational-diagnostic",
+          "paths": [
+            "SPEC.md",
+            "src/gate/gate.ts",
+            "src/routing/route.ts",
+            "test/unit/gate.test.ts",
+            "test/unit/gate.adversarial.test.ts",
+            "test/integration/routing.test.ts",
+            "conformance/**"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-rendering",
+          "component": "shared-agent-output-hardening",
+          "paths": [
+            "src/cli/render.ts",
+            "src/cli/prepare.ts",
+            "src/cli/review.ts",
+            "src/query/changeBrief.ts",
+            "test/unit/prepare.test.ts",
+            "test/unit/review.test.ts"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-documentation",
+          "component": "evidence-and-command-guidance",
+          "paths": [
+            "README.md",
+            "maintainer-only roadmap",
+            "CHANGELOG.md",
+            "docs/cli-reference.md",
+            "docs/agent-integration.md",
+            "docs/maintaining-specs.md",
+            "docs/roles-and-responsibilities.md"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-rfc",
+          "component": "evidence-and-interface-semantics",
+          "paths": [
+            "rfcs/0008-evidence-integrity-before-pilot.md"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-contract",
+          "component": "contract-lifecycle",
+          "paths": [
+            "docs/engineering-specs/ES-evidence-integrity-before-pilot.engineering-spec.md"
+          ],
+          "changePolicy": "modify"
+        }
+      ],
+      "constraints": [
+        {
+          "id": "CON-1",
+          "level": "must",
+          "statement": "The benchmark must reject any scope record where unauthorized changed paths exceed actual changed paths or authorized changed paths exceed approved writable paths; it must not cap an impossible precision value into validity.",
+          "appliesTo": [
+            "TARGET-benchmark"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-2",
+          "level": "must",
+          "statement": "Evidence provenance, completeness, and publishability must be reported separately; compatible sparse records remain readable, while --require-publishable fails incomplete, example, mixed, or inconsistent evidence without implying causality or making explicitly uninterpretable metrics numeric for publishable observed samples.",
+          "appliesTo": [
+            "TARGET-benchmark",
+            "TARGET-documentation"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-3",
+          "level": "must",
+          "statement": "Benchmark records must support positive time limits, opaque acceptance reviewer identifiers, and per-condition sequence values; complete pairs preserve time limit and reviewer and contain exactly sequence positions one and two.",
+          "appliesTo": [
+            "TARGET-benchmark"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-4",
+          "level": "must",
+          "statement": "Scope evidence must distinguish finite, open-create-namespace, and repository-wide authority; only finite authority may produce an interpretable precision score, while catch-all legacy input remains compatible and maps to repository-wide authority.",
+          "appliesTo": [
+            "TARGET-benchmark",
+            "TARGET-measure",
+            "TARGET-documentation"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-5",
+          "level": "must",
+          "statement": "The measure command must resolve base and head SHAs first, load exactly one explicitly named approved contract from the base Git tree, reuse existing path-policy and deny-overrides semantics, exclude dirty workspace state, expand renames, and emit deterministic unsigned scope evidence with contract and path-set digests without disclosing individual paths by default.",
+          "appliesTo": [
+            "TARGET-measure"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-6",
+          "level": "must_not",
+          "statement": "Measurement must not load workspace authority, infer or approve a contract, execute or expose verifier runners, run trusted checks, mutate Git or files without an explicit output path, claim authorization, or replace select, check, review, or CI enforcement.",
+          "appliesTo": [
+            "TARGET-measure",
+            "TARGET-documentation"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-7",
+          "level": "must",
+          "statement": "ESG006 must remain emitted whenever interface_only authorizes a path but with informational severity, so strict mode does not fail solely for the documented path-level limitation; interface_only must not gain semantic API, ABI, AST, or schema enforcement.",
+          "appliesTo": [
+            "TARGET-interface-semantics",
+            "TARGET-rfc",
+            "TARGET-documentation"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-8",
+          "level": "must",
+          "statement": "Shared prepare and review rendering must strip the complete Unicode Bidi_Control set including U+061C, neutralize terminal and newline controls, HTML-escape Markdown text, and safely delimit arbitrary runs of backticks inside inline code spans.",
+          "appliesTo": [
+            "TARGET-rendering"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-9",
+          "level": "must",
+          "statement": "Current format 0.1 parsing, schema compatibility, canonicalization, diagnostics other than ESG006 severity, approved-base loading, routing decisions, deny-overrides, complete-worktree checks, runner inertness, Action enforcement, and RC10 commands must remain compatible.",
+          "appliesTo": [
+            "TARGET-benchmark",
+            "TARGET-measure",
+            "TARGET-interface-semantics",
+            "TARGET-rendering"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-10",
+          "level": "must",
+          "statement": "Documentation must lead with EngineeringSpec as the open change-control layer for AI coding agents, explain the agent-neutral contract format underneath, keep scope receipts non-authoritative, disclose publishability limitations, and retain the zero-observation external evidence status until records exist.",
+          "appliesTo": [
+            "TARGET-documentation"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-11",
+          "level": "must_not",
+          "statement": "This increment must not add model calls, contract inference, autonomous approval, runner execution, MCP, IDE or vendor plugins, dashboards, hosted services, architecture-derived authority, CLI registration refactoring, or external-impact claims.",
+          "appliesTo": [
+            "TARGET-rfc",
+            "TARGET-documentation"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-12",
+          "level": "must",
+          "statement": "Implementation must add the RFC-mandated conformance and adversarial fixtures, run all trusted repository checks, preserve failed and incomplete benchmark records, and transition this contract from approved to implemented only after maintainer review.",
+          "appliesTo": [
+            "TARGET-benchmark",
+            "TARGET-measure",
+            "TARGET-interface-semantics",
+            "TARGET-rendering",
+            "TARGET-contract"
+          ],
+          "enforcement": "review"
+        }
+      ],
+      "contracts": [],
+      "verification": [
+        {
+          "id": "VER-1",
+          "kind": "test",
+          "proves": [
+            "CON-1",
+            "CON-2",
+            "CON-3",
+            "CON-4",
+            "CON-5",
+            "CON-6",
+            "CON-8"
+          ]
+        },
+        {
+          "id": "VER-2",
+          "kind": "test",
+          "proves": [
+            "CON-7",
+            "CON-9"
+          ]
+        },
+        {
+          "id": "VER-3",
+          "kind": "human_review",
+          "proves": [
+            "CON-10",
+            "CON-11",
+            "CON-12"
           ]
         }
       ]
@@ -2266,6 +2549,249 @@
           "id": "CON-10",
           "level": "must",
           "statement": "The pre-code evidence pilot contract must remain proposed throughout release preparation and may be reapproved only after RC10 publication is verified; release activity must not close the unfinished pilot or present its zero-observation state as completed evidence.",
+          "appliesTo": [
+            "TARGET-release-contract",
+            "TARGET-documentation"
+          ],
+          "enforcement": "review"
+        }
+      ],
+      "contracts": [],
+      "verification": [
+        {
+          "id": "VER-1",
+          "kind": "test",
+          "proves": [
+            "CON-1",
+            "CON-2",
+            "CON-3",
+            "CON-4",
+            "CON-5"
+          ]
+        },
+        {
+          "id": "VER-2",
+          "kind": "test",
+          "proves": [
+            "CON-6"
+          ]
+        },
+        {
+          "id": "VER-3",
+          "kind": "human_review",
+          "proves": [
+            "CON-7",
+            "CON-8",
+            "CON-9",
+            "CON-10"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ES-rc11-evidence-integrity-release",
+      "title": "Publish the evidence-integrity RC11 release",
+      "status": "implemented",
+      "file": "ES-rc11-evidence-integrity-release.engineering-spec.md",
+      "owners": [
+        "EngineeringSpec maintainers"
+      ],
+      "sourceRefs": [
+        {
+          "id": "SRC-1",
+          "type": "document",
+          "locator": "6270ec9deef69a0af256e7b28547e2b67c7d07bf",
+          "title": "Reviewed evidence-integrity implementation merge"
+        },
+        {
+          "id": "SRC-2",
+          "type": "document",
+          "locator": "9cdfaf6828e20f26d7981b3b304fcbe937f809f9",
+          "title": "Reviewed evidence-integrity lifecycle closure"
+        },
+        {
+          "id": "SRC-3",
+          "type": "document",
+          "locator": "docs/engineering-specs/ES-evidence-integrity-before-pilot.engineering-spec.md",
+          "title": "Implemented evidence-integrity contract"
+        },
+        {
+          "id": "SRC-4",
+          "type": "document",
+          "locator": "rfcs/0008-evidence-integrity-before-pilot.md",
+          "title": "Evidence-integrity RFC"
+        },
+        {
+          "id": "SRC-5",
+          "type": "document",
+          "locator": "docs/engineering-specs/ES-rc10-precode-brief-release.engineering-spec.md",
+          "title": "Previous immutable release process"
+        }
+      ],
+      "targets": [
+        {
+          "id": "TARGET-version",
+          "component": "package-release",
+          "paths": [
+            "package.json",
+            "package-lock.json"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-pins",
+          "component": "immutable-adoption-identities",
+          "paths": [
+            "src/adoption/releases.ts",
+            "src/cli/adopt.ts",
+            "test/unit/doctor.test.ts",
+            "test/integration/cli.test.ts",
+            "skills/engineering-spec/**",
+            "AGENTS.md",
+            "CLAUDE.md",
+            ".cursor/rules/**",
+            "integrations/**"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-documentation",
+          "component": "released-evidence-integrity-guidance",
+          "paths": [
+            "README.md",
+            "CHANGELOG.md",
+            "maintainer-only roadmap",
+            "docs/agent-integration.md",
+            "docs/cli-reference.md",
+            "maintainer-only adoption notes",
+            "docs/first-change-tutorial.md",
+            "docs/getting-started.md",
+            "docs/integrations.md",
+            "docs/lifecycle.md",
+            "docs/maintaining-specs.md",
+            "docs/production-gate.md",
+            "docs/troubleshooting.md",
+            "docs/upgrading.md",
+            "maintainer-only launch notes/**"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-site",
+          "component": "deterministic-release-site",
+          "paths": [
+            "site/**",
+            "scripts/generate-site.mjs"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-release-contract",
+          "component": "release-lifecycle",
+          "paths": [
+            "docs/engineering-specs/ES-rc11-evidence-integrity-release.engineering-spec.md"
+          ],
+          "changePolicy": "modify"
+        }
+      ],
+      "constraints": [
+        {
+          "id": "CON-1",
+          "level": "must",
+          "statement": "package.json and root package-lock metadata must declare version 0.1.0-rc.11 and the compiled CLI must report the same version.",
+          "appliesTo": [
+            "TARGET-version"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-2",
+          "level": "must",
+          "statement": "Generated and documented production Action examples must pin the full reviewed evidence-integrity implementation commit SHA a23486e3bf4e4b175c06390406c2fd401a0f2515.",
+          "appliesTo": [
+            "TARGET-pins",
+            "TARGET-documentation"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-3",
+          "level": "must",
+          "statement": "Current generated agent guidance, packaged skill commands, current documentation, integrations, and public site examples must use exact CLI version 0.1.0-rc.11 without rewriting historical release contracts, changelog entries, retained benchmark records, pilot observations, or case-study history.",
+          "appliesTo": [
+            "TARGET-pins",
+            "TARGET-documentation",
+            "TARGET-site"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-4",
+          "level": "must",
+          "statement": "Release verification must cover immutable base/head measurement, exact approved-contract selection, dirty-worktree exclusion, adds, deletes, modifications, renames, deny-overrides, receipt privacy and consistency, impossible benchmark counts, publishability completeness and sequence invariants, open-authority interpretation, informational ESG006 under strict mode, full bidi-control removal, arbitrary backtick rendering, runner-payload omission, and existing change-control behavior.",
+          "appliesTo": [
+            "TARGET-version",
+            "TARGET-pins",
+            "TARGET-documentation",
+            "TARGET-site"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-5",
+          "level": "must",
+          "statement": "Static site generation and package inspection must remain deterministic; the package must contain the measure command, measurement module declarations and runtime, scope-measurement schema, benchmark schema and guidance, integrations, and current skill without telemetry, hosted runtime, or external evidence claims.",
+          "appliesTo": [
+            "TARGET-version",
+            "TARGET-site"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-6",
+          "level": "must_not",
+          "statement": "Release preparation must not change format 0.1, schemas, measurement or benchmark semantics, routing or governance decisions, diagnostics, runner inertness, architecture authority isolation, Action enforcement, retained benchmark inputs, pilot observations, or the tag-driven trusted-publishing boundary.",
+          "appliesTo": [
+            "TARGET-version",
+            "TARGET-pins",
+            "TARGET-documentation",
+            "TARGET-site"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-7",
+          "level": "must",
+          "statement": "Release notes must describe measure receipts as unsigned non-authoritative observations, publishability as evidence completeness rather than correctness or causality, open-authority precision as unavailable, and ESG006 as informational path-level disclosure; they must not claim measured productivity, correctness, adoption, star growth, autonomous approval, inferred authority, or external-pilot success.",
+          "appliesTo": [
+            "TARGET-documentation"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-8",
+          "level": "must",
+          "statement": "Publication must remain gated by a version-matching v0.1.0-rc.11 tag created from the reviewed release merge after repository, conformance, package, site, documentation, demo, clean-install CLI, measure, benchmark, and consumer Action smoke checks pass.",
+          "appliesTo": [
+            "TARGET-version",
+            "TARGET-documentation",
+            "TARGET-site"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-9",
+          "level": "must",
+          "statement": "The RC11 release contract must transition from approved to implemented only in the reviewed release implementation and without widening authority.",
+          "appliesTo": [
+            "TARGET-release-contract"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-10",
+          "level": "must",
+          "statement": "The pre-code evidence pilot contract and public pilot status must remain unfinished throughout release preparation; release activity must not add, edit, discard, or present zero-observation pilot data as completed evidence.",
           "appliesTo": [
             "TARGET-release-contract",
             "TARGET-documentation"
