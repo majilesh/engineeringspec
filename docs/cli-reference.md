@@ -35,6 +35,7 @@ npx --yes @engineeringspec/cli@0.1.0-rc.10 adopt . \
 | `context` | Return bounded agent context for one path without runner commands |
 | `explain` | Explain why a path and change kind are allowed or denied |
 | `review` | Explain complete-state routing, obligations, coverage, and verifier identities from the approved base |
+| `measure` | Generate an unsigned scope receipt from one exact approved base contract and committed base/head revisions |
 | `benchmark` | Summarize retained paired agent runs, missing observations, scope precision, and evidence limitations |
 
 Examples:
@@ -45,6 +46,8 @@ engineeringspec catalogue docs/engineering-specs --path src/payments/card.ts
 engineeringspec catalogue docs/engineering-specs --format html > explorer.html
 engineeringspec architecture catalog-info.yaml --format json
 npx --yes @engineeringspec/cli@0.1.0-rc.10 prepare ES-payments-change --spec-dir docs/engineering-specs --base origin/main --strict --format markdown
+engineeringspec measure ES-payments-change --spec-dir docs/engineering-specs --base <base-sha> --head <head-sha> --strict --format json
+engineeringspec benchmark benchmarks/results/*.json --require-publishable --format json
 ```
 
 ## Enforce and self-check
@@ -59,7 +62,7 @@ For directory routing, `--allow-contract-only` is opt-in. It accepts only a non-
 
 ## Safety invariants
 
-- Parsing, validation, doctor, status, catalogue, architecture, inspect, prepare, context and explain do not execute declared runners.
+- Parsing, validation, doctor, status, catalogue, architecture, inspect, prepare, measure, context and explain do not execute declared runners.
 - `prepare` requires an exact contract ID, loads only from the resolved base tree, grants permission only for `approved`, and never restricts repository reading needed for correctness.
 - `interface_only` in a preparation brief is path-level write access, not semantic interface enforcement; use separately trusted API/schema verification. `prepare` does not infer glob overlap across other approved contracts, so final path authorization remains subject to directory `select` and `check`.
 - `propose` emits only `status: draft`, performs no network request, and grants no implementation authority.
@@ -67,4 +70,5 @@ For directory routing, `--allow-contract-only` is opt-in. It accepts only a non-
 - Architecture and catalogue output never grants authority.
 - `transition --write` changes only the frontmatter status after validating before and after; it performs no Git operation.
 - JSON intended for agents omits verifier command payloads.
-- `benchmark` preserves negative, slower, amended, catch-all, and incomplete runs; its summary explicitly disclaims causal inference.
+- `measure` reads only immutable Git objects, discloses no individual paths unless `--include-paths` is explicit, and emits unsigned evidence that cannot authorize a change or replace `select`, `check`, `review`, trusted checks, or CI.
+- `benchmark` preserves negative, slower, amended, open-authority, and incomplete runs; `--require-publishable` rejects incomplete, example, mixed, or inconsistent evidence without claiming causality.

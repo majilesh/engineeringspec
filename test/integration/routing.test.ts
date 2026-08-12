@@ -167,13 +167,13 @@ describe("Git-tree multi-spec routing", () => {
     expect(report.diagnostics.some((item) => item.severity === "error")).toBe(true);
   });
 
-  it("treats routing warnings as failures only in strict mode", async () => {
+  it("keeps interface_only informational under strict routing", async () => {
     const { root } = await repository("interface_only");
     const options = { directory: "specs", base: "HEAD", cwd: root, changed: [{ path: "src/a.ts", kind: "modified" as const }] };
     const loose = await selectSpecs(options);
     const strict = await selectSpecs({ ...options, strict: true });
     expect(loose.valid).toBe(true);
-    expect(loose.diagnostics.some((item) => item.code === "ESG006")).toBe(true);
-    expect(strict.valid).toBe(false);
+    expect(loose.diagnostics).toContainEqual(expect.objectContaining({ code: "ESG006", severity: "info" }));
+    expect(strict.valid).toBe(true);
   });
 });

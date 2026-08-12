@@ -18,6 +18,7 @@ export * from "./architecture/backstage.js";
 export * from "./cli/agentCheck.js";
 export * from "./cli/adopt.js";
 export * from "./cli/benchmark.js";
+export * from "./cli/measure.js";
 export * from "./cli/doctor.js";
 export * from "./cli/status.js";
 export * from "./cli/propose.js";

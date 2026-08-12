@@ -18,6 +18,9 @@ function complete(condition: AgentBenchmarkRecord["condition"], overrides: Parti
     permissions: ["read", "write", "test"],
     trustedChecks: ["npm test"],
     agentConfiguration: "config-v1",
+    timeLimitSeconds: 1200,
+    acceptanceReviewerId: "reviewer-opaque-1",
+    conditionSequence: condition === "baseline" ? 1 : 2,
     success: condition === "engineeringspec",
     scopeViolations: condition === "baseline" ? 2 : 0,
     reviewCorrections: condition === "baseline" ? 2 : 1,
@@ -38,6 +41,7 @@ function complete(condition: AgentBenchmarkRecord["condition"], overrides: Parti
       approvedWritablePaths: 10,
       actualChangedPaths: condition === "baseline" ? 7 : 4,
       catchAllTarget: false,
+      authorityBreadth: "finite",
     },
     ...overrides,
   };
@@ -59,7 +63,7 @@ describe("agent-impact benchmark", () => {
         scope: { assessment: "measured", catchAllRuns: 0 },
       },
       pairedOutcomes: { slowerEngineeringSpecRuns: 1, amendedEngineeringSpecRuns: 1 },
-      interpretation: { causalInferenceSupported: false, resultClass: "observed" },
+      interpretation: { causalInferenceSupported: false, resultClass: "observed", evidenceQuality: "complete", publishable: true },
     });
     expect(result.delta.scopePrecision).toBeCloseTo(0.4);
     expect(result.missingData.repositoryRevision).toBe(0);
@@ -70,7 +74,7 @@ describe("agent-impact benchmark", () => {
       complete("baseline", { scopeViolations: 0, scope: { unit: "repository_path", methodVersion: "concrete-paths-v1", approvedWritablePaths: 100, actualChangedPaths: 4, catchAllTarget: true } }),
       complete("engineeringspec", { scopeViolations: 0, scope: { unit: "repository_path", methodVersion: "concrete-paths-v1", approvedWritablePaths: 100, actualChangedPaths: 4, catchAllTarget: true } }),
     ]);
-    expect(result.engineeringspec.scope).toMatchObject({ catchAllRuns: 1, assessment: "not_interpretable_catch_all", averagePrecision: null });
+    expect(result.engineeringspec.scope).toMatchObject({ catchAllRuns: 1, assessment: "not_interpretable_repository_wide", averagePrecision: null });
     expect(result.delta.scopePrecision).toBeNull();
   });
 
@@ -91,6 +95,7 @@ describe("agent-impact benchmark", () => {
     expect(result.interpretation.resultClass).toBe("mixed_or_unclassified");
     expect(result.missingData.repositoryRevision).toBe(2);
     expect(result.engineeringspec.scope.assessment).toBe("insufficient_data");
+    expect(result.interpretation).toMatchObject({ evidenceQuality: "incomplete", publishable: false });
   });
 
   it("rejects incomparable pairs and impossible path measurements", () => {
@@ -105,6 +110,54 @@ describe("agent-impact benchmark", () => {
         scope: { unit: "repository_path", methodVersion: "concrete-paths-v1", approvedWritablePaths: 10, actualChangedPaths: 4, catchAllTarget: false },
       }),
     ])).toThrow("cannot exceed actualChangedPaths");
+    expect(() => summarizeAgentBenchmark([
+      complete("baseline"),
+      complete("engineeringspec", {
+        scope: { unit: "repository_path", methodVersion: "concrete-paths-v1", approvedWritablePaths: 1, actualChangedPaths: 100, catchAllTarget: false, authorityBreadth: "finite" },
+      }),
+    ])).toThrow("authorized changed paths cannot exceed approved writable paths");
+    expect(() => summarizeAgentBenchmark([
+      complete("baseline", { conditionSequence: 1 }),
+      complete("engineeringspec", { conditionSequence: 1 }),
+    ])).toThrow("conditionSequence 1 and 2");
+    expect(() => summarizeAgentBenchmark([
+      complete("baseline", { acceptanceReviewerId: "reviewer-a" }),
+      complete("engineeringspec", { acceptanceReviewerId: "reviewer-b" }),
+    ])).toThrow("preserve acceptanceReviewerId");
+  });
+
+  it("rejects disagreement between legacy scope fields and an embedded receipt", () => {
+    const scopeReceipt = {
+      schemaVersion: "0.1" as const,
+      method: { unit: "repository_path" as const, version: "concrete-paths-v1" as const },
+      authorityBreadth: "finite" as const,
+      counts: { approvedWritablePaths: 10, actualChangedPaths: 4, authorizedChangedPaths: 4, unauthorizedPathsChanged: 0 },
+    };
+    expect(() => summarizeAgentBenchmark([
+      complete("baseline"),
+      complete("engineeringspec", { scopeReceipt: { ...scopeReceipt, counts: { ...scopeReceipt.counts, approvedWritablePaths: 9 } } }),
+    ])).toThrow("scope and scopeReceipt disagree");
+    expect(summarizeAgentBenchmark([
+      complete("baseline", { scopeReceipt: { ...scopeReceipt, counts: { ...scopeReceipt.counts, actualChangedPaths: 7, authorizedChangedPaths: 5, unauthorizedPathsChanged: 2 } } }),
+      complete("engineeringspec", { scopeReceipt }),
+    ]).interpretation.publishable).toBe(true);
+  });
+
+  it("keeps observed provenance separate from completeness and open authority", () => {
+    const missingRevision = complete("baseline");
+    delete missingRevision.repositoryRevision;
+    const incomplete = summarizeAgentBenchmark([
+      missingRevision,
+      complete("engineeringspec"),
+    ]);
+    expect(incomplete.interpretation).toMatchObject({ resultClass: "observed", evidenceQuality: "incomplete", publishable: false });
+    const open = summarizeAgentBenchmark([
+      complete("baseline", { unauthorizedPathsChanged: 0, scope: { unit: "repository_path", methodVersion: "concrete-paths-v1", approvedWritablePaths: 1, actualChangedPaths: 1, catchAllTarget: false, authorityBreadth: "open_create_namespace" } }),
+      complete("engineeringspec", { unauthorizedPathsChanged: 0, scope: { unit: "repository_path", methodVersion: "concrete-paths-v1", approvedWritablePaths: 1, actualChangedPaths: 1, catchAllTarget: false, authorityBreadth: "open_create_namespace" } }),
+    ]);
+    expect(open.interpretation.publishable).toBe(true);
+    expect(open.engineeringspec.scope.assessment).toBe("not_interpretable_open_create");
+    expect(open.delta.scopePrecision).toBeNull();
   });
 
   it("keeps the bundled example schema-valid and explicitly non-observed", async () => {

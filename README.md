@@ -3,7 +3,7 @@
 [![CI](https://github.com/majilesh/engineeringspec/actions/workflows/ci.yml/badge.svg)](https://github.com/majilesh/engineeringspec/actions/workflows/ci.yml)
 [![Specification](https://img.shields.io/badge/spec-0.1%20draft-3974d8)](https://engineeringspec.org/spec/0.1/)
 
-EngineeringSpec is an open, agent-neutral format for versioned engineering change contracts. It connects source intent to affected technical surfaces, authoritative contracts, enforceable constraints, verification obligations, rollout controls, and implementation evidence.
+EngineeringSpec is the open change-control layer for AI coding agents, powered by an open, agent-neutral format for versioned engineering change contracts. It connects source intent to affected technical surfaces, authoritative contracts, enforceable constraints, verification obligations, rollout controls, and implementation evidence.
 
 This repository contains a **draft open specification and reference implementation**. It is not a project planner, agent runtime, test runner, policy engine, or replacement for ProductSpec, AGENTS.md, ADRs, OpenAPI, AsyncAPI, JSON Schema, Protocol Buffers, SARIF, OPA, SLSA, or in-toto.
 
@@ -115,7 +115,7 @@ Directory validation discovers `ENGINEERING_SPEC.md`, `*.engineering-spec.md`, a
 
 ## Diff-scope gate
 
-`gate` is a **diff-scope gate**: it compares a git diff (or explicit `--changed` paths) to declared targets and `change_policy` values. It does **not** prove constraints, run verifiers, or inspect file contents. Out-of-scope files, `read_only`/`observe` matches (deny-overrides), and policy mismatches fail with `ESG001`–`ESG003`. Unknown git statuses fail with `ESG004`. Optional `--require-status approved` fails drafts with `ESG005`. `interface_only` is a path-writable label (warning `ESG006`), not AST/API enforcement—pair it with an OpenAPI/schema adapter.
+`gate` is a **diff-scope gate**: it compares a git diff (or explicit `--changed` paths) to declared targets and `change_policy` values. It does **not** prove constraints, run verifiers, or inspect file contents. Out-of-scope files, `read_only`/`observe` matches (deny-overrides), and policy mismatches fail with `ESG001`–`ESG003`. Unknown git statuses fail with `ESG004`. Optional `--require-status approved` fails drafts with `ESG005`. `interface_only` is a path-writable label (informational `ESG006`), not AST/API enforcement—pair it with a separately trusted OpenAPI/schema adapter.
 
 ```sh
 # Enforcing CI: load the approved contract from the base branch (prevents PR self-widening)
@@ -176,7 +176,7 @@ The portable [EngineeringSpec skill](skills/engineering-spec/SKILL.md) is the pr
 
 Thin setup notes are available for [Codex](integrations/codex/README.md), [Claude Code](integrations/claude/README.md), [Cursor](integrations/cursor/README.md), [GitHub Copilot](integrations/copilot/README.md), and [generic agents](integrations/generic/README.md). All use the same CLI decision; none can approve or widen a contract. Run the [local fail-closed demo](examples/demo/README.md) with `npm run demo`.
 
-Measure the effect rather than assuming it: [the agent-impact benchmark](benchmarks/README.md) retains paired success, failures, scope precision, unauthorized paths, review effort, amendments, exploration breadth, duration, and tokens. The [external pilot](maintainer-only pilot notes) currently reports zero retained external pairs; synthetic examples are never presented as observed impact.
+Measure the effect rather than assuming it: [the agent-impact benchmark](benchmarks/README.md) retains paired success, failures, scope precision, unauthorized paths, review effort, amendments, exploration breadth, duration, and tokens. `measure` can generate an unsigned base/head-pinned scope receipt; that receipt grants no authority and proves neither correctness nor trusted-check success. The [external pilot](maintainer-only pilot notes) currently reports zero retained external pairs; synthetic examples are never presented as observed impact.
 
 Private repositories are supported: the CLI and Action operate on the checked-out Git tree and do not upload specification or source content. Normal package installation and GitHub Actions still use their configured package/network access. See the [CLI reference](docs/cli-reference.md), [coding-agent integrations](docs/integrations.md), [architecture bridge](docs/architecture-bridge.md), [upgrade guide](docs/upgrading.md), [roles and responsibilities](docs/roles-and-responsibilities.md), [lifecycle](docs/lifecycle.md), [maintaining specs](docs/maintaining-specs.md), and [troubleshooting](docs/troubleshooting.md).
 

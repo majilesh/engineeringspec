@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://engineeringspec.org/schemas/scope-measurement-0.1.schema.json",
+  "title": "EngineeringSpec unsigned scope measurement receipt",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "authority", "authorization", "contract", "baseSha", "headSha", "method", "authorityBreadth", "counts", "digests", "limitations"],
+  "properties": {
+    "schemaVersion": { "const": "0.1" },
+    "authority": { "const": "base_pinned_approved_contract" },
+    "authorization": { "const": "none" },
+    "contract": { "type": "object", "additionalProperties": false, "required": ["id", "revision", "path", "digest"], "properties": { "id": { "type": "string" }, "revision": { "type": "integer", "minimum": 1 }, "path": { "type": "string" }, "digest": { "type": "string" } } },
+    "baseSha": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "headSha": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "method": { "type": "object", "additionalProperties": false, "required": ["unit", "version"], "properties": { "unit": { "const": "repository_path" }, "version": { "const": "concrete-paths-v1" } } },
+    "authorityBreadth": { "enum": ["finite", "open_create_namespace", "repository_wide"] },
+    "counts": { "type": "object", "additionalProperties": false, "required": ["approvedWritablePaths", "actualChangedPaths", "authorizedChangedPaths", "unauthorizedPathsChanged"], "properties": { "approvedWritablePaths": { "type": "integer", "minimum": 0 }, "actualChangedPaths": { "type": "integer", "minimum": 0 }, "authorizedChangedPaths": { "type": "integer", "minimum": 0 }, "unauthorizedPathsChanged": { "type": "integer", "minimum": 0 } } },
+    "digests": { "type": "object", "additionalProperties": false, "required": ["approvedWritablePaths", "actualChangedPaths", "authorizedChangedPaths", "unauthorizedPathsChanged"], "properties": { "approvedWritablePaths": { "type": "string" }, "actualChangedPaths": { "type": "string" }, "authorizedChangedPaths": { "type": "string" }, "unauthorizedPathsChanged": { "type": "string" } } },
+    "paths": { "type": "object", "additionalProperties": false, "required": ["approvedWritable", "actualChanged", "authorizedChanged", "unauthorizedChanged"], "properties": { "approvedWritable": { "type": "array", "items": { "type": "string" } }, "actualChanged": { "type": "array", "items": { "type": "string" } }, "authorizedChanged": { "type": "array", "items": { "type": "string" } }, "unauthorizedChanged": { "type": "array", "items": { "type": "string" } } } },
+    "limitations": { "type": "array", "items": { "type": "string" }, "minItems": 1 }
+  }
+}

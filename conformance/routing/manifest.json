@@ -56,5 +56,13 @@
     ],
     "changed": [{ "path": "src/secret.ts", "kind": "modified" }],
     "expected": { "decisions": ["denied"], "codes": ["ESRT004"], "changedDigest": "sha256:41e391618374a36e6aaa15efcde6722759035d201cb001583ceb1ab1b51ccd5a" }
+  },
+  {
+    "name": "interface-only-is-writable-with-informational-diagnostic",
+    "candidates": [
+      { "id": "ES-interface", "status": "approved", "targets": [{ "id": "TARGET-interface", "path": "src/api.ts", "policy": "interface_only" }] }
+    ],
+    "changed": [{ "path": "src/api.ts", "kind": "modified" }],
+    "expected": { "decisions": ["selected"], "codes": ["ESG006"], "changedDigest": "sha256:add5478a89f9f8566ae27b9dca52b6610788c51175863efdb7a717d70b17c7f9" }
   }
 ]

@@ -7,21 +7,12 @@ import type {
   VerificationObligation,
 } from "../model/types.js";
 import { compareCodePoints } from "../normalizer/canonicalize.js";
+import { displaySafe } from "../cli/render.js";
 
 const WRITABLE_POLICIES = new Set<TargetSurface["changePolicy"]>(["modify", "create", "delete", "interface_only"]);
 
 export function briefDisplaySafe(value: string): string {
-  const withoutControls = [...value].map((character) => {
-    const codePoint = character.codePointAt(0)!;
-    const unsafe = codePoint <= 0x1f
-      || (codePoint >= 0x7f && codePoint <= 0x9f)
-      || codePoint === 0x200e
-      || codePoint === 0x200f
-      || (codePoint >= 0x202a && codePoint <= 0x202e)
-      || (codePoint >= 0x2066 && codePoint <= 0x2069);
-    return unsafe ? " " : character;
-  }).join("");
-  return withoutControls.replace(/\s+/gu, " ").trim();
+  return displaySafe(value);
 }
 
 function sanitizeBriefValue<T>(value: T): T {

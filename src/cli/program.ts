@@ -34,6 +34,7 @@ import { importBackstageCatalogue } from "./architecture.js";
 import { proposeDraft } from "./propose.js";
 import { buildReview, reviewMarkdown, reviewText } from "./review.js";
 import { prepareChange, prepareMarkdown, prepareText } from "./prepare.js";
+import { measureScope } from "./measure.js";
 
 const STATUS_VALUES = ["draft", "proposed", "approved", "implemented", "superseded", "rejected"] as const;
 
@@ -276,7 +277,8 @@ export function createProgram(setCode: (code: number) => void): Command {
     .description("Summarize paired agent-impact benchmark records")
     .argument("<files...>", "JSON files containing one record or an array of records")
     .addOption(new Option("--format <format>", "output format").choices(["text", "json"]))
-    .action(async (files, _options, command) => {
+    .option("--require-publishable", "fail unless retained evidence is complete, observed, and publishable")
+    .action(async (files, options, command) => {
       try {
         const global = command.optsWithGlobals() as GlobalOptions;
         const records: unknown[] = [];
@@ -291,6 +293,7 @@ export function createProgram(setCode: (code: number) => void): Command {
         const text = [
           `benchmark: ${report.tasks} task(s), ${report.pairs} pair(s), ${report.runs} run(s)`,
           `evidence: ${report.interpretation.resultClass}; observed ${report.evidence.observedRuns}, example ${report.evidence.exampleRuns}, unclassified ${report.evidence.unclassifiedRuns}`,
+          `evidence quality: ${report.interpretation.evidenceQuality}; publishable: ${report.interpretation.publishable}`,
           `success: ${percent(report.baseline.successRate)} -> ${percent(report.engineeringspec.successRate)} (${percent(report.delta.successRate)})`,
           `failed runs retained: baseline ${report.baseline.failedRuns}, engineeringspec ${report.engineeringspec.failedRuns}`,
           `scope violations reduced: ${report.delta.scopeViolationReduction.toFixed(2)} per run`,
@@ -310,7 +313,7 @@ export function createProgram(setCode: (code: number) => void): Command {
           `interpretation: ${report.interpretation.note}`,
         ].join("\n");
         if (!global.quiet) output(global.format === "json" ? report : text, global.format);
-        setCode(ExitCode.success);
+        setCode(options.requirePublishable && !report.interpretation.publishable ? ExitCode.validation : ExitCode.success);
       } catch (error) {
         console.error(error instanceof Error ? error.message : String(error));
         setCode(ExitCode.validation);
@@ -727,6 +730,36 @@ export function createProgram(setCode: (code: number) => void): Command {
       } catch (error) {
         console.error(error instanceof Error ? error.message : String(error));
         setCode(ExitCode.io);
+      }
+    });
+
+  program
+    .command("measure")
+    .description("Generate unsigned deterministic scope evidence from committed base and head revisions")
+    .argument("<contract-id>", "exact approved EngineeringSpec contract ID")
+    .requiredOption("--spec-dir <directory>", "base-pinned EngineeringSpec directory")
+    .requiredOption("--base <ref>", "approved Git base ref")
+    .requiredOption("--head <ref>", "committed Git head ref")
+    .option("--include-paths", "explicitly include repository paths in the receipt")
+    .option("--output <path>", "write the receipt to a file")
+    .addOption(new Option("--format <format>", "output format").choices(["text", "json"]))
+    .action(async (contractId, options, command) => {
+      try {
+        const global = command.optsWithGlobals() as GlobalOptions;
+        const report = await measureScope({ contractId, specDirectory: options.specDir, base: options.base, head: options.head, strict: Boolean(global.strict), includePaths: Boolean(options.includePaths) });
+        if (options.output) await writeFile(options.output, `${JSON.stringify(report, null, 2)}\n`, "utf8");
+        const text = [
+          "measure: complete (unsigned; grants no authorization)",
+          `contract: ${report.contract.id} revision ${report.contract.revision}`,
+          `base/head: ${report.baseSha} / ${report.headSha}`,
+          `authority breadth: ${report.authorityBreadth}`,
+          `paths: approved ${report.counts.approvedWritablePaths}, actual ${report.counts.actualChangedPaths}, authorized ${report.counts.authorizedChangedPaths}, unauthorized ${report.counts.unauthorizedPathsChanged}`,
+        ].join("\n");
+        if (!global.quiet) output(global.format === "json" ? report : text, global.format);
+        setCode(ExitCode.success);
+      } catch (error) {
+        console.error(error instanceof Error ? error.message : String(error));
+        setCode(ExitCode.validation);
       }
     });
 
