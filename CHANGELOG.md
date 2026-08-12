@@ -4,6 +4,20 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+### Added
+
+- Deterministic read-only `measure` receipts pinned to one exact approved base contract and committed base/head revisions
+- Benchmark publishability enforcement, explicit authority breadth, paired time-limit/reviewer/order metadata, and embedded-receipt consistency checks
+
+### Changed
+
+- `ESG006` is informational, so strict mode accepts `interface_only` path authorization while continuing to disclose that semantic interface verification is separate
+
+### Security
+
+- Shared `prepare` and `review` rendering removes the complete Unicode Bidi_Control set and safely renders arbitrary inline-code backtick runs
+- Scope receipts omit individual paths by default, grant no authority, execute no runners or trusted checks, and reject impossible or contradictory counts
+
 ## [0.1.0-rc.10] - 2026-08-12
 
 ### Added

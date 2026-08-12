@@ -1,5 +1,6 @@
 export type BenchmarkCondition = "baseline" | "engineeringspec";
 export type BenchmarkEvidenceClass = "observed" | "example";
+export type AuthorityBreadth = "finite" | "open_create_namespace" | "repository_wide";
 
 export interface BenchmarkScopeMeasurement {
   unit: "repository_path";
@@ -7,6 +8,19 @@ export interface BenchmarkScopeMeasurement {
   approvedWritablePaths: number;
   actualChangedPaths: number;
   catchAllTarget: boolean;
+  authorityBreadth?: AuthorityBreadth;
+}
+
+export interface EmbeddedScopeReceipt {
+  schemaVersion: "0.1";
+  method: { unit: "repository_path"; version: "concrete-paths-v1" };
+  authorityBreadth: AuthorityBreadth;
+  counts: {
+    approvedWritablePaths: number;
+    actualChangedPaths: number;
+    authorizedChangedPaths: number;
+    unauthorizedPathsChanged: number;
+  };
 }
 
 export interface AgentBenchmarkRecord {
@@ -23,6 +37,9 @@ export interface AgentBenchmarkRecord {
   permissions?: string[];
   trustedChecks?: string[];
   agentConfiguration?: string;
+  timeLimitSeconds?: number;
+  acceptanceReviewerId?: string;
+  conditionSequence?: 1 | 2;
   success: boolean;
   scopeViolations: number;
   reviewCorrections: number;
@@ -38,14 +55,16 @@ export interface AgentBenchmarkRecord {
   unauthorizedPathsChanged?: number | null;
   unauthorizedPathsMerged?: number | null;
   scope?: BenchmarkScopeMeasurement | null;
+  scopeReceipt?: EmbeddedScopeReceipt | null;
 }
 
 export interface BenchmarkScopeSummary {
   eligibleRuns: number;
   catchAllRuns: number;
+  openCreateRuns: number;
   missingRuns: number;
   averagePrecision: number | null;
-  assessment: "measured" | "not_interpretable_catch_all" | "insufficient_data";
+  assessment: "measured" | "not_interpretable_open_create" | "not_interpretable_repository_wide" | "insufficient_data";
 }
 
 export interface BenchmarkConditionSummary {
@@ -93,6 +112,8 @@ export interface AgentBenchmarkSummary {
   interpretation: {
     causalInferenceSupported: false;
     resultClass: "observed" | "example" | "mixed_or_unclassified";
+    evidenceQuality: "complete" | "incomplete";
+    publishable: boolean;
     note: string;
   };
 }
@@ -105,6 +126,7 @@ const OPTIONAL_NUMBER_FIELDS = [
   "exploredPaths",
   "unauthorizedPathsChanged",
   "unauthorizedPathsMerged",
+  "timeLimitSeconds",
 ] as const;
 
 const OPTIONAL_INTEGER_FIELDS = new Set<string>([
@@ -113,6 +135,7 @@ const OPTIONAL_INTEGER_FIELDS = new Set<string>([
   "exploredPaths",
   "unauthorizedPathsChanged",
   "unauthorizedPathsMerged",
+  "conditionSequence",
 ]);
 
 const COMPARABILITY_FIELDS = [
@@ -122,6 +145,19 @@ const COMPARABILITY_FIELDS = [
   "permissions",
   "trustedChecks",
   "agentConfiguration",
+  "timeLimitSeconds",
+  "acceptanceReviewerId",
+] as const;
+
+const PUBLISHABLE_FIELDS = [
+  ...COMPARABILITY_FIELDS,
+  ...OPTIONAL_NUMBER_FIELDS,
+  "pairId",
+  "conditionIdentity",
+  "evidenceClass",
+  "conditionSequence",
+  "firstPassGateSuccess",
+  "scope",
 ] as const;
 
 function assertStringArray(value: unknown, label: string): asserts value is string[] {
@@ -148,7 +184,7 @@ function assertRecord(value: unknown, index: number): asserts value is AgentBenc
   for (const key of ["taskId", "runId", "agent"] as const) {
     if (typeof record[key] !== "string" || record[key].length === 0) throw new Error(`benchmark record ${index}.${key} must be a non-empty string`);
   }
-  for (const key of ["pairId", "conditionIdentity", "repositoryRevision", "model", "promptIntent", "agentConfiguration"] as const) {
+  for (const key of ["pairId", "conditionIdentity", "repositoryRevision", "model", "promptIntent", "agentConfiguration", "acceptanceReviewerId"] as const) {
     if (record[key] !== undefined && (typeof record[key] !== "string" || record[key].length === 0)) {
       throw new Error(`benchmark record ${index}.${key} must be a non-empty string when provided`);
     }
@@ -184,10 +220,54 @@ function assertRecord(value: unknown, index: number): asserts value is AgentBenc
       if (!Number.isInteger(scope[key]) || (scope[key] as number) < 0) throw new Error(`benchmark record ${index}.scope.${key} must be a non-negative integer`);
     }
     if (typeof scope.catchAllTarget !== "boolean") throw new Error(`benchmark record ${index}.scope.catchAllTarget must be boolean`);
+    if (scope.authorityBreadth !== undefined && !["finite", "open_create_namespace", "repository_wide"].includes(scope.authorityBreadth as string)) {
+      throw new Error(`benchmark record ${index}.scope.authorityBreadth is invalid`);
+    }
     const unauthorized = record.unauthorizedPathsChanged;
     if (typeof unauthorized === "number" && unauthorized > (scope.actualChangedPaths as number)) {
       throw new Error(`benchmark record ${index}.unauthorizedPathsChanged cannot exceed actualChangedPaths`);
     }
+    if (typeof unauthorized === "number" && (scope.actualChangedPaths as number) - unauthorized > (scope.approvedWritablePaths as number)) {
+      throw new Error(`benchmark record ${index} authorized changed paths cannot exceed approved writable paths`);
+    }
+  }
+  if (record.scopeReceipt !== undefined && record.scopeReceipt !== null) {
+    if (typeof record.scopeReceipt !== "object") throw new Error(`benchmark record ${index}.scopeReceipt must be an object or null`);
+    const receipt = record.scopeReceipt as Record<string, unknown>;
+    const method = receipt.method as Record<string, unknown> | undefined;
+    const counts = receipt.counts as Record<string, unknown> | undefined;
+    if (receipt.schemaVersion !== "0.1" || method?.unit !== "repository_path" || method.version !== "concrete-paths-v1") {
+      throw new Error(`benchmark record ${index}.scopeReceipt uses an unsupported measurement method`);
+    }
+    if (!["finite", "open_create_namespace", "repository_wide"].includes(receipt.authorityBreadth as string)) {
+      throw new Error(`benchmark record ${index}.scopeReceipt.authorityBreadth is invalid`);
+    }
+    for (const key of ["approvedWritablePaths", "actualChangedPaths", "authorizedChangedPaths", "unauthorizedPathsChanged"] as const) {
+      if (!Number.isInteger(counts?.[key]) || (counts![key] as number) < 0) {
+        throw new Error(`benchmark record ${index}.scopeReceipt.counts.${key} must be a non-negative integer`);
+      }
+    }
+    if ((counts!.unauthorizedPathsChanged as number) > (counts!.actualChangedPaths as number)
+      || (counts!.authorizedChangedPaths as number) !== (counts!.actualChangedPaths as number) - (counts!.unauthorizedPathsChanged as number)
+      || (counts!.authorizedChangedPaths as number) > (counts!.approvedWritablePaths as number)) {
+      throw new Error(`benchmark record ${index}.scopeReceipt contains inconsistent path counts`);
+    }
+    if (record.scope) {
+      const legacyScope = record.scope as unknown as BenchmarkScopeMeasurement;
+      const scopeBreadth = legacyScope.authorityBreadth ?? (legacyScope.catchAllTarget ? "repository_wide" : "finite");
+      if (legacyScope.approvedWritablePaths !== counts!.approvedWritablePaths
+        || legacyScope.actualChangedPaths !== counts!.actualChangedPaths
+        || scopeBreadth !== receipt.authorityBreadth
+        || (typeof record.unauthorizedPathsChanged === "number" && record.unauthorizedPathsChanged !== counts!.unauthorizedPathsChanged)) {
+        throw new Error(`benchmark record ${index} scope and scopeReceipt disagree`);
+      }
+    }
+  }
+  if (record.timeLimitSeconds !== undefined && (!(record.timeLimitSeconds as number > 0))) {
+    throw new Error(`benchmark record ${index}.timeLimitSeconds must be positive`);
+  }
+  if (record.conditionSequence !== undefined && record.conditionSequence !== 1 && record.conditionSequence !== 2) {
+    throw new Error(`benchmark record ${index}.conditionSequence must be 1 or 2`);
   }
 }
 
@@ -201,21 +281,25 @@ function knownNumbers(records: AgentBenchmarkRecord[], key: typeof OPTIONAL_NUMB
 
 function summarizeScope(records: AgentBenchmarkRecord[]): BenchmarkScopeSummary {
   const available = records.flatMap((record) => record.scope ? [{ record, scope: record.scope }] : []);
-  const eligible = available.filter(({ record, scope }) => !scope.catchAllTarget
+  const breadth = (scope: BenchmarkScopeMeasurement): AuthorityBreadth => scope.authorityBreadth ?? (scope.catchAllTarget ? "repository_wide" : "finite");
+  const eligible = available.filter(({ record, scope }) => breadth(scope) === "finite"
     && scope.approvedWritablePaths > 0
     && typeof record.unauthorizedPathsChanged === "number");
   const precisions = eligible.map(({ record, scope }) => {
     const authorizedChangedPaths = Math.max(0, scope.actualChangedPaths - (record.unauthorizedPathsChanged ?? 0));
-    return Math.min(authorizedChangedPaths, scope.approvedWritablePaths) / scope.approvedWritablePaths;
+    return authorizedChangedPaths / scope.approvedWritablePaths;
   });
-  const catchAllRuns = available.filter(({ scope }) => scope.catchAllTarget).length;
+  const catchAllRuns = available.filter(({ scope }) => breadth(scope) === "repository_wide").length;
+  const openCreateRuns = available.filter(({ scope }) => breadth(scope) === "open_create_namespace").length;
   return {
     eligibleRuns: eligible.length,
     catchAllRuns,
-    missingRuns: records.length - eligible.length - catchAllRuns,
+    openCreateRuns,
+    missingRuns: records.length - eligible.length - catchAllRuns - openCreateRuns,
     averagePrecision: mean(precisions),
     assessment: catchAllRuns > 0
-      ? "not_interpretable_catch_all"
+      ? "not_interpretable_repository_wide"
+      : openCreateRuns > 0 ? "not_interpretable_open_create"
       : precisions.length > 0 ? "measured" : "insufficient_data",
   };
 }
@@ -294,8 +378,14 @@ export function summarizeAgentBenchmark(values: unknown[]): AgentBenchmarkSummar
       || left.scope.methodVersion !== right.scope.methodVersion
       || left.scope.approvedWritablePaths !== right.scope.approvedWritablePaths
       || left.scope.catchAllTarget !== right.scope.catchAllTarget
+      || (left.scope.authorityBreadth ?? (left.scope.catchAllTarget ? "repository_wide" : "finite"))
+        !== (right.scope.authorityBreadth ?? (right.scope.catchAllTarget ? "repository_wide" : "finite"))
     )) {
       throw new Error(`benchmark pair ${JSON.stringify(key)} must preserve the approved scope method and surface`);
+    }
+    if (left.conditionSequence !== undefined && right.conditionSequence !== undefined
+      && new Set([left.conditionSequence, right.conditionSequence]).size !== 2) {
+      throw new Error(`benchmark pair ${JSON.stringify(key)} must contain conditionSequence 1 and 2`);
     }
     pairs.push({ baseline: left, engineeringspec: right });
   }
@@ -306,7 +396,7 @@ export function summarizeAgentBenchmark(values: unknown[]): AgentBenchmarkSummar
   const baseline = summarizeCondition(baselineRecords);
   const engineeringspec = summarizeCondition(specRecords);
   const missingData: Record<string, number> = {};
-  for (const field of [...COMPARABILITY_FIELDS, ...OPTIONAL_NUMBER_FIELDS, "conditionIdentity", "evidenceClass", "firstPassGateSuccess", "scope"] as const) {
+  for (const field of [...COMPARABILITY_FIELDS, ...OPTIONAL_NUMBER_FIELDS, "pairId", "conditionIdentity", "evidenceClass", "firstPassGateSuccess", "conditionSequence", "scope"] as const) {
     missingData[field] = records.filter((record) => record[field] === undefined || record[field] === null).length;
   }
   const observedRuns = records.filter((record) => record.evidenceClass === "observed").length;
@@ -315,6 +405,11 @@ export function summarizeAgentBenchmark(values: unknown[]): AgentBenchmarkSummar
   const resultClass = observedRuns === records.length
     ? "observed"
     : exampleRuns === records.length ? "example" : "mixed_or_unclassified";
+  const complete = PUBLISHABLE_FIELDS.every((field) => records.every((record) => record[field] !== undefined && record[field] !== null))
+    && records.every((record) => record.scope?.authorityBreadth !== undefined);
+  const sequenceComplete = pairs.every((pair) => new Set([pair.baseline.conditionSequence, pair.engineeringspec.conditionSequence]).size === 2);
+  const evidenceQuality = complete && sequenceComplete ? "complete" : "incomplete";
+  const publishable = resultClass === "observed" && evidenceQuality === "complete";
   return {
     tasks: new Set(records.map((record) => record.taskId)).size,
     pairs: pairs.length,
@@ -340,6 +435,8 @@ export function summarizeAgentBenchmark(values: unknown[]): AgentBenchmarkSummar
     interpretation: {
       causalInferenceSupported: false,
       resultClass,
+      evidenceQuality,
+      publishable,
       note: resultClass === "observed"
         ? "Observed paired results are descriptive for this sample; they do not establish causality."
         : "Example, mixed, or unclassified inputs must not be presented as observed product impact.",

@@ -78,7 +78,7 @@ function evaluatePath(
   if (allowing.some((target) => target.changePolicy === "interface_only")) {
     warnings.push({
       code: Codes.gateInterfaceOnly,
-      severity: "warning",
+      severity: "info",
       message: `${filePath}: interface_only is path-scoped only; contents are not checked for interface-surface changes`,
       file: filePath,
       hint: "Use an API/schema/ABI diff adapter for true interface enforcement, or rename the policy intent in docs.",

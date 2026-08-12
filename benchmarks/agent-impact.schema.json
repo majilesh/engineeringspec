@@ -30,6 +30,9 @@
     "permissions": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true },
     "trustedChecks": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true },
     "agentConfiguration": { "type": "string", "minLength": 1 },
+    "timeLimitSeconds": { "type": "number", "exclusiveMinimum": 0 },
+    "acceptanceReviewerId": { "type": "string", "minLength": 1 },
+    "conditionSequence": { "enum": [1, 2] },
     "success": { "type": "boolean" },
     "scopeViolations": { "type": "number", "minimum": 0 },
     "reviewCorrections": { "type": "number", "minimum": 0 },
@@ -56,7 +59,39 @@
             "methodVersion": { "const": "concrete-paths-v1" },
             "approvedWritablePaths": { "type": "integer", "minimum": 0 },
             "actualChangedPaths": { "type": "integer", "minimum": 0 },
-            "catchAllTarget": { "type": "boolean" }
+            "catchAllTarget": { "type": "boolean" },
+            "authorityBreadth": { "enum": ["finite", "open_create_namespace", "repository_wide"] }
+          }
+        }
+      ]
+    },
+    "scopeReceipt": {
+      "oneOf": [
+        { "type": "null" },
+        {
+          "type": "object",
+          "required": ["schemaVersion", "method", "authorityBreadth", "counts"],
+          "properties": {
+            "schemaVersion": { "const": "0.1" },
+            "method": {
+              "type": "object",
+              "required": ["unit", "version"],
+              "properties": {
+                "unit": { "const": "repository_path" },
+                "version": { "const": "concrete-paths-v1" }
+              }
+            },
+            "authorityBreadth": { "enum": ["finite", "open_create_namespace", "repository_wide"] },
+            "counts": {
+              "type": "object",
+              "required": ["approvedWritablePaths", "actualChangedPaths", "authorizedChangedPaths", "unauthorizedPathsChanged"],
+              "properties": {
+                "approvedWritablePaths": { "type": "integer", "minimum": 0 },
+                "actualChangedPaths": { "type": "integer", "minimum": 0 },
+                "authorizedChangedPaths": { "type": "integer", "minimum": 0 },
+                "unauthorizedPathsChanged": { "type": "integer", "minimum": 0 }
+              }
+            }
           }
         }
       ]

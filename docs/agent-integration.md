@@ -88,6 +88,8 @@ Keep a contract `approved` while it authorizes its dependent implementation, the
 
 Use `catalogue` for deterministic cross-contract search and path impact. Use `architecture` only to import read-only component context for a proposal; neither output can authorize implementation or replace `select`/`check`.
 
+For a retained paired study, generate scope counts only from committed revisions with `measure <contract-id> --spec-dir <dir> --base <sha> --head <sha> --format json`. The receipt is unsigned measurement evidence, omits paths by default, never executes declared runners, and cannot grant authority or replace the final `check`. Use `benchmark --require-publishable` only as an evidence-completeness gate, never as a correctness or causality claim.
+
 ## Multi-agent workflow
 
 For consequential changes, pin every participant to the same spec revision and canonical digest:

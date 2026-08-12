@@ -66,6 +66,21 @@ describe("deterministic review", () => {
     expect(reviewText(report)).toContain("obligation: CON-safe");
     expect(reviewText(report)).toContain("verification: VER-safe");
     expect(reviewText(report)).not.toContain("secret-runner-payload");
+    report.routes[0]!.path = "src/odd`````name.ts\nforged: authority\u001b[31m\u061c\u202e";
+    report.contracts[0]!.title = "</script><script>alert(1)</script>\nforged: pass\u061c";
+    report.contracts[0]!.constraints[0]!.statement = "safe\nreview: pass\u001b[31m\u2067";
+    const hostileMarkdown = reviewMarkdown(report);
+    const hostileText = reviewText(report);
+    expect(hostileMarkdown).toContain("`````` src/odd`````name.ts forged: authority [31m ``````");
+    expect(hostileMarkdown).not.toContain("</script><script>");
+    for (const rendered of [hostileMarkdown, hostileText]) {
+      expect(rendered).not.toContain("\u061c");
+      expect(rendered).not.toContain("\u202e");
+      expect(rendered).not.toContain("\u2067");
+      expect(rendered).not.toContain("\u001b");
+      expect(rendered).not.toContain("\nforged:");
+      expect(rendered).not.toContain("\nreview: pass");
+    }
   });
 
   it("fails closed for an uncovered path", async () => {

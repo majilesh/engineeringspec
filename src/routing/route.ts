@@ -32,7 +32,7 @@ function evaluatePath(spec: EngineeringSpec, file: string, kind: ChangeKind): {
     deniedTargetIds: [...new Set([...denied, ...policyDenied].map((target) => target.id))],
     warnings: allowing.some((target) => target.changePolicy === "interface_only") ? [{
       code: Codes.gateInterfaceOnly,
-      severity: "warning",
+      severity: "info",
       file,
       message: `${file}: interface_only is path-scoped only; contents are not checked for interface-surface changes`,
     }] : [],

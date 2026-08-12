@@ -48,7 +48,7 @@ Target path patterns use a **restricted EngineeringSpec glob dialect** for autho
 
 Among non-forbidden matching targets, the reference gate uses **any-writable-allow** composition: if any matching writable policy permits the Git change kind, the path is allowed. Narrower writable policies such as `create` do not automatically intersect broader `modify` matches. Documents SHOULD avoid overlapping writable policies with incompatible intents.
 
-`interface_only` is a **path-writable label** meaning “intended for interface-surface edits.” Reference tooling MUST NOT treat it as AST/API/ABI enforcement unless a separate adapter (for example OpenAPI or schema diff) is declared and run outside the path gate. The reference gate permits path writes under `interface_only` and emits warning `ESG006`.
+`interface_only` is a **path-writable label** meaning “intended for interface-surface edits.” Reference tooling MUST NOT treat it as AST/API/ABI enforcement unless a separate adapter (for example OpenAPI or schema diff) is declared and run outside the path gate. The reference gate permits path writes under `interface_only` and emits informational diagnostic `ESG006`; strict mode MUST NOT fail solely for this documented limitation.
 
 Decisions record load-bearing choices and rationale. They are explanatory unless referenced by a contract, constraint, or verification obligation.
 
@@ -125,7 +125,7 @@ Comparing a repository diff to declared targets is **reference-tooling behavior*
 - Treats paths matching no target as errors (`ESG001`)
 - Applies **deny-overrides**: any matching `read_only` or `observe` target rejects the path (`ESG003`), even when a broader writable target also matches
 - Enforces `change_policy` against added/modified/deleted/renamed files (`ESG002`)
-- Treats `interface_only` as a path-writable label and emits `ESG006` (not interface/AST-aware; pair with a contract adapter for real surface checks)
+- Treats `interface_only` as a path-writable label and emits informational `ESG006` (not interface/AST-aware; pair with a separately trusted adapter for real surface checks)
 - May write a durable unsigned `gate-receipt.json` via `--receipt` (spec digest, SHAs, changed-set digest, result) without claiming attestation
 - Under `--strict`, MUST fail when the loaded contract has validation warnings (not only gate-produced warnings)
 - MUST NOT execute verification runners or mutate the repository

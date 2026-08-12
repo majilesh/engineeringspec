@@ -401,6 +401,16 @@ owners: [{team: test}]
       {taskId:"other",runId:"spec",condition:"engineeringspec",agent:"agent",success:true,scopeViolations:0,reviewCorrections:0,durationSeconds:1,inputTokens:1,outputTokens:1},
     ])).toThrow("requires exactly one run in each condition");
   });
+  it("fails benchmark publication enforcement for compatible incomplete evidence",async()=>{
+    const root=await mkdtemp(path.join(os.tmpdir(),"es-benchmark-cli-"));
+    const file=path.join(root,"records.json");
+    await writeFile(file,JSON.stringify([
+      {taskId:"task",runId:"base",condition:"baseline",agent:"agent",success:true,scopeViolations:0,reviewCorrections:0,durationSeconds:1,inputTokens:1,outputTokens:1},
+      {taskId:"task",runId:"spec",condition:"engineeringspec",agent:"agent",success:true,scopeViolations:0,reviewCorrections:0,durationSeconds:1,inputTokens:1,outputTokens:1},
+    ]));
+    expect(await invoke(["benchmark",file,"--quiet"])).toBe(0);
+    expect(await invoke(["benchmark",file,"--require-publishable","--quiet"])).toBe(1);
+  });
   it("diagnoses adoption and reports lifecycle status through read-only CLI commands",async()=>{
     // Keep this CLI wiring smoke self-contained: quality jobs intentionally use
     // shallow checkouts and do not guarantee a remote-tracking base ref.

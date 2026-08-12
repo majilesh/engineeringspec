@@ -54,11 +54,12 @@ describe("gate adversarial policy composition", () => {
     expect(gateDiff(doc, [{ path: "src/generated/a.ts", kind: "modified" }]).valid).toBe(true);
   });
 
-  it("interface_only remains path-writable and always warns ESG006", () => {
+  it("interface_only remains path-writable and emits informational ESG006", () => {
     const doc = spec([{ id: "TARGET-api", paths: ["src/api.ts"], changePolicy: "interface_only" }]);
     const report = gateDiff(doc, [{ path: "src/api.ts", kind: "modified" }]);
     expect(report.valid).toBe(true);
     expect(report.diagnostics.filter((d) => d.code === "ESG006")).toHaveLength(1);
+    expect(report.diagnostics.find((d) => d.code === "ESG006")?.severity).toBe("info");
   });
 
   it("require-status fails closed before path allow can matter", () => {

@@ -6,6 +6,7 @@ import { compareCodePoints } from "../normalizer/canonicalize.js";
 import { normalize } from "../normalizer/normalize.js";
 import { validateMarkdown } from "../validator/validateFile.js";
 import { workflowStatus, type WorkflowStatusReport } from "./status.js";
+import { displaySafe, markdownCode, markdownText } from "./render.js";
 
 export interface ReviewOptions {
   specDirectory: string;
@@ -124,7 +125,7 @@ export async function buildReview(options: ReviewOptions): Promise<ReviewReport>
 }
 
 function safe(value: string): string {
-  return value.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("|", "\\|").replaceAll("`", "\\`").replace(/[\r\n]+/gu, " ");
+  return markdownText(value);
 }
 
 export function reviewMarkdown(report: ReviewReport): string {
@@ -140,26 +141,26 @@ export function reviewMarkdown(report: ReviewReport): string {
     "",
     headline,
     "",
-    `- Authority: \`${report.authority}\` at \`${report.baseSha}\``,
-    `- Change classification: \`${safe(report.classification)}\``,
+    `- Authority: ${markdownCode(report.authority)} at ${markdownCode(report.baseSha)}`,
+    `- Change classification: ${markdownCode(report.classification)}`,
     `- Working state: ${report.workingState.changed} changed, ${report.workingState.selected} selected, ${report.workingState.violations} violation(s)`,
-    `- Declared coverage: \`${report.coverage.status}\``,
+    `- Declared coverage: ${markdownCode(report.coverage.status)}`,
     `- Next: **${report.next.stage}** — ${safe(report.next.message)}`,
     "",
     "### Changed paths",
     "",
     "| Path | Kind | Decision | Contract | Targets |",
     "| --- | --- | --- | --- | --- |",
-    ...report.routes.map((route) => `| \`${safe(route.path)}\` | ${route.kind} | ${route.decision} | ${safe(route.selected?.specId ?? "—")} | ${safe(route.selected?.targetIds.join(", ") ?? "—")} |`),
+    ...report.routes.map((route) => `| ${markdownCode(route.path)} | ${route.kind} | ${route.decision} | ${safe(route.selected?.specId ?? "—")} | ${safe(route.selected?.targetIds.join(", ") ?? "—")} |`),
   ];
   if (report.routes.length === 0) lines.push("| — | — | no changes | — | — |");
   for (const contract of report.contracts) {
-    lines.push("", `### ${safe(contract.id)} — ${safe(contract.title)}`, "", `Targets: ${contract.targetIds.map((id) => `\`${safe(id)}\``).join(", ") || "none"}`);
+    lines.push("", `### ${safe(contract.id)} — ${safe(contract.title)}`, "", `Targets: ${contract.targetIds.map(markdownCode).join(", ") || "none"}`);
     if (contract.constraints.length > 0) {
       lines.push("", "Obligations:", ...contract.constraints.map((item) => `- **${safe(item.id)}** (${safe(item.level)}): ${safe(item.statement)}`));
     }
     if (contract.verification.length > 0) {
-      lines.push("", `Verification identities: ${contract.verification.map((item) => `\`${safe(item.id)}\``).join(", ")}`);
+      lines.push("", `Verification identities: ${contract.verification.map((item) => markdownCode(item.id)).join(", ")}`);
     }
   }
   if (report.diagnostics.length > 0) {
@@ -180,17 +181,17 @@ export function reviewText(report: ReviewReport): string {
   return [
     `review: ${report.valid ? "pass" : "fail"}`,
     `decision: ${decision}`,
-    `authority: base ${report.baseSha}`,
+    `authority: base ${displaySafe(report.baseSha)}`,
     `working state: ${report.workingState.changed} changed, ${report.workingState.selected} selected, ${report.workingState.violations} violations`,
-    `classification: ${report.classification}`,
-    `coverage: ${report.coverage.status}`,
-    ...report.routes.map((route) => `${route.decision === "selected" ? "✓" : "x"} ${route.path} (${route.kind}): ${route.selected?.specId ?? route.decision}`),
+    `classification: ${displaySafe(report.classification)}`,
+    `coverage: ${displaySafe(report.coverage.status)}`,
+    ...report.routes.map((route) => `${route.decision === "selected" ? "✓" : "x"} ${displaySafe(route.path)} (${displaySafe(route.kind)}): ${displaySafe(route.selected?.specId ?? route.decision)}`),
     ...report.contracts.flatMap((contract) => [
-      `contract: ${contract.id} (${contract.status}); targets: ${contract.targetIds.join(", ") || "none"}`,
-      ...contract.constraints.map((item) => `obligation: ${item.id} (${item.level}) ${item.statement}`),
-      ...contract.verification.map((item) => `verification: ${item.id} (${item.kind}) proves ${item.proves.join(", ")}`),
+      `contract: ${displaySafe(contract.id)} (${displaySafe(contract.status)}); targets: ${contract.targetIds.map(displaySafe).join(", ") || "none"}`,
+      ...contract.constraints.map((item) => `obligation: ${displaySafe(item.id)} (${displaySafe(item.level)}) ${displaySafe(item.statement)}`),
+      ...contract.verification.map((item) => `verification: ${displaySafe(item.id)} (${displaySafe(item.kind)}) proves ${item.proves.map(displaySafe).join(", ")}`),
     ]),
-    ...report.diagnostics.map((item) => `${item.severity}: ${item.code} ${item.file ? `${item.file}: ` : ""}${item.message}`),
-    `next: ${report.next.stage} — ${report.next.message}`,
+    ...report.diagnostics.map((item) => `${displaySafe(item.severity)}: ${displaySafe(item.code)} ${item.file ? `${displaySafe(item.file)}: ` : ""}${displaySafe(item.message)}`),
+    `next: ${displaySafe(report.next.stage)} — ${displaySafe(report.next.message)}`,
   ].join("\n");
 }

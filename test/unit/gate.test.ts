@@ -161,11 +161,11 @@ describe("gateDiff", () => {
     expect(report.violations.some((item) => item.file === "src/cli/a.ts")).toBe(true);
   });
 
-  it("warns that interface_only is path-scoped only", () => {
+  it("reports interface_only as an informational path-scoped limitation", () => {
     const iface = spec([{ id: "TARGET-api", paths: ["src/api.ts"], changePolicy: "interface_only" }]);
     const report = gateDiff(iface, [{ path: "src/api.ts", kind: "modified" }]);
     expect(report.valid).toBe(true);
-    expect(report.diagnostics.some((item) => item.code === "ESG006")).toBe(true);
+    expect(report.diagnostics).toContainEqual(expect.objectContaining({ code: "ESG006", severity: "info" }));
   });
 
   it("enforces --require-status", () => {

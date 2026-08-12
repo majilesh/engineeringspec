@@ -36,3 +36,7 @@ Repositories using the portable governance lane should enable `gate-allow-contra
 ## Private repositories
 
 Keep specs beside the code when their content is sensitive. The reference CLI reads the local checkout and Git objects; it does not send files to EngineeringSpec services. Apply normal repository access controls, secret scanning, dependency policy, and Action pinning. Do not place credentials or secret values in specs, diagnostics, runner metadata, or evidence links.
+
+## Evidence maintenance
+
+Pin measurement to immutable base and head revisions and retain opaque participant, reviewer, task, and run identities. Treat `measure` receipts as unsigned observations, not approvals or proof of verification. Review any use of `--include-paths` for repository privacy. Do not publish a benchmark unless `--require-publishable` passes, and still disclose sample size, authority breadth, missing or uninterpretable metrics, negative outcomes, and the absence of causal inference.
