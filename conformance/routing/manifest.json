@@ -55,7 +55,7 @@
       { "id": "ES-deny", "status": "approved", "targets": [{ "id": "TARGET-deny", "path": "src/secret.ts", "policy": "read_only" }] }
     ],
     "changed": [{ "path": "src/secret.ts", "kind": "modified" }],
-    "expected": { "decisions": ["denied"], "codes": ["ESRT004"], "changedDigest": "sha256:41e391618374a36e6aaa15efcde6722759035d201cb001583ceb1ab1b51ccd5a" }
+    "expected": { "decisions": ["denied"], "codes": ["ESRT004"], "changedDigest": "sha256:41e391618374a36e6aaa15efcde6722759035d201cb001583ceb1ab1b51ccd5a", "allows": [["ES-allow"]], "denies": [["ES-deny"]] }
   },
   {
     "name": "interface-only-is-writable-with-informational-diagnostic",

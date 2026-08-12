@@ -1,19 +1,13 @@
-import { isEngineeringSpecFilename } from "../discovery/discover.js";
-import type { Diagnostic } from "../diagnostics/Diagnostic.js";
 import { assertSafeRepoPath, collectGitDiff, collectGitStagedDiff, collectGitWorktreeDiff } from "../gate/collectDiff.js";
-import { listGitTreePaths, readGitBlob, resolveCommitSha, resolveGitRelativeDirectory } from "../gate/loadSpec.js";
+import { resolveCommitSha } from "../gate/loadSpec.js";
 import type { ChangedFile } from "../gate/types.js";
 import type { Status } from "../model/types.js";
-import { digest } from "../normalizer/digest.js";
-import { normalize } from "../normalizer/normalize.js";
 import { compareCodePoints } from "../normalizer/canonicalize.js";
 import { coverage, type CoverageLevel } from "../query/coverage.js";
-import { validateMarkdown } from "../validator/validateFile.js";
 import { digestRoutedChanges, routeChanges } from "./route.js";
-import type { LoadedRoutingCandidate, RoutingReport } from "./types.js";
+import type { RoutingReport } from "./types.js";
 import { classifyGovernanceChanges, inspectWorkspaceGovernance } from "./governance.js";
-
-const MAX_ROUTING_CANDIDATES = 10_000;
+import { loadRoutingCandidates } from "./loadCandidates.js";
 
 export interface SelectSpecsOptions {
   directory: string;
@@ -34,25 +28,9 @@ export async function selectSpecs(options: SelectSpecsOptions): Promise<RoutingR
   const requiredStatuses = [...new Set<Status>(configuredStatuses)].sort(compareCodePoints);
   const baseSha = await resolveCommitSha(options.base, options.cwd);
   const headSha = await resolveCommitSha(head, options.cwd);
-  const directory = await resolveGitRelativeDirectory(options.directory, options.cwd);
-  const paths = (await listGitTreePaths(baseSha, directory, options.cwd)).filter(isEngineeringSpecFilename);
-  if (paths.length > MAX_ROUTING_CANDIDATES) throw new Error(`Routing candidate limit exceeded (${paths.length} > ${MAX_ROUTING_CANDIDATES})`);
-  const candidates: LoadedRoutingCandidate[] = [];
-  const loadDiagnostics: Diagnostic[] = [];
-  for (const candidatePath of paths) {
-    const label = `${baseSha}:${candidatePath}`;
-    const validation = await validateMarkdown(await readGitBlob(baseSha, candidatePath, options.cwd), label, { resolveProfiles: false });
-    loadDiagnostics.push(...validation.diagnostics);
-    const failed = !validation.spec
-      || validation.diagnostics.some((item) => item.severity === "error")
-      || Boolean(options.strict && validation.diagnostics.some((item) => item.severity === "warning"));
-    if (!failed && validation.spec) {
-      const spec = normalize(validation.spec);
-      candidates.push({ path: candidatePath, digest: digest(spec), spec });
-    }
-  }
-  const loadFailed = loadDiagnostics.some((item) => item.severity === "error")
-    || Boolean(options.strict && loadDiagnostics.some((item) => item.severity === "warning"));
+  const loaded = await loadRoutingCandidates({ baseSha, directory: options.directory, ...(options.strict === undefined ? {} : { strict: options.strict }), ...(options.cwd ? { cwd: options.cwd } : {}) });
+  const { directory, candidates, diagnostics: loadDiagnostics } = loaded;
+  const loadFailed = !loaded.valid;
   const collected = options.changed
     ?? (options.staged
       ? await collectGitStagedDiff({ base: baseSha, head: headSha, ...(options.cwd ? { cwd: options.cwd } : {}) })

@@ -1,3 +1,7 @@
+import { createHash } from "node:crypto";
+import type { ScopeMeasurementReceipt } from "../measurement/measure.js";
+import { compareCodePoints } from "../normalizer/canonicalize.js";
+
 export type BenchmarkCondition = "baseline" | "engineeringspec";
 export type BenchmarkEvidenceClass = "observed" | "example";
 export type AuthorityBreadth = "finite" | "open_create_namespace" | "repository_wide";
@@ -23,6 +27,8 @@ export interface EmbeddedScopeReceipt {
   };
 }
 
+export type EmbeddedScopeReceiptV2 = ScopeMeasurementReceipt;
+
 export interface AgentBenchmarkRecord {
   taskId: string;
   runId: string;
@@ -31,12 +37,19 @@ export interface AgentBenchmarkRecord {
   conditionIdentity?: string;
   evidenceClass?: BenchmarkEvidenceClass;
   repositoryRevision?: string;
+  headRevision?: string;
   agent: string;
+  agentVersion?: string;
   model?: string;
   promptIntent?: string;
+  taskPromptDigest?: string;
   permissions?: string[];
   trustedChecks?: string[];
   agentConfiguration?: string;
+  harnessVersion?: string;
+  engineeringSpecVersion?: string;
+  startedAt?: string;
+  reviewBlinded?: boolean;
   timeLimitSeconds?: number;
   acceptanceReviewerId?: string;
   conditionSequence?: 1 | 2;
@@ -55,7 +68,7 @@ export interface AgentBenchmarkRecord {
   unauthorizedPathsChanged?: number | null;
   unauthorizedPathsMerged?: number | null;
   scope?: BenchmarkScopeMeasurement | null;
-  scopeReceipt?: EmbeddedScopeReceipt | null;
+  scopeReceipt?: EmbeddedScopeReceipt | EmbeddedScopeReceiptV2 | null;
 }
 
 export interface BenchmarkScopeSummary {
@@ -64,7 +77,7 @@ export interface BenchmarkScopeSummary {
   openCreateRuns: number;
   missingRuns: number;
   averagePrecision: number | null;
-  assessment: "measured" | "not_interpretable_open_create" | "not_interpretable_repository_wide" | "insufficient_data";
+  assessment: "measured" | "not_interpretable_open_create" | "not_interpretable_repository_wide" | "not_interpretable_negative_outcome" | "insufficient_data";
 }
 
 export interface BenchmarkConditionSummary {
@@ -147,6 +160,10 @@ const COMPARABILITY_FIELDS = [
   "agentConfiguration",
   "timeLimitSeconds",
   "acceptanceReviewerId",
+  "taskPromptDigest",
+  "agentVersion",
+  "harnessVersion",
+  "engineeringSpecVersion",
 ] as const;
 
 const PUBLISHABLE_FIELDS = [
@@ -157,8 +174,19 @@ const PUBLISHABLE_FIELDS = [
   "evidenceClass",
   "conditionSequence",
   "firstPassGateSuccess",
-  "scope",
+  "headRevision",
+  "startedAt",
+  "reviewBlinded",
+  "scopeReceipt",
 ] as const;
+
+const SHA_PATTERN = /^[0-9a-f]{40}$/u;
+const DIGEST_PATTERN = /^sha256:[0-9a-f]{64}$/u;
+
+function canonicalPathDigest(paths: string[]): string {
+  const ordered = [...new Set(paths)].sort(compareCodePoints);
+  return `sha256:${createHash("sha256").update(JSON.stringify(ordered), "utf8").digest("hex")}`;
+}
 
 function assertStringArray(value: unknown, label: string): asserts value is string[] {
   if (!Array.isArray(value) || value.some((item) => typeof item !== "string" || item.length === 0)) {
@@ -178,17 +206,104 @@ function assertOptionalNumber(record: Record<string, unknown>, key: string, inde
   }
 }
 
+function assertExactKeys(value: Record<string, unknown>, allowed: string[], label: string): void {
+  const extras = Object.keys(value).filter((key) => !allowed.includes(key));
+  if (extras.length > 0) throw new Error(`${label} contains unsupported fields: ${extras.sort(compareCodePoints).join(", ")}`);
+}
+
+function assertV2Receipt(value: Record<string, unknown>, index: number): void {
+  const contract = value.contract as Record<string, unknown> | undefined;
+  const method = value.method as Record<string, unknown> | undefined;
+  const eligibility = value.metricEligibility as Record<string, unknown> | undefined;
+  const counts = value.counts as Record<string, unknown> | undefined;
+  const digests = value.digests as Record<string, unknown> | undefined;
+  assertExactKeys(value, ["schemaVersion", "authority", "authorization", "contract", "baseSha", "headSha", "candidateSetDigest", "routingDecisionDigest", "method", "authorityBreadth", "metricEligibility", "counts", "digests", "paths", "limitations"], `benchmark record ${index}.scopeReceipt`);
+  if (value.schemaVersion !== "0.2" || value.authority !== "base_pinned_repository_routing" || value.authorization !== "none"
+    || method?.unit !== "repository_path" || method.version !== "concrete-paths-v2") {
+    throw new Error(`benchmark record ${index}.scopeReceipt uses an unsupported v2 measurement method`);
+  }
+  if (!contract || typeof contract.id !== "string" || contract.id.length === 0 || !Number.isInteger(contract.revision)
+    || (contract.revision as number) < 1 || typeof contract.path !== "string" || contract.path.length === 0
+    || typeof contract.digest !== "string" || !DIGEST_PATTERN.test(contract.digest)) {
+    throw new Error(`benchmark record ${index}.scopeReceipt.contract is invalid`);
+  }
+  assertExactKeys(contract, ["id", "revision", "path", "digest"], `benchmark record ${index}.scopeReceipt.contract`);
+  assertExactKeys(method, ["unit", "version"], `benchmark record ${index}.scopeReceipt.method`);
+  for (const key of ["baseSha", "headSha"] as const) {
+    if (typeof value[key] !== "string" || !SHA_PATTERN.test(value[key])) throw new Error(`benchmark record ${index}.scopeReceipt.${key} is invalid`);
+  }
+  for (const key of ["candidateSetDigest", "routingDecisionDigest"] as const) {
+    if (typeof value[key] !== "string" || !DIGEST_PATTERN.test(value[key])) throw new Error(`benchmark record ${index}.scopeReceipt.${key} is invalid`);
+  }
+  if (!["finite", "open_create_namespace", "repository_wide"].includes(value.authorityBreadth as string)) {
+    throw new Error(`benchmark record ${index}.scopeReceipt.authorityBreadth is invalid`);
+  }
+  const keys = ["approvedWritablePaths", "actualChangedPaths", "selectedForRequestedContract", "selectedForOtherContracts", "denied", "ambiguous", "uncovered"] as const;
+  if (!counts || !digests) throw new Error(`benchmark record ${index}.scopeReceipt counts and digests are required`);
+  assertExactKeys(counts, [...keys], `benchmark record ${index}.scopeReceipt.counts`);
+  assertExactKeys(digests, [...keys], `benchmark record ${index}.scopeReceipt.digests`);
+  for (const key of keys) {
+    if (!Number.isInteger(counts?.[key]) || (counts![key] as number) < 0) throw new Error(`benchmark record ${index}.scopeReceipt.counts.${key} must be a non-negative integer`);
+    if (typeof digests?.[key] !== "string" || !DIGEST_PATTERN.test(digests[key] as string)) throw new Error(`benchmark record ${index}.scopeReceipt.digests.${key} is invalid`);
+  }
+  const partition = (counts!.selectedForRequestedContract as number) + (counts!.selectedForOtherContracts as number)
+    + (counts!.denied as number) + (counts!.ambiguous as number) + (counts!.uncovered as number);
+  if (partition !== counts!.actualChangedPaths) throw new Error(`benchmark record ${index}.scopeReceipt routing sets do not partition actualChangedPaths`);
+  const negative = (counts!.selectedForOtherContracts as number) + (counts!.denied as number)
+    + (counts!.ambiguous as number) + (counts!.uncovered as number);
+  const breadth = value.authorityBreadth as AuthorityBreadth;
+  const expectedReason = breadth !== "finite" ? breadth
+    : (counts!.approvedWritablePaths as number) === 0 ? "zero_denominator"
+      : negative > 0 ? "negative_routing_outcome" : "eligible";
+  if (!eligibility || eligibility.scopePrecision !== (expectedReason === "eligible") || eligibility.reason !== expectedReason) {
+    throw new Error(`benchmark record ${index}.scopeReceipt.metricEligibility disagrees with routing counts and breadth`);
+  }
+  assertExactKeys(eligibility, ["scopePrecision", "reason"], `benchmark record ${index}.scopeReceipt.metricEligibility`);
+  if (!Array.isArray(value.limitations) || value.limitations.length === 0 || value.limitations.some((item) => typeof item !== "string" || item.length === 0)) {
+    throw new Error(`benchmark record ${index}.scopeReceipt.limitations must contain non-empty strings`);
+  }
+  if (value.paths !== undefined) {
+    if (!value.paths || typeof value.paths !== "object") throw new Error(`benchmark record ${index}.scopeReceipt.paths is invalid`);
+    const paths = value.paths as Record<string, unknown>;
+    const pathKeys = ["approvedWritable", "actualChanged", "selectedForRequestedContract", "selectedForOtherContracts", "denied", "ambiguous", "uncovered"] as const;
+    const countKeys = ["approvedWritablePaths", "actualChangedPaths", "selectedForRequestedContract", "selectedForOtherContracts", "denied", "ambiguous", "uncovered"] as const;
+    assertExactKeys(paths, [...pathKeys], `benchmark record ${index}.scopeReceipt.paths`);
+    for (let position = 0; position < pathKeys.length; position += 1) {
+      const pathKey = pathKeys[position]!;
+      const countKey = countKeys[position]!;
+      assertStringArray(paths[pathKey], `benchmark record ${index}.scopeReceipt.paths.${pathKey}`);
+      if (JSON.stringify(paths[pathKey]) !== JSON.stringify([...(paths[pathKey] as string[])].sort(compareCodePoints))) {
+        throw new Error(`benchmark record ${index}.scopeReceipt.paths.${pathKey} must use canonical code-point order`);
+      }
+      if ((paths[pathKey] as string[]).length !== counts![countKey]
+        || canonicalPathDigest(paths[pathKey] as string[]) !== digests![countKey]) {
+        throw new Error(`benchmark record ${index}.scopeReceipt.paths.${pathKey} disagrees with count or digest`);
+      }
+    }
+    const actual = new Set(paths.actualChanged as string[]);
+    const classified = pathKeys.slice(2).flatMap((key) => paths[key] as string[]);
+    if (new Set(classified).size !== classified.length || classified.length !== actual.size
+      || classified.some((path) => !actual.has(path))) {
+      throw new Error(`benchmark record ${index}.scopeReceipt disclosed routing paths do not partition actualChanged`);
+    }
+  }
+}
+
 function assertRecord(value: unknown, index: number): asserts value is AgentBenchmarkRecord {
   if (!value || typeof value !== "object") throw new Error(`benchmark record ${index} must be an object`);
   const record = value as Record<string, unknown>;
   for (const key of ["taskId", "runId", "agent"] as const) {
     if (typeof record[key] !== "string" || record[key].length === 0) throw new Error(`benchmark record ${index}.${key} must be a non-empty string`);
   }
-  for (const key of ["pairId", "conditionIdentity", "repositoryRevision", "model", "promptIntent", "agentConfiguration", "acceptanceReviewerId"] as const) {
+  for (const key of ["pairId", "conditionIdentity", "repositoryRevision", "headRevision", "model", "promptIntent", "taskPromptDigest", "agentVersion", "agentConfiguration", "harnessVersion", "engineeringSpecVersion", "startedAt", "acceptanceReviewerId"] as const) {
     if (record[key] !== undefined && (typeof record[key] !== "string" || record[key].length === 0)) {
       throw new Error(`benchmark record ${index}.${key} must be a non-empty string when provided`);
     }
   }
+  if (record.startedAt !== undefined && (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/u.test(record.startedAt as string)
+    || Number.isNaN(Date.parse(record.startedAt as string)))) throw new Error(`benchmark record ${index}.startedAt must be an ISO-8601 timestamp`);
+  if (record.taskPromptDigest !== undefined && !DIGEST_PATTERN.test(record.taskPromptDigest as string)) throw new Error(`benchmark record ${index}.taskPromptDigest must be a SHA-256 digest`);
+  if (record.reviewBlinded !== undefined && typeof record.reviewBlinded !== "boolean") throw new Error(`benchmark record ${index}.reviewBlinded must be boolean`);
   if (record.condition !== "baseline" && record.condition !== "engineeringspec") {
     throw new Error(`benchmark record ${index}.condition must be baseline or engineeringspec`);
   }
@@ -234,6 +349,23 @@ function assertRecord(value: unknown, index: number): asserts value is AgentBenc
   if (record.scopeReceipt !== undefined && record.scopeReceipt !== null) {
     if (typeof record.scopeReceipt !== "object") throw new Error(`benchmark record ${index}.scopeReceipt must be an object or null`);
     const receipt = record.scopeReceipt as Record<string, unknown>;
+    if (receipt.schemaVersion === "0.2") {
+      assertV2Receipt(receipt, index);
+      const v2Receipt = receipt as unknown as ScopeMeasurementReceipt;
+      const counts = v2Receipt.counts;
+      if (record.repositoryRevision !== undefined && record.repositoryRevision !== v2Receipt.baseSha) throw new Error(`benchmark record ${index}.repositoryRevision must equal scopeReceipt.baseSha`);
+      if (record.headRevision !== undefined && record.headRevision !== v2Receipt.headSha) throw new Error(`benchmark record ${index}.headRevision must equal scopeReceipt.headSha`);
+      if (typeof record.unauthorizedPathsChanged === "number") {
+        const negative = counts.selectedForOtherContracts + counts.denied + counts.ambiguous + counts.uncovered;
+        if (record.unauthorizedPathsChanged !== negative) throw new Error(`benchmark record ${index}.unauthorizedPathsChanged disagrees with scopeReceipt`);
+      }
+      if (record.scope) {
+        const legacyScope = record.scope as unknown as BenchmarkScopeMeasurement;
+        const scopeBreadth = legacyScope.authorityBreadth ?? (legacyScope.catchAllTarget ? "repository_wide" : "finite");
+        if (legacyScope.approvedWritablePaths !== counts.approvedWritablePaths || legacyScope.actualChangedPaths !== counts.actualChangedPaths
+          || scopeBreadth !== v2Receipt.authorityBreadth) throw new Error(`benchmark record ${index} scope and scopeReceipt disagree`);
+      }
+    } else {
     const method = receipt.method as Record<string, unknown> | undefined;
     const counts = receipt.counts as Record<string, unknown> | undefined;
     if (receipt.schemaVersion !== "0.1" || method?.unit !== "repository_path" || method.version !== "concrete-paths-v1") {
@@ -262,6 +394,11 @@ function assertRecord(value: unknown, index: number): asserts value is AgentBenc
         throw new Error(`benchmark record ${index} scope and scopeReceipt disagree`);
       }
     }
+    }
+  }
+  if (typeof record.unauthorizedPathsChanged === "number" && typeof record.unauthorizedPathsMerged === "number"
+    && record.unauthorizedPathsMerged > record.unauthorizedPathsChanged) {
+    throw new Error(`benchmark record ${index}.unauthorizedPathsMerged cannot exceed unauthorizedPathsChanged`);
   }
   if (record.timeLimitSeconds !== undefined && (!(record.timeLimitSeconds as number > 0))) {
     throw new Error(`benchmark record ${index}.timeLimitSeconds must be positive`);
@@ -280,26 +417,40 @@ function knownNumbers(records: AgentBenchmarkRecord[], key: typeof OPTIONAL_NUMB
 }
 
 function summarizeScope(records: AgentBenchmarkRecord[]): BenchmarkScopeSummary {
+  const v2 = records.flatMap((record) => record.scopeReceipt?.schemaVersion === "0.2"
+    ? [{ record, receipt: record.scopeReceipt as ScopeMeasurementReceipt }]
+    : []);
   const available = records.flatMap((record) => record.scope ? [{ record, scope: record.scope }] : []);
   const breadth = (scope: BenchmarkScopeMeasurement): AuthorityBreadth => scope.authorityBreadth ?? (scope.catchAllTarget ? "repository_wide" : "finite");
-  const eligible = available.filter(({ record, scope }) => breadth(scope) === "finite"
+  const eligibleV2 = v2.filter(({ receipt }) => receipt.metricEligibility.scopePrecision);
+  const eligibleV1 = available.filter(({ record }) => record.scopeReceipt?.schemaVersion !== "0.2")
+    .filter(({ record, scope }) => breadth(scope) === "finite"
     && scope.approvedWritablePaths > 0
     && typeof record.unauthorizedPathsChanged === "number");
-  const precisions = eligible.map(({ record, scope }) => {
+  const precisions = [
+    ...eligibleV2.map(({ receipt }) => receipt.counts.selectedForRequestedContract / receipt.counts.approvedWritablePaths),
+    ...eligibleV1.map(({ record, scope }) => {
     const authorizedChangedPaths = Math.max(0, scope.actualChangedPaths - (record.unauthorizedPathsChanged ?? 0));
     return authorizedChangedPaths / scope.approvedWritablePaths;
-  });
-  const catchAllRuns = available.filter(({ scope }) => breadth(scope) === "repository_wide").length;
-  const openCreateRuns = available.filter(({ scope }) => breadth(scope) === "open_create_namespace").length;
+    }),
+  ];
+  const catchAllRuns = records.filter((record) => record.scopeReceipt?.schemaVersion === "0.2"
+    ? record.scopeReceipt.authorityBreadth === "repository_wide"
+    : record.scope ? breadth(record.scope) === "repository_wide" : false).length;
+  const openCreateRuns = records.filter((record) => record.scopeReceipt?.schemaVersion === "0.2"
+    ? record.scopeReceipt.authorityBreadth === "open_create_namespace"
+    : record.scope ? breadth(record.scope) === "open_create_namespace" : false).length;
+  const negativeRuns = v2.filter(({ receipt }) => receipt.metricEligibility.reason === "negative_routing_outcome").length;
   return {
-    eligibleRuns: eligible.length,
+    eligibleRuns: eligibleV2.length + eligibleV1.length,
     catchAllRuns,
     openCreateRuns,
-    missingRuns: records.length - eligible.length - catchAllRuns - openCreateRuns,
+    missingRuns: records.length - eligibleV2.length - eligibleV1.length - catchAllRuns - openCreateRuns,
     averagePrecision: mean(precisions),
     assessment: catchAllRuns > 0
       ? "not_interpretable_repository_wide"
       : openCreateRuns > 0 ? "not_interpretable_open_create"
+      : negativeRuns > 0 ? "not_interpretable_negative_outcome"
       : precisions.length > 0 ? "measured" : "insufficient_data",
   };
 }
@@ -383,6 +534,16 @@ export function summarizeAgentBenchmark(values: unknown[]): AgentBenchmarkSummar
     )) {
       throw new Error(`benchmark pair ${JSON.stringify(key)} must preserve the approved scope method and surface`);
     }
+    if (left.scopeReceipt?.schemaVersion === "0.2" && right.scopeReceipt?.schemaVersion === "0.2") {
+      const leftReceipt = left.scopeReceipt as ScopeMeasurementReceipt;
+      const rightReceipt = right.scopeReceipt as ScopeMeasurementReceipt;
+      if (leftReceipt.contract.id !== rightReceipt.contract.id || leftReceipt.contract.revision !== rightReceipt.contract.revision
+        || leftReceipt.contract.path !== rightReceipt.contract.path || leftReceipt.contract.digest !== rightReceipt.contract.digest
+        || leftReceipt.baseSha !== rightReceipt.baseSha || leftReceipt.candidateSetDigest !== rightReceipt.candidateSetDigest) {
+        throw new Error(`benchmark pair ${JSON.stringify(key)} must preserve requested contract, candidate set, and base revision`);
+      }
+      if (leftReceipt.headSha === rightReceipt.headSha) throw new Error(`benchmark pair ${JSON.stringify(key)} must retain distinct condition heads`);
+    }
     if (left.conditionSequence !== undefined && right.conditionSequence !== undefined
       && new Set([left.conditionSequence, right.conditionSequence]).size !== 2) {
       throw new Error(`benchmark pair ${JSON.stringify(key)} must contain conditionSequence 1 and 2`);
@@ -396,7 +557,7 @@ export function summarizeAgentBenchmark(values: unknown[]): AgentBenchmarkSummar
   const baseline = summarizeCondition(baselineRecords);
   const engineeringspec = summarizeCondition(specRecords);
   const missingData: Record<string, number> = {};
-  for (const field of [...COMPARABILITY_FIELDS, ...OPTIONAL_NUMBER_FIELDS, "pairId", "conditionIdentity", "evidenceClass", "firstPassGateSuccess", "conditionSequence", "scope"] as const) {
+  for (const field of [...COMPARABILITY_FIELDS, ...OPTIONAL_NUMBER_FIELDS, "pairId", "conditionIdentity", "evidenceClass", "firstPassGateSuccess", "conditionSequence", "headRevision", "startedAt", "reviewBlinded", "scope", "scopeReceipt"] as const) {
     missingData[field] = records.filter((record) => record[field] === undefined || record[field] === null).length;
   }
   const observedRuns = records.filter((record) => record.evidenceClass === "observed").length;
@@ -406,10 +567,11 @@ export function summarizeAgentBenchmark(values: unknown[]): AgentBenchmarkSummar
     ? "observed"
     : exampleRuns === records.length ? "example" : "mixed_or_unclassified";
   const complete = PUBLISHABLE_FIELDS.every((field) => records.every((record) => record[field] !== undefined && record[field] !== null))
-    && records.every((record) => record.scope?.authorityBreadth !== undefined);
+    && records.every((record) => record.scopeReceipt?.schemaVersion === "0.2" || record.scope?.authorityBreadth !== undefined);
   const sequenceComplete = pairs.every((pair) => new Set([pair.baseline.conditionSequence, pair.engineeringspec.conditionSequence]).size === 2);
   const evidenceQuality = complete && sequenceComplete ? "complete" : "incomplete";
-  const publishable = resultClass === "observed" && evidenceQuality === "complete";
+  const v2Complete = records.every((record) => record.scopeReceipt?.schemaVersion === "0.2");
+  const publishable = resultClass === "observed" && evidenceQuality === "complete" && v2Complete;
   return {
     tasks: new Set(records.map((record) => record.taskId)).size,
     pairs: pairs.length,

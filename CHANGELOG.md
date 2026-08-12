@@ -4,6 +4,22 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+### Added
+
+- Repository-routing-derived `concrete-paths-v2` receipts with canonical candidate-set, routing-decision, and path-set digests
+- Complete v2 provenance and paired reproducibility metadata for task stimulus, agent, harness, evaluator, immutable condition heads, timestamps, and review blinding
+
+### Changed
+
+- `measure` now projects one requested contract from the same complete approved-candidate routing decision used by enforcement
+- Finite authority measures authority granted, including unexercised exact create paths and absent modify/interface paths, while respecting cross-contract denial and ambiguity
+- Publishable v2 evidence retains denied, ambiguous, uncovered, and other-contract outcomes; affected single-contract precision is explicitly unavailable instead of excluding the run
+
+### Security
+
+- Candidate loading is shared, base-pinned, bounded at 10,000 documents, strict-validation aware, and runner-inert
+- V1 receipts and sparse historical records remain readable but cannot qualify as RC12 publishable quantitative scope evidence
+
 ## [0.1.0-rc.11] - 2026-08-12
 
 ### Added

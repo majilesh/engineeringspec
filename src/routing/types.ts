@@ -29,6 +29,8 @@ export interface PathRoute {
   kind: ChangeKind;
   decision: "selected" | "uncovered" | "ambiguous" | "denied";
   selected?: RoutingClaim;
+  allows: RoutingClaim[];
+  denies: RoutingClaim[];
   claims: RoutingClaim[];
 }
 

@@ -35,7 +35,7 @@ npx --yes @engineeringspec/cli@0.1.0-rc.11 adopt . \
 | `context` | Return bounded agent context for one path without runner commands |
 | `explain` | Explain why a path and change kind are allowed or denied |
 | `review` | Explain complete-state routing, obligations, coverage, and verifier identities from the approved base |
-| `measure` | Generate an unsigned scope receipt from one exact approved base contract and committed base/head revisions |
+| `measure` | Generate an unsigned v2 scope receipt by projecting one requested contract from repository-wide approved-base routing |
 | `benchmark` | Summarize retained paired agent runs, missing observations, scope precision, and evidence limitations |
 
 Examples:
@@ -70,5 +70,5 @@ For directory routing, `--allow-contract-only` is opt-in. It accepts only a non-
 - Architecture and catalogue output never grants authority.
 - `transition --write` changes only the frontmatter status after validating before and after; it performs no Git operation.
 - JSON intended for agents omits verifier command payloads.
-- `measure` reads only immutable Git objects, discloses no individual paths unless `--include-paths` is explicit, and emits unsigned evidence that cannot authorize a change or replace `select`, `check`, `review`, trusted checks, or CI.
-- `benchmark` preserves negative, slower, amended, open-authority, and incomplete runs; `--require-publishable` rejects incomplete, example, mixed, or inconsistent evidence without claiming causality.
+- `measure` loads every approved candidate from the immutable base, routes the committed diff once, and records requested, other-contract, denied, ambiguous, and uncovered outcomes. It discloses no individual paths unless `--include-paths` is explicit and cannot authorize a change or replace `select`, `check`, `review`, trusted checks, or CI.
+- `benchmark` preserves negative, slower, amended, open-authority, and incomplete runs. `--require-publishable` requires deterministic v2 provenance for scope claims; a negative outcome can pass publication policy while its precision remains null.
