@@ -1,4 +1,4 @@
-export const CURRENT_ACTION_SHA = "a23486e3bf4e4b175c06390406c2fd401a0f2515";
+export const CURRENT_ACTION_SHA = "04d5bbd801db39cd14cbf26ca33b6990c8445574";
 
 export interface IntegrationVersions {
   cliVersions: string[];

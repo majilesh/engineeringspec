@@ -11,7 +11,7 @@ Install or invoke the pinned CLI, create `docs/engineering-specs/`, and follow t
 Preview the complete safe scaffold:
 
 ```sh
-npx --yes @engineeringspec/cli@0.1.0-rc.11 adopt . --quickstart \
+npx --yes @engineeringspec/cli@0.1.0-rc.12 adopt . --quickstart \
   --maintainer @your-org/platform --dry-run
 ```
 
@@ -22,7 +22,7 @@ This creates a **draft** first contract, CODEOWNERS, neutral agent handoffs, and
 Preview neutral agent and GitHub Actions integration without overwriting existing files:
 
 ```sh
-npx --yes @engineeringspec/cli@0.1.0-rc.11 adopt . \
+npx --yes @engineeringspec/cli@0.1.0-rc.12 adopt . \
   --spec docs/engineering-specs/ES-first-change.engineering-spec.md \
   --merge --dry-run
 ```
@@ -30,7 +30,7 @@ npx --yes @engineeringspec/cli@0.1.0-rc.11 adopt . \
 Review the preview, rerun without `--dry-run`, and diagnose the installation:
 
 ```sh
-npx --yes @engineeringspec/cli@0.1.0-rc.11 doctor . \
+npx --yes @engineeringspec/cli@0.1.0-rc.12 doctor . \
   --spec-dir docs/engineering-specs --base origin/main --strict
 ```
 
@@ -44,31 +44,31 @@ Follow [Production gate](production-gate.md). Protect the EngineeringSpec job as
 
 ```sh
 # Understand the current lifecycle and routing state
-npx --yes @engineeringspec/cli@0.1.0-rc.11 status \
+npx --yes @engineeringspec/cli@0.1.0-rc.12 status \
   --spec-dir docs/engineering-specs --base origin/main --allow-contract-only --strict
 
 # Load only the obligations relevant to an expected path
-npx --yes @engineeringspec/cli@0.1.0-rc.11 context <approved-spec> \
+npx --yes @engineeringspec/cli@0.1.0-rc.12 context <approved-spec> \
   --path src/example.ts --base origin/main --format markdown
 
 # Before editing, load the complete approved pre-code brief from the trusted base
-npx --yes @engineeringspec/cli@0.1.0-rc.11 prepare ES-change \
+npx --yes @engineeringspec/cli@0.1.0-rc.12 prepare ES-change \
   --spec-dir docs/engineering-specs --base origin/main --strict --format markdown
 
 # Check the complete working state before review
-npx --yes @engineeringspec/cli@0.1.0-rc.11 check \
+npx --yes @engineeringspec/cli@0.1.0-rc.12 check \
   --spec-dir docs/engineering-specs --base origin/main --allow-contract-only --strict
 
 # Produce the same deterministic explanation for humans or a CI job summary
-npx --yes @engineeringspec/cli@0.1.0-rc.11 review \
+npx --yes @engineeringspec/cli@0.1.0-rc.12 review \
   --spec-dir docs/engineering-specs --base origin/main --strict --format markdown
 
 # Search lifecycle, ownership, obligations and path impact
-npx --yes @engineeringspec/cli@0.1.0-rc.11 catalogue docs/engineering-specs \
+npx --yes @engineeringspec/cli@0.1.0-rc.12 catalogue docs/engineering-specs \
   --path src/example.ts
 
 # Preview a closure without editing; add --write only after review
-npx --yes @engineeringspec/cli@0.1.0-rc.11 transition \
+npx --yes @engineeringspec/cli@0.1.0-rc.12 transition \
   docs/engineering-specs/ES-change.engineering-spec.md --to implemented
 ```
 

@@ -1,7 +1,7 @@
 {
   "valid": true,
   "directory": "docs/engineering-specs",
-  "documents": 19,
+  "documents": 21,
   "entries": [
     {
       "id": "ES-agent-ready-adoption",
@@ -2832,6 +2832,250 @@
       ]
     },
     {
+      "id": "ES-rc12-routing-evidence-release",
+      "title": "Publish the routing-derived evidence RC12 release",
+      "status": "implemented",
+      "file": "ES-rc12-routing-evidence-release.engineering-spec.md",
+      "owners": [
+        "EngineeringSpec maintainers"
+      ],
+      "sourceRefs": [
+        {
+          "id": "SRC-1",
+          "type": "document",
+          "locator": "04d5bbd801db39cd14cbf26ca33b6990c8445574",
+          "title": "Reviewed routing-derived evidence implementation merge"
+        },
+        {
+          "id": "SRC-2",
+          "type": "document",
+          "locator": "e37f32e32ef3765df06e0ba21c1bd0968b32e34a",
+          "title": "Reviewed routing-derived evidence lifecycle closure"
+        },
+        {
+          "id": "SRC-3",
+          "type": "document",
+          "locator": "docs/engineering-specs/ES-routing-derived-evidence-v2.engineering-spec.md",
+          "title": "Implemented routing-derived evidence contract"
+        },
+        {
+          "id": "SRC-4",
+          "type": "document",
+          "locator": "rfcs/0009-routing-derived-evidence-v2.md",
+          "title": "Routing-derived evidence v2 RFC"
+        },
+        {
+          "id": "SRC-5",
+          "type": "document",
+          "locator": "docs/engineering-specs/ES-rc11-evidence-integrity-release.engineering-spec.md",
+          "title": "Previous immutable release process"
+        }
+      ],
+      "targets": [
+        {
+          "id": "TARGET-version",
+          "component": "package-release",
+          "paths": [
+            "package.json",
+            "package-lock.json"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-pins",
+          "component": "immutable-adoption-identities",
+          "paths": [
+            "src/adoption/releases.ts",
+            "src/cli/adopt.ts",
+            "test/unit/version.test.ts",
+            "test/unit/doctor.test.ts",
+            "test/integration/cli.test.ts",
+            "skills/engineering-spec/**",
+            "AGENTS.md",
+            "CLAUDE.md",
+            ".cursor/rules/**",
+            "integrations/**"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-documentation",
+          "component": "released-routing-evidence-guidance",
+          "paths": [
+            "README.md",
+            "CHANGELOG.md",
+            "maintainer-only roadmap",
+            "docs/agent-integration.md",
+            "docs/cli-reference.md",
+            "maintainer-only adoption notes",
+            "docs/first-change-tutorial.md",
+            "docs/getting-started.md",
+            "docs/integrations.md",
+            "docs/lifecycle.md",
+            "docs/maintaining-specs.md",
+            "docs/production-gate.md",
+            "docs/troubleshooting.md",
+            "docs/upgrading.md",
+            "maintainer-only launch notes/**"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-site",
+          "component": "deterministic-release-site",
+          "paths": [
+            "site/**",
+            "scripts/generate-site.mjs"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-release-contract",
+          "component": "release-lifecycle",
+          "paths": [
+            "docs/engineering-specs/ES-rc12-routing-evidence-release.engineering-spec.md"
+          ],
+          "changePolicy": "modify"
+        }
+      ],
+      "constraints": [
+        {
+          "id": "CON-1",
+          "level": "must",
+          "statement": "package.json and root package-lock metadata must declare version 0.1.0-rc.12 and the compiled CLI must report the same version.",
+          "appliesTo": [
+            "TARGET-version"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-2",
+          "level": "must",
+          "statement": "Generated and documented production Action examples must pin the full reviewed routing-derived evidence implementation merge SHA 04d5bbd801db39cd14cbf26ca33b6990c8445574.",
+          "appliesTo": [
+            "TARGET-pins",
+            "TARGET-documentation"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-3",
+          "level": "must",
+          "statement": "Current generated agent guidance, packaged skill commands, current documentation, integrations, and public site examples must use exact CLI version 0.1.0-rc.12 without rewriting historical release contracts, changelog entries, retained v1 receipts, benchmark records, pilot observations, or case-study history.",
+          "appliesTo": [
+            "TARGET-pins",
+            "TARGET-documentation",
+            "TARGET-site"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-4",
+          "level": "must",
+          "statement": "Release verification must cover shared strict base-candidate loading and the 10000-candidate boundary; duplicate-ID failure; canonical candidate-set, routing-decision, and path-set digests; requested and other-contract selection; denial, ambiguity, and uncovered outcomes; rename expansion; finite literal and delete-only wildcard authority; open and repository-wide authority; dirty-worktree exclusion; receipt privacy and schema validation; v1 compatibility; negative-outcome publishability with null precision; complete path partitioning; immutable revision and pair comparability; and existing change-control behavior.",
+          "appliesTo": [
+            "TARGET-version",
+            "TARGET-pins",
+            "TARGET-documentation",
+            "TARGET-site"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-5",
+          "level": "must",
+          "statement": "Static site generation and package inspection must remain deterministic; the package must contain the concrete-paths-v2 measurement runtime and declarations, shared routing-candidate loader, scope-measurement schemas 0.1 and 0.2, benchmark schema and pilot guidance, integrations, and current skill without telemetry, hosted runtime, runner execution, or external evidence claims.",
+          "appliesTo": [
+            "TARGET-version",
+            "TARGET-site"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-6",
+          "level": "must_not",
+          "statement": "Release preparation must not change format 0.1, schemas, concrete-paths-v1 or v2 semantics, measurement or benchmark policy, target change-policy meanings, routing or governance decisions, diagnostics, runner inertness, architecture authority isolation, Action enforcement, retained pilot inputs or observations, or the tag-driven trusted-publishing boundary.",
+          "appliesTo": [
+            "TARGET-version",
+            "TARGET-pins",
+            "TARGET-documentation",
+            "TARGET-site"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-7",
+          "level": "must",
+          "statement": "Release notes must describe v2 receipts as unsigned non-authoritative repository-routing observations, distinguish sample publishability from numeric metric eligibility, retain negative outcomes, disclose that v1 and manual scope evidence are non-publishable under the RC12 policy, and avoid claims of measured productivity, correctness, causality, adoption, star growth, autonomous approval, inferred authority, or external-pilot success.",
+          "appliesTo": [
+            "TARGET-documentation"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-8",
+          "level": "must",
+          "statement": "Publication must remain gated by a version-matching v0.1.0-rc.12 tag created from the reviewed release merge after repository, conformance, package, site, documentation, demo, clean-install CLI, v2 measure, publishable and negative benchmark, and consumer Action smoke checks pass.",
+          "appliesTo": [
+            "TARGET-version",
+            "TARGET-documentation",
+            "TARGET-site"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-9",
+          "level": "must",
+          "statement": "The RC12 release contract must transition from approved to implemented only in the reviewed release implementation and without widening authority.",
+          "appliesTo": [
+            "TARGET-release-contract"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-10",
+          "level": "must",
+          "statement": "The public pilot must remain at zero retained external observations throughout release preparation. After verified publication, product functionality must freeze for the predeclared ten-task paired pilot, with only security, correctness, evidence-integrity, and pilot-blocking documentation fixes permitted until retained evidence informs the next roadmap.",
+          "appliesTo": [
+            "TARGET-release-contract",
+            "TARGET-documentation"
+          ],
+          "enforcement": "review"
+        }
+      ],
+      "contracts": [],
+      "verification": [
+        {
+          "id": "VER-1",
+          "kind": "test",
+          "proves": [
+            "CON-1",
+            "CON-2",
+            "CON-3",
+            "CON-4",
+            "CON-5"
+          ]
+        },
+        {
+          "id": "VER-2",
+          "kind": "test",
+          "proves": [
+            "CON-6"
+          ]
+        },
+        {
+          "id": "VER-3",
+          "kind": "human_review",
+          "proves": [
+            "CON-7",
+            "CON-8",
+            "CON-9",
+            "CON-10"
+          ]
+        }
+      ]
+    },
+    {
       "id": "ES-rc3-release",
       "title": "Publish the agent-first RC3 release",
       "status": "proposed",
@@ -4446,6 +4690,341 @@
             "CON-7",
             "CON-8",
             "CON-9"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ES-routing-derived-evidence-v2",
+      "title": "Derive pilot evidence from repository routing",
+      "status": "implemented",
+      "file": "ES-routing-derived-evidence-v2.engineering-spec.md",
+      "owners": [
+        "EngineeringSpec maintainers"
+      ],
+      "sourceRefs": [
+        {
+          "id": "SRC-1",
+          "type": "document",
+          "locator": "rfcs/0008-evidence-integrity-before-pilot.md",
+          "title": "RC11 evidence-integrity design"
+        },
+        {
+          "id": "SRC-2",
+          "type": "document",
+          "locator": "7795dd1d-e786-4117-a60b-1c9cc82399b4",
+          "title": "Independent RC11 measurement review"
+        },
+        {
+          "id": "SRC-3",
+          "type": "document",
+          "locator": "4b13bd43-c691-4661-82e3-9c2d6961197b",
+          "title": "RC12 plan and pilot-methodology review"
+        },
+        {
+          "id": "SRC-4",
+          "type": "document",
+          "locator": "docs/engineering-specs/ES-evidence-integrity-before-pilot.engineering-spec.md",
+          "title": "Implemented RC11 evidence-integrity contract"
+        },
+        {
+          "id": "SRC-5",
+          "type": "document",
+          "locator": "maintainer-only pilot protocol",
+          "title": "Current paired-pilot protocol"
+        }
+      ],
+      "targets": [
+        {
+          "id": "TARGET-rfc",
+          "component": "routing-derived-evidence-design",
+          "paths": [
+            "rfcs/0009-routing-derived-evidence-v2.md"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-routing",
+          "component": "shared-immutable-authorization-decision",
+          "paths": [
+            "src/routing/**",
+            "test/unit/routing.test.ts",
+            "test/integration/routing.test.ts",
+            "test/conformance/routing.test.ts",
+            "conformance/routing/**"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-measurement",
+          "component": "concrete-paths-v2-receipts",
+          "paths": [
+            "src/measurement/**",
+            "src/cli/measure.ts",
+            "src/cli/program.ts",
+            "src/index.ts",
+            "schemas/scope-measurement-0.2.schema.json",
+            "test/unit/measure.test.ts",
+            "test/integration/measure.test.ts",
+            "test/integration/cli.test.ts"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-benchmark",
+          "component": "publishable-evidence-and-reproducibility",
+          "paths": [
+            "src/cli/benchmark.ts",
+            "benchmarks/**",
+            "test/unit/benchmark.test.ts",
+            "test/integration/cli.test.ts"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-documentation",
+          "component": "pilot-method-and-evidence-boundaries",
+          "paths": [
+            "README.md",
+            "CHANGELOG.md",
+            "maintainer-only roadmap",
+            "docs/cli-reference.md",
+            "docs/agent-integration.md",
+            "docs/maintaining-specs.md",
+            "maintainer-only pilot notes",
+            "maintainer-only launch notes/**"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-contract",
+          "component": "evidence-v2-lifecycle",
+          "paths": [
+            "docs/engineering-specs/ES-routing-derived-evidence-v2.engineering-spec.md"
+          ],
+          "changePolicy": "modify"
+        }
+      ],
+      "constraints": [
+        {
+          "id": "CON-1",
+          "level": "must",
+          "statement": "The RFC must formally define concrete-paths-v2, candidate-set and routing-decision canonical inputs, requested-contract projection, pilot condition semantics, compatibility, privacy, failure handling, and the feature freeze before dependent implementation begins.",
+          "appliesTo": [
+            "TARGET-rfc"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-2",
+          "level": "must",
+          "statement": "Measurement must resolve immutable base and head SHAs, load all approved base-tree candidates through the same bounded validation path as select and check, and derive selected, denied, ambiguous, uncovered, and duplicate-ID outcomes from one repository-wide routing decision rather than independently gating the requested contract.",
+          "appliesTo": [
+            "TARGET-routing",
+            "TARGET-measurement"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-3",
+          "level": "must",
+          "statement": "The requested contract ID must act only as a projection over repository routing; only paths uniquely selected for that exact contract count as selectedForRequestedContract, while paths selected for other contracts, denied, ambiguous, or uncovered remain retained and cannot be presented as requested-contract authorization.",
+          "appliesTo": [
+            "TARGET-measurement"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-4",
+          "level": "must",
+          "statement": "The receipt must include deterministic canonical candidate-set and routing-decision digests. Candidate tuples must bind spec path, ID, revision, status, and normalized spec digest; routing tuples must bind expanded path, change kind, decision, selected identity when present, and canonically ordered allowing and denying claims.",
+          "appliesTo": [
+            "TARGET-routing",
+            "TARGET-measurement"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-5",
+          "level": "must",
+          "statement": "Path-set digests must hash deterministic UTF-8 canonical JSON arrays of unique normalized repository-relative paths ordered by code point; individual paths remain omitted unless explicit disclosure is requested.",
+          "appliesTo": [
+            "TARGET-measurement"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-6",
+          "level": "must",
+          "statement": "The shared approved-candidate loader and measurement command must enforce a 10000-candidate ceiling, fail closed on invalid base candidates according to strict mode, preserve duplicate-ID diagnostics, use bounded Git output and argument arrays, exclude dirty workspace state, and never execute or expose declared runners.",
+          "appliesTo": [
+            "TARGET-routing",
+            "TARGET-measurement"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-7",
+          "level": "must",
+          "statement": "concrete-paths-v2 must calculate finite literal authority from authority granted rather than paths exercised. For a non-denied literal path, create includes only absent paths; delete includes only existing paths; modify and interface_only include existing and absent paths; read_only and observe include none. Wildcard create-capable authority remains open_create_namespace and repository-wide authority remains repository_wide, with numeric precision unavailable for both.",
+          "appliesTo": [
+            "TARGET-measurement",
+            "TARGET-rfc"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-8",
+          "level": "must",
+          "statement": "Effective finite authority must respect repository-wide denial and ambiguity. Tests must cover exact create sets with partial exercise, existing create-only paths, absent modify and interface_only paths, delete-only paths, rename destinations, cross-contract deny, cross-contract ambiguity, paths selected for another contract, duplicate IDs, uncovered paths, and empty committed diffs.",
+          "appliesTo": [
+            "TARGET-routing",
+            "TARGET-measurement"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-9",
+          "level": "must",
+          "statement": "concrete-paths-v1 receipts and sparse legacy benchmark records must remain readable and retain their historical interpretation, but must never be silently reinterpreted as v2 or qualify as publishable scope evidence under the RC12 policy.",
+          "appliesTo": [
+            "TARGET-measurement",
+            "TARGET-benchmark",
+            "TARGET-documentation"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-10",
+          "level": "must",
+          "statement": "The benchmark must embed or reference the complete privacy-safe v2 receipt provenance including requested contract identity, revision and digest; base and head SHAs; candidate-set and routing-decision digests; method and authority breadth; counts, limitations, and digests for approved writable, actual, requested-contract-selected, other-contract-selected, denied, ambiguous, and uncovered path sets.",
+          "appliesTo": [
+            "TARGET-measurement",
+            "TARGET-benchmark"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-11",
+          "level": "must",
+          "statement": "benchmark --require-publishable must require deterministic concrete-paths-v2 receipts for every retained record making a scope claim and validate receipt and legacy-field agreement. Manual and v1 scope evidence remains summarizable but non-publishable. Complete negative outcomes containing paths selected for another contract, denied, ambiguous, or uncovered must remain publishable as retained outcomes when otherwise valid, but single-intended-contract scope precision for those records must be null and explicitly ineligible rather than numeric.",
+          "appliesTo": [
+            "TARGET-benchmark"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-12",
+          "level": "must",
+          "statement": "Benchmark records must support a common-task prompt digest, agent version, harness version, EngineeringSpec version, condition head revision, start timestamp, and review-blinding status. Complete pairs must preserve the common task digest, base revision, model and applicable harness inputs while retaining distinct condition heads; private prompt text is not required for public records.",
+          "appliesTo": [
+            "TARGET-benchmark",
+            "TARGET-documentation"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-13",
+          "level": "must",
+          "statement": "The benchmark must reject unauthorizedPathsMerged greater than unauthorizedPathsChanged and enforce that requested-contract-selected, other-contract-selected, denied, ambiguous, and uncovered unique expanded path sets partition the actual changed set under the finalized counting convention.",
+          "appliesTo": [
+            "TARGET-benchmark",
+            "TARGET-measurement"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-14",
+          "level": "must",
+          "statement": "The pilot protocol must use the same approved contract and base revision as the post-hoc scope rubric for both conditions. The baseline agent must not receive prepare or context and must not be constrained by EngineeringSpec during implementation; the EngineeringSpec condition receives the approved workflow. Both committed heads are evaluated afterward against the same rubric.",
+          "appliesTo": [
+            "TARGET-benchmark",
+            "TARGET-documentation"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-15",
+          "level": "must",
+          "statement": "Acceptance review should be blinded to condition where practical and must record reviewBlinded truthfully. The pilot must preserve failures, slower runs, amendments, anomalies, onboarding friction, consent, timestamps, immutable commits, and negative or inconclusive results.",
+          "appliesTo": [
+            "TARGET-benchmark",
+            "TARGET-documentation"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-16",
+          "level": "must_not",
+          "statement": "This increment must not change format 0.1, concrete-paths-v1 semantics, target change-policy meanings, enforcement decisions, runner inertness, approved-base authority, Action behavior, retained pilot observations, or historical records; and must not add MCP, inference, dashboards, plugins, IDE extensions, hosted services, architecture-derived authority, autonomous approval, trusted execution, or multi-contract precision claims.",
+          "appliesTo": [
+            "TARGET-rfc",
+            "TARGET-routing",
+            "TARGET-measurement",
+            "TARGET-benchmark",
+            "TARGET-documentation"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-17",
+          "level": "must",
+          "statement": "After this focused correction is released, product functionality must freeze for the predeclared ten-task paired pilot. Post-pilot priorities must be selected from observed adoption friction rather than a fixed feature order, and quantitative scope claims must remain unpublished until deterministic v2 evidence passes the publication policy.",
+          "appliesTo": [
+            "TARGET-documentation"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-18",
+          "level": "must",
+          "statement": "The implementation must add RFC-mandated unit, integration, adversarial, schema, and conformance fixtures; run all trusted repository checks; preserve the public zero-observation status until counted records exist; and transition this contract from approved to implemented only after maintainer and evidence review.",
+          "appliesTo": [
+            "TARGET-routing",
+            "TARGET-measurement",
+            "TARGET-benchmark",
+            "TARGET-documentation",
+            "TARGET-contract"
+          ],
+          "enforcement": "review"
+        }
+      ],
+      "contracts": [],
+      "verification": [
+        {
+          "id": "VER-1",
+          "kind": "test",
+          "proves": [
+            "CON-2",
+            "CON-3",
+            "CON-4",
+            "CON-5",
+            "CON-6",
+            "CON-7",
+            "CON-8",
+            "CON-9",
+            "CON-10",
+            "CON-11",
+            "CON-12",
+            "CON-13"
+          ]
+        },
+        {
+          "id": "VER-2",
+          "kind": "test",
+          "proves": [
+            "CON-16"
+          ]
+        },
+        {
+          "id": "VER-3",
+          "kind": "human_review",
+          "proves": [
+            "CON-1",
+            "CON-14",
+            "CON-15",
+            "CON-17",
+            "CON-18"
           ]
         }
       ]

@@ -4,6 +4,8 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+## [0.1.0-rc.12] - 2026-08-12
+
 ### Added
 
 - Repository-routing-derived `concrete-paths-v2` receipts with canonical candidate-set, routing-decision, and path-set digests
@@ -19,6 +21,9 @@ All notable changes to this project are documented here.
 
 - Candidate loading is shared, base-pinned, bounded at 10,000 documents, strict-validation aware, and runner-inert
 - V1 receipts and sparse historical records remain readable but cannot qualify as RC12 publishable quantitative scope evidence
+- Scope receipts remain unsigned, non-authoritative observations: they grant no implementation authority and prove neither correctness nor trusted-check execution
+- Sample publishability is distinct from numeric metric eligibility; complete negative outcomes remain retained while affected precision is null
+- The external pilot remains at zero retained observations, so RC12 makes no productivity, correctness, causality, adoption, or external-impact claim
 
 ## [0.1.0-rc.11] - 2026-08-12
 
