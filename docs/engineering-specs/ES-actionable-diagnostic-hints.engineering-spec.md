@@ -4,7 +4,7 @@ spec_format_version: "0.1"
 spec_revision: 1
 id: ES-actionable-diagnostic-hints
 title: Surface accurate actionable diagnostic hints
-status: proposed
+status: approved
 owners:
   - team: EngineeringSpec maintainers
 repository:
