@@ -4,7 +4,7 @@ spec_format_version: "0.1"
 spec_revision: 1
 id: ES-evidence-integrity-before-pilot
 title: Harden evidence integrity before the external pilot
-status: draft
+status: approved
 owners:
   - team: EngineeringSpec maintainers
 repository:
