@@ -52,6 +52,8 @@ describe("multi-spec routing", () => {
       [{ path: "src/a.ts", kind: "modified" }],
     ).diagnostics[0]?.code).toBe(Codes.routingNoEligible);
     expect(routeChanges([candidate("ES-a", [writable("TARGET", "docs/**")])], [{ path: "src/a.ts", kind: "modified" }]).diagnostics[0]?.code).toBe(Codes.routingUncovered);
+    expect(routeChanges([candidate("ES-a", [writable("TARGET", "docs/**")])], [{ path: "src/a.ts", kind: "modified" }]).diagnostics[0]?.hint).toBe("Merge a contract-only target amendment before implementing this path.");
+    expect(routeChanges([candidate("ES-a", [writable("TARGET", "docs/**")])], [{ path: "specs/other.engineering-spec.md", kind: "modified" }]).diagnostics[0]?.hint).toContain("--allow-contract-only");
     expect(routeChanges([
       candidate("ES-duplicate", [writable("TARGET-a", "src/**")]),
       { ...candidate("ES-duplicate", [writable("TARGET-b", "lib/**")]), path: "specs/other.engineering-spec.md" },

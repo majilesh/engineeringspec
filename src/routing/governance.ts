@@ -111,6 +111,7 @@ export async function inspectWorkspaceGovernance(options: {
       severity: "error",
       file: change.path,
       message: `Governance path ${change.path} is not a validated workspace EngineeringSpec`,
+      hint: "Fix the specification's validation errors, or exclude this path from the contract-only change.",
     });
     errors += 1;
   }
