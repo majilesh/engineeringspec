@@ -12,7 +12,7 @@ interface Vector {
     targets: Array<{ id: string; path: string; policy: TargetSurface["changePolicy"] }>;
   }>;
   changed: Array<{ path: string; kind: "added" | "modified" | "deleted" | "renamed" }>;
-  expected: { decisions: string[]; codes: string[]; changedDigest: string };
+  expected: { decisions: string[]; codes: string[]; changedDigest: string; allows?: string[][]; denies?: string[][] };
 }
 
 function candidate(vector: Vector["candidates"][number]): LoadedRoutingCandidate {
@@ -37,6 +37,8 @@ describe("routing conformance", () => {
       expect(result.routes.map((item) => item.decision)).toEqual(vector.expected.decisions);
       expect(result.diagnostics.map((item) => item.code)).toEqual(vector.expected.codes);
       expect(result.changedDigest).toBe(vector.expected.changedDigest);
+      if (vector.expected.allows) expect(result.routes.map((route) => route.allows.map((claim) => claim.specId))).toEqual(vector.expected.allows);
+      if (vector.expected.denies) expect(result.routes.map((route) => route.denies.map((claim) => claim.specId))).toEqual(vector.expected.denies);
     });
   }
 });

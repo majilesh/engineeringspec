@@ -127,16 +127,16 @@ export function routeChanges(
     const sortedAllows = allows.sort((left, right) => compareCodePoints(left.specId, right.specId) || compareCodePoints(left.specPath, right.specPath));
     const sortedDenies = denies.sort((left, right) => compareCodePoints(left.specId, right.specId) || compareCodePoints(left.specPath, right.specPath));
     if (sortedDenies.length > 0) {
-      routes.push({ path: entry.path, kind: entry.kind, decision: "denied", claims: [...sortedDenies, ...sortedAllows] });
+      routes.push({ path: entry.path, kind: entry.kind, decision: "denied", allows: sortedAllows, denies: sortedDenies, claims: [...sortedDenies, ...sortedAllows] });
       diagnostics.push({ code: Codes.routingDenied, severity: "error", file: entry.path, message: `${entry.path} (${entry.kind}) is denied by ${sortedDenies.map((item) => item.specId).join(", ")}; deny overrides allow` });
     } else if (sortedAllows.length === 0) {
-      routes.push({ path: entry.path, kind: entry.kind, decision: "uncovered", claims: [] });
+      routes.push({ path: entry.path, kind: entry.kind, decision: "uncovered", allows: [], denies: [], claims: [] });
       diagnostics.push({ code: Codes.routingUncovered, severity: "error", file: entry.path, message: `${entry.path} (${entry.kind}) is not claimed by any eligible EngineeringSpec` });
     } else if (sortedAllows.length > 1) {
-      routes.push({ path: entry.path, kind: entry.kind, decision: "ambiguous", claims: sortedAllows });
+      routes.push({ path: entry.path, kind: entry.kind, decision: "ambiguous", allows: sortedAllows, denies: [], claims: sortedAllows });
       diagnostics.push({ code: Codes.routingAmbiguous, severity: "error", file: entry.path, message: `${entry.path} (${entry.kind}) is allowed by multiple EngineeringSpecs: ${sortedAllows.map((item) => item.specId).join(", ")}` });
     } else {
-      routes.push({ path: entry.path, kind: entry.kind, decision: "selected", selected: sortedAllows[0]!, claims: sortedAllows });
+      routes.push({ path: entry.path, kind: entry.kind, decision: "selected", selected: sortedAllows[0]!, allows: sortedAllows, denies: [], claims: sortedAllows });
       diagnostics.push(...warnings);
     }
   }

@@ -1,65 +1,199 @@
 import { createHash } from "node:crypto";
-import { isEngineeringSpecFilename } from "../discovery/discover.js";
-import { collectGitDiff } from "../gate/collectDiff.js";
-import { gateDiff } from "../gate/gate.js";
-import { listGitTreePaths, readGitBlob, resolveCommitSha, resolveGitRelativeDirectory } from "../gate/loadSpec.js";
+import { assertSafeRepoPath, collectGitDiff } from "../gate/collectDiff.js";
+import { listGitTreePaths, resolveCommitSha } from "../gate/loadSpec.js";
+import type { ChangeKind } from "../gate/types.js";
 import type { EngineeringSpec, TargetSurface } from "../model/types.js";
 import { compareCodePoints } from "../normalizer/canonicalize.js";
-import { digest } from "../normalizer/digest.js";
-import { normalize } from "../normalizer/normalize.js";
 import { matchTargetGlob } from "../path/targetGlob.js";
-import { applicableTargets } from "../query/applicability.js";
-import { validateMarkdown } from "../validator/validateFile.js";
+import { loadRoutingCandidates } from "../routing/loadCandidates.js";
+import { routeChanges } from "../routing/route.js";
+import type { LoadedRoutingCandidate, PathRoute, RoutingClaim } from "../routing/types.js";
 
 export type ScopeAuthorityBreadth = "finite" | "open_create_namespace" | "repository_wide";
+export type ScopeMetricEligibilityReason = "eligible" | "open_create_namespace" | "repository_wide" | "zero_denominator" | "negative_routing_outcome";
 
 export interface ScopeMeasurementReceipt {
-  schemaVersion: "0.1";
-  authority: "base_pinned_approved_contract";
+  schemaVersion: "0.2";
+  authority: "base_pinned_repository_routing";
   authorization: "none";
   contract: { id: string; revision: number; path: string; digest: string };
   baseSha: string;
   headSha: string;
-  method: { unit: "repository_path"; version: "concrete-paths-v1" };
+  candidateSetDigest: string;
+  routingDecisionDigest: string;
+  method: { unit: "repository_path"; version: "concrete-paths-v2" };
   authorityBreadth: ScopeAuthorityBreadth;
-  counts: {
-    approvedWritablePaths: number;
-    actualChangedPaths: number;
-    authorizedChangedPaths: number;
-    unauthorizedPathsChanged: number;
-  };
-  digests: { approvedWritablePaths: string; actualChangedPaths: string; authorizedChangedPaths: string; unauthorizedPathsChanged: string };
-  paths?: { approvedWritable: string[]; actualChanged: string[]; authorizedChanged: string[]; unauthorizedChanged: string[] };
+  metricEligibility: { scopePrecision: boolean; reason: ScopeMetricEligibilityReason };
+  counts: ScopePathCounts;
+  digests: ScopePathDigests;
+  paths?: ScopePaths;
   limitations: string[];
 }
 
+export interface ScopePathCounts {
+  approvedWritablePaths: number;
+  actualChangedPaths: number;
+  selectedForRequestedContract: number;
+  selectedForOtherContracts: number;
+  denied: number;
+  ambiguous: number;
+  uncovered: number;
+}
+
+export type ScopePathDigests = {
+  [Key in keyof ScopePathCounts]: string;
+};
+
+export interface ScopePaths {
+  approvedWritable: string[];
+  actualChanged: string[];
+  selectedForRequestedContract: string[];
+  selectedForOtherContracts: string[];
+  denied: string[];
+  ambiguous: string[];
+  uncovered: string[];
+}
+
 const WRITABLE = new Set<TargetSurface["changePolicy"]>(["modify", "create", "delete", "interface_only"]);
-const CAN_CREATE = new Set<TargetSurface["changePolicy"]>(["modify", "create", "interface_only"]);
+const CREATE_CAPABLE = new Set<TargetSurface["changePolicy"]>(["modify", "create", "interface_only"]);
+
+function canonicalDigest(value: unknown): string {
+  return `sha256:${createHash("sha256").update(JSON.stringify(value), "utf8").digest("hex")}`;
+}
+
+function ordered(values: Iterable<string>): string[] {
+  return [...new Set(values)].sort(compareCodePoints);
+}
 
 function setDigest(values: Iterable<string>): string {
-  const body = `${[...new Set(values)].sort(compareCodePoints).join("\n")}\n`;
-  return `sha256:${createHash("sha256").update(body, "utf8").digest("hex")}`;
+  return canonicalDigest(ordered(values));
 }
 
 function hasWildcard(pattern: string): boolean {
   return /[*?]/u.test(pattern);
 }
 
-function isWritablePath(spec: EngineeringSpec, file: string): boolean {
-  const targets = applicableTargets(spec, file);
-  return targets.some((target) => WRITABLE.has(target.changePolicy))
-    && !targets.some((target) => target.changePolicy === "read_only" || target.changePolicy === "observe");
+function candidateSetDigest(candidates: LoadedRoutingCandidate[]): string {
+  return canonicalDigest(candidates
+    .filter((candidate) => candidate.spec.metadata.status === "approved")
+    .map((candidate) => ({
+      path: candidate.path,
+      id: candidate.spec.metadata.id,
+      revision: candidate.spec.metadata.specRevision,
+      status: candidate.spec.metadata.status,
+      digest: candidate.digest,
+    }))
+    .sort((left, right) => compareCodePoints(left.path, right.path)
+      || compareCodePoints(left.id, right.id)
+      || left.revision - right.revision
+      || compareCodePoints(left.digest, right.digest)));
 }
 
-function breadth(spec: EngineeringSpec, basePaths: string[]): ScopeAuthorityBreadth {
+function orderedClaims(claims: RoutingClaim[]): RoutingClaim[] {
+  return claims.map((item) => ({ ...item, targetIds: ordered(item.targetIds) }))
+    .sort((left, right) => compareCodePoints(left.specId, right.specId) || compareCodePoints(left.specPath, right.specPath));
+}
+
+function routingDecisionDigest(routes: PathRoute[]): string {
+  return canonicalDigest([...routes]
+    .sort((left, right) => compareCodePoints(left.path, right.path) || compareCodePoints(left.kind, right.kind))
+    .map((route) => ({
+      path: route.path,
+      kind: route.kind,
+      decision: route.decision,
+      selected: route.selected ? { specId: route.selected.specId, specPath: route.selected.specPath } : null,
+      allows: orderedClaims(route.allows),
+      denies: orderedClaims(route.denies),
+    })));
+}
+
+function breadth(spec: EngineeringSpec): ScopeAuthorityBreadth {
   const writable = spec.targets.filter((target) => WRITABLE.has(target.changePolicy));
   if (writable.some((target) => target.paths.some((pattern) => pattern === "**" || pattern === "**/*"))) return "repository_wide";
-  if (basePaths.length > 0 && basePaths.every((file) => writable.some((target) => target.paths.some((pattern) => matchTargetGlob(file, pattern))))) {
-    return "repository_wide";
-  }
-  return writable.some((target) => CAN_CREATE.has(target.changePolicy) && target.paths.some(hasWildcard))
+  return writable.some((target) => CREATE_CAPABLE.has(target.changePolicy) && target.paths.some(hasWildcard))
     ? "open_create_namespace"
     : "finite";
+}
+
+function representativeKinds(policy: TargetSurface["changePolicy"], exists: boolean): ChangeKind[] {
+  if (policy === "create") return exists ? [] : ["added"];
+  if (policy === "modify" || policy === "interface_only") return [exists ? "modified" : "added"];
+  if (policy === "delete") return exists ? ["deleted"] : [];
+  return [];
+}
+
+function selectedFor(route: PathRoute | undefined, contractId: string): boolean {
+  return route?.decision === "selected" && route.selected?.specId === contractId;
+}
+
+function effectiveFiniteAuthority(
+  requested: LoadedRoutingCandidate,
+  candidates: LoadedRoutingCandidate[],
+  basePaths: string[],
+): Set<string> {
+  const base = new Set(basePaths);
+  const probes = new Map<string, Set<ChangeKind>>();
+  const addProbe = (path: string, kind: ChangeKind): void => {
+    const kinds = probes.get(path) ?? new Set<ChangeKind>();
+    kinds.add(kind);
+    probes.set(path, kinds);
+  };
+  for (const target of requested.spec.targets) {
+    if (!WRITABLE.has(target.changePolicy)) continue;
+    for (const pattern of target.paths) {
+      if (!hasWildcard(pattern)) {
+        for (const kind of representativeKinds(target.changePolicy, base.has(pattern))) addProbe(pattern, kind);
+      } else {
+        for (const path of basePaths) {
+          if (!matchTargetGlob(path, pattern)) continue;
+          for (const kind of representativeKinds(target.changePolicy, true)) addProbe(path, kind);
+        }
+      }
+    }
+  }
+  const approved = new Set<string>();
+  for (const [path, kinds] of probes) {
+    for (const kind of kinds) {
+      const result = routeChanges(candidates, [{ path, kind }], ["approved"]);
+      if (selectedFor(result.routes[0], requested.spec.metadata.id)) {
+        approved.add(path);
+        break;
+      }
+    }
+  }
+  return approved;
+}
+
+function classifyActual(routes: PathRoute[], requestedId: string): Omit<ScopePaths, "approvedWritable" | "actualChanged"> {
+  const classifications = new Map<string, keyof Omit<ScopePaths, "approvedWritable" | "actualChanged">>();
+  for (const route of routes) {
+    const classification = route.decision === "selected"
+      ? route.selected?.specId === requestedId ? "selectedForRequestedContract" : "selectedForOtherContracts"
+      : route.decision;
+    const previous = classifications.get(route.path);
+    if (previous && previous !== classification) {
+      throw new Error(`Expanded path ${JSON.stringify(route.path)} has conflicting routing outcomes and cannot be partitioned`);
+    }
+    classifications.set(route.path, classification);
+  }
+  const result = {
+    selectedForRequestedContract: [] as string[],
+    selectedForOtherContracts: [] as string[],
+    denied: [] as string[],
+    ambiguous: [] as string[],
+    uncovered: [] as string[],
+  };
+  for (const [path, classification] of classifications) result[classification].push(path);
+  for (const values of Object.values(result)) values.sort(compareCodePoints);
+  return result;
+}
+
+function metricEligibility(authorityBreadth: ScopeAuthorityBreadth, approved: number, negative: number): ScopeMeasurementReceipt["metricEligibility"] {
+  if (authorityBreadth === "open_create_namespace") return { scopePrecision: false, reason: "open_create_namespace" };
+  if (authorityBreadth === "repository_wide") return { scopePrecision: false, reason: "repository_wide" };
+  if (approved === 0) return { scopePrecision: false, reason: "zero_denominator" };
+  if (negative > 0) return { scopePrecision: false, reason: "negative_routing_outcome" };
+  return { scopePrecision: true, reason: "eligible" };
 }
 
 export async function measureScope(options: {
@@ -75,62 +209,72 @@ export async function measureScope(options: {
     resolveCommitSha(options.base, options.cwd),
     resolveCommitSha(options.head, options.cwd),
   ]);
-  const directory = await resolveGitRelativeDirectory(options.specDirectory, options.cwd);
-  const candidates = (await listGitTreePaths(baseSha, directory, options.cwd)).filter(isEngineeringSpecFilename);
-  const matches: Array<{ path: string; spec: EngineeringSpec }> = [];
-  for (const candidate of candidates) {
-    const validation = await validateMarkdown(await readGitBlob(baseSha, candidate, options.cwd), `${baseSha}:${candidate}`, { resolveProfiles: false });
-    const failed = !validation.spec || validation.diagnostics.some((item) => item.severity === "error")
-      || Boolean(options.strict && validation.diagnostics.some((item) => item.severity === "warning"));
-    if (failed) {
-      const detail = validation.diagnostics.map((item) => `${item.severity} ${item.code}: ${item.message}`).join("; ");
-      throw new Error(`Trusted base contract set failed validation at ${candidate}${detail ? `: ${detail}` : ""}`);
-    }
-    if (validation.spec!.metadata.id === options.contractId) matches.push({ path: candidate, spec: normalize(validation.spec!) });
+  const loaded = await loadRoutingCandidates({ baseSha, directory: options.specDirectory, ...(options.strict === undefined ? {} : { strict: options.strict }), ...(options.cwd ? { cwd: options.cwd } : {}) });
+  if (!loaded.valid) {
+    const detail = loaded.diagnostics.map((item) => `${item.severity} ${item.code}: ${item.message}`).join("; ");
+    throw new Error(`Trusted base contract set failed validation${detail ? `: ${detail}` : ""}`);
   }
-  if (matches.length !== 1) throw new Error(`Expected exactly one base-pinned contract ${JSON.stringify(options.contractId)}; found ${matches.length}`);
-  const match = matches[0]!;
-  if (match.spec.metadata.status !== "approved") throw new Error(`Contract ${options.contractId} is ${match.spec.metadata.status}, not approved`);
+  const duplicateCheck = routeChanges(loaded.candidates, [], ["approved"]);
+  const duplicate = duplicateCheck.diagnostics.find((item) => item.severity === "error");
+  if (duplicate) throw new Error(duplicate.message);
+  const matches = loaded.candidates.filter((candidate) => candidate.spec.metadata.status === "approved" && candidate.spec.metadata.id === options.contractId);
+  if (matches.length !== 1) throw new Error(`Expected exactly one approved base-pinned contract ${JSON.stringify(options.contractId)}; found ${matches.length}`);
+  const requested = matches[0]!;
 
   const [basePaths, changed] = await Promise.all([
     listGitTreePaths(baseSha, ".", options.cwd),
     collectGitDiff({ base: baseSha, head: headSha, ...(options.cwd ? { cwd: options.cwd } : {}) }),
   ]);
-  const report = gateDiff(match.spec, changed, { baseSha, headSha, specDigest: digest(match.spec), specSource: "base", requireStatus: ["approved"] });
-  const actual = new Set(changed.flatMap((item) => item.kind === "renamed" && item.fromPath ? [item.fromPath, item.path] : [item.path]));
-  const unauthorized = new Set(report.violations.map((item) => item.file));
-  const authorized = new Set([...actual].filter((file) => !unauthorized.has(file)));
-  const approved = new Set(basePaths.filter((file) => isWritablePath(match.spec, file)));
-  for (const item of changed) if (item.kind === "added" && authorized.has(item.path)) approved.add(item.path);
-  for (const item of changed) if (item.kind === "renamed" && authorized.has(item.path) && !basePaths.includes(item.path)) approved.add(item.path);
-  if (authorized.size > approved.size) throw new Error("Measured authorized changed paths exceed approved writable paths");
-  const authorityBreadth = breadth(match.spec, basePaths);
-  const ordered = (values: Set<string>): string[] => [...values].sort(compareCodePoints);
+  for (const change of changed) {
+    assertSafeRepoPath(change.path);
+    if (change.fromPath) assertSafeRepoPath(change.fromPath);
+  }
+  const routing = routeChanges(loaded.candidates, changed, ["approved"]);
+  const classified = classifyActual(routing.routes, requested.spec.metadata.id);
+  const actualChanged = ordered(routing.routes.map((route) => route.path));
+  const authorityBreadth = breadth(requested.spec);
+  const approvedWritable = ordered(effectiveFiniteAuthority(requested, loaded.candidates, basePaths));
+  const partitionSize = Object.values(classified).reduce((total, paths) => total + paths.length, 0);
+  if (partitionSize !== actualChanged.length) throw new Error("Routing outcomes do not partition the actual changed path set");
+  const negative = classified.selectedForOtherContracts.length + classified.denied.length + classified.ambiguous.length + classified.uncovered.length;
+  const eligibility = metricEligibility(authorityBreadth, approvedWritable.length, negative);
+  const pathSets: ScopePaths = { approvedWritable, actualChanged, ...classified };
+  const counts: ScopePathCounts = {
+    approvedWritablePaths: approvedWritable.length,
+    actualChangedPaths: actualChanged.length,
+    selectedForRequestedContract: classified.selectedForRequestedContract.length,
+    selectedForOtherContracts: classified.selectedForOtherContracts.length,
+    denied: classified.denied.length,
+    ambiguous: classified.ambiguous.length,
+    uncovered: classified.uncovered.length,
+  };
+  const digests = Object.fromEntries(Object.entries({
+    approvedWritablePaths: approvedWritable,
+    actualChangedPaths: actualChanged,
+    selectedForRequestedContract: classified.selectedForRequestedContract,
+    selectedForOtherContracts: classified.selectedForOtherContracts,
+    denied: classified.denied,
+    ambiguous: classified.ambiguous,
+    uncovered: classified.uncovered,
+  }).map(([key, paths]) => [key, setDigest(paths)])) as ScopePathDigests;
   return {
-    schemaVersion: "0.1",
-    authority: "base_pinned_approved_contract",
+    schemaVersion: "0.2",
+    authority: "base_pinned_repository_routing",
     authorization: "none",
-    contract: { id: match.spec.metadata.id, revision: match.spec.metadata.specRevision, path: match.path, digest: digest(match.spec) },
+    contract: { id: requested.spec.metadata.id, revision: requested.spec.metadata.specRevision, path: requested.path, digest: requested.digest },
     baseSha,
     headSha,
-    method: { unit: "repository_path", version: "concrete-paths-v1" },
+    candidateSetDigest: candidateSetDigest(loaded.candidates),
+    routingDecisionDigest: routingDecisionDigest(routing.routes),
+    method: { unit: "repository_path", version: "concrete-paths-v2" },
     authorityBreadth,
-    counts: {
-      approvedWritablePaths: approved.size,
-      actualChangedPaths: actual.size,
-      authorizedChangedPaths: authorized.size,
-      unauthorizedPathsChanged: unauthorized.size,
-    },
-    digests: {
-      approvedWritablePaths: setDigest(approved),
-      actualChangedPaths: setDigest(actual),
-      authorizedChangedPaths: setDigest(authorized),
-      unauthorizedPathsChanged: setDigest(unauthorized),
-    },
-    ...(options.includePaths ? { paths: { approvedWritable: ordered(approved), actualChanged: ordered(actual), authorizedChanged: ordered(authorized), unauthorizedChanged: ordered(unauthorized) } } : {}),
+    metricEligibility: eligibility,
+    counts,
+    digests,
+    ...(options.includePaths ? { paths: pathSets } : {}),
     limitations: [
-      "Unsigned measurement evidence; this receipt grants no authorization and does not prove trusted checks passed.",
-      ...(authorityBreadth === "finite" ? [] : ["Scope precision is not interpretable for open or repository-wide authority."]),
+      "Unsigned measurement evidence; this receipt grants no authorization and does not prove correctness or that trusted checks passed.",
+      ...(eligibility.scopePrecision ? [] : [`Single-intended-contract scope precision is unavailable: ${eligibility.reason}.`]),
     ],
   };
 }

@@ -4,6 +4,7 @@ import { parseGitPathListZ } from "../../src/gate/loadSpec.js";
 import { gateDiff } from "../../src/gate/gate.js";
 import type { EngineeringSpec, TargetSurface } from "../../src/model/types.js";
 import { routeChanges } from "../../src/routing/route.js";
+import { assertRoutingCandidateLimit } from "../../src/routing/loadCandidates.js";
 import type { LoadedRoutingCandidate } from "../../src/routing/types.js";
 
 function spec(id: string, status: EngineeringSpec["metadata"]["status"], targets: TargetSurface[]): EngineeringSpec {
@@ -23,6 +24,10 @@ function candidate(id: string, targets: TargetSurface[], status: EngineeringSpec
 const writable = (id: string, path: string): TargetSurface => ({ id, paths: [path], changePolicy: "modify" });
 
 describe("multi-spec routing", () => {
+  it("enforces the shared candidate ceiling at the exact boundary", () => {
+    expect(() => assertRoutingCandidateLimit(10_000)).not.toThrow();
+    expect(() => assertRoutingCandidateLimit(10_001)).toThrow("Routing candidate limit exceeded");
+  });
   it("selects the unique approved contract deterministically", () => {
     const result = routeChanges(
       [candidate("ES-z", [writable("TARGET-z", "z/**")]), candidate("ES-a", [writable("TARGET-a", "src/**")])],
@@ -60,6 +65,7 @@ describe("multi-spec routing", () => {
       candidate("ES-b", [writable("TARGET-b", "src/**")]),
     ], change);
     expect(ambiguous.routes[0]?.decision).toBe("ambiguous");
+    expect(ambiguous.routes[0]).toMatchObject({ allows: [{ specId: "ES-a" }, { specId: "ES-b" }], denies: [] });
     expect(ambiguous.diagnostics[0]?.code).toBe(Codes.routingAmbiguous);
 
     const denied = routeChanges([
@@ -67,6 +73,7 @@ describe("multi-spec routing", () => {
       candidate("ES-deny", [{ id: "TARGET-deny", paths: ["src/secret.ts"], changePolicy: "read_only" }]),
     ], change);
     expect(denied.routes[0]?.decision).toBe("denied");
+    expect(denied.routes[0]).toMatchObject({ allows: [{ specId: "ES-allow" }], denies: [{ specId: "ES-deny" }] });
     expect(denied.diagnostics[0]?.code).toBe(Codes.routingDenied);
   });
 

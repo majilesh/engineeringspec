@@ -753,7 +753,8 @@ export function createProgram(setCode: (code: number) => void): Command {
           `contract: ${report.contract.id} revision ${report.contract.revision}`,
           `base/head: ${report.baseSha} / ${report.headSha}`,
           `authority breadth: ${report.authorityBreadth}`,
-          `paths: approved ${report.counts.approvedWritablePaths}, actual ${report.counts.actualChangedPaths}, authorized ${report.counts.authorizedChangedPaths}, unauthorized ${report.counts.unauthorizedPathsChanged}`,
+          `paths: approved ${report.counts.approvedWritablePaths}, actual ${report.counts.actualChangedPaths}, requested ${report.counts.selectedForRequestedContract}, other ${report.counts.selectedForOtherContracts}, denied ${report.counts.denied}, ambiguous ${report.counts.ambiguous}, uncovered ${report.counts.uncovered}`,
+          `scope precision: ${report.metricEligibility.scopePrecision ? "eligible" : `unavailable (${report.metricEligibility.reason})`}`,
         ].join("\n");
         if (!global.quiet) output(global.format === "json" ? report : text, global.format);
         setCode(ExitCode.success);
