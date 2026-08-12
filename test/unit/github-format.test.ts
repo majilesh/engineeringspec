@@ -18,8 +18,8 @@ describe("GitHub reporting", () => {
   });
 
   it("appends a hint to the annotation message when a diagnostic carries one", () => {
-    const formatted = formatGitHubDiagnostic({ code: "ESRT002", severity: "error", message: "uncovered", hint: "try this" });
-    expect(formatted).toContain("uncovered (hint: try this)");
+    const formatted = formatGitHubDiagnostic({ code: "ESRT002", severity: "error", message: "uncovered", hint: "try 100%\nthen retry" });
+    expect(formatted).toContain("uncovered (hint: try 100%25%0Athen retry)");
   });
 
   it("formats warnings, notices, and a Markdown summary", () => {

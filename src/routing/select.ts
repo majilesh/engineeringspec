@@ -4,6 +4,8 @@ import type { ChangedFile } from "../gate/types.js";
 import type { Status } from "../model/types.js";
 import { compareCodePoints } from "../normalizer/canonicalize.js";
 import { coverage, type CoverageLevel } from "../query/coverage.js";
+import { Codes } from "../diagnostics/codes.js";
+import { isEngineeringSpecFilename } from "../discovery/discover.js";
 import { digestRoutedChanges, routeChanges } from "./route.js";
 import type { RoutingReport } from "./types.js";
 import { classifyGovernanceChanges, inspectWorkspaceGovernance } from "./governance.js";
@@ -45,8 +47,11 @@ export async function selectSpecs(options: SelectSpecsOptions): Promise<RoutingR
     .sort((left, right) => compareCodePoints(left.path, right.path)
       || compareCodePoints(left.kind, right.kind)
       || compareCodePoints(left.fromPath ?? "", right.fromPath ?? ""));
+  const contractOnlyClassification = directory === "."
+    ? changed.length === 0 ? "none" : "implementation"
+    : classifyGovernanceChanges(directory, changed);
   const classification = options.allowContractOnly
-    ? classifyGovernanceChanges(directory, changed)
+    ? contractOnlyClassification
     : changed.length === 0 ? "none" : "implementation";
   const governanceInspection = classification === "contract_only"
     ? await inspectWorkspaceGovernance({
@@ -62,7 +67,16 @@ export async function selectSpecs(options: SelectSpecsOptions): Promise<RoutingR
     : classification === "contract_only"
       ? { ...routeChanges(candidates, [], requiredStatuses), changedDigest: digestRoutedChanges(changed) }
       : routeChanges(candidates, changed, requiredStatuses);
-  const diagnostics = [...loadDiagnostics, ...routed.diagnostics, ...(governanceInspection?.diagnostics ?? [])];
+  const routeDiagnostics = routed.diagnostics.map((diagnostic) => diagnostic.code === Codes.routingUncovered
+    && diagnostic.file
+    && isEngineeringSpecFilename(diagnostic.file)
+    && contractOnlyClassification === "contract_only"
+    ? {
+        ...diagnostic,
+        hint: "Specification lifecycle or scope changes are not implementation paths; use --allow-contract-only instead of adding this file to its own targets.",
+      }
+    : diagnostic);
+  const diagnostics = [...loadDiagnostics, ...routeDiagnostics, ...(governanceInspection?.diagnostics ?? [])];
   const specCoverage = candidates
     .filter((candidate) => requiredStatuses.includes(candidate.spec.metadata.status))
     .map((candidate) => ({
