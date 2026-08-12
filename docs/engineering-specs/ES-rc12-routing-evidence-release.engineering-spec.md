@@ -4,7 +4,7 @@ spec_format_version: "0.1"
 spec_revision: 1
 id: ES-rc12-routing-evidence-release
 title: Publish the routing-derived evidence RC12 release
-status: draft
+status: proposed
 owners:
   - team: EngineeringSpec maintainers
 repository:
