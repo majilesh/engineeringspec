@@ -4,6 +4,7 @@ import { compareCodePoints } from "../normalizer/canonicalize.js";
 
 export type BenchmarkCondition = "baseline" | "engineeringspec";
 export type BenchmarkEvidenceClass = "observed" | "example";
+export type BenchmarkTaskRiskTier = "low" | "medium" | "high";
 export type AuthorityBreadth = "finite" | "open_create_namespace" | "repository_wide";
 
 export interface BenchmarkScopeMeasurement {
@@ -33,6 +34,7 @@ export interface AgentBenchmarkRecord {
   taskId: string;
   runId: string;
   pairId?: string;
+  taskRiskTier?: BenchmarkTaskRiskTier;
   condition: BenchmarkCondition;
   conditionIdentity?: string;
   evidenceClass?: BenchmarkEvidenceClass;
@@ -100,6 +102,39 @@ export interface BenchmarkConditionSummary {
   scope: BenchmarkScopeSummary;
 }
 
+export interface BenchmarkDelta {
+  successRate: number;
+  scopeViolationReduction: number;
+  reviewCorrectionReduction: number;
+  durationSeconds: number;
+  tokens: number;
+  unauthorizedPathsChangedReduction: number | null;
+  unauthorizedPathsMergedReduction: number | null;
+  scopePrecision: number | null;
+}
+
+export interface BenchmarkTierSummary {
+  taskRiskTier: BenchmarkTaskRiskTier;
+  tasks: number;
+  pairs: number;
+  runs: number;
+  baseline: BenchmarkConditionSummary;
+  engineeringspec: BenchmarkConditionSummary;
+  pairedOutcomes: {
+    slowerEngineeringSpecRuns: number;
+    amendedEngineeringSpecRuns: number;
+  };
+  overhead: {
+    averageAbsoluteDurationSeconds: number;
+    averageRelativeDuration: number | null;
+    relativeDurationEligiblePairs: number;
+    zeroBaselineDurationPairs: number;
+    averageContractAuthoringSeconds: number | null;
+    averageContractReviewSeconds: number | null;
+  };
+  delta: BenchmarkDelta;
+}
+
 export interface AgentBenchmarkSummary {
   tasks: number;
   pairs: number;
@@ -108,20 +143,12 @@ export interface AgentBenchmarkSummary {
   missingData: Record<string, number>;
   baseline: BenchmarkConditionSummary;
   engineeringspec: BenchmarkConditionSummary;
+  tiers: BenchmarkTierSummary[];
   pairedOutcomes: {
     slowerEngineeringSpecRuns: number;
     amendedEngineeringSpecRuns: number;
   };
-  delta: {
-    successRate: number;
-    scopeViolationReduction: number;
-    reviewCorrectionReduction: number;
-    durationSeconds: number;
-    tokens: number;
-    unauthorizedPathsChangedReduction: number | null;
-    unauthorizedPathsMergedReduction: number | null;
-    scopePrecision: number | null;
-  };
+  delta: BenchmarkDelta;
   interpretation: {
     causalInferenceSupported: false;
     resultClass: "observed" | "example" | "mixed_or_unclassified";
@@ -152,6 +179,7 @@ const OPTIONAL_INTEGER_FIELDS = new Set<string>([
 ]);
 
 const COMPARABILITY_FIELDS = [
+  "taskRiskTier",
   "repositoryRevision",
   "model",
   "promptIntent",
@@ -309,6 +337,9 @@ function assertRecord(value: unknown, index: number): asserts value is AgentBenc
   }
   if (record.evidenceClass !== undefined && record.evidenceClass !== "observed" && record.evidenceClass !== "example") {
     throw new Error(`benchmark record ${index}.evidenceClass must be observed or example`);
+  }
+  if (record.taskRiskTier !== undefined && !["low", "medium", "high"].includes(record.taskRiskTier as string)) {
+    throw new Error(`benchmark record ${index}.taskRiskTier must be low, medium, or high`);
   }
   if (typeof record.success !== "boolean") throw new Error(`benchmark record ${index}.success must be boolean`);
   for (const key of ["scopeViolations", "reviewCorrections", "durationSeconds", "inputTokens", "outputTokens"] as const) {
@@ -493,6 +524,56 @@ function nullableReduction(baseline: number | null, engineeringSpec: number | nu
   return baseline === null || engineeringSpec === null ? null : baseline - engineeringSpec;
 }
 
+interface BenchmarkPair {
+  baseline: AgentBenchmarkRecord;
+  engineeringspec: AgentBenchmarkRecord;
+}
+
+function summarizeDelta(baseline: BenchmarkConditionSummary, engineeringspec: BenchmarkConditionSummary): BenchmarkDelta {
+  return {
+    successRate: engineeringspec.successRate - baseline.successRate,
+    scopeViolationReduction: baseline.averageScopeViolations - engineeringspec.averageScopeViolations,
+    reviewCorrectionReduction: baseline.averageReviewCorrections - engineeringspec.averageReviewCorrections,
+    durationSeconds: engineeringspec.averageDurationSeconds - baseline.averageDurationSeconds,
+    tokens: engineeringspec.averageTokens - baseline.averageTokens,
+    unauthorizedPathsChangedReduction: nullableReduction(baseline.averageUnauthorizedPathsChanged, engineeringspec.averageUnauthorizedPathsChanged),
+    unauthorizedPathsMergedReduction: nullableReduction(baseline.averageUnauthorizedPathsMerged, engineeringspec.averageUnauthorizedPathsMerged),
+    scopePrecision: engineeringspec.scope.assessment === "measured" ? engineeringspec.scope.averagePrecision : null,
+  };
+}
+
+function summarizeTier(taskRiskTier: BenchmarkTaskRiskTier, pairs: BenchmarkPair[]): BenchmarkTierSummary {
+  const baselineRecords = pairs.map((pair) => pair.baseline);
+  const specRecords = pairs.map((pair) => pair.engineeringspec);
+  const baseline = summarizeCondition(baselineRecords);
+  const engineeringspec = summarizeCondition(specRecords);
+  const absolute = pairs.map((pair) => pair.engineeringspec.durationSeconds - pair.baseline.durationSeconds);
+  const relative = pairs.flatMap((pair) => pair.baseline.durationSeconds > 0
+    ? [(pair.engineeringspec.durationSeconds - pair.baseline.durationSeconds) / pair.baseline.durationSeconds]
+    : []);
+  return {
+    taskRiskTier,
+    tasks: new Set(baselineRecords.map((record) => record.taskId)).size,
+    pairs: pairs.length,
+    runs: pairs.length * 2,
+    baseline,
+    engineeringspec,
+    pairedOutcomes: {
+      slowerEngineeringSpecRuns: pairs.filter((pair) => pair.engineeringspec.durationSeconds > pair.baseline.durationSeconds).length,
+      amendedEngineeringSpecRuns: pairs.filter((pair) => (pair.engineeringspec.contractAmendments ?? 0) > 0).length,
+    },
+    overhead: {
+      averageAbsoluteDurationSeconds: mean(absolute)!,
+      averageRelativeDuration: mean(relative),
+      relativeDurationEligiblePairs: relative.length,
+      zeroBaselineDurationPairs: pairs.length - relative.length,
+      averageContractAuthoringSeconds: engineeringspec.averageContractAuthoringSeconds,
+      averageContractReviewSeconds: engineeringspec.averageContractReviewSeconds,
+    },
+    delta: summarizeDelta(baseline, engineeringspec),
+  };
+}
+
 export function summarizeAgentBenchmark(values: unknown[]): AgentBenchmarkSummary {
   values.forEach(assertRecord);
   const records = values as AgentBenchmarkRecord[];
@@ -504,7 +585,7 @@ export function summarizeAgentBenchmark(values: unknown[]): AgentBenchmarkSummar
 
   const grouped = new Map<string, AgentBenchmarkRecord[]>();
   for (const record of records) grouped.set(pairKey(record), [...(grouped.get(pairKey(record)) ?? []), record]);
-  const pairs: Array<{ baseline: AgentBenchmarkRecord; engineeringspec: AgentBenchmarkRecord }> = [];
+  const pairs: BenchmarkPair[] = [];
   for (const [key, pairRecords] of grouped) {
     const baseline = pairRecords.filter((record) => record.condition === "baseline");
     const engineeringspec = pairRecords.filter((record) => record.condition === "engineeringspec");
@@ -514,6 +595,7 @@ export function summarizeAgentBenchmark(values: unknown[]): AgentBenchmarkSummar
     const left = baseline[0]!;
     const right = engineeringspec[0]!;
     if (left.taskId !== right.taskId || left.agent !== right.agent) throw new Error(`benchmark pair ${JSON.stringify(key)} must preserve task and agent`);
+    if (left.taskRiskTier !== right.taskRiskTier) throw new Error(`benchmark pair ${JSON.stringify(key)} must preserve taskRiskTier on both conditions`);
     for (const field of COMPARABILITY_FIELDS) {
       const leftValue = left[field];
       const rightValue = right[field];
@@ -556,6 +638,10 @@ export function summarizeAgentBenchmark(values: unknown[]): AgentBenchmarkSummar
   if (pairs.length === 0) throw new Error("benchmark requires at least one paired task");
   const baseline = summarizeCondition(baselineRecords);
   const engineeringspec = summarizeCondition(specRecords);
+  const tiers = (["low", "medium", "high"] as const).flatMap((taskRiskTier) => {
+    const tierPairs = pairs.filter((pair) => pair.baseline.taskRiskTier === taskRiskTier);
+    return tierPairs.length > 0 ? [summarizeTier(taskRiskTier, tierPairs)] : [];
+  });
   const missingData: Record<string, number> = {};
   for (const field of [...COMPARABILITY_FIELDS, ...OPTIONAL_NUMBER_FIELDS, "pairId", "conditionIdentity", "evidenceClass", "firstPassGateSuccess", "conditionSequence", "headRevision", "startedAt", "reviewBlinded", "scope", "scopeReceipt"] as const) {
     missingData[field] = records.filter((record) => record[field] === undefined || record[field] === null).length;
@@ -580,20 +666,12 @@ export function summarizeAgentBenchmark(values: unknown[]): AgentBenchmarkSummar
     missingData,
     baseline,
     engineeringspec,
+    tiers,
     pairedOutcomes: {
       slowerEngineeringSpecRuns: pairs.filter((pair) => pair.engineeringspec.durationSeconds > pair.baseline.durationSeconds).length,
       amendedEngineeringSpecRuns: pairs.filter((pair) => (pair.engineeringspec.contractAmendments ?? 0) > 0).length,
     },
-    delta: {
-      successRate: engineeringspec.successRate - baseline.successRate,
-      scopeViolationReduction: baseline.averageScopeViolations - engineeringspec.averageScopeViolations,
-      reviewCorrectionReduction: baseline.averageReviewCorrections - engineeringspec.averageReviewCorrections,
-      durationSeconds: engineeringspec.averageDurationSeconds - baseline.averageDurationSeconds,
-      tokens: engineeringspec.averageTokens - baseline.averageTokens,
-      unauthorizedPathsChangedReduction: nullableReduction(baseline.averageUnauthorizedPathsChanged, engineeringspec.averageUnauthorizedPathsChanged),
-      unauthorizedPathsMergedReduction: nullableReduction(baseline.averageUnauthorizedPathsMerged, engineeringspec.averageUnauthorizedPathsMerged),
-      scopePrecision: engineeringspec.scope.assessment === "measured" ? engineeringspec.scope.averagePrecision : null,
-    },
+    delta: summarizeDelta(baseline, engineeringspec),
     interpretation: {
       causalInferenceSupported: false,
       resultClass,

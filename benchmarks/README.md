@@ -15,6 +15,7 @@ Record one JSON object per run using [agent-impact.schema.json](agent-impact.sch
 
 Along with success, scope violations, corrections, duration, and tokens, retain:
 
+- A predeclared `taskRiskTier` of `low`, `medium`, or `high` on both conditions. Assign it from blast radius and scope ambiguity before either run; never infer it from an outcome.
 - `pairId`, base and head revisions, task-prompt digest, model, agent/harness/EngineeringSpec versions, permissions, trusted checks, agent configuration, condition identity, start timestamp, truthful review-blinding status, positive time limit, opaque acceptance reviewer ID, and condition sequence.
 - Contract authoring/review time, amendments, first-pass gate outcome, and review cycles.
 - Unique repository paths explored, changed outside authority, and ultimately merged outside authority.
@@ -44,6 +45,8 @@ engineeringspec benchmark benchmarks/results/*.json --format json
 engineeringspec benchmark benchmarks/results/*.json --require-publishable --format json
 ```
 
-The summary reports provenance, evidence quality, publishability, sample size, missing data, failed/slower/amended runs, operational effort, unauthorized paths, and scope precision. `--require-publishable` fails incomplete, example, mixed, or inconsistent evidence. Passing it means only that the declared evidence policy is satisfied; results remain descriptive and never establish causality. The bundled [example](example-results.json) is synthetic and must not be presented as observed impact.
+The summary reports provenance, evidence quality, publishability, sample size, missing data, failed/slower/amended runs, operational effort, unauthorized paths, scope precision, and deterministic low/medium/high tier summaries. Tier output retains the aggregate result, uses pair-level absolute and relative duration overhead, excludes zero-baseline pairs only from relative overhead, and keeps contract authoring/review time separate from agent duration and tokens.
+
+`--require-publishable` fails incomplete, example, mixed, or inconsistent evidence. Under the risk-stratified pilot protocol, missing `taskRiskTier` is incomplete but remains readable without publication enforcement. Passing the policy means only that the declared evidence fields are complete; results remain descriptive and never establish causality. The bundled [example](example-results.json) is synthetic and must not be presented as observed impact.
 
 Use the [pilot guide](pilot-guide.md) and [pilot kit](pilots/README.md) before recruiting external participants.
