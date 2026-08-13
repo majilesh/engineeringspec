@@ -60,10 +60,10 @@ Publish the reviewed PR 43 implementation as `v0.1.0-rc.9` so draft proposal, ba
   paths:
     - README.md
     - CHANGELOG.md
-    - maintainer-only roadmap
+    - _internal/roadmap.md
     - docs/agent-integration.md
     - docs/cli-reference.md
-    - maintainer-only adoption notes
+    - _internal/adoption-notes.md
     - docs/first-change-tutorial.md
     - docs/getting-started.md
     - docs/integrations.md
@@ -72,7 +72,7 @@ Publish the reviewed PR 43 implementation as `v0.1.0-rc.9` so draft proposal, ba
     - docs/production-gate.md
     - docs/troubleshooting.md
     - docs/upgrading.md
-    - maintainer-only launch notes/**
+    - _internal/launch-notes/**
   change_policy: modify
 - id: TARGET-site
   component: deterministic-release-site

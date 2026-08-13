@@ -104,7 +104,7 @@ Add and harden `engineeringspec gate` so CI can reject changes outside declared 
     - AGENTS.md
     - .cursor/rules/**
     - README.md
-    - maintainer-only roadmap
+    - _internal/roadmap.md
     - SPEC.md
     - CHANGELOG.md
     - docs/**

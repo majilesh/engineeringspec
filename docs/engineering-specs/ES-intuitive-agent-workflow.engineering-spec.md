@@ -47,7 +47,7 @@ Turn the existing agent-first controls into a guided, agent-neutral lifecycle wi
   component: agent-and-team-guidance
   paths:
     - README.md
-    - maintainer-only roadmap
+    - _internal/roadmap.md
     - CHANGELOG.md
     - docs/agent-integration.md
     - docs/getting-started.md

@@ -331,19 +331,4 @@ describe("agent-impact benchmark", () => {
     expect(result.interpretation).toMatchObject({ evidenceQuality: "incomplete", publishable: false });
   });
 
-  it("starts the public pilot at honest zero evidence with consent disabled", async () => {
-    const status = JSON.parse(await readFile("maintainer-only pilot records/status.json", "utf8")) as Record<string, unknown>;
-    const template = JSON.parse(await readFile("maintainer-only pilot records/pilot-template.json", "utf8")) as { consent: Record<string, boolean | null>; completedPairedTasks: number; taskRiskRubric: string; predeclaredTaskRiskTiers: unknown[] };
-    expect(status).toMatchObject({
-      status: "recruiting",
-      observedPairedTasks: 0,
-      externalParticipants: 0,
-      externalRepositories: 0,
-    });
-    expect(String(status.claim)).toContain("No external comparative outcome");
-    expect(template.completedPairedTasks).toBe(0);
-    expect(template.taskRiskRubric).toBe("RFC-0010");
-    expect(template.predeclaredTaskRiskTiers).toEqual([]);
-    expect(template.consent).toMatchObject({ measurement: false, aggregatePublication: false, caseStudyPublication: false });
-  });
 });

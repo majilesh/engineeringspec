@@ -324,12 +324,12 @@ owners: [{team: test}]
     const skill=await readFile("skills/engineering-spec/SKILL.md","utf8");
     expect(skill).toContain(`@engineeringspec/cli@${version}`);
     expect(skill).not.toContain("@engineeringspec/cli@next");
-    for (const file of ["README.md","docs/agent-integration.md","docs/getting-started.md","docs/first-change-tutorial.md","docs/lifecycle.md","docs/production-gate.md","docs/troubleshooting.md","maintainer-only adoption notes"]) {
+    for (const file of ["README.md","docs/agent-integration.md","docs/getting-started.md","docs/first-change-tutorial.md","docs/lifecycle.md","docs/production-gate.md","docs/troubleshooting.md"]) {
       const source=await readFile(file,"utf8");
       expect(source,file).toContain(`0.1.0-rc.12`);
       expect(source,file).not.toContain("0.1.0-rc.6");
     }
-    for (const file of ["README.md","docs/production-gate.md","maintainer-only adoption notes"]) {
+    for (const file of ["README.md","docs/production-gate.md"]) {
       expect(await readFile(file,"utf8"),file).toContain("04d5bbd801db39cd14cbf26ca33b6990c8445574");
     }
   });

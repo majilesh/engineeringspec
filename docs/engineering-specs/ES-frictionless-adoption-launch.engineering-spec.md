@@ -21,7 +21,7 @@ Make EngineeringSpec understandable and useful within a first adopter's initial 
 ```engineering-source-refs
 - id: SRC-1
   type: document
-  ref: maintainer-only roadmap
+  ref: _internal/roadmap.md
   title: EngineeringSpec roadmap after RC8
 - id: SRC-2
   type: other
@@ -99,15 +99,15 @@ Make EngineeringSpec understandable and useful within a first adopter's initial 
   component: adoption-evidence-and-launch-guidance
   paths:
     - benchmarks/**
-    - maintainer-only case studies/**
-    - maintainer-only launch notes/**
+    - _internal/case-studies/**
+    - _internal/launch-notes/**
     - docs/getting-started.md
     - docs/first-change-tutorial.md
     - docs/integrations.md
     - docs/cli-reference.md
     - docs/troubleshooting.md
     - README.md
-    - maintainer-only roadmap
+    - _internal/roadmap.md
     - CHANGELOG.md
     - site/**
     - scripts/generate-site.mjs

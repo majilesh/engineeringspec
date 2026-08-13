@@ -107,7 +107,7 @@ jobs:
               *) contract_only=0 ;;
             esac
             case "$changed_path" in
-              src/*|test/*|action.yml|README.md|SPEC.md|CHANGELOG.md|maintainer-only roadmap|package.json|package-lock.json|docs/*|schemas/*|conformance/*|.github/*) gated=1 ;;
+              src/*|test/*|action.yml|README.md|SPEC.md|CHANGELOG.md|package.json|package-lock.json|docs/*|schemas/*|conformance/*|.github/*) gated=1 ;;
             esac
           }
           while IFS= read -r -d '' change_status; do

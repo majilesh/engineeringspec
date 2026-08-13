@@ -48,7 +48,7 @@ Prepare `v0.1.0-rc.5` from the reviewed routing lifecycle implementation so npm 
     - README.md
     - docs/agent-integration.md
     - docs/production-gate.md
-    - maintainer-only adoption notes
+    - _internal/adoption-notes.md
   change_policy: modify
 - id: TARGET-ci
   component: repository-enforcement
@@ -59,7 +59,7 @@ Prepare `v0.1.0-rc.5` from the reviewed routing lifecycle implementation so npm 
   component: release-and-lifecycle-notes
   paths:
     - CHANGELOG.md
-    - maintainer-only roadmap
+    - _internal/roadmap.md
     - docs/engineering-specs/ES-rc5-lifecycle-release.engineering-spec.md
   change_policy: modify
 ```

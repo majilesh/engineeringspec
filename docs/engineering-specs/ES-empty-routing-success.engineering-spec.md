@@ -53,7 +53,7 @@ Implement the approved routing-lifecycle RFC so agent self-checks succeed when t
   paths:
     - README.md
     - CHANGELOG.md
-    - maintainer-only roadmap
+    - _internal/roadmap.md
     - docs/agent-integration.md
     - rfcs/0003-vacuous-empty-routing.md
     - docs/engineering-specs/ES-empty-routing-success.engineering-spec.md

@@ -63,7 +63,7 @@ Implement the approved multi-spec routing RFC as a read-only authorization layer
     - .cursor/rules/**
     - .github/workflows/ci.yml
     - README.md
-    - maintainer-only roadmap
+    - _internal/roadmap.md
     - CHANGELOG.md
     - docs/**
     - skills/**

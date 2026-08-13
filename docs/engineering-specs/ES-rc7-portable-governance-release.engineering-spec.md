@@ -56,13 +56,13 @@ Prepare `v0.1.0-rc.7` from the reviewed portable contract-governance implementat
     - docs/maintaining-specs.md
     - docs/production-gate.md
     - docs/troubleshooting.md
-    - maintainer-only adoption notes
+    - _internal/adoption-notes.md
   change_policy: modify
 - id: TARGET-notes
   component: release-and-roadmap-notes
   paths:
     - CHANGELOG.md
-    - maintainer-only roadmap
+    - _internal/roadmap.md
     - docs/engineering-specs/ES-rc7-portable-governance-release.engineering-spec.md
     - docs/engineering-specs/ES-portable-contract-governance.engineering-spec.md
   change_policy: modify

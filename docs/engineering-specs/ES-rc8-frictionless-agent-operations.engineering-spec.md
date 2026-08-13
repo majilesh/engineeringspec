@@ -21,7 +21,7 @@ Turn the RC7 trust loop into an easier day-to-day product for coding agents and 
 ```engineering-source-refs
 - id: SRC-1
   type: document
-  ref: maintainer-only roadmap
+  ref: _internal/roadmap.md
   title: EngineeringSpec roadmap after RC7
 - id: SRC-2
   type: other
@@ -105,7 +105,7 @@ Turn the RC7 trust loop into an easier day-to-day product for coding agents and 
   component: documentation-and-static-explorer
   paths:
     - README.md
-    - maintainer-only roadmap
+    - _internal/roadmap.md
     - CHANGELOG.md
     - docs/**
     - site/**

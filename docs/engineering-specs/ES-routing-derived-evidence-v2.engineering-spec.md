@@ -37,7 +37,7 @@ Make enforcement and evidence share one immutable, repository-wide authorization
   title: Implemented RC11 evidence-integrity contract
 - id: SRC-5
   type: document
-  ref: maintainer-only pilot protocol
+  ref: _internal/pilot-protocol.md
   title: Current paired-pilot protocol
 ```
 
@@ -83,12 +83,12 @@ Make enforcement and evidence share one immutable, repository-wide authorization
   paths:
     - README.md
     - CHANGELOG.md
-    - maintainer-only roadmap
+    - _internal/roadmap.md
     - docs/cli-reference.md
     - docs/agent-integration.md
     - docs/maintaining-specs.md
-    - maintainer-only pilot notes
-    - maintainer-only launch notes/**
+    - _internal/pilot-notes.md
+    - _internal/launch-notes/**
   change_policy: modify
 - id: TARGET-contract
   component: evidence-v2-lifecycle

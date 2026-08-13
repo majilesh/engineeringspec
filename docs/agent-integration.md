@@ -105,10 +105,6 @@ Suggested presentation-layer actions are `engineering-spec:explore`, `:propose`,
 
 Start with the skill and file-based instructions across ChatGPT/Codex, Claude Code, and Cursor. Build a vendor adapter or read-only MCP transport only when observed onboarding data shows that contract discovery or CLI access is the bottleneck; keep any such adapter a thin consumer of the same CLI and format.
 
-## Cursor adoption handoff
-
-For adopting EngineeringSpec in another repository (dogfood), use the paste-ready agent brief in [`maintainer-only adoption notes`](maintainer-only adoption notes).
-
 ## Production gate
 
 For SHA pins, CODEOWNERS, and merge-blocking required checks, follow [`production-gate.md`](production-gate.md).

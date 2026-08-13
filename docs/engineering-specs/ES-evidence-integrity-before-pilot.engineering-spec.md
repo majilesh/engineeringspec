@@ -29,7 +29,7 @@ Fix the concrete evidence-quality gaps found in the RC10 review, generate scope 
   title: Pre-code brief and adoption evidence pilot RFC
 - id: SRC-3
   type: document
-  ref: maintainer-only pilot protocol
+  ref: _internal/pilot-protocol.md
   title: Ten-task paired adoption pilot
 - id: SRC-4
   type: document
@@ -89,7 +89,7 @@ Fix the concrete evidence-quality gaps found in the RC10 review, generate scope 
   component: evidence-and-command-guidance
   paths:
     - README.md
-    - maintainer-only roadmap
+    - _internal/roadmap.md
     - CHANGELOG.md
     - docs/cli-reference.md
     - docs/agent-integration.md

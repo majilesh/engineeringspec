@@ -53,7 +53,7 @@ Prepare `v0.1.0-rc.8` from the reviewed frictionless agent-operations implementa
     - README.md
     - docs/agent-integration.md
     - docs/cli-reference.md
-    - maintainer-only adoption notes
+    - _internal/adoption-notes.md
     - docs/first-change-tutorial.md
     - docs/getting-started.md
     - docs/integrations.md
@@ -72,7 +72,7 @@ Prepare `v0.1.0-rc.8` from the reviewed frictionless agent-operations implementa
   component: release-and-roadmap-notes
   paths:
     - CHANGELOG.md
-    - maintainer-only roadmap
+    - _internal/roadmap.md
     - docs/engineering-specs/ES-rc8-frictionless-ops-release.engineering-spec.md
     - docs/engineering-specs/ES-rc8-frictionless-agent-operations.engineering-spec.md
   change_policy: modify

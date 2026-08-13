@@ -1,8 +1,160 @@
 {
   "valid": true,
   "directory": "docs/engineering-specs",
-  "documents": 21,
+  "documents": 23,
   "entries": [
+    {
+      "id": "ES-actionable-diagnostic-hints",
+      "title": "Surface accurate actionable diagnostic hints",
+      "status": "implemented",
+      "file": "ES-actionable-diagnostic-hints.engineering-spec.md",
+      "owners": [
+        "EngineeringSpec maintainers"
+      ],
+      "sourceRefs": [
+        {
+          "id": "SRC-1",
+          "type": "document",
+          "locator": "docs/troubleshooting.md",
+          "title": "Existing routing-remediation guidance"
+        },
+        {
+          "id": "SRC-2",
+          "type": "document",
+          "locator": "ESRT002-hint-review",
+          "title": "Review of missing and misleading agent-facing diagnostic hints"
+        }
+      ],
+      "targets": [
+        {
+          "id": "TARGET-diagnostics",
+          "component": "human-and-ci-diagnostic-rendering",
+          "paths": [
+            "src/diagnostics/formatter.ts",
+            "src/diagnostics/github.ts",
+            "test/unit/core.test.ts",
+            "test/unit/github-format.test.ts"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-routing",
+          "component": "context-accurate-routing-remediation",
+          "paths": [
+            "src/routing/governance.ts",
+            "src/routing/route.ts",
+            "src/routing/select.ts",
+            "test/unit/governance.test.ts",
+            "test/unit/routing.test.ts",
+            "test/integration/routing.test.ts"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-contract",
+          "component": "diagnostic-hints-lifecycle",
+          "paths": [
+            "docs/engineering-specs/ES-actionable-diagnostic-hints.engineering-spec.md"
+          ],
+          "changePolicy": "modify"
+        }
+      ],
+      "constraints": [
+        {
+          "id": "CON-1",
+          "level": "must",
+          "statement": "Human-readable text diagnostics and GitHub annotations must surface a diagnostic hint when present without changing diagnostics that have no hint.",
+          "appliesTo": [
+            "TARGET-diagnostics"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-2",
+          "level": "must",
+          "statement": "GitHub annotation output must escape the complete message and appended hint after composition so hint content cannot alter annotation command structure.",
+          "appliesTo": [
+            "TARGET-diagnostics"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-3",
+          "level": "must",
+          "statement": "ESRT002 may recommend --allow-contract-only only when every changed path is a valid EngineeringSpec filename inside the configured non-root specification directory; mixed changes and specification-named paths outside that directory must instead instruct the user to split or amend authority.",
+          "appliesTo": [
+            "TARGET-routing"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-4",
+          "level": "must",
+          "statement": "Invalid workspace governance paths must include actionable remediation while remaining errors under the existing fail-closed contract-only inspection.",
+          "appliesTo": [
+            "TARGET-routing"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-5",
+          "level": "must_not",
+          "statement": "This correction must not change diagnostic codes, severity, routing or governance decisions, approved-base authority, strict-mode behavior, target policy meanings, format 0.1, runner inertness, or command execution behavior.",
+          "appliesTo": [
+            "TARGET-diagnostics",
+            "TARGET-routing"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-6",
+          "level": "must",
+          "statement": "Regression coverage must include hints present and absent in text and GitHub output, escaped annotation data, eligible contract-only changes, mixed specification and implementation changes, specification-named paths outside the configured directory, and invalid workspace governance.",
+          "appliesTo": [
+            "TARGET-diagnostics",
+            "TARGET-routing"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-7",
+          "level": "must",
+          "statement": "The contract must transition from approved to implemented only after the correction passes trusted repository checks and maintainer review without widening its targets.",
+          "appliesTo": [
+            "TARGET-contract"
+          ],
+          "enforcement": "review"
+        }
+      ],
+      "contracts": [],
+      "verification": [
+        {
+          "id": "VER-1",
+          "kind": "test",
+          "proves": [
+            "CON-1",
+            "CON-2",
+            "CON-3",
+            "CON-4",
+            "CON-6"
+          ]
+        },
+        {
+          "id": "VER-2",
+          "kind": "test",
+          "proves": [
+            "CON-5"
+          ]
+        },
+        {
+          "id": "VER-3",
+          "kind": "human_review",
+          "proves": [
+            "CON-7"
+          ]
+        }
+      ]
+    },
     {
       "id": "ES-agent-ready-adoption",
       "title": "Agent-neutral repository adoption workflow",
@@ -182,7 +334,7 @@
           "paths": [
             "README.md",
             "CHANGELOG.md",
-            "maintainer-only roadmap",
+            "_internal/roadmap.md",
             "docs/agent-integration.md",
             "rfcs/0003-vacuous-empty-routing.md",
             "docs/engineering-specs/ES-empty-routing-success.engineering-spec.md"
@@ -352,7 +504,7 @@
         {
           "id": "SRC-3",
           "type": "document",
-          "locator": "maintainer-only pilot protocol",
+          "locator": "_internal/pilot-protocol.md",
           "title": "Ten-task paired adoption pilot"
         },
         {
@@ -427,7 +579,7 @@
           "component": "evidence-and-command-guidance",
           "paths": [
             "README.md",
-            "maintainer-only roadmap",
+            "_internal/roadmap.md",
             "CHANGELOG.md",
             "docs/cli-reference.md",
             "docs/agent-integration.md",
@@ -623,7 +775,7 @@
         {
           "id": "SRC-1",
           "type": "document",
-          "locator": "maintainer-only roadmap",
+          "locator": "_internal/roadmap.md",
           "title": "EngineeringSpec roadmap after RC8"
         },
         {
@@ -724,15 +876,15 @@
           "component": "adoption-evidence-and-launch-guidance",
           "paths": [
             "benchmarks/**",
-            "maintainer-only case studies/**",
-            "maintainer-only launch notes/**",
+            "_internal/case-studies/**",
+            "_internal/launch-notes/**",
             "docs/getting-started.md",
             "docs/first-change-tutorial.md",
             "docs/integrations.md",
             "docs/cli-reference.md",
             "docs/troubleshooting.md",
             "README.md",
-            "maintainer-only roadmap",
+            "_internal/roadmap.md",
             "CHANGELOG.md",
             "site/**",
             "scripts/generate-site.mjs"
@@ -1059,7 +1211,7 @@
             "AGENTS.md",
             ".cursor/rules/**",
             "README.md",
-            "maintainer-only roadmap",
+            "_internal/roadmap.md",
             "SPEC.md",
             "CHANGELOG.md",
             "docs/**",
@@ -1364,7 +1516,7 @@
           "component": "agent-and-team-guidance",
           "paths": [
             "README.md",
-            "maintainer-only roadmap",
+            "_internal/roadmap.md",
             "CHANGELOG.md",
             "docs/agent-integration.md",
             "docs/getting-started.md",
@@ -1629,7 +1781,7 @@
             ".cursor/rules/**",
             ".github/workflows/ci.yml",
             "README.md",
-            "maintainer-only roadmap",
+            "_internal/roadmap.md",
             "CHANGELOG.md",
             "docs/**",
             "skills/**",
@@ -1859,7 +2011,7 @@
           "paths": [
             "README.md",
             "CHANGELOG.md",
-            "maintainer-only roadmap",
+            "_internal/roadmap.md",
             "docs/agent-integration.md",
             "docs/getting-started.md",
             "docs/first-change-tutorial.md",
@@ -1867,7 +2019,7 @@
             "docs/maintaining-specs.md",
             "docs/production-gate.md",
             "docs/troubleshooting.md",
-            "maintainer-only adoption notes",
+            "_internal/adoption-notes.md",
             "skills/engineering-spec/SKILL.md"
           ],
           "changePolicy": "modify"
@@ -2062,7 +2214,7 @@
         {
           "id": "SRC-1",
           "type": "document",
-          "locator": "maintainer-only roadmap",
+          "locator": "_internal/roadmap.md",
           "title": "EngineeringSpec roadmap"
         },
         {
@@ -2074,19 +2226,19 @@
         {
           "id": "SRC-3",
           "type": "document",
-          "locator": "maintainer-only pilot protocol",
+          "locator": "_internal/pilot-protocol.md",
           "title": "Ten-task paired adoption pilot"
         },
         {
           "id": "SRC-4",
           "type": "document",
-          "locator": "maintainer-only case studies/private-consumer-pilot.md",
+          "locator": "_internal/case-studies/private-consumer-pilot.md",
           "title": "private consumer dogfooding observations and unproven outcomes"
         },
         {
           "id": "SRC-5",
           "type": "document",
-          "locator": "maintainer-only launch notes/positioning.md",
+          "locator": "_internal/launch-notes/positioning.md",
           "title": "Bounded autonomy positioning"
         }
       ],
@@ -2122,10 +2274,10 @@
           "id": "TARGET-pilot",
           "component": "external-adopter-pilot",
           "paths": [
-            "maintainer-only pilot records/**",
-            "maintainer-only case studies/**",
-            "maintainer-only launch notes/**",
-            "maintainer-only pilot notes"
+            "_internal/pilot-records/**",
+            "_internal/case-studies/**",
+            "_internal/launch-notes/**",
+            "_internal/pilot-notes.md"
           ],
           "changePolicy": "modify"
         },
@@ -2148,7 +2300,7 @@
           "component": "evidence-first-roadmap-and-usage",
           "paths": [
             "README.md",
-            "maintainer-only roadmap",
+            "_internal/roadmap.md",
             "CHANGELOG.md",
             "docs/getting-started.md",
             "docs/first-change-tutorial.md",
@@ -2417,10 +2569,10 @@
           "paths": [
             "README.md",
             "CHANGELOG.md",
-            "maintainer-only roadmap",
+            "_internal/roadmap.md",
             "docs/agent-integration.md",
             "docs/cli-reference.md",
-            "maintainer-only adoption notes",
+            "_internal/adoption-notes.md",
             "docs/first-change-tutorial.md",
             "docs/getting-started.md",
             "docs/integrations.md",
@@ -2429,7 +2581,7 @@
             "docs/production-gate.md",
             "docs/troubleshooting.md",
             "docs/upgrading.md",
-            "maintainer-only launch notes/**"
+            "_internal/launch-notes/**"
           ],
           "changePolicy": "modify"
         },
@@ -2660,10 +2812,10 @@
           "paths": [
             "README.md",
             "CHANGELOG.md",
-            "maintainer-only roadmap",
+            "_internal/roadmap.md",
             "docs/agent-integration.md",
             "docs/cli-reference.md",
-            "maintainer-only adoption notes",
+            "_internal/adoption-notes.md",
             "docs/first-change-tutorial.md",
             "docs/getting-started.md",
             "docs/integrations.md",
@@ -2672,7 +2824,7 @@
             "docs/production-gate.md",
             "docs/troubleshooting.md",
             "docs/upgrading.md",
-            "maintainer-only launch notes/**"
+            "_internal/launch-notes/**"
           ],
           "changePolicy": "modify"
         },
@@ -2904,10 +3056,10 @@
           "paths": [
             "README.md",
             "CHANGELOG.md",
-            "maintainer-only roadmap",
+            "_internal/roadmap.md",
             "docs/agent-integration.md",
             "docs/cli-reference.md",
-            "maintainer-only adoption notes",
+            "_internal/adoption-notes.md",
             "docs/first-change-tutorial.md",
             "docs/getting-started.md",
             "docs/integrations.md",
@@ -2916,7 +3068,7 @@
             "docs/production-gate.md",
             "docs/troubleshooting.md",
             "docs/upgrading.md",
-            "maintainer-only launch notes/**"
+            "_internal/launch-notes/**"
           ],
           "changePolicy": "modify"
         },
@@ -3108,7 +3260,7 @@
             "src/cli/adopt.ts",
             "README.md",
             "docs/production-gate.md",
-            "maintainer-only adoption notes",
+            "_internal/adoption-notes.md",
             "test/integration/cli.test.ts"
           ],
           "changePolicy": "modify"
@@ -3118,7 +3270,7 @@
           "component": "release-notes",
           "paths": [
             "CHANGELOG.md",
-            "maintainer-only roadmap"
+            "_internal/roadmap.md"
           ],
           "changePolicy": "modify"
         }
@@ -3237,7 +3389,7 @@
             "README.md",
             "docs/agent-integration.md",
             "docs/production-gate.md",
-            "maintainer-only adoption notes"
+            "_internal/adoption-notes.md"
           ],
           "changePolicy": "modify"
         },
@@ -3257,7 +3409,7 @@
           "component": "release-and-lifecycle-notes",
           "paths": [
             "CHANGELOG.md",
-            "maintainer-only roadmap",
+            "_internal/roadmap.md",
             "docs/engineering-specs/ES-rc4-routing-release.engineering-spec.md"
           ],
           "changePolicy": "modify"
@@ -3419,7 +3571,7 @@
             "README.md",
             "docs/agent-integration.md",
             "docs/production-gate.md",
-            "maintainer-only adoption notes"
+            "_internal/adoption-notes.md"
           ],
           "changePolicy": "modify"
         },
@@ -3436,7 +3588,7 @@
           "component": "release-and-lifecycle-notes",
           "paths": [
             "CHANGELOG.md",
-            "maintainer-only roadmap",
+            "_internal/roadmap.md",
             "docs/engineering-specs/ES-rc5-lifecycle-release.engineering-spec.md"
           ],
           "changePolicy": "modify"
@@ -3587,7 +3739,7 @@
             "docs/agent-integration.md",
             "docs/getting-started.md",
             "docs/production-gate.md",
-            "maintainer-only adoption notes"
+            "_internal/adoption-notes.md"
           ],
           "changePolicy": "modify"
         },
@@ -3596,7 +3748,7 @@
           "component": "release-and-roadmap-notes",
           "paths": [
             "CHANGELOG.md",
-            "maintainer-only roadmap",
+            "_internal/roadmap.md",
             "docs/engineering-specs/ES-rc6-intuitive-workflow-release.engineering-spec.md"
           ],
           "changePolicy": "modify"
@@ -3778,7 +3930,7 @@
             "docs/maintaining-specs.md",
             "docs/production-gate.md",
             "docs/troubleshooting.md",
-            "maintainer-only adoption notes"
+            "_internal/adoption-notes.md"
           ],
           "changePolicy": "modify"
         },
@@ -3787,7 +3939,7 @@
           "component": "release-and-roadmap-notes",
           "paths": [
             "CHANGELOG.md",
-            "maintainer-only roadmap",
+            "_internal/roadmap.md",
             "docs/engineering-specs/ES-rc7-portable-governance-release.engineering-spec.md",
             "docs/engineering-specs/ES-portable-contract-governance.engineering-spec.md"
           ],
@@ -3940,7 +4092,7 @@
         {
           "id": "SRC-1",
           "type": "document",
-          "locator": "maintainer-only roadmap",
+          "locator": "_internal/roadmap.md",
           "title": "EngineeringSpec roadmap after RC7"
         },
         {
@@ -4047,7 +4199,7 @@
           "component": "documentation-and-static-explorer",
           "paths": [
             "README.md",
-            "maintainer-only roadmap",
+            "_internal/roadmap.md",
             "CHANGELOG.md",
             "docs/**",
             "site/**",
@@ -4294,7 +4446,7 @@
             "README.md",
             "docs/agent-integration.md",
             "docs/cli-reference.md",
-            "maintainer-only adoption notes",
+            "_internal/adoption-notes.md",
             "docs/first-change-tutorial.md",
             "docs/getting-started.md",
             "docs/integrations.md",
@@ -4319,7 +4471,7 @@
           "component": "release-and-roadmap-notes",
           "paths": [
             "CHANGELOG.md",
-            "maintainer-only roadmap",
+            "_internal/roadmap.md",
             "docs/engineering-specs/ES-rc8-frictionless-ops-release.engineering-spec.md",
             "docs/engineering-specs/ES-rc8-frictionless-agent-operations.engineering-spec.md"
           ],
@@ -4534,10 +4686,10 @@
           "paths": [
             "README.md",
             "CHANGELOG.md",
-            "maintainer-only roadmap",
+            "_internal/roadmap.md",
             "docs/agent-integration.md",
             "docs/cli-reference.md",
-            "maintainer-only adoption notes",
+            "_internal/adoption-notes.md",
             "docs/first-change-tutorial.md",
             "docs/getting-started.md",
             "docs/integrations.md",
@@ -4546,7 +4698,7 @@
             "docs/production-gate.md",
             "docs/troubleshooting.md",
             "docs/upgrading.md",
-            "maintainer-only launch notes/**"
+            "_internal/launch-notes/**"
           ],
           "changePolicy": "modify"
         },
@@ -4695,6 +4847,235 @@
       ]
     },
     {
+      "id": "ES-risk-stratified-pilot-evidence",
+      "title": "Stratify pilot evidence by task risk",
+      "status": "implemented",
+      "file": "ES-risk-stratified-pilot-evidence.engineering-spec.md",
+      "owners": [
+        "EngineeringSpec maintainers"
+      ],
+      "sourceRefs": [
+        {
+          "id": "SRC-1",
+          "type": "document",
+          "locator": "_internal/pilot-protocol.md",
+          "title": "Ten-task paired adoption pilot methodology"
+        },
+        {
+          "id": "SRC-2",
+          "type": "document",
+          "locator": "_internal/pilot-notes.md",
+          "title": "Zero-observation external pilot status and evidence boundaries"
+        },
+        {
+          "id": "SRC-3",
+          "type": "document",
+          "locator": "_internal/roadmap.md",
+          "title": "RC12 evidence freeze and post-pilot prioritization"
+        },
+        {
+          "id": "SRC-4",
+          "type": "document",
+          "locator": "d8755188356762495810872534650354afaa884e",
+          "title": "Preserved local task-risk stratification draft"
+        }
+      ],
+      "targets": [
+        {
+          "id": "TARGET-rfc",
+          "component": "risk-stratified-evidence-design",
+          "paths": [
+            "rfcs/0010-risk-stratified-pilot-evidence.md"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-benchmark",
+          "component": "paired-risk-recording-and-summary",
+          "paths": [
+            "src/cli/benchmark.ts",
+            "benchmarks/agent-impact.schema.json",
+            "benchmarks/README.md",
+            "_internal/pilot-protocol.md",
+            "_internal/pilot-records/pilot-template.json",
+            "test/unit/benchmark.test.ts",
+            "test/integration/cli.test.ts"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-conformance",
+          "component": "benchmark-risk-tier-vectors",
+          "paths": [
+            "conformance/benchmark-risk-tier/**",
+            "test/conformance/benchmark-risk-tier.test.ts"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-guidance",
+          "component": "honest-pilot-reporting",
+          "paths": [
+            "_internal/pilot-notes.md",
+            "_internal/roadmap.md"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-contract",
+          "component": "risk-stratification-lifecycle",
+          "paths": [
+            "docs/engineering-specs/ES-risk-stratified-pilot-evidence.engineering-spec.md"
+          ],
+          "changePolicy": "modify"
+        }
+      ],
+      "constraints": [
+        {
+          "id": "CON-1",
+          "level": "must",
+          "statement": "RFC 0010 must define the low, medium, and high task-risk rubric; predeclaration timing; pair comparability; compatibility; grouping and overhead calculations; publication treatment; and the boundary between empirical pilot tiers and future governance policy before dependent schema or summarizer implementation begins.",
+          "appliesTo": [
+            "TARGET-rfc"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-2",
+          "level": "must",
+          "statement": "Benchmark records must support an optional taskRiskTier value of low, medium, or high, and both conditions in every pair must preserve the same tier when it is present.",
+          "appliesTo": [
+            "TARGET-benchmark",
+            "TARGET-conformance"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-3",
+          "level": "must",
+          "statement": "Historical records without taskRiskTier must remain readable and summarizable, must be counted as missing tier data, and must not be silently assigned or inferred a tier after outcomes are known.",
+          "appliesTo": [
+            "TARGET-benchmark",
+            "TARGET-conformance"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-4",
+          "level": "must",
+          "statement": "Publishable pilot records collected under the risk-stratified protocol must include a predeclared taskRiskTier, while legacy and incomplete records remain inspectable with explicit non-publishable or missing-data treatment.",
+          "appliesTo": [
+            "TARGET-benchmark",
+            "TARGET-conformance",
+            "TARGET-guidance"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-5",
+          "level": "must",
+          "statement": "The benchmark summary must report pair and run counts, existing condition outcomes, absolute duration overhead, relative duration overhead when the baseline duration is nonzero, contract authoring and review cost, and missing-data status separately for each represented tier without replacing the existing aggregate summary.",
+          "appliesTo": [
+            "TARGET-benchmark"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-6",
+          "level": "must",
+          "statement": "Tier summaries must be deterministic, ordered low then medium then high, calculated only from complete comparable pairs assigned to that tier, and must preserve failed, slower, amended, negative-routing, and inconclusive outcomes.",
+          "appliesTo": [
+            "TARGET-benchmark",
+            "TARGET-conformance"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-7",
+          "level": "must",
+          "statement": "The pilot guide must require tiers to be assigned from predeclared blast radius and scope ambiguity rather than observed outcome, report absolute and relative overhead, and separate human contract cost from agent runtime and token cost.",
+          "appliesTo": [
+            "TARGET-benchmark",
+            "TARGET-guidance"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-8",
+          "level": "must_not",
+          "statement": "This correction must not add task risk as an EngineeringSpec format primitive, implementation permission, autonomous approval input, target policy, or enforcement decision; must not change format 0.1, routing, governance, runner inertness, approved-base authority, v1 or v2 scope receipt semantics, or historical evidence; and must not claim that any tier improves productivity or correctness.",
+          "appliesTo": [
+            "TARGET-rfc",
+            "TARGET-benchmark",
+            "TARGET-conformance",
+            "TARGET-guidance"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-9",
+          "level": "must",
+          "statement": "Conformance coverage must include valid tiers, absent legacy tiers, invalid tier values, mismatched paired tiers, deterministic tier order, zero-duration relative-overhead handling, and publishability treatment without executing declared specification runners.",
+          "appliesTo": [
+            "TARGET-conformance",
+            "TARGET-benchmark"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-10",
+          "level": "must",
+          "statement": "Public documentation must continue to report zero retained external pairs until observed records exist and must describe all tier comparisons as descriptive for the retained sample without causal, adoption, conversion, or star-growth claims.",
+          "appliesTo": [
+            "TARGET-guidance",
+            "TARGET-benchmark"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-11",
+          "level": "must",
+          "statement": "The contract must transition from approved to implemented only after RFC review, trusted repository checks, conformance verification, and maintainer evidence review complete without widening its targets.",
+          "appliesTo": [
+            "TARGET-contract"
+          ],
+          "enforcement": "review"
+        }
+      ],
+      "contracts": [],
+      "verification": [
+        {
+          "id": "VER-1",
+          "kind": "test",
+          "proves": [
+            "CON-2",
+            "CON-3",
+            "CON-4",
+            "CON-5",
+            "CON-6"
+          ]
+        },
+        {
+          "id": "VER-2",
+          "kind": "test",
+          "proves": [
+            "CON-8",
+            "CON-9"
+          ]
+        },
+        {
+          "id": "VER-3",
+          "kind": "human_review",
+          "proves": [
+            "CON-1",
+            "CON-7",
+            "CON-10",
+            "CON-11"
+          ]
+        }
+      ]
+    },
+    {
       "id": "ES-routing-derived-evidence-v2",
       "title": "Derive pilot evidence from repository routing",
       "status": "implemented",
@@ -4730,7 +5111,7 @@
         {
           "id": "SRC-5",
           "type": "document",
-          "locator": "maintainer-only pilot protocol",
+          "locator": "_internal/pilot-protocol.md",
           "title": "Current paired-pilot protocol"
         }
       ],
@@ -4787,12 +5168,12 @@
           "paths": [
             "README.md",
             "CHANGELOG.md",
-            "maintainer-only roadmap",
+            "_internal/roadmap.md",
             "docs/cli-reference.md",
             "docs/agent-integration.md",
             "docs/maintaining-specs.md",
-            "maintainer-only pilot notes",
-            "maintainer-only launch notes/**"
+            "_internal/pilot-notes.md",
+            "_internal/launch-notes/**"
           ],
           "changePolicy": "modify"
         },

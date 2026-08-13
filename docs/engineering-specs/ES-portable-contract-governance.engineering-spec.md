@@ -67,7 +67,7 @@ Implement the portable, opt-in contract-governance lane defined by RFC 0005 so c
   paths:
     - README.md
     - CHANGELOG.md
-    - maintainer-only roadmap
+    - _internal/roadmap.md
     - docs/agent-integration.md
     - docs/getting-started.md
     - docs/first-change-tutorial.md
@@ -75,7 +75,7 @@ Implement the portable, opt-in contract-governance lane defined by RFC 0005 so c
     - docs/maintaining-specs.md
     - docs/production-gate.md
     - docs/troubleshooting.md
-    - maintainer-only adoption notes
+    - _internal/adoption-notes.md
     - skills/engineering-spec/SKILL.md
   change_policy: modify
 - id: TARGET-contract

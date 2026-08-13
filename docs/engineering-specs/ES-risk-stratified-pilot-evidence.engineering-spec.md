@@ -21,15 +21,15 @@ Make the predeclared ten-task pilot capable of locating where EngineeringSpec's 
 ```engineering-source-refs
 - id: SRC-1
   type: document
-  ref: maintainer-only pilot protocol
+  ref: _internal/pilot-protocol.md
   title: Ten-task paired adoption pilot methodology
 - id: SRC-2
   type: document
-  ref: maintainer-only pilot notes
+  ref: _internal/pilot-notes.md
   title: Zero-observation external pilot status and evidence boundaries
 - id: SRC-3
   type: document
-  ref: maintainer-only roadmap
+  ref: _internal/roadmap.md
   title: RC12 evidence freeze and post-pilot prioritization
 - id: SRC-4
   type: document
@@ -51,8 +51,8 @@ Make the predeclared ten-task pilot capable of locating where EngineeringSpec's 
     - src/cli/benchmark.ts
     - benchmarks/agent-impact.schema.json
     - benchmarks/README.md
-    - maintainer-only pilot protocol
-    - maintainer-only pilot records/pilot-template.json
+    - _internal/pilot-protocol.md
+    - _internal/pilot-records/pilot-template.json
     - test/unit/benchmark.test.ts
     - test/integration/cli.test.ts
   change_policy: modify
@@ -65,8 +65,8 @@ Make the predeclared ten-task pilot capable of locating where EngineeringSpec's 
 - id: TARGET-guidance
   component: honest-pilot-reporting
   paths:
-    - maintainer-only pilot notes
-    - maintainer-only roadmap
+    - _internal/pilot-notes.md
+    - _internal/roadmap.md
   change_policy: modify
 - id: TARGET-contract
   component: risk-stratification-lifecycle

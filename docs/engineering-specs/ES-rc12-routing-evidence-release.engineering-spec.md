@@ -69,10 +69,10 @@ Publish the reviewed routing-derived evidence implementation as `v0.1.0-rc.12`. 
   paths:
     - README.md
     - CHANGELOG.md
-    - maintainer-only roadmap
+    - _internal/roadmap.md
     - docs/agent-integration.md
     - docs/cli-reference.md
-    - maintainer-only adoption notes
+    - _internal/adoption-notes.md
     - docs/first-change-tutorial.md
     - docs/getting-started.md
     - docs/integrations.md
@@ -81,7 +81,7 @@ Publish the reviewed routing-derived evidence implementation as `v0.1.0-rc.12`. 
     - docs/production-gate.md
     - docs/troubleshooting.md
     - docs/upgrading.md
-    - maintainer-only launch notes/**
+    - _internal/launch-notes/**
   change_policy: modify
 - id: TARGET-site
   component: deterministic-release-site

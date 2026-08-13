@@ -21,7 +21,7 @@ Stop expanding product breadth and test the central thesis. Add one thin pre-cod
 ```engineering-source-refs
 - id: SRC-1
   type: document
-  ref: maintainer-only roadmap
+  ref: _internal/roadmap.md
   title: EngineeringSpec roadmap
 - id: SRC-2
   type: other
@@ -29,15 +29,15 @@ Stop expanding product breadth and test the central thesis. Add one thin pre-cod
   title: Review of the agent change-control blueprint after merged PR 43
 - id: SRC-3
   type: document
-  ref: maintainer-only pilot protocol
+  ref: _internal/pilot-protocol.md
   title: Ten-task paired adoption pilot
 - id: SRC-4
   type: document
-  ref: maintainer-only case studies/private-consumer-pilot.md
+  ref: _internal/case-studies/private-consumer-pilot.md
   title: private consumer dogfooding observations and unproven outcomes
 - id: SRC-5
   type: document
-  ref: maintainer-only launch notes/positioning.md
+  ref: _internal/launch-notes/positioning.md
   title: Bounded autonomy positioning
 ```
 
@@ -68,10 +68,10 @@ Stop expanding product breadth and test the central thesis. Add one thin pre-cod
 - id: TARGET-pilot
   component: external-adopter-pilot
   paths:
-    - maintainer-only pilot records/**
-    - maintainer-only case studies/**
-    - maintainer-only launch notes/**
-    - maintainer-only pilot notes
+    - _internal/pilot-records/**
+    - _internal/case-studies/**
+    - _internal/launch-notes/**
+    - _internal/pilot-notes.md
   change_policy: modify
 - id: TARGET-agent-guidance
   component: portable-agent-preflight
@@ -88,7 +88,7 @@ Stop expanding product breadth and test the central thesis. Add one thin pre-cod
   component: evidence-first-roadmap-and-usage
   paths:
     - README.md
-    - maintainer-only roadmap
+    - _internal/roadmap.md
     - CHANGELOG.md
     - docs/getting-started.md
     - docs/first-change-tutorial.md

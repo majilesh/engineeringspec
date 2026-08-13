@@ -48,13 +48,13 @@ Prepare `v0.1.0-rc.6` from the reviewed intuitive workflow implementation so pac
     - docs/agent-integration.md
     - docs/getting-started.md
     - docs/production-gate.md
-    - maintainer-only adoption notes
+    - _internal/adoption-notes.md
   change_policy: modify
 - id: TARGET-notes
   component: release-and-roadmap-notes
   paths:
     - CHANGELOG.md
-    - maintainer-only roadmap
+    - _internal/roadmap.md
     - docs/engineering-specs/ES-rc6-intuitive-workflow-release.engineering-spec.md
   change_policy: modify
 ```

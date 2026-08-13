@@ -39,14 +39,14 @@ Prepare `v0.1.0-rc.3` from the reviewed agent-first implementation. Keep package
     - src/cli/adopt.ts
     - README.md
     - docs/production-gate.md
-    - maintainer-only adoption notes
+    - _internal/adoption-notes.md
     - test/integration/cli.test.ts
   change_policy: modify
 - id: TARGET-notes
   component: release-notes
   paths:
     - CHANGELOG.md
-    - maintainer-only roadmap
+    - _internal/roadmap.md
   change_policy: modify
 ```
 
