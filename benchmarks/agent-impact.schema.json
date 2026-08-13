@@ -18,6 +18,7 @@
   ],
   "properties": {
     "taskId": { "type": "string", "minLength": 1 },
+    "taskRiskTier": { "enum": ["low", "medium", "high"] },
     "runId": { "type": "string", "minLength": 1 },
     "pairId": { "type": "string", "minLength": 1 },
     "condition": { "enum": ["baseline", "engineeringspec"] },

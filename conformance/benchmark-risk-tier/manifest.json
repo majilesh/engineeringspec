@@ -1,0 +1,79 @@
+[
+  {
+    "name": "orders represented tiers and reports pair-level overhead",
+    "schemaValid": true,
+    "records": [
+      {"taskId":"high","taskRiskTier":"high","runId":"high-spec","condition":"engineeringspec","agent":"agent","success":true,"scopeViolations":0,"reviewCorrections":0,"durationSeconds":120,"inputTokens":1,"outputTokens":1},
+      {"taskId":"low","taskRiskTier":"low","runId":"low-base","condition":"baseline","agent":"agent","success":true,"scopeViolations":0,"reviewCorrections":0,"durationSeconds":100,"inputTokens":1,"outputTokens":1},
+      {"taskId":"medium","taskRiskTier":"medium","runId":"medium-spec","condition":"engineeringspec","agent":"agent","success":true,"scopeViolations":0,"reviewCorrections":0,"durationSeconds":40,"inputTokens":1,"outputTokens":1},
+      {"taskId":"high","taskRiskTier":"high","runId":"high-base","condition":"baseline","agent":"agent","success":true,"scopeViolations":0,"reviewCorrections":0,"durationSeconds":100,"inputTokens":1,"outputTokens":1},
+      {"taskId":"medium","taskRiskTier":"medium","runId":"medium-base","condition":"baseline","agent":"agent","success":true,"scopeViolations":0,"reviewCorrections":0,"durationSeconds":50,"inputTokens":1,"outputTokens":1},
+      {"taskId":"low","taskRiskTier":"low","runId":"low-spec","condition":"engineeringspec","agent":"agent","success":true,"scopeViolations":0,"reviewCorrections":0,"durationSeconds":110,"inputTokens":1,"outputTokens":1}
+    ],
+    "expected": {
+      "tiers": ["low", "medium", "high"],
+      "absoluteDuration": [10, -10, 20],
+      "relativeDuration": [0.1, -0.2, 0.2],
+      "missingTaskRiskTier": 0,
+      "publishable": false
+    }
+  },
+  {
+    "name": "retains legacy pairs without inferring a tier",
+    "schemaValid": true,
+    "records": [
+      {"taskId":"legacy","runId":"legacy-base","condition":"baseline","agent":"agent","success":true,"scopeViolations":0,"reviewCorrections":0,"durationSeconds":1,"inputTokens":1,"outputTokens":1},
+      {"taskId":"legacy","runId":"legacy-spec","condition":"engineeringspec","agent":"agent","success":true,"scopeViolations":0,"reviewCorrections":0,"durationSeconds":1,"inputTokens":1,"outputTokens":1}
+    ],
+    "expected": {
+      "tiers": [],
+      "absoluteDuration": [],
+      "relativeDuration": [],
+      "missingTaskRiskTier": 2,
+      "publishable": false
+    }
+  },
+  {
+    "name": "retains zero-duration pairs without a relative ratio",
+    "schemaValid": true,
+    "records": [
+      {"taskId":"zero","taskRiskTier":"low","runId":"zero-base","condition":"baseline","agent":"agent","success":false,"scopeViolations":1,"reviewCorrections":1,"durationSeconds":0,"inputTokens":1,"outputTokens":1},
+      {"taskId":"zero","taskRiskTier":"low","runId":"zero-spec","condition":"engineeringspec","agent":"agent","success":true,"scopeViolations":0,"reviewCorrections":0,"durationSeconds":5,"inputTokens":1,"outputTokens":1,"contractAmendments":1}
+    ],
+    "expected": {
+      "tiers": ["low"],
+      "absoluteDuration": [5],
+      "relativeDuration": [null],
+      "missingTaskRiskTier": 0,
+      "publishable": false,
+      "zeroBaselineDurationPairs": [1]
+    }
+  },
+  {
+    "name": "rejects different tiers within a pair",
+    "schemaValid": true,
+    "records": [
+      {"taskId":"mismatch","taskRiskTier":"low","runId":"mismatch-base","condition":"baseline","agent":"agent","success":true,"scopeViolations":0,"reviewCorrections":0,"durationSeconds":1,"inputTokens":1,"outputTokens":1},
+      {"taskId":"mismatch","taskRiskTier":"high","runId":"mismatch-spec","condition":"engineeringspec","agent":"agent","success":true,"scopeViolations":0,"reviewCorrections":0,"durationSeconds":1,"inputTokens":1,"outputTokens":1}
+    ],
+    "expectedError": "preserve taskRiskTier"
+  },
+  {
+    "name": "rejects a tier present on only one condition",
+    "schemaValid": true,
+    "records": [
+      {"taskId":"partial","taskRiskTier":"medium","runId":"partial-base","condition":"baseline","agent":"agent","success":true,"scopeViolations":0,"reviewCorrections":0,"durationSeconds":1,"inputTokens":1,"outputTokens":1},
+      {"taskId":"partial","runId":"partial-spec","condition":"engineeringspec","agent":"agent","success":true,"scopeViolations":0,"reviewCorrections":0,"durationSeconds":1,"inputTokens":1,"outputTokens":1}
+    ],
+    "expectedError": "preserve taskRiskTier on both conditions"
+  },
+  {
+    "name": "rejects unsupported tier values",
+    "schemaValid": false,
+    "records": [
+      {"taskId":"invalid","taskRiskTier":"critical","runId":"invalid-base","condition":"baseline","agent":"agent","success":true,"scopeViolations":0,"reviewCorrections":0,"durationSeconds":1,"inputTokens":1,"outputTokens":1},
+      {"taskId":"invalid","taskRiskTier":"critical","runId":"invalid-spec","condition":"engineeringspec","agent":"agent","success":true,"scopeViolations":0,"reviewCorrections":0,"durationSeconds":1,"inputTokens":1,"outputTokens":1}
+    ],
+    "expectedError": "taskRiskTier must be low, medium, or high"
+  }
+]

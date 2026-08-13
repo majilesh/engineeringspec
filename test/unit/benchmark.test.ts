@@ -6,6 +6,7 @@ import { summarizeAgentBenchmark, type AgentBenchmarkRecord } from "../../src/cl
 function complete(condition: AgentBenchmarkRecord["condition"], overrides: Partial<AgentBenchmarkRecord> = {}): AgentBenchmarkRecord {
   return {
     taskId: "task-1",
+    taskRiskTier: "medium",
     pairId: "pair-1",
     runId: `run-${condition}`,
     condition,
@@ -116,6 +117,66 @@ describe("agent-impact benchmark", () => {
     expect(negative.interpretation).toMatchObject({ evidenceQuality: "complete", publishable: true });
     expect(negative.engineeringspec.scope).toMatchObject({ assessment: "not_interpretable_negative_outcome", averagePrecision: null });
   });
+  it("stratifies paired outcomes deterministically and keeps human cost separate", () => {
+    const pair = (taskRiskTier: "low" | "medium" | "high", taskId: string, baselineDuration: number, specDuration: number) => [
+      complete("baseline", { taskId, pairId: taskId, runId: `${taskId}-baseline`, taskRiskTier, durationSeconds: baselineDuration }),
+      complete("engineeringspec", { taskId, pairId: taskId, runId: `${taskId}-spec`, taskRiskTier, durationSeconds: specDuration }),
+    ];
+    const records = [
+      ...pair("high", "high-task", 200, 240),
+      ...pair("low", "low-task", 100, 110),
+      ...pair("medium", "medium-task", 50, 40),
+    ];
+    const result = summarizeAgentBenchmark([...records].reverse());
+    expect(result.tiers.map((tier) => tier.taskRiskTier)).toEqual(["low", "medium", "high"]);
+    expect(result.tiers[0]).toMatchObject({
+      taskRiskTier: "low",
+      tasks: 1,
+      pairs: 1,
+      runs: 2,
+      overhead: {
+        averageAbsoluteDurationSeconds: 10,
+        averageRelativeDuration: 0.1,
+        relativeDurationEligiblePairs: 1,
+        zeroBaselineDurationPairs: 0,
+        averageContractAuthoringSeconds: 20,
+        averageContractReviewSeconds: 10,
+      },
+    });
+    expect(result.tiers[1]?.overhead).toMatchObject({ averageAbsoluteDurationSeconds: -10, averageRelativeDuration: -0.2 });
+    expect(result.tiers[2]?.pairedOutcomes.slowerEngineeringSpecRuns).toBe(1);
+  });
+
+  it("retains zero-duration pairs while excluding only their relative overhead", () => {
+    const result = summarizeAgentBenchmark([
+      complete("baseline", { taskRiskTier: "low", durationSeconds: 0 }),
+      complete("engineeringspec", { taskRiskTier: "low", durationSeconds: 5 }),
+    ]);
+    expect(result.tiers[0]?.overhead).toEqual(expect.objectContaining({
+      averageAbsoluteDurationSeconds: 5,
+      averageRelativeDuration: null,
+      relativeDurationEligiblePairs: 0,
+      zeroBaselineDurationPairs: 1,
+    }));
+    expect(result.tiers[0]?.pairs).toBe(1);
+  });
+
+  it("rejects invalid or mismatched tiers without inferring missing values", () => {
+    const missingTier = complete("engineeringspec");
+    delete missingTier.taskRiskTier;
+    expect(() => summarizeAgentBenchmark([
+      { ...complete("baseline"), taskRiskTier: "critical" },
+      complete("engineeringspec"),
+    ])).toThrow("taskRiskTier must be low, medium, or high");
+    expect(() => summarizeAgentBenchmark([
+      complete("baseline", { taskRiskTier: "low" }),
+      complete("engineeringspec", { taskRiskTier: "high" }),
+    ])).toThrow("preserve taskRiskTier");
+    expect(() => summarizeAgentBenchmark([
+      complete("baseline", { taskRiskTier: "low" }),
+      missingTier,
+    ])).toThrow("preserve taskRiskTier on both conditions");
+  });
   it("retains failed, slower, and amended runs while reporting scope precision", () => {
     const result = summarizeAgentBenchmark([complete("baseline"), complete("engineeringspec")]);
     expect(result).toMatchObject({
@@ -162,6 +223,8 @@ describe("agent-impact benchmark", () => {
     const result = summarizeAgentBenchmark([legacy("baseline"), legacy("engineeringspec")]);
     expect(result.interpretation.resultClass).toBe("mixed_or_unclassified");
     expect(result.missingData.repositoryRevision).toBe(2);
+    expect(result.missingData.taskRiskTier).toBe(2);
+    expect(result.tiers).toEqual([]);
     expect(result.engineeringspec.scope.assessment).toBe("insufficient_data");
     expect(result.interpretation).toMatchObject({ evidenceQuality: "incomplete", publishable: false });
   });
@@ -259,9 +322,18 @@ describe("agent-impact benchmark", () => {
     expect(result.interpretation.note).toContain("must not be presented");
   });
 
+  it("keeps tier-less v2 records readable but non-publishable", () => {
+    const records = [completeV2("baseline"), completeV2("engineeringspec")];
+    for (const record of records) delete record.taskRiskTier;
+    const result = summarizeAgentBenchmark(records);
+    expect(result.missingData.taskRiskTier).toBe(2);
+    expect(result.tiers).toEqual([]);
+    expect(result.interpretation).toMatchObject({ evidenceQuality: "incomplete", publishable: false });
+  });
+
   it("starts the public pilot at honest zero evidence with consent disabled", async () => {
     const status = JSON.parse(await readFile("maintainer-only pilot records/status.json", "utf8")) as Record<string, unknown>;
-    const template = JSON.parse(await readFile("maintainer-only pilot records/pilot-template.json", "utf8")) as { consent: Record<string, boolean | null>; completedPairedTasks: number };
+    const template = JSON.parse(await readFile("maintainer-only pilot records/pilot-template.json", "utf8")) as { consent: Record<string, boolean | null>; completedPairedTasks: number; taskRiskRubric: string; predeclaredTaskRiskTiers: unknown[] };
     expect(status).toMatchObject({
       status: "recruiting",
       observedPairedTasks: 0,
@@ -270,6 +342,8 @@ describe("agent-impact benchmark", () => {
     });
     expect(String(status.claim)).toContain("No external comparative outcome");
     expect(template.completedPairedTasks).toBe(0);
+    expect(template.taskRiskRubric).toBe("RFC-0010");
+    expect(template.predeclaredTaskRiskTiers).toEqual([]);
     expect(template.consent).toMatchObject({ measurement: false, aggregatePublication: false, caseStudyPublication: false });
   });
 });
