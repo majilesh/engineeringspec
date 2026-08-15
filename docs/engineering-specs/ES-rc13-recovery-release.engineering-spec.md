@@ -48,6 +48,8 @@ Restore a consumable immutable release after the sensitive-data history rewrite 
     - src/validator/validateProfiles.ts
     - src/cli/program.ts
     - examples/productspec/**
+    - conformance/invalid-semantics/missing-product-item.engineering-spec.md
+    - test/conformance/conformance.test.ts
     - test/integration/cli.test.ts
     - test/unit/core.test.ts
   change_policy: modify
