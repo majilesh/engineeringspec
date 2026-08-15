@@ -4,7 +4,7 @@ spec_format_version: "0.1"
 spec_revision: 1
 id: ES-rc13-recovery-release
 title: Publish a clean post-rewrite RC13 recovery release
-status: approved
+status: implemented
 owners:
   - team: EngineeringSpec maintainers
 repository:
