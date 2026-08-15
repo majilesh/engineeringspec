@@ -1,6 +1,6 @@
 {
   "name": "@engineeringspec/cli",
-  "version": "0.1.0-rc.12",
+  "version": "0.1.0-rc.13",
   "description": "EngineeringSpec is an open, agent-neutral format for versioned engineering change contracts.",
   "license": "MIT",
   "homepage": "https://engineeringspec.org",
@@ -8,16 +8,49 @@
     "type": "git",
     "url": "git+https://github.com/majilesh/engineeringspec.git"
   },
-  "bugs": { "url": "https://github.com/majilesh/engineeringspec/issues" },
-  "keywords": ["ai-agents", "engineering", "specification", "validation", "traceability", "mcp"],
-  "publishConfig": { "access": "public", "provenance": true },
+  "bugs": {
+    "url": "https://github.com/majilesh/engineeringspec/issues"
+  },
+  "keywords": [
+    "ai-agents",
+    "engineering",
+    "specification",
+    "validation",
+    "traceability",
+    "mcp"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
   "type": "module",
-  "bin": { "engineeringspec": "dist/cli.js" },
+  "bin": {
+    "engineeringspec": "dist/cli.js"
+  },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "exports": { ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js" } },
-  "files": ["dist", "schemas", "skills", "integrations", "examples/demo", "scripts/demo.mjs", "benchmarks", "README.md", "SPEC.md", "LICENSE", "action.yml"],
-  "engines": { "node": ">=20" },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "schemas",
+    "skills",
+    "integrations",
+    "examples/demo",
+    "scripts/demo.mjs",
+    "benchmarks",
+    "README.md",
+    "SPEC.md",
+    "LICENSE",
+    "action.yml"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc --noEmit",
@@ -27,6 +60,7 @@
     "test:conformance": "vitest run test/conformance",
     "demo": "npm run build && node scripts/demo.mjs",
     "site:generate": "npm run build && node scripts/generate-site.mjs",
+    "package:check": "node scripts/check-package-contents.mjs",
     "format": "prettier --write ."
   },
   "dependencies": {

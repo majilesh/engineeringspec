@@ -1,5 +1,6 @@
 import { access, appendFile, readFile, writeFile } from "node:fs/promises";
 import { constants } from "node:fs";
+import path from "node:path";
 import { Command, CommanderError, Option } from "commander";
 import { parseFile, validateFile } from "../index.js";
 import { validatePath, type PathValidationReport } from "../validator/validatePath.js";
@@ -12,7 +13,7 @@ import { inspect } from "../query/inspect.js";
 import { coverage } from "../query/coverage.js";
 import { collectGitDiff, collectGitStagedDiff, collectGitWorktreeDiff, changedFromPathList } from "../gate/collectDiff.js";
 import { gateDiff } from "../gate/gate.js";
-import { readGitBlob, resolveCommitSha, resolveGitRelativePath, type SpecSource } from "../gate/loadSpec.js";
+import { gitShowToplevel, readGitBlob, resolveCommitSha, resolveGitRelativePath, type SpecSource } from "../gate/loadSpec.js";
 import { buildGateReceipt, writeGateReceipt } from "../gate/receipt.js";
 import type { ChangeKind } from "../gate/types.js";
 import type { Status } from "../model/types.js";
@@ -122,15 +123,24 @@ export function createProgram(setCode: (code: number) => void): Command {
     .option("--strict-external")
     .option("--schema-only")
     .option("--no-profile-resolution")
+    .option("--repository-root <path>", "repository root for repository-relative local source paths")
     .addOption(new Option("--format <format>", "output format").choices(["text", "json", "github", "markdown"]))
     .action(async (input, options, command) => {
       try {
         const global = command.optsWithGlobals() as GlobalOptions;
+        let repositoryRoot:string|undefined;
+        if(options.profileResolution!==false) {
+          if(options.repositoryRoot) repositoryRoot=path.resolve(String(options.repositoryRoot));
+          else {
+            try { repositoryRoot=await gitShowToplevel(process.cwd()); } catch { repositoryRoot=undefined; }
+          }
+        }
         const report = await validatePath(input, {
           strict: Boolean(global.strict),
           strictExternal: Boolean(options.strictExternal),
           schemaOnly: Boolean(options.schemaOnly),
           resolveProfiles: options.profileResolution !== false,
+          ...(repositoryRoot?{repositoryRoot}:{}),
         });
         if (!global.quiet) {
           if (global.format === "json") output(serializableReport(report), "json");

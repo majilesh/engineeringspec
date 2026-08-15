@@ -1,7 +1,7 @@
 {
   "valid": true,
   "directory": "docs/engineering-specs",
-  "documents": 23,
+  "documents": 24,
   "entries": [
     {
       "id": "ES-actionable-diagnostic-hints",
@@ -3223,6 +3223,237 @@
             "CON-8",
             "CON-9",
             "CON-10"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ES-rc13-recovery-release",
+      "title": "Publish a clean post-rewrite RC13 recovery release",
+      "status": "approved",
+      "file": "ES-rc13-recovery-release.engineering-spec.md",
+      "owners": [
+        "EngineeringSpec maintainers"
+      ],
+      "sourceRefs": [
+        {
+          "id": "SRC-1",
+          "type": "document",
+          "locator": "292d14a1c99ec08487c7f8592916938fa22303be",
+          "title": "Sanitized public main after the sensitive-data history rewrite"
+        },
+        {
+          "id": "SRC-2",
+          "type": "document",
+          "locator": "e2d485cfeeb4ce745a57293db089ff70cc4648de",
+          "title": "Sanitized equivalent of the previously reviewed Action implementation merge"
+        },
+        {
+          "id": "SRC-3",
+          "type": "document",
+          "locator": "SPEC.md",
+          "title": "EngineeringSpec format 0.1 repository-relative local source-path requirement"
+        },
+        {
+          "id": "SRC-4",
+          "type": "document",
+          "locator": "docs/engineering-specs/ES-rc12-routing-evidence-release.engineering-spec.md",
+          "title": "Last historical release contract before package withdrawal and history rewrite"
+        }
+      ],
+      "targets": [
+        {
+          "id": "TARGET-profile-resolution",
+          "component": "productspec-repository-path-resolution",
+          "paths": [
+            "src/profiles/productspec/validate.ts",
+            "src/validator/validateFile.ts",
+            "src/validator/validateProfiles.ts",
+            "src/cli/program.ts",
+            "examples/productspec/**",
+            "conformance/invalid-semantics/missing-product-item.engineering-spec.md",
+            "test/conformance/conformance.test.ts",
+            "test/integration/cli.test.ts",
+            "test/unit/core.test.ts"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-package-safety",
+          "component": "release-package-content-audit",
+          "paths": [
+            "package.json",
+            "package-lock.json",
+            "scripts/check-package-contents.mjs",
+            "test/unit/package-contents.test.ts",
+            ".github/workflows/ci.yml"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-pins",
+          "component": "immutable-consumer-identities",
+          "paths": [
+            "src/adoption/releases.ts",
+            "src/cli/adopt.ts",
+            "test/unit/version.test.ts",
+            "test/unit/doctor.test.ts",
+            "test/integration/cli.test.ts",
+            "skills/engineering-spec/**",
+            "integrations/**",
+            "AGENTS.md",
+            "CLAUDE.md",
+            ".cursor/rules/**"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-documentation",
+          "component": "rc13-recovery-guidance",
+          "paths": [
+            "README.md",
+            "CHANGELOG.md",
+            "docs/agent-integration.md",
+            "docs/cli-reference.md",
+            "docs/first-change-tutorial.md",
+            "docs/getting-started.md",
+            "docs/lifecycle.md",
+            "docs/production-gate.md",
+            "docs/troubleshooting.md",
+            "docs/upgrading.md"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-site",
+          "component": "deterministic-release-site",
+          "paths": [
+            "site/**",
+            "scripts/generate-site.mjs"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-contract",
+          "component": "rc13-recovery-lifecycle",
+          "paths": [
+            "docs/engineering-specs/ES-rc13-recovery-release.engineering-spec.md"
+          ],
+          "changePolicy": "modify"
+        }
+      ],
+      "constraints": [
+        {
+          "id": "CON-1",
+          "level": "must",
+          "statement": "ProductSpec source paths must resolve from an explicit repository root in accordance with format 0.1, remain confined to that root, and work when an EngineeringSpec under docs/engineering-specs references a sibling repository path such as docs/product/spec.md.",
+          "appliesTo": [
+            "TARGET-profile-resolution"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-2",
+          "level": "must",
+          "statement": "Profile resolution must fail closed under strict external validation when the repository root is absent, invalid, escaping, or the referenced ProductSpec cannot be read, while --no-profile-resolution remains read-only and compatible.",
+          "appliesTo": [
+            "TARGET-profile-resolution"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-3",
+          "level": "must",
+          "statement": "package.json, root package-lock metadata, compiled CLI output, current generated guidance, current integrations, current documentation, and generated site examples must consistently use exact version 0.1.0-rc.13 without rewriting historical contracts, changelog entries, receipts, benchmark inputs, or retained evidence.",
+          "appliesTo": [
+            "TARGET-package-safety",
+            "TARGET-pins",
+            "TARGET-documentation",
+            "TARGET-site"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-4",
+          "level": "must",
+          "statement": "Current generated and documented production Action examples must pin the full sanitized reviewed commit e2d485cfeeb4ce745a57293db089ff70cc4648de, and no current consumer surface may retain the pre-rewrite Action SHA.",
+          "appliesTo": [
+            "TARGET-pins",
+            "TARGET-documentation",
+            "TARGET-site"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-5",
+          "level": "must",
+          "statement": "A deterministic package-content check must inspect the npm publish file set and fail if it contains .private, maintainer-only launch or promotion material, removed private documentation, repository secrets, Git metadata, unexpected top-level paths, or omits any declared public runtime, schema, skill, integration, example, license, specification, README, or Action entrypoint.",
+          "appliesTo": [
+            "TARGET-package-safety"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-6",
+          "level": "must_not",
+          "statement": "Recovery must not restore removed sensitive material, republish RC9-RC12, move existing tags, claim GitHub garbage collection is complete before Support confirms it, execute specification-declared runners, add telemetry, or change format 0.1, routing authority, governance decisions, target-policy semantics, receipt schemas, or trusted publication boundaries.",
+          "appliesTo": [
+            "TARGET-profile-resolution",
+            "TARGET-package-safety",
+            "TARGET-pins",
+            "TARGET-documentation",
+            "TARGET-site"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-7",
+          "level": "must",
+          "statement": "RC13 publication must use a new immutable v0.1.0-rc.13 tag created from the reviewed release merge, publish npm under the next dist-tag, and pass repository, conformance, package-content, deterministic-site, clean-install CLI, and consumer Action smoke checks before any latest-tag promotion.",
+          "appliesTo": [
+            "TARGET-package-safety",
+            "TARGET-pins",
+            "TARGET-documentation",
+            "TARGET-site"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-8",
+          "level": "must",
+          "statement": "The recovery contract must transition out of approved only after the implementation and all trusted checks are reviewed, without widening its targets in the spending change.",
+          "appliesTo": [
+            "TARGET-contract"
+          ],
+          "enforcement": "review"
+        }
+      ],
+      "contracts": [],
+      "verification": [
+        {
+          "id": "VER-1",
+          "kind": "test",
+          "proves": [
+            "CON-1",
+            "CON-2",
+            "CON-3",
+            "CON-4",
+            "CON-5"
+          ]
+        },
+        {
+          "id": "VER-2",
+          "kind": "test",
+          "proves": [
+            "CON-6"
+          ]
+        },
+        {
+          "id": "VER-3",
+          "kind": "human_review",
+          "proves": [
+            "CON-7",
+            "CON-8"
           ]
         }
       ]

@@ -1,4 +1,4 @@
-import { mkdir, mkdtemp,readFile, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp,readFile, symlink, writeFile } from "node:fs/promises";
 import { execFileSync } from "node:child_process";
 import path from "node:path";
 import os from "node:os";
@@ -27,7 +27,30 @@ async function invoke(args:string[]):Promise<number>{
 describe("CLI",()=>{
   it("initializes without overwriting and produces a valid file",async()=>{const dir=await mkdtemp(path.join(os.tmpdir(),"es-cli-"));const file=path.join(dir,"ENGINEERING_SPEC.md");expect(await invoke(["init",file,"--id","ES-created","--quiet"])).toBe(0);expect((await validateFile(file)).valid).toBe(true);expect(await invoke(["init",file,"--quiet"])).toBe(3);expect(await readFile(file,"utf8")).toContain("ES-created");});
   it("validates valid and invalid examples",async()=>{expect((await validateFile("examples/standalone/bug-fix.engineering-spec.md")).valid).toBe(true);expect((await validateFile("examples/invalid/duplicate-id.engineering-spec.md")).valid).toBe(false);});
-  it("resolves ProductSpec profile",async()=>{const result=await validateFile("examples/productspec/ticket-triage.engineering-spec.md");expect(result.diagnostics).toEqual([]);});
+  it("resolves repository-relative ProductSpec profiles from an explicit root",async()=>{
+    const result=await validateFile("examples/productspec/ticket-triage.engineering-spec.md",{repositoryRoot:process.cwd(),strictExternal:true});
+    expect(result.diagnostics).toEqual([]);
+  });
+  it("resolves ProductSpec paths across sibling repository directories and fails closed without a root",async()=>{
+    const root=await mkdtemp(path.join(os.tmpdir(),"es-productspec-root-"));
+    const specDir=path.join(root,"docs","engineering-specs");
+    const productDir=path.join(root,"docs","product");
+    await mkdir(specDir,{recursive:true});
+    await mkdir(productDir,{recursive:true});
+    await writeFile(path.join(productDir,"feature.md"),`---\nspec_format: product-spec\nspec_revision: 1\nid: PS-feature\n---\n\n\`\`\`product-acceptance\n- id: AC-1\n  statement: Works.\n\`\`\`\n`);
+    const file=path.join(specDir,"feature.engineering-spec.md");
+    await writeFile(file,`---\nspec_format: engineering-spec\nspec_format_version: "0.1"\nspec_revision: 1\nid: ES-feature\ntitle: Feature\nstatus: draft\nowners: [{team: test}]\nprofiles: [{name: productspec, version: "0.1"}]\n---\n\n\`\`\`engineering-source-refs\n- {id: SRC-1, type: productspec, path: docs/product/feature.md, revision: 1, item_ids: [AC-1]}\n\`\`\`\n\n\`\`\`engineering-targets\n- {id: TARGET-1, paths: [src/**], change_policy: modify}\n\`\`\`\n\n\`\`\`engineering-constraints\n- {id: CON-1, level: must, statement: Works, satisfies: [AC-1], enforcement: {kind: review, reviewer_role: maintainer}}\n\`\`\`\n\n\`\`\`engineering-verification\n- {id: VER-1, proves: [CON-1], kind: human_review}\n\`\`\`\n`);
+    expect((await validateFile(file,{repositoryRoot:root,strictExternal:true})).diagnostics).toEqual([]);
+    expect((await validateFile(file,{strictExternal:true})).diagnostics.some(item=>item.code==="ESPR001"&&item.severity==="error")).toBe(true);
+    expect((await validateFile(file,{strictExternal:true,resolveProfiles:false})).diagnostics.some(item=>item.code==="ESPR001")).toBe(false);
+    expect(await invoke(["validate",file,"--repository-root",root,"--strict-external","--quiet"])).toBe(0);
+    const outside=path.join(await mkdtemp(path.join(os.tmpdir(),"es-productspec-outside-")),"outside.md");
+    await writeFile(outside,await readFile(path.join(productDir,"feature.md"),"utf8"));
+    await symlink(outside,path.join(productDir,"escape.md"));
+    const escapedFile=path.join(specDir,"escaped.engineering-spec.md");
+    await writeFile(escapedFile,(await readFile(file,"utf8")).replace("docs/product/feature.md","docs/product/escape.md"));
+    expect((await validateFile(escapedFile,{repositoryRoot:root,strictExternal:true})).diagnostics.some(item=>item.code==="ESPR001"&&item.message.includes("outside the repository root"))).toBe(true);
+  });
   it("validates a directory and emits GitHub annotations",async()=>{const dir=await mkdtemp(path.join(os.tmpdir(),"es-directory-"));await mkdir(path.join(dir,"specs"));await writeFile(path.join(dir,"specs","bad.engineering-spec.md"),"# invalid\n");const messages:string[]=[];const original=console.log;console.log=(message?:unknown)=>{messages.push(String(message));};try{expect(await invoke(["validate",path.join(dir,"specs"),"--format","github"])).toBe(1);}finally{console.log=original;}expect(messages.some(message=>message.startsWith("::error"))).toBe(true);});
   it("gates changed paths against declared targets",async()=>{
     const file="docs/engineering-specs/ES-gate-diff-scope.engineering-spec.md";
@@ -302,7 +325,7 @@ owners: [{team: test}]
     expect(await readFile(path.join(root,".github/workflows/engineering-spec.yml"),"utf8")).toContain("gate-require-status: approved");
     expect(await readFile(path.join(root,".github/workflows/engineering-spec.yml"),"utf8")).toContain("gate-allow-contract-only: true");
     expect(await readFile(path.join(root,".github/workflows/engineering-spec.yml"),"utf8")).toContain("steps.approved-base.outputs.ref");
-    expect(await readFile(path.join(root,".github/workflows/engineering-spec.yml"),"utf8")).toContain("majilesh/engineeringspec@04d5bbd801db39cd14cbf26ca33b6990c8445574");
+    expect(await readFile(path.join(root,".github/workflows/engineering-spec.yml"),"utf8")).toContain("majilesh/engineeringspec@e2d485cfeeb4ce745a57293db089ff70cc4648de");
     expect(await readFile(path.join(root,"CLAUDE.md"),"utf8")).toContain("@AGENTS.md");
     const dry=await adoptRepository({root,specPath:"docs/engineering-specs/ES-change.engineering-spec.md",dryRun:true});
     expect(dry.skipped).toHaveLength(5);
@@ -326,11 +349,11 @@ owners: [{team: test}]
     expect(skill).not.toContain("@engineeringspec/cli@next");
     for (const file of ["README.md","docs/agent-integration.md","docs/getting-started.md","docs/first-change-tutorial.md","docs/lifecycle.md","docs/production-gate.md","docs/troubleshooting.md"]) {
       const source=await readFile(file,"utf8");
-      expect(source,file).toContain(`0.1.0-rc.12`);
+      expect(source,file).toContain(`0.1.0-rc.13`);
       expect(source,file).not.toContain("0.1.0-rc.6");
     }
     for (const file of ["README.md","docs/production-gate.md"]) {
-      expect(await readFile(file,"utf8"),file).toContain("04d5bbd801db39cd14cbf26ca33b6990c8445574");
+      expect(await readFile(file,"utf8"),file).toContain("e2d485cfeeb4ce745a57293db089ff70cc4648de");
     }
   });
   it("detects origin HEAD and safely merges text guidance",async()=>{
@@ -361,8 +384,8 @@ owners: [{team: test}]
     expect(dry.updated).toEqual(expect.arrayContaining(["AGENTS.md",".github/workflows/engineering-spec.yml"]));
     expect(await readFile(path.join(root,"AGENTS.md"),"utf8")).toContain("0.1.0-rc.6");
     await adoptRepository({root,specPath:"docs/engineering-specs/change.engineering-spec.md",baseRef:"origin/main",merge:true,upgrade:true});
-    expect(await readFile(path.join(root,"AGENTS.md"),"utf8")).toContain("0.1.0-rc.12");
-    expect(await readFile(path.join(root,".github","workflows","engineering-spec.yml"),"utf8")).toContain("04d5bbd801db39cd14cbf26ca33b6990c8445574");
+    expect(await readFile(path.join(root,"AGENTS.md"),"utf8")).toContain("0.1.0-rc.13");
+    expect(await readFile(path.join(root,".github","workflows","engineering-spec.yml"),"utf8")).toContain("e2d485cfeeb4ce745a57293db089ff70cc4648de");
   });
   it("keeps dry-run write-free and rejects unsafe scaffold interpolation",async()=>{
     const root=await mkdtemp(path.join(os.tmpdir(),"es-adopt-dry-"));

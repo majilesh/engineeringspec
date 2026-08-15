@@ -9,8 +9,8 @@ describe("portable conformance fixtures",()=>{
   for(const fixture of manifest.fixtures) it(fixture.file,async()=>{
     const fixturePath=`conformance/${fixture.file}`;
     const result="encoding" in fixture&&fixture.encoding==="base64"
-      ? await validateBytes(Buffer.from((await readFile(fixturePath,"utf8")).trim(),"base64"),fixturePath,{strictExternal:true})
-      : await validateFile(fixturePath,{strictExternal:true});
+      ? await validateBytes(Buffer.from((await readFile(fixturePath,"utf8")).trim(),"base64"),fixturePath,{strictExternal:true,repositoryRoot:process.cwd()})
+      : await validateFile(fixturePath,{strictExternal:true,repositoryRoot:process.cwd()});
     expect(result.valid).toBe(fixture.valid);
     const codes=result.diagnostics.map(d=>d.code);
     for(const code of fixture.codes) expect(codes).toContain(code);
