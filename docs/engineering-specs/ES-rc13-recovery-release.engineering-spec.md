@@ -4,7 +4,7 @@ spec_format_version: "0.1"
 spec_revision: 1
 id: ES-rc13-recovery-release
 title: Publish a clean post-rewrite RC13 recovery release
-status: proposed
+status: approved
 owners:
   - team: EngineeringSpec maintainers
 repository:
@@ -178,7 +178,7 @@ Restore a consumable immutable release after the sensitive-data history rewrite 
 ```engineering-rollout
 strategy: canary
 steps:
-  - Review this proposed recovery contract and change it to approved in the same contract-only pull request; merging that reviewed PR grants authority but spends none.
+  - Review this approved-status contract-only pull request; merging it is the explicit approval act that grants authority but spends none.
   - Prepare RC13 against the merged approved base before editing the declared surfaces.
   - Implement repository-root ProductSpec resolution, sanitized pins, version repair, package auditing, tests, and current public guidance.
   - Run lint, typecheck, unit and conformance suites, build, package-content inspection, deterministic site generation, clean-install CLI smoke tests, Action smoke tests, and the complete-working-state EngineeringSpec check.
