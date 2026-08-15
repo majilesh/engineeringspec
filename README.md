@@ -58,36 +58,38 @@ profiles: [{ name: productspec, version: "0.1" }]
 ```yaml
 - id: SRC-1
   type: productspec
-  path: ../product/ticket-triage.product-spec.md
+  path: docs/product/ticket-triage.product-spec.md
   revision: 3
   item_ids: [AC-1, EVAL-1]
 ```
 
+Local source paths are repository-relative. The CLI discovers the current Git root automatically; use `validate --repository-root <path>` when validating from outside that worktree. Library callers must pass `repositoryRoot` when profile resolution is enabled. Resolved files, including symlink targets, must remain inside that root.
+
 ## Quick start
 
 ```sh
-npx --yes @engineeringspec/cli@0.1.0-rc.12 adopt . --quickstart --maintainer @your-org/platform --dry-run
-npx --yes @engineeringspec/cli@0.1.0-rc.12 propose --id ES-my-change --title "My change" --from-diff --base origin/main --dry-run
-npx --yes @engineeringspec/cli@0.1.0-rc.12 review --spec-dir docs/engineering-specs --base origin/main --strict --format markdown
-npx --yes @engineeringspec/cli@0.1.0-rc.12 prepare ES-my-change --spec-dir docs/engineering-specs --base origin/main --strict --format markdown
-npx --yes @engineeringspec/cli@0.1.0-rc.12 init --template feature --id ES-my-change
-npx --yes @engineeringspec/cli@0.1.0-rc.12 validate ENGINEERING_SPEC.md
-npx --yes @engineeringspec/cli@0.1.0-rc.12 validate docs/engineering-specs
-npx --yes @engineeringspec/cli@0.1.0-rc.12 normalize ENGINEERING_SPEC.md --digest
-npx --yes @engineeringspec/cli@0.1.0-rc.12 inspect ENGINEERING_SPEC.md --path src/example.ts
-npx --yes @engineeringspec/cli@0.1.0-rc.12 coverage ENGINEERING_SPEC.md --fail-on uncovered
-npx --yes @engineeringspec/cli@0.1.0-rc.12 gate ENGINEERING_SPEC.md --base origin/main --receipt gate-receipt.json
-npx --yes @engineeringspec/cli@0.1.0-rc.12 check ENGINEERING_SPEC.md --base origin/main --strict
-npx --yes @engineeringspec/cli@0.1.0-rc.12 context ENGINEERING_SPEC.md --path src/example.ts --base origin/main --format markdown
-npx --yes @engineeringspec/cli@0.1.0-rc.12 explain ENGINEERING_SPEC.md --path src/example.ts --base origin/main
-npx --yes @engineeringspec/cli@0.1.0-rc.12 catalogue docs/engineering-specs --query session --format json
+npx --yes @engineeringspec/cli@0.1.0-rc.13 adopt . --quickstart --maintainer @your-org/platform --dry-run
+npx --yes @engineeringspec/cli@0.1.0-rc.13 propose --id ES-my-change --title "My change" --from-diff --base origin/main --dry-run
+npx --yes @engineeringspec/cli@0.1.0-rc.13 review --spec-dir docs/engineering-specs --base origin/main --strict --format markdown
+npx --yes @engineeringspec/cli@0.1.0-rc.13 prepare ES-my-change --spec-dir docs/engineering-specs --base origin/main --strict --format markdown
+npx --yes @engineeringspec/cli@0.1.0-rc.13 init --template feature --id ES-my-change
+npx --yes @engineeringspec/cli@0.1.0-rc.13 validate ENGINEERING_SPEC.md
+npx --yes @engineeringspec/cli@0.1.0-rc.13 validate docs/engineering-specs
+npx --yes @engineeringspec/cli@0.1.0-rc.13 normalize ENGINEERING_SPEC.md --digest
+npx --yes @engineeringspec/cli@0.1.0-rc.13 inspect ENGINEERING_SPEC.md --path src/example.ts
+npx --yes @engineeringspec/cli@0.1.0-rc.13 coverage ENGINEERING_SPEC.md --fail-on uncovered
+npx --yes @engineeringspec/cli@0.1.0-rc.13 gate ENGINEERING_SPEC.md --base origin/main --receipt gate-receipt.json
+npx --yes @engineeringspec/cli@0.1.0-rc.13 check ENGINEERING_SPEC.md --base origin/main --strict
+npx --yes @engineeringspec/cli@0.1.0-rc.13 context ENGINEERING_SPEC.md --path src/example.ts --base origin/main --format markdown
+npx --yes @engineeringspec/cli@0.1.0-rc.13 explain ENGINEERING_SPEC.md --path src/example.ts --base origin/main
+npx --yes @engineeringspec/cli@0.1.0-rc.13 catalogue docs/engineering-specs --query session --format json
 ```
 
 Diagnose setup and inspect the current lifecycle with the current release candidate:
 
 ```sh
-npx --yes @engineeringspec/cli@0.1.0-rc.12 doctor . --spec-dir docs/engineering-specs --base origin/main --strict
-npx --yes @engineeringspec/cli@0.1.0-rc.12 status --spec-dir docs/engineering-specs --base origin/main --allow-contract-only --strict
+npx --yes @engineeringspec/cli@0.1.0-rc.13 doctor . --spec-dir docs/engineering-specs --base origin/main --strict
+npx --yes @engineeringspec/cli@0.1.0-rc.13 status --spec-dir docs/engineering-specs --base origin/main --allow-contract-only --strict
 ```
 
 For a first adoption, follow [Getting started](docs/getting-started.md) and the [first-change tutorial](docs/first-change-tutorial.md). The memorable workflow is:
@@ -119,11 +121,11 @@ Directory validation discovers `ENGINEERING_SPEC.md`, `*.engineering-spec.md`, a
 
 ```sh
 # Enforcing CI: load the approved contract from the base branch (prevents PR self-widening)
-npx --yes @engineeringspec/cli@0.1.0-rc.12 gate docs/engineering-specs/ES-my-change.engineering-spec.md \
+npx --yes @engineeringspec/cli@0.1.0-rc.13 gate docs/engineering-specs/ES-my-change.engineering-spec.md \
   --base origin/main --require-status approved --receipt gate-receipt.json
 
 # Local / CI smoke without git history
-npx --yes @engineeringspec/cli@0.1.0-rc.12 gate docs/engineering-specs/ES-my-change.engineering-spec.md --changed src/api.ts
+npx --yes @engineeringspec/cli@0.1.0-rc.13 gate docs/engineering-specs/ES-my-change.engineering-spec.md --changed src/api.ts
 ```
 
 Use one EngineeringSpec per consequential change, protect `docs/engineering-specs/**` with CODEOWNERS, and configure the gate job as a **required** status check so failures block merge. Full checklist: [Production diff-scope gate](docs/production-gate.md).
@@ -137,7 +139,7 @@ steps:
   - uses: actions/checkout@v4
     with:
       fetch-depth: 0
-  - uses: majilesh/engineeringspec@04d5bbd801db39cd14cbf26ca33b6990c8445574
+  - uses: majilesh/engineeringspec@e2d485cfeeb4ce745a57293db089ff70cc4648de
     with:
       path: docs/engineering-specs
       strict: true
@@ -149,11 +151,11 @@ steps:
 
 The action validates specs and, when `gate-spec-dir` is set, routes implementation diffs against approved candidates loaded from `gate-base`. It also writes the deterministic base-pinned review report to the GitHub job summary; it does not edit pull requests and needs no write permission. `gate-allow-contract-only` explicitly accepts only strictly valid EngineeringSpec-only governance diffs; it is incompatible with `gate-spec` and never authorizes mixed implementation changes. The compatible `gate-spec` input remains available for single-spec gates and receipts. It never executes declared verification runners. Use `fetch-depth: 0` so the base ref exists. If you use merge queues, add a `merge_group` trigger on the workflow that runs this Action.
 
-After tagging, `majilesh/engineeringspec@v0.1.0-rc.12` is acceptable for less sensitive repos; SHA pins remain preferred. See [production-gate.md](docs/production-gate.md) for required checks and CODEOWNERS.
+After tagging, `majilesh/engineeringspec@v0.1.0-rc.13` is acceptable for less sensitive repos; SHA pins remain preferred. See [production-gate.md](docs/production-gate.md) for required checks and CODEOWNERS.
 
 ```sh
 # CLI (exact release-candidate version; npm dist-tag `next` points at the current release candidate)
-npx --yes @engineeringspec/cli@0.1.0-rc.12 validate docs/engineering-specs
+npx --yes @engineeringspec/cli@0.1.0-rc.13 validate docs/engineering-specs
 ```
 
 ## Coding agents
@@ -165,7 +167,7 @@ Use [AGENTS.md](AGENTS.md) as the shared workflow for Codex and other compatible
 Bootstrap an existing repository without overwriting its agent files by default:
 
 ```sh
-npx --yes @engineeringspec/cli@0.1.0-rc.12 adopt . \
+npx --yes @engineeringspec/cli@0.1.0-rc.13 adopt . \
   --spec docs/engineering-specs/ES-my-change.engineering-spec.md \
   --merge --dry-run
 ```

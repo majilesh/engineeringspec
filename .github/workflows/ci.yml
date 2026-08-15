@@ -24,7 +24,7 @@ jobs:
       - run: npm run test:conformance
       - run: npm run build
       - run: node scripts/demo.mjs
-      - run: npm pack --dry-run
+      - run: npm run package:check
       - name: Validate examples
         run: |
           node dist/cli.js validate examples/standalone/bug-fix.engineering-spec.md

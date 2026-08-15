@@ -14,7 +14,7 @@ Product requirements remain authoritative in the linked ProductSpec.
 ```engineering-source-refs
 - id: SRC-1
   type: productspec
-  path: ticket-triage.product-spec.md
+  path: examples/productspec/ticket-triage.product-spec.md
   revision: 3
   item_ids: [AC-1, EVAL-1]
 ```

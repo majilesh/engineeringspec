@@ -4,13 +4,13 @@ EngineeringSpec’s `gate` is a **diff-scope gate** (path + change-type allowlis
 
 ## Recommended pin (immutable Action)
 
-Prefer a full commit SHA. Reviewed prepare hardening merge:
+Prefer a full commit SHA. This is the sanitized equivalent of the reviewed RC12 Action implementation merge:
 
 ```text
-majilesh/engineeringspec@04d5bbd801db39cd14cbf26ca33b6990c8445574
+majilesh/engineeringspec@e2d485cfeeb4ce745a57293db089ff70cc4648de
 ```
 
-Re-pin to this repository’s reviewed merge tip after each change to `action.yml` or gate semantics. `majilesh/engineeringspec@v0.1.0-rc.12` is the corresponding release-candidate tag after publication; SHA pins remain the stronger supply-chain default ([GitHub guidance](https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#using-third-party-actions)).
+Re-pin to this repository’s reviewed merge tip after each change to `action.yml` or gate semantics. `majilesh/engineeringspec@v0.1.0-rc.13` is the corresponding release-candidate tag after publication; SHA pins remain the stronger supply-chain default ([GitHub guidance](https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#using-third-party-actions)).
 
 ## Enforcing CI job
 
@@ -21,7 +21,7 @@ engineering-spec:
     - uses: actions/checkout@v4
       with:
         fetch-depth: 0
-    - uses: majilesh/engineeringspec@04d5bbd801db39cd14cbf26ca33b6990c8445574
+    - uses: majilesh/engineeringspec@e2d485cfeeb4ce745a57293db089ff70cc4648de
       with:
         path: docs/engineering-specs
         strict: true
@@ -70,9 +70,9 @@ Continue running your repository’s normal tests, schema diffs, security scans,
 ## CLI equivalent
 
 ```sh
-npx --yes @engineeringspec/cli@0.1.0-rc.12 select docs/engineering-specs \
+npx --yes @engineeringspec/cli@0.1.0-rc.13 select docs/engineering-specs \
   --base origin/main --worktree --allow-contract-only --strict
-npx --yes @engineeringspec/cli@0.1.0-rc.12 check --spec-dir docs/engineering-specs \
+npx --yes @engineeringspec/cli@0.1.0-rc.13 check --spec-dir docs/engineering-specs \
   --base origin/main --allow-contract-only --strict
 ```
 
@@ -80,5 +80,5 @@ Both commands resolve immutable SHAs before candidate discovery. Candidate speci
 
 ## Release / npm
 
-- Action + git tag: `v0.1.0-rc.12` (when published) tracks package version `0.1.0-rc.12`.
-- npm dist-tag: `next` identifies the current release candidate; enforcing commands above pin exact version `0.1.0-rc.12`.
+- Action + git tag: `v0.1.0-rc.13` (when published) tracks package version `0.1.0-rc.13`.
+- npm dist-tag: `next` identifies the current release candidate; enforcing commands above pin exact version `0.1.0-rc.13`.

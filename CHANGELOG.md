@@ -4,6 +4,22 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+## [0.1.0-rc.13] - 2026-08-16
+
+### Fixed
+
+- ProductSpec local source paths now resolve from an explicit repository root, including sibling repository directories, and reject real-path escapes.
+- The vulnerable development-only `nanoid` transitive dependency is locked to `3.3.18`.
+
+### Changed
+
+- Current CLI examples and generated guidance pin `0.1.0-rc.13`; current Action examples pin the sanitized reviewed commit `e2d485cfeeb4ce745a57293db089ff70cc4648de`.
+- Release CI now audits the concrete npm publish manifest and rejects private, sensitive, unexpected, or incomplete package contents.
+
+### Security
+
+- RC13 is the first publishable package after the sensitive-data history rewrite and RC9-RC12 npm withdrawal. It does not assert that GitHub has garbage-collected historical objects; that remains pending Support confirmation.
+
 ## [0.1.0-rc.12] - 2026-08-12
 
 ### Added
