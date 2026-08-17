@@ -1,9 +1,11 @@
 import { resolveRepositoryConfig, summarizeRepositoryConfig, type RepositoryConfigSummary } from "../config/repositoryConfig.js";
 import { packageVersion } from "./version.js";
-import { workflowStatus, type WorkflowStatusReport } from "./status.js";
+import { workflowStatus, type LifecycleStage, type WorkflowStatusReport } from "./status.js";
 
 export interface NextReport {
   valid: boolean;
+  analysisValid: boolean;
+  workflowState: LifecycleStage;
   permission: "none" | "implementation";
   cliVersion: string;
   config: RepositoryConfigSummary;
@@ -34,6 +36,8 @@ export async function nextAction(options: { base?: string; cwd?: string } = {}):
   const analysisValid = status.routing.diagnostics.every((item) => item.code.startsWith("ESRT"));
   return {
     valid: analysisValid,
+    analysisValid,
+    workflowState: status.next.stage,
     permission: status.next.stage === "implement" ? "implementation" : "none",
     cliVersion: packageVersion(),
     config: summarizeRepositoryConfig(config),
@@ -45,6 +49,7 @@ export async function nextAction(options: { base?: string; cwd?: string } = {}):
 export function nextText(report: NextReport): string {
   return [
     `next: ${report.status.next.stage}`,
+    `analysis: ${report.analysisValid ? "valid" : "invalid"}`,
     `permission: ${report.permission}`,
     `cli: ${report.cliVersion}`,
     `authority: base ${report.config.baseSha}`,

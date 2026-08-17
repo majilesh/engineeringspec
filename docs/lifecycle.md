@@ -4,7 +4,7 @@ EngineeringSpec uses one human-readable workflow around the format's lifecycle s
 
 For new authority, the default review boundary is two pull requests: merge one reviewed authority PR whose contract is `approved`, then merge one implementation PR that may also transition that exact contract to `implemented`. The second PR passes only when the base and head documents are semantically identical except for `metadata.status` and an optional valid `metadata.updatedAt`.
 
-With trusted repository configuration on the base, use `engineeringspec next`, `engineeringspec work <contract-id>`, and `engineeringspec finish <contract-id>`. Explicit flags remain supported for debugging and CI.
+With trusted repository configuration on the base, use `engineeringspec next`, `engineeringspec work <contract-id>`, and `engineeringspec finish <contract-id>`. Explicit lower-level commands and flags remain supported for debugging and CI. `next` is informational: successful analysis is not implementation authority. Start implementation only when it reports `permission: implementation` and `work` successfully loads the exact approved trusted-base contract.
 
 | Workflow stage | Typical contract state | Authority and outcome |
 |---|---|---|
@@ -33,16 +33,16 @@ Use `superseded` when a reviewed replacement contract owns the change. Use `reje
 
 ## Closing
 
-The implementation PR may change only the approved contract lifecycle to `implemented` and run:
+After repository-owned checks pass, the implementation PR may change only the exact authorizing contract lifecycle to `implemented`:
 
 ```sh
-npx --yes @engineeringspec/cli@0.1.0-rc.13 check --spec-dir docs/engineering-specs \
-  --base origin/main --allow-contract-only --strict
+npx --yes @engineeringspec/cli@0.1.0-rc.13 finish ES-change --format markdown
+npx --yes @engineeringspec/cli@0.1.0-rc.13 finish ES-change --write-closure
 ```
 
-With code in the same diff, the result must say `change classification: implementation_with_monotonic_close`; a standalone closure remains `contract_only`. Require normal repository checks and maintainer review before merging. Approved-base routing still applies to every implementation path.
+With code in the same diff, the result must say `change classification: implementation_with_monotonic_close`; a standalone closure remains `contract_only`. Any semantic edit, authority widening, or unrelated contract close fails. Require normal repository checks and maintainer review before merging. Approved-base routing still applies to every implementation path.
 
-Avoid manual frontmatter edits by previewing the exact status-only transition first:
+`finish` performs no Git operation and never executes specification runners. The lower-level transition primitive remains available for a standalone or debugging workflow:
 
 ```sh
 engineeringspec transition docs/engineering-specs/change.engineering-spec.md --to implemented

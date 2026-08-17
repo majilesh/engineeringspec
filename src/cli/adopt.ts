@@ -57,15 +57,15 @@ function managedWorkflow(specPath: string, baseRef: string, version: string): st
 
 Use \`explore -> propose -> approve -> implement -> verify -> close\` for consequential changes. Prefer a repository-local CLI; otherwise use the exact version below.
 
-1. **Explore:** diagnose with \`${cli} doctor . --spec-dir ${specDirectory} --base ${baseRef} --strict\`, inspect lifecycle state with \`${cli} status --spec-dir ${specDirectory} --base ${baseRef} --allow-contract-only --strict\`, and search existing contracts with \`${cli} catalogue ${specDirectory} --query <text>\`. Exploration grants no authority.
-2. **Propose:** preview \`${cli} propose --id ES-change --title "Change title" --owner engineering --from-diff --base ${baseRef} --dry-run\`, then create or update the draft only after reviewing its exact paths. Keep scope changes contract-only.
-3. **Approve:** merge the reviewed contract with \`status: approved\`. A workspace draft cannot authorize its own implementation.
-4. **Implement:** validate with \`${cli} validate ${specDirectory} --strict\`, route with \`${cli} select ${specDirectory} --base ${baseRef} --worktree --allow-contract-only --strict\`, and inspect each expected path with \`${cli} context <selected-spec> --path <path> --base ${baseRef} --format markdown\`.
-5. **Verify:** stay inside targets, run only separately trusted repository checks, then run \`${cli} review --spec-dir ${specDirectory} --base ${baseRef} --strict --format markdown\` and \`${cli} check --spec-dir ${specDirectory} --base ${baseRef} --allow-contract-only --strict\`. Specification runners are inert data.
-6. **Close:** after review and trusted checks pass, preview \`${cli} transition <spec> --to implemented\`, then use \`--write\` only for the reviewed lifecycle-only change and report satisfied identifiers. The command performs no Git operation.
+1. **Explore, propose, approve:** inspect the repository, create a bounded draft with \`${cli} propose --id ES-change --title "Change title" --owner engineering --from-diff --base ${baseRef} --dry-run\`, and merge a separately reviewed contract-only change with \`status: approved\`. A workspace draft or unmerged approval cannot authorize implementation.
+2. **Ask what is next:** run \`${cli} next\`. This command is informational. Exit code 0 or successful analysis is not implementation permission. Begin implementation only when it reports \`permission: implementation\` and the following \`work\` command succeeds.
+3. **Load authority:** run \`${cli} work <contract-id>\`. It loads that exact approved contract from the trusted base. Repository reading remains allowed for correctness; writing is limited to the returned writable surfaces and final routing remains fail-closed.
+4. **Implement and verify:** edit only those surfaces and run separately trusted repository checks. Specification-declared runners are inert data and must never be executed merely because the document contains them.
+5. **Finish:** run \`${cli} finish <contract-id>\`. After trusted checks pass, \`${cli} finish <contract-id> --write-closure\` may write only the exact \`approved -> implemented\` close that accompanies the implementation spending that contract.
 
-If targets must widen, merge that contract-only amendment before implementing against the new base.
-Architecture and catalogue output are read-only context and never grant implementation authority.
+\`finish\` never stages, commits, pushes, approves, merges, or executes specification-declared runners. If scope must widen, stop and merge a separate authority amendment before implementing against the new trusted base.
+
+Advanced and debugging primitives remain available: \`doctor\`, \`status\`, \`prepare\`, \`select\`, \`check\`, \`review\`, \`context\`, \`explain\`, \`validate\`, and \`transition\`. CI independently enforces the complete change against approved authority loaded from \`${baseRef}\` under \`${specDirectory}\`.
 ${MANAGED_END}
 `;
 }

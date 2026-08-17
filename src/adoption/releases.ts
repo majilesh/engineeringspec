@@ -1,4 +1,7 @@
-export const CURRENT_ACTION_SHA = "e2d485cfeeb4ce745a57293db089ff70cc4648de";
+// This immutable pre-release commit contains RC14 trusted-base routing and
+// implementation_with_monotonic_close enforcement. The release commit cannot
+// safely pin itself, so adopters use this already-reviewed runtime.
+export const CURRENT_ACTION_SHA = "ed2f0acaaa220baa574e97a200535373eca5aa0b";
 
 export interface IntegrationVersions {
   cliVersions: string[];

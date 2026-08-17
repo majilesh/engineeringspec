@@ -17,8 +17,8 @@ Keep `SRC-*`, `TARGET-*`, `CONTRACT-*`, `CON-*`, and `VER-*` identifiers stable 
 1. Change only the contract/RFC and obtain maintainer approval.
 2. Merge it into the trusted base.
 3. Rebase or update the dependent implementation.
-4. Load context from the base and implement.
-5. Close the lifecycle after trusted verification and review.
+4. Load the exact approved contract from the base and implement only inside its writable surfaces.
+5. After trusted verification, include the exact `approved -> implemented` close in the implementation PR. Use a standalone closure only when needed.
 
 Repositories using the portable governance lane should enable `gate-allow-contract-only` only with directory routing. Protect the specification directory and enforcement workflow with CODEOWNERS or equivalent maintainer review. The lane classifies review content; it does not approve it.
 

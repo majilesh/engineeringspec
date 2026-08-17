@@ -52,7 +52,13 @@ describe("RC14 minimum-ceremony workflow", () => {
   it("uses zero-flag trusted defaults and finishes with a safe monotonic close", async () => {
     const root = await repository();
     const next = await nextAction({ cwd: root });
-    expect(next).toMatchObject({ valid: true, permission: "implementation", command: "engineeringspec work ES-rc14-test" });
+    expect(next).toMatchObject({
+      valid: true,
+      analysisValid: true,
+      workflowState: "implement",
+      permission: "implementation",
+      command: "engineeringspec work ES-rc14-test",
+    });
     const work = await workOnContract({ contractId: "ES-rc14-test", cwd: root });
     expect(work).toMatchObject({ result: "ready", brief: { permission: "implementation" } });
     expect(JSON.stringify(work)).not.toContain("secret-payload");
@@ -72,6 +78,18 @@ describe("RC14 minimum-ceremony workflow", () => {
     const evidence = path.join(await mkdtemp(path.join(os.tmpdir(), "es-evidence-")), "evidence.json");
     await writeFile(evidence, '{"authority":{},"changeDigest":"wrong","verification":[{"verifierId":"VER-UNKNOWN","state":"passed"}]}');
     await expect(finishContract({ contractId: "ES-rc14-test", cwd: root, evidence })).rejects.toThrow("authority binding");
+  });
+
+  it("distinguishes valid informational analysis from implementation permission", async () => {
+    const root = await repository();
+    await writeFile(path.join(root, "outside.ts"), "export const outside = true;\n");
+    const next = await nextAction({ cwd: root });
+    expect(next).toMatchObject({
+      valid: true,
+      analysisValid: true,
+      workflowState: "blocked",
+      permission: "none",
+    });
   });
 
   it("keeps generated output outside the checked tree and never stages a written close", async () => {

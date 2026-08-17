@@ -74,10 +74,10 @@ engineeringspec next
 engineeringspec work ES-my-change
 # edit only the reported writable surfaces; run repository-owned checks
 engineeringspec finish ES-my-change --format markdown
-engineeringspec finish ES-my-change --write-closure --output engineering-spec-receipt.json
+engineeringspec finish ES-my-change --write-closure --output ../engineering-spec-receipt.json
 ```
 
-`next` is informational. `work` loads the exact approved base contract. `finish` checks the change, emits bound evidence and PR metadata, and writes no closure unless `--write-closure` is explicit. It never stages, commits, pushes, approves, merges, or executes a runner declared inside a specification.
+`next` is informational: success is not authorization. An agent may implement only when `permission` is `implementation` and `work ES-my-change` successfully loads that exact approved trusted-base contract. Repository reading remains available for correctness, while writes remain limited to the returned surfaces. `finish` checks the change, emits bound evidence and PR metadata, and writes no closure unless `--write-closure` is explicit. It never stages, commits, pushes, approves, merges, or executes a runner declared inside a specification. Evidence output must be outside the evaluated Git worktree so writing the receipt cannot mutate the state whose digest was just evaluated.
 
 ```sh
 npx --yes @engineeringspec/cli@0.1.0-rc.13 adopt . --quickstart --maintainer @your-org/platform --dry-run
@@ -153,7 +153,7 @@ steps:
   - uses: actions/checkout@v4
     with:
       fetch-depth: 0
-  - uses: majilesh/engineeringspec@e2d485cfeeb4ce745a57293db089ff70cc4648de
+  - uses: majilesh/engineeringspec@ed2f0acaaa220baa574e97a200535373eca5aa0b
     with:
       path: docs/engineering-specs
       strict: true
@@ -176,7 +176,7 @@ npx --yes @engineeringspec/cli@0.1.0-rc.13 validate docs/engineering-specs
 
 Use [AGENTS.md](AGENTS.md) as the shared workflow for Codex and other compatible agents. [CLAUDE.md](CLAUDE.md) imports the same guidance for Claude Code, and the checked-in [Cursor rule](.cursor/rules/engineering-spec.mdc) applies it in Cursor. See [Agent integration](docs/agent-integration.md) for a reusable setup and prompt.
 
-`prepare` is the pre-code command: it requires an exact contract ID and immutable base, and fails closed unless that base-loaded contract is uniquely approved. `check` is the agent pre-completion command: it evaluates committed, staged, unstaged, deleted, renamed, and non-ignored untracked paths. `context` returns the smallest relevant set for paths; `explain` gives a deterministic allow/deny reason. None execute declared runners.
+The normal pre-code command is `work <contract-id>`: it composes the exact base-pinned preparation brief and fails closed unless that contract is uniquely approved. The normal completion command is `finish <contract-id>`, which composes complete-state checking, review, receipt, and optional exact closure. `prepare`, `check`, `context`, `explain`, and the other deterministic primitives remain available for CI, debugging, and advanced inspection. None execute declared runners.
 
 Bootstrap an existing repository without overwriting its agent files by default:
 
@@ -194,7 +194,7 @@ Thin setup notes are available for [Codex](integrations/codex/README.md), [Claud
 
 Measure the effect rather than assuming it: [the agent-impact benchmark](benchmarks/README.md) retains paired success, failures, routing outcomes, eligible scope precision, review effort, amendments, exploration breadth, duration, and tokens. `measure` generates an unsigned v2 receipt from the same repository-wide approved-base routing decision used by enforcement; negative outcomes remain visible, while paths stay private by default. The receipt grants no authority and proves neither correctness nor trusted-check success. Synthetic examples are never presented as observed impact.
 
-Private repositories are supported: the CLI and Action operate on the checked-out Git tree and do not upload specification or source content. Normal package installation and GitHub Actions still use their configured package/network access. See the [CLI reference](docs/cli-reference.md), [coding-agent integrations](docs/integrations.md), [architecture bridge](docs/architecture-bridge.md), [upgrade guide](docs/upgrading.md), [roles and responsibilities](docs/roles-and-responsibilities.md), [lifecycle](docs/lifecycle.md), [maintaining specs](docs/maintaining-specs.md), and [troubleshooting](docs/troubleshooting.md).
+Private repositories are supported: the CLI and Action operate on the checked-out Git tree and do not upload specification or source content. Normal package installation and GitHub Actions still use their configured package/network access. See the [CLI reference](docs/cli-reference.md), [coding-agent integrations](docs/integrations.md), [architecture bridge](docs/architecture-bridge.md), [Agent Control Plane boundary](docs/agent-control-plane.md), [upgrade guide](docs/upgrading.md), [roles and responsibilities](docs/roles-and-responsibilities.md), [lifecycle](docs/lifecycle.md), [maintaining specs](docs/maintaining-specs.md), and [troubleshooting](docs/troubleshooting.md).
 
 Specifications are untrusted input. Declared commands are inert data: validation never executes them. See [engineeringspec.org](https://engineeringspec.org), [SECURITY.md](SECURITY.md), [SPEC.md](SPEC.md), and [CONTRIBUTING.md](CONTRIBUTING.md).
 

@@ -4,7 +4,7 @@ spec_format_version: "0.1"
 spec_revision: 1
 id: ES-rc14-release-readiness
 title: Make the RC14 adoption path release-ready
-status: approved
+status: implemented
 owners:
   - team: EngineeringSpec maintainers
 repository:
