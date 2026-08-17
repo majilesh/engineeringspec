@@ -18,6 +18,8 @@ engineeringspec finish ES-change --format markdown
 
 The authority PR must merge before implementation. The implementation PR can include the exact monotonic close, so a separate closure PR is unnecessary.
 
+`next` is informational. Its success never grants permission. Begin implementation only when it reports `permission: implementation` and `work ES-change` successfully loads that exact approved contract from the trusted base.
+
 Preview the complete safe scaffold:
 
 ```sh
@@ -53,36 +55,24 @@ Follow [Production gate](production-gate.md). Protect the EngineeringSpec job as
 ## Daily commands
 
 ```sh
-# Understand the current lifecycle and routing state
-npx --yes @engineeringspec/cli@0.1.0-rc.13 status \
-  --spec-dir docs/engineering-specs --base origin/main --allow-contract-only --strict
+# Informational: discover the next action and current permission
+npx --yes @engineeringspec/cli@0.1.0-rc.13 next
 
-# Load only the obligations relevant to an expected path
-npx --yes @engineeringspec/cli@0.1.0-rc.13 context <approved-spec> \
-  --path src/example.ts --base origin/main --format markdown
+# Load the exact approved trusted-base contract before editing
+npx --yes @engineeringspec/cli@0.1.0-rc.13 work ES-change
 
-# Before editing, load the complete approved pre-code brief from the trusted base
-npx --yes @engineeringspec/cli@0.1.0-rc.13 prepare ES-change \
-  --spec-dir docs/engineering-specs --base origin/main --strict --format markdown
+# Edit only returned writable surfaces and run repository-owned checks
 
-# Check the complete working state before review
-npx --yes @engineeringspec/cli@0.1.0-rc.13 check \
-  --spec-dir docs/engineering-specs --base origin/main --allow-contract-only --strict
+# Check, review, and create bound PR metadata without changing Git
+npx --yes @engineeringspec/cli@0.1.0-rc.13 finish ES-change --format markdown
 
-# Produce the same deterministic explanation for humans or a CI job summary
-npx --yes @engineeringspec/cli@0.1.0-rc.13 review \
-  --spec-dir docs/engineering-specs --base origin/main --strict --format markdown
-
-# Search lifecycle, ownership, obligations and path impact
-npx --yes @engineeringspec/cli@0.1.0-rc.13 catalogue docs/engineering-specs \
-  --path src/example.ts
-
-# Preview a closure without editing; add --write only after review
-npx --yes @engineeringspec/cli@0.1.0-rc.13 transition \
-  docs/engineering-specs/ES-change.engineering-spec.md --to implemented
+# After trusted checks, optionally write the exact monotonic close
+npx --yes @engineeringspec/cli@0.1.0-rc.13 finish ES-change --write-closure
 ```
 
-RC7 adopters should use `--allow-contract-only` with `status`, directory `select`, and directory `check`, and enable the matching Action input. This lets strictly validated spec-only proposals and closures pass without letting workspace contracts authorize code.
+`work` permits repository reading needed for correctness but limits writing to its reported surfaces. `finish` never stages, commits, pushes, approves, merges, or executes specification runners. If scope must widen, merge the authority amendment first and rerun `work` against the updated trusted base.
+
+For debugging and CI, the lower-level `doctor`, `status`, `prepare`, `context`, `review`, `select`, `check`, `transition`, and validation commands remain available. RC7 and later adopters should use `--allow-contract-only` with directory governance checks and enable the matching Action input. This lets strictly validated spec-only proposals and standalone closures pass without letting workspace contracts authorize code.
 
 Use the repository-local binary when installed. Pin an exact package version and Action commit in enforcement; avoid mutable tags for trust-sensitive CI.
 

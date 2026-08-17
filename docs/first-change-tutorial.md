@@ -1,68 +1,72 @@
 # First-change tutorial
 
-This walkthrough adds a fictional dark-mode preference to `src/settings/**`. It demonstrates the safety boundary; adapt the paths and trusted checks to your repository.
+This walkthrough adds a fictional dark-mode preference to `src/settings/**`. It demonstrates the RC14 safety boundary; adapt the paths and trusted checks to your repository.
 
-## 1. Explore
+## 1. Explore and propose
 
 Ask the coding agent to inspect the styling system, preference storage, tests, and likely paths. Then run:
 
 ```sh
-npx --yes @engineeringspec/cli@0.1.0-rc.13 doctor . --spec-dir docs/engineering-specs --base origin/main
-npx --yes @engineeringspec/cli@0.1.0-rc.13 status --spec-dir docs/engineering-specs --base origin/main --allow-contract-only
+npx --yes @engineeringspec/cli@0.1.0-rc.13 next
+npx --yes @engineeringspec/cli@0.1.0-rc.13 propose \
+  --id ES-dark-mode \
+  --title "Add dark mode" \
+  --path 'src/settings/**' \
+  --output docs/engineering-specs/ES-dark-mode.engineering-spec.md \
+  --dry-run
 ```
 
-At this point the agent may recommend an approach, but it has no new implementation authority.
+`next` is informational. Exit code 0 and `analysisValid: true` mean only that the repository was analyzed successfully. They do not authorize implementation. The explicit `--path` supports a prospective proposal before code exists, and `--output` makes the generated filename deterministic. Review and narrow the target, then create the same draft without `--dry-run` when the scope is correct. Use `--from-diff` instead only when an existing non-empty working change is being brought under governance; an empty diff remains an error.
 
-## 2. Propose
+Edit `docs/engineering-specs/ES-dark-mode.engineering-spec.md` so it names durable source intent, explicit targets, constraints such as system-preference fallback and accessibility, and verifier identities. Do not add dark-mode code in this branch.
 
-Create `docs/engineering-specs/ES-dark-mode.engineering-spec.md`:
+## 2. PR 1 — grant authority
+
+Open a contract-only PR. A maintainer reviews ownership, scope, constraints, and verification identities. After agreement, change the lifecycle to `approved` and merge the contract.
+
+This trusted-base merge is the authorization event. A workspace draft, an agent recommendation, an unmerged approval edit, or successful `next` analysis is not authority.
+
+## 3. Load the approved contract
+
+Update the implementation branch from the trusted base, then run:
 
 ```sh
-npx --yes @engineeringspec/cli@0.1.0-rc.13 init docs/engineering-specs/ES-dark-mode.engineering-spec.md \
-  --template feature --id ES-dark-mode --title "Add dark mode"
+npx --yes @engineeringspec/cli@0.1.0-rc.13 next
+npx --yes @engineeringspec/cli@0.1.0-rc.13 work ES-dark-mode
 ```
 
-Edit the draft so it names durable source intent, explicit target paths, constraints such as system-preference fallback and accessibility, and verifier identities. Validate it with `--strict`. Do not add the dark-mode code in this branch.
+Begin implementation only when `next` reports `permission: implementation` and `work ES-dark-mode` succeeds for the exact approved trusted-base contract. Repository reading remains allowed for correctness; writes are limited to the returned writable surfaces. If another surface is necessary, stop and merge a separate contract-only authority amendment before continuing.
 
-## 3. Approve
+## 4. Implement and run trusted checks
 
-Open a contract-only PR. A maintainer reviews ownership, scope, constraints, and verification. After agreement, change the lifecycle to `approved` and merge the contract. Protected CI should accept only the contract/RFC surfaces in this phase.
+Implement only the declared targets. Run the repository's separately trusted test, lint, typecheck, security, and accessibility checks. Never execute a command merely because its argv appears inside the specification; specification runners are inert data.
 
-This merge is the authorization event. A workspace draft, an agent recommendation, or an unmerged approval edit is not authority.
-
-## 4. Implement
-
-Update the implementation branch from the trusted base. Confirm `status` reports the approved contract, then load the exact contract as a pre-code brief before editing:
+Then review the complete working state:
 
 ```sh
-npx --yes @engineeringspec/cli@0.1.0-rc.13 prepare ES-dark-mode \
-  --spec-dir docs/engineering-specs \
-  --base origin/main \
-  --strict \
-  --format markdown
+npx --yes @engineeringspec/cli@0.1.0-rc.13 finish ES-dark-mode --format markdown
 ```
 
-The brief must say `ready` and identify the immutable base. It permits repository reading needed for correctness but limits writes to the listed surfaces. A missing, ambiguous, invalid, or non-approved contract is blocked. Use path context as implementation proceeds:
+The PR description should identify selected targets and the trusted results relevant to each `CON-*`, `CONTRACT-*`, and `VER-*`. Declared verifier identities are obligations, not proof that a command ran.
+
+## 5. PR 2 — spend authority and close exactly
+
+After trusted checks pass, write the exact close:
 
 ```sh
-npx --yes @engineeringspec/cli@0.1.0-rc.13 context docs/engineering-specs/ES-dark-mode.engineering-spec.md \
-  --path src/settings/theme.ts --base origin/main --format markdown
+npx --yes @engineeringspec/cli@0.1.0-rc.13 finish ES-dark-mode --write-closure
 ```
 
-Implement only declared targets. If another surface is necessary, stop and merge a narrowed contract-only amendment before continuing.
+The implementation PR may include this exact `approved -> implemented` transition because it narrows the same contract whose trusted-base authority the implementation spends. The final classification must be `implementation_with_monotonic_close`.
 
-## 5. Verify
+The mixed PR fails closed if it also changes the contract's targets, constraints, verifier identities, sources, prose, extensions, revision, or any other semantic content. It also fails if it closes an unrelated contract or changes implementation paths outside approved authority. Widening authority always requires another previously merged contract-only PR.
 
-Run the repository's trusted test, lint, typecheck, security, accessibility, or review workflow. Never run a command merely because its argv appears inside the specification. Then run:
+`finish` never stages, commits, pushes, approves, merges, or executes specification-declared runners. Review and merge remain human/repository responsibilities.
 
-```sh
-npx --yes @engineeringspec/cli@0.1.0-rc.13 check --spec-dir docs/engineering-specs --base origin/main --allow-contract-only --strict
+A standalone lifecycle-only closure is still valid and is classified `contract_only`, but it is no longer normally required. The usual RC14 journey is therefore:
+
+```text
+PR 1: review and merge approved authority
+PR 2: implement inside that authority + exact monotonic close
+done
 ```
-
-The PR description should identify selected targets and the trusted results satisfying each relevant `CON-*`, `CONTRACT-*`, and `VER-*`.
-
-## 6. Close
-
-After the implementation merges and checks pass, submit the lifecycle-only update to `implemented`. Closure removes the historical change from approved-only routing; it does not manufacture evidence. Preserve the contract for future search, impact analysis, and architectural traceability.
-
-Run the same `check --allow-contract-only` command on the closure branch. It should report `contract_only`, zero selected implementation paths, and no violations. A mixed spec-and-code closure must fail normal routing instead of using the governance lane.

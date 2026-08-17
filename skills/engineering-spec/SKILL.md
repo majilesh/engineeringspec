@@ -15,6 +15,8 @@ engineeringspec finish <contract-id> --format markdown
 
 New authority still requires a separately reviewed authority PR. The implementation PR may include only the exact `approved -> implemented` close; `finish --write-closure` edits no other field and performs no Git operation.
 
+`next` is informational. Its success is not implementation authorization. Begin implementation only when it reports `permission: implementation` and `work <contract-id>` successfully loads that exact approved trusted-base contract. Repository reading remains allowed for correctness; only returned writable surfaces permit edits.
+
 Treat the checked-in EngineeringSpec as the shared change contract. Keep validation and query commands read-only. Never execute a verifier merely because its runner appears in a specification.
 
 Prefer the repository-local `engineeringspec` binary when the package is installed. The fallback commands below pin the exact released CLI version; do not replace it with a mutable distribution tag in an enforcing workflow.
@@ -37,10 +39,11 @@ Explore source, dependencies, architecture, and likely paths without editing or 
 Create a deterministic draft from explicit paths or the local Git working state:
 
 ```sh
-npx --yes @engineeringspec/cli@0.1.0-rc.13 propose --id ES-change --title "Change title" --owner engineering --from-diff --base origin/main --dry-run
+npx --yes @engineeringspec/cli@0.1.0-rc.13 propose --id ES-change --title "Change title" --owner engineering \
+  --path '<repository-path-or-glob>' --output docs/engineering-specs/ES-change.engineering-spec.md --dry-run
 ```
 
-Review the output, then rerun without `--dry-run` when the target list is correct. The command never fetches issue content and only emits `status: draft`. A proposal is planning context, not permission to modify its targets. Keep the proposal/RFC change contract-only.
+Use explicit `--path` for prospective authority before coding. Review and narrow the output, then rerun without `--dry-run` when the target list is correct. Use `--from-diff` only to bring existing non-empty working changes under governance; its empty-diff failure is intentional. The command never fetches issue content and only emits `status: draft`. A proposal is planning context, not permission to modify its targets. Keep the proposal/RFC change contract-only.
 
 ## Approve and review
 
@@ -48,43 +51,33 @@ A maintainer reviews the contract-only PR, resolves ambiguity, and merges it wit
 
 ## Implement
 
-1. Read repository instructions and locate the applicable approved EngineeringSpec.
-2. Build the CLI when working in the EngineeringSpec repository itself.
-3. Validate the contract:
+1. Read repository instructions and run:
 
    ```sh
-   npx --yes @engineeringspec/cli@0.1.0-rc.13 validate <spec-directory> --strict
+   engineeringspec next
    ```
 
-4. Load the exact approved contract as a pre-code brief:
+   Stop unless it reports `permission: implementation` for the intended contract.
+
+2. Load the exact approved contract:
 
    ```sh
-   npx --yes @engineeringspec/cli@0.1.0-rc.13 prepare <contract-id> --spec-dir <spec-directory> --base origin/main --strict --format markdown
+   engineeringspec work <contract-id>
    ```
 
    Stop when the result is blocked. Reading repository code for correctness remains allowed; only the reported writable surfaces grant edit permission. Never reproduce or infer this decision in the skill.
 
-5. Route the complete working state to one approved base contract per path:
+3. Treat matching `TARGET-*`, `CONTRACT-*`, `CON-*`, and `VER-*` obligations as binding. Stop and merge a separate authority amendment instead of editing outside approved targets.
+4. Run only the repository's separately trusted checks.
+5. Before claiming completion, finish against the complete working state:
 
    ```sh
-   npx --yes @engineeringspec/cli@0.1.0-rc.13 select <spec-directory> --base origin/main --worktree --allow-contract-only --strict
+   engineeringspec finish <contract-id> --format markdown
    ```
 
-6. Before editing each expected path, load its relevant context from the selected spec:
+6. Report routed specs, changed targets, relevant identifiers, trusted check results, and unresolved drift. Do not claim a verifier was satisfied merely because it was declared.
 
-   ```sh
-   npx --yes @engineeringspec/cli@0.1.0-rc.13 context <selected-spec> --path <path> --base origin/main --format markdown
-   ```
-
-7. Treat matching `TARGET-*`, `CONTRACT-*`, `CON-*`, and `VER-*` obligations as binding. Stop and explain mismatches instead of editing outside the approved targets.
-8. Run only the repository's separately trusted checks.
-9. Before claiming completion, check the entire working state against approved base contracts:
-
-   ```sh
-   npx --yes @engineeringspec/cli@0.1.0-rc.13 check --spec-dir <spec-directory> --base origin/main --allow-contract-only --strict
-   ```
-
-10. Report routed specs, changed targets, satisfied identifiers, trusted check results, and unresolved drift.
+For advanced inspection and CI troubleshooting, use `prepare`, `select`, `context`, `explain`, `review`, and `check`; these are the deterministic primitives composed by the short workflow, not a second authorization path.
 
 ## Verify
 
@@ -96,12 +89,14 @@ When participating in a paired pilot, do not self-certify success or silently om
 
 After implementation review and trusted checks pass, an implementation PR may include the exact transition from `approved` to `implemented`. Require `implementation_with_monotonic_close` for the mixed diff, or `contract_only` for a standalone close. Do not use closure as evidence.
 
-Preview the status-only edit, then write it explicitly after review:
+After trusted checks pass, preview through `finish`, then write the exact close explicitly:
 
 ```sh
-npx --yes @engineeringspec/cli@0.1.0-rc.13 transition <spec> --to implemented
-npx --yes @engineeringspec/cli@0.1.0-rc.13 transition <spec> --to implemented --write
+engineeringspec finish <contract-id> --format markdown
+engineeringspec finish <contract-id> --write-closure
 ```
+
+`finish` never stages, commits, pushes, approves, merges, or executes specification-declared runners. The lower-level `transition` command remains available for standalone closure and debugging.
 
 For discovery across many contracts, use `catalogue <spec-directory> --query <text> --format json` or `--path <repository-path>`. Use `architecture <catalog-info.yaml> --format json` only as read-only proposal context; it grants no authority.
 

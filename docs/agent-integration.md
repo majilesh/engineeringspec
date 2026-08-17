@@ -14,12 +14,14 @@ engineeringspec finish <contract-id> --format markdown
 
 These commands read authorization settings from the trusted-base `engineering-spec.json`. Explicit options remain available, and CI should keep supplying its event base explicitly.
 
+`next` is informational. Exit code 0 or successful analysis does not grant authority. Implementation may begin only when `permission` is `implementation` and `work <contract-id>` successfully loads that exact approved trusted-base contract. `work` permits repository reading for correctness but limits writes to the returned surfaces.
+
 1. **Explore** repository context without granting authority.
 2. **Propose** a draft contract with explicit targets and obligations.
 3. **Approve** the contract in a maintainer-owned, contract-only PR.
 4. **Implement** against the approved contract loaded from the trusted base.
 5. **Verify** with separately trusted checks and the complete-working-state EngineeringSpec check.
-6. **Close** the lifecycle after review; closure alone is not verification evidence.
+6. **Close** the exact spent contract in the implementation PR after trusted checks; closure alone is not verification evidence.
 
 Start an unfamiliar repository with `doctor`, and use `status` whenever the next lifecycle action is unclear:
 
@@ -60,13 +62,15 @@ Use this prompt with Codex, Claude Code, Cursor, or another repository-aware cod
 ```text
 Implement <spec-file> as an engineering contract.
 
-Start by validating the document and inspecting every path you expect to
-change. Treat CONTRACT-*, CON-*, and VER-* obligations as binding. Do not edit
-outside declared targets without explaining the mismatch and updating or
-escalating the contract. Before ending your turn, self-check with:
+Start with `engineeringspec next`. Do not treat successful analysis as
+authorization. Continue only when it reports `permission: implementation` and
+`engineeringspec work <contract-id>` successfully loads the exact approved
+trusted-base contract. Repository reading remains allowed for correctness;
+write only inside the returned surfaces. Treat CONTRACT-*, CON-*, and VER-*
+obligations as binding. Before ending your turn, run trusted repository checks
+and self-check with:
 
-  npx --yes @engineeringspec/cli@0.1.0-rc.13 check --spec-dir docs/engineering-specs \
-    --base origin/main --allow-contract-only --strict
+  npx --yes @engineeringspec/cli@0.1.0-rc.13 finish <contract-id> --format markdown
 
 Fix gate violations (or update/escalate the contract) before claiming done.
 This checks committed, staged, unstaged, deleted, renamed, and non-ignored
@@ -77,7 +81,7 @@ repository checks that are separately trusted and approved. Finish with an
 evidence table mapping changed surfaces and results to the relevant identifiers.
 ```
 
-Before implementation, run `npx --yes @engineeringspec/cli@0.1.0-rc.13 prepare <contract-id> --spec-dir docs/engineering-specs --base origin/main --strict`. It requires one exact base-loaded approved contract and distinguishes unrestricted reading for correctness from the only surfaces that may be written. It reports source intent, technical contracts, constraints, verifier identities and unresolved questions without exposing runner payloads. Continue to pass `--base origin/main` to `context`, `explain`, and `check` for path-level work and final verification.
+`work` composes the same base-pinned preparation primitive and requires one exact approved contract. `prepare` remains available for advanced inspection and reports source intent, technical contracts, constraints, verifier identities, and unresolved questions without exposing runner payloads. Continue to pass `--base origin/main` to lower-level `context`, `explain`, and `check` calls when debugging path decisions.
 
 ## Multiple active contracts
 
@@ -92,7 +96,7 @@ The router considers approved contracts by default and assigns every implementat
 
 When the complete working state has no changed paths, `select` and multi-spec `check` succeed with `not_applicable` coverage even if no contract is currently approved. This is a clean-state result, not authorization for future edits; rerun the check after every change.
 
-Keep a contract `approved` while it authorizes its dependent implementation, then move it to `implemented` in a follow-up lifecycle change. Historical draft, implemented, superseded, and rejected contracts are not eligible under the enforcing default. ProductSpec references are not dereferenced from the mutable workspace during base routing; their declared coverage is reported as unknown until a Git-tree profile resolver is available.
+Keep a contract `approved` on the trusted base while it authorizes its dependent implementation. The implementation PR may include only that exact contract's `approved -> implemented` close; `implementation_with_monotonic_close` rejects semantic mutation, widening, and unrelated closure. A standalone follow-up close remains valid but is not normally required. Historical draft, implemented, superseded, and rejected contracts are not eligible under the enforcing default. ProductSpec references are not dereferenced from the mutable workspace during base routing; their declared coverage is reported as unknown until a Git-tree profile resolver is available.
 
 Use `catalogue` for deterministic cross-contract search and path impact. Use `architecture` only to import read-only component context for a proposal; neither output can authorize implementation or replace `select`/`check`.
 
@@ -112,6 +116,8 @@ The reusable Agent Skill under `skills/engineering-spec/` teaches the same neutr
 Suggested presentation-layer actions are `engineering-spec:explore`, `:propose`, `:review`, `:implement`, `:verify`, and `:close`. They are workflow prompts, not new authorization mechanisms. An adapter must delegate to the same base-pinned CLI behavior and must not approve contracts, run declared runners, or hide routing failures.
 
 Start with the skill and file-based instructions across ChatGPT/Codex, Claude Code, and Cursor. Build a vendor adapter or read-only MCP transport only when observed onboarding data shows that contract discovery or CLI access is the bottleneck; keep any such adapter a thin consumer of the same CLI and format.
+
+For runtime orchestration, sandbox, identity, delegation, and trusted execution integration, follow the [EngineeringSpec and Agent Control Plane boundary](agent-control-plane.md). A control plane consumes and may restrict reviewed authority; it cannot create or widen it.
 
 ## Production gate
 

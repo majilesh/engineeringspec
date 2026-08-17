@@ -326,7 +326,7 @@ owners: [{team: test}]
     expect(await readFile(path.join(root,".github/workflows/engineering-spec.yml"),"utf8")).toContain("gate-require-status: approved");
     expect(await readFile(path.join(root,".github/workflows/engineering-spec.yml"),"utf8")).toContain("gate-allow-contract-only: true");
     expect(await readFile(path.join(root,".github/workflows/engineering-spec.yml"),"utf8")).toContain("steps.approved-base.outputs.ref");
-    expect(await readFile(path.join(root,".github/workflows/engineering-spec.yml"),"utf8")).toContain("majilesh/engineeringspec@e2d485cfeeb4ce745a57293db089ff70cc4648de");
+    expect(await readFile(path.join(root,".github/workflows/engineering-spec.yml"),"utf8")).toContain("majilesh/engineeringspec@ed2f0acaaa220baa574e97a200535373eca5aa0b");
     expect(await readFile(path.join(root,"CLAUDE.md"),"utf8")).toContain("@AGENTS.md");
     const dry=await adoptRepository({root,specPath:"docs/engineering-specs/ES-change.engineering-spec.md",dryRun:true});
     expect(dry.skipped).toHaveLength(6);
@@ -337,11 +337,23 @@ owners: [{team: test}]
     const agents=await readFile(path.join(root,"AGENTS.md"),"utf8");
     const version=(JSON.parse(await readFile("package.json","utf8")) as {version:string}).version;
     expect(result.baseRef).toBe("upstream/trunk");
-    expect(agents).toContain("select docs/engineering-specs --base upstream/trunk --worktree --allow-contract-only --strict");
-    expect(agents).toContain("doctor . --spec-dir docs/engineering-specs --base upstream/trunk --strict");
-    expect(agents).toContain("status --spec-dir docs/engineering-specs --base upstream/trunk --allow-contract-only --strict");
-    expect(agents).toContain("context <selected-spec> --path <path> --base upstream/trunk");
-    expect(agents).toContain("check --spec-dir docs/engineering-specs --base upstream/trunk --allow-contract-only --strict");
+    expect(agents).toContain(`@engineeringspec/cli@${version} next`);
+    expect(agents).toContain(`@engineeringspec/cli@${version} work <contract-id>`);
+    expect(agents).toContain(`@engineeringspec/cli@${version} finish <contract-id>`);
+    expect(agents.indexOf(" next")).toBeLessThan(agents.indexOf(" work <contract-id>"));
+    expect(agents.indexOf(" work <contract-id>")).toBeLessThan(agents.indexOf(" finish <contract-id>"));
+    expect(agents).toContain("informational");
+    expect(agents).toContain("permission: implementation");
+    expect(agents).toContain("separately reviewed contract-only change");
+    expect(agents).toContain("--path '<repository-path-or-glob>'");
+    expect(agents).toContain("--output docs/engineering-specs/ES-change.engineering-spec.md");
+    expect(agents).toContain("Use `--from-diff` only when bringing existing working changes under governance");
+    expect(agents).toContain("intentionally rejects an empty diff");
+    expect(agents).toContain("Repository reading remains allowed for correctness");
+    expect(agents).toContain("writing is limited to the returned writable surfaces");
+    expect(agents).toContain("never stages, commits, pushes, approves, merges");
+    expect(agents).toContain("Specification-declared runners are inert data");
+    expect(agents).toContain("Advanced and debugging primitives remain available");
     expect(agents).toContain("explore -> propose -> approve -> implement -> verify -> close");
     expect(agents).toContain(`@engineeringspec/cli@${version}`);
     expect(agents).not.toContain("@next");
@@ -353,9 +365,7 @@ owners: [{team: test}]
       expect(source,file).toContain(`0.1.0-rc.13`);
       expect(source,file).not.toContain("0.1.0-rc.6");
     }
-    for (const file of ["README.md","docs/production-gate.md"]) {
-      expect(await readFile(file,"utf8"),file).toContain("e2d485cfeeb4ce745a57293db089ff70cc4648de");
-    }
+    expect(await readFile("README.md","utf8")).toContain("ed2f0acaaa220baa574e97a200535373eca5aa0b");
   });
   it("detects origin HEAD and safely merges text guidance",async()=>{
     const root=await mkdtemp(path.join(os.tmpdir(),"es-adopt-merge-"));
@@ -371,7 +381,7 @@ owners: [{team: test}]
     expect(first.updated).toEqual(expect.arrayContaining(["AGENTS.md","CLAUDE.md"]));
     expect(first.skipped).toContain(".github/workflows/engineering-spec.yml");
     expect(agents).toContain("# Existing guidance");
-    expect(agents).toContain("--base origin/trunk");
+    expect(agents).toContain("approved authority loaded from `origin/trunk`");
     const second=await adoptRepository({root,specPath:"docs/spec.engineering-spec.md",merge:true});
     expect(second.updated).toHaveLength(0);
     expect((await readFile(path.join(root,"AGENTS.md"),"utf8")).match(/engineeringspec:start/g)).toHaveLength(1);
@@ -386,7 +396,7 @@ owners: [{team: test}]
     expect(await readFile(path.join(root,"AGENTS.md"),"utf8")).toContain("0.1.0-rc.6");
     await adoptRepository({root,specPath:"docs/engineering-specs/change.engineering-spec.md",baseRef:"origin/main",merge:true,upgrade:true});
     expect(await readFile(path.join(root,"AGENTS.md"),"utf8")).toContain("0.1.0-rc.13");
-    expect(await readFile(path.join(root,".github","workflows","engineering-spec.yml"),"utf8")).toContain("e2d485cfeeb4ce745a57293db089ff70cc4648de");
+    expect(await readFile(path.join(root,".github","workflows","engineering-spec.yml"),"utf8")).toContain("ed2f0acaaa220baa574e97a200535373eca5aa0b");
   });
   it("keeps dry-run write-free and rejects unsafe scaffold interpolation",async()=>{
     const root=await mkdtemp(path.join(os.tmpdir(),"es-adopt-dry-"));
@@ -405,8 +415,16 @@ owners: [{team: test}]
     const result=await adoptRepository({root,quickstart:true,maintainer:"@acme/platform"});
     expect(result.quickstart).toBe(true);
     const spec=await readFile(path.join(root,result.specPath),"utf8");
+    const agents=await readFile(path.join(root,"AGENTS.md"),"utf8");
     expect(spec).toContain("status: draft");
     expect(spec).not.toContain("status: approved");
+    expect(agents).toContain(" next");
+    expect(agents).toContain(" work <contract-id>");
+    expect(agents).toContain(" finish <contract-id>");
+    expect(agents).toContain("Exit code 0 or successful analysis is not implementation permission");
+    expect(agents).toContain("--path '<repository-path-or-glob>'");
+    expect(agents).toContain("Use `--from-diff` only when bringing existing working changes under governance");
+    expect(agents).toContain("Specification-declared runners are inert data");
     expect((await validateFile(path.join(root,result.specPath))).valid).toBe(true);
     expect(await readFile(path.join(root,".github/CODEOWNERS"),"utf8")).toBe("docs/engineering-specs/** @acme/platform\n");
     expect(await readFile(path.join(root,".github/prompts/engineering-spec.prompt.md"),"utf8")).toContain("AGENTS.md");

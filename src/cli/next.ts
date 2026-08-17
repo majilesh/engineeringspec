@@ -1,14 +1,39 @@
 import { resolveRepositoryConfig, summarizeRepositoryConfig, type RepositoryConfigSummary } from "../config/repositoryConfig.js";
 import { packageVersion } from "./version.js";
-import { workflowStatus, type WorkflowStatusReport } from "./status.js";
+import { workflowStatus, type LifecycleStage, type WorkflowStatusReport } from "./status.js";
 
 export interface NextReport {
   valid: boolean;
+  analysisValid: boolean;
+  workflowState: LifecycleStage;
   permission: "none" | "implementation";
   cliVersion: string;
   config: RepositoryConfigSummary;
   status: WorkflowStatusReport;
   command: string;
+}
+
+function nextCommand(status: WorkflowStatusReport, approvedIds: string[]): string {
+  switch (status.next.stage) {
+    case "explore":
+      return "Explore intent and identify explicit paths before proposing authority.";
+    case "propose":
+      return "Complete and review the existing draft contract.";
+    case "approve":
+      return "Review and merge the existing contract-only proposal.";
+    case "implement":
+      return approvedIds.length === 1
+        ? `engineeringspec work ${approvedIds[0]}`
+        : "Choose the intended approved contract before requesting implementation permission.";
+    case "verify":
+      return status.selectedContracts.length === 1
+        ? `engineeringspec finish ${status.selectedContracts[0]}`
+        : "Review the selected contracts and finish the intended contract separately.";
+    case "close":
+      return "Review and merge the exact lifecycle-only closure.";
+    case "blocked":
+      return "Resolve the reported routing or contract diagnostics.";
+  }
 }
 
 export async function nextAction(options: { base?: string; cwd?: string } = {}): Promise<NextReport> {
@@ -21,30 +46,24 @@ export async function nextAction(options: { base?: string; cwd?: string } = {}):
     allowContractOnly: true,
     ...(options.cwd ? { cwd: options.cwd } : {}),
   });
-  const approved = status.routing.candidates.filter((item) => item.eligible);
-  const command = status.next.stage === "implement" && approved.length === 1
-    ? `engineeringspec work ${approved[0]!.specId}`
-    : status.next.stage === "verify"
-      ? `engineeringspec finish ${status.selectedContracts.length === 1 ? status.selectedContracts[0] : "<contract-id>"}`
-      : status.next.stage === "close"
-        ? "Review the lifecycle-only change."
-        : status.next.stage === "blocked"
-          ? "Resolve the reported routing or contract diagnostics."
-        : "engineeringspec propose --id <id> --title <title> --from-diff";
+  const approvedIds = status.routing.candidates.filter((item) => item.eligible).map((item) => item.specId);
   const analysisValid = status.routing.diagnostics.every((item) => item.code.startsWith("ESRT"));
   return {
     valid: analysisValid,
-    permission: status.next.stage === "implement" ? "implementation" : "none",
+    analysisValid,
+    workflowState: status.next.stage,
+    permission: status.next.stage === "implement" && approvedIds.length === 1 ? "implementation" : "none",
     cliVersion: packageVersion(),
     config: summarizeRepositoryConfig(config),
     status,
-    command,
+    command: nextCommand(status, approvedIds),
   };
 }
 
 export function nextText(report: NextReport): string {
   return [
     `next: ${report.status.next.stage}`,
+    `analysis: ${report.analysisValid ? "valid" : "invalid"}`,
     `permission: ${report.permission}`,
     `cli: ${report.cliVersion}`,
     `authority: base ${report.config.baseSha}`,
