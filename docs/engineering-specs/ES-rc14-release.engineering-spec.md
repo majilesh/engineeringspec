@@ -4,7 +4,7 @@ spec_format_version: "0.1"
 spec_revision: 1
 id: ES-rc14-release
 title: Prepare the immutable RC14 release
-status: proposed
+status: approved
 owners:
   - team: EngineeringSpec maintainers
 repository:
