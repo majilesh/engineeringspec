@@ -19,3 +19,5 @@ engineeringspec adopt . --spec docs/engineering-specs/ES-change.engineeringspec.
 ```
 
 The upgrade command changes only recognizably managed guidance and one immutable Action pin. Ambiguous user-owned structured files are skipped.
+
+The normal agent journey is `next -> work <contract-id> -> separately trusted repository checks -> finish <contract-id>`. Lower-level `prepare`, `status`, `review`, `select`, `check`, `context`, and `explain` commands remain available for deterministic CI, advanced integrations, and debugging.

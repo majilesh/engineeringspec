@@ -49,7 +49,7 @@ An Action release cannot pin the commit that is still being created. Use two sep
 2. After that immutable SHA exists, create the final release commit that sets `CURRENT_ACTION_SHA`, examples, and tests to the anchor SHA.
 3. Fully verify again, then tag, publish npm, and create the GitHub release from the final reviewed state.
 
-For RC14, the current implementation branch keeps `ed2f0acaaa220baa574e97a200535373eca5aa0b` because it already contains the required RC14 routing semantics and predates the release commit. A separately authorized release change should replace it with the future RC14-identity anchor SHA before publication.
+RC14 Commit A keeps `ed2f0acaaa220baa574e97a200535373eca5aa0b` because it already contains the required RC14 routing semantics. Commit B replaces it with Commit A's full immutable SHA before publication.
 
 Release verification should use a full-history checkout and inspect the pinned object itself without adding network access to ordinary unit tests. At minimum, confirm the commit exists and that its routing source contains mixed monotonic-close classification, unsafe mixed-close rejection, and unrelated-close rejection:
 

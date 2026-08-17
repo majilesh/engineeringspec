@@ -5,6 +5,33 @@ import { CURRENT_ACTION_SHA } from "../../src/adoption/releases.js";
 const RC14_ACTION_SHA = "ed2f0acaaa220baa574e97a200535373eca5aa0b";
 
 describe("RC14 release readiness", () => {
+  it("aligns current release surfaces while preserving historical identities", async () => {
+    const packageSource = JSON.parse(await readFile("package.json", "utf8")) as { version: string };
+    expect(packageSource.version).toBe("0.1.0-rc.14");
+
+    for (const file of [
+      "README.md",
+      "docs/agent-integration.md",
+      "docs/cli-reference.md",
+      "docs/first-change-tutorial.md",
+      "docs/getting-started.md",
+      "docs/lifecycle.md",
+      "docs/maintaining-specs.md",
+      "docs/production-gate.md",
+      "docs/troubleshooting.md",
+      "docs/upgrading.md",
+      "skills/engineering-spec/SKILL.md",
+      "site/index.html",
+    ]) {
+      const source = await readFile(file, "utf8");
+      expect(source, file).not.toContain("0.1.0-rc.13");
+    }
+
+    const historical = await readFile("docs/engineering-specs/ES-rc13-recovery-release.engineering-spec.md", "utf8");
+    expect(historical).toContain("0.1.0-rc.13");
+    expect(historical).toContain("e2d485cfeeb4ce745a57293db089ff70cc4648de");
+  });
+
   it("pins generated enforcement to the reviewed immutable RC14 runtime", async () => {
     expect(CURRENT_ACTION_SHA).toBe(RC14_ACTION_SHA);
     expect(CURRENT_ACTION_SHA).toMatch(/^[0-9a-f]{40}$/u);
@@ -75,5 +102,31 @@ describe("RC14 release readiness", () => {
     expect(source).toContain("sets `CURRENT_ACTION_SHA`, examples, and tests to the anchor SHA");
     expect(source).toContain("full-history checkout");
     expect(source).toContain("Checking only the current checkout does not prove the pinned commit has those capabilities");
+  });
+
+  it("keeps packaged integrations on one high-level agent journey", async () => {
+    for (const file of [
+      "integrations/README.md",
+      "integrations/claude/README.md",
+      "integrations/codex/README.md",
+      "integrations/copilot/README.md",
+      "integrations/cursor/README.md",
+      "integrations/generic/README.md",
+    ]) {
+      const source = await readFile(file, "utf8");
+      expect(source, file).toContain("next");
+      expect(source, file).toContain("work <contract-id>");
+      expect(source, file).toContain("finish <contract-id>");
+    }
+
+    const integrationGuide = await readFile("docs/integrations.md", "utf8");
+    for (const primitive of ["prepare", "status", "review", "select", "check", "context", "explain"]) {
+      expect(integrationGuide).toContain(`\`${primitive}\``);
+    }
+
+    const cursorRule = await readFile(".cursor/rules/engineering-spec.mdc", "utf8");
+    expect(cursorRule).toContain("Follow @AGENTS.md.");
+    expect(cursorRule).not.toContain("@engineeringspec/cli@");
+    expect(cursorRule).not.toContain("prepare <contract-id>");
   });
 });

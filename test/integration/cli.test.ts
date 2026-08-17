@@ -362,7 +362,7 @@ owners: [{team: test}]
     expect(skill).not.toContain("@engineeringspec/cli@next");
     for (const file of ["README.md","docs/agent-integration.md","docs/getting-started.md","docs/first-change-tutorial.md","docs/lifecycle.md","docs/production-gate.md","docs/troubleshooting.md"]) {
       const source=await readFile(file,"utf8");
-      expect(source,file).toContain(`0.1.0-rc.13`);
+      expect(source,file).toContain(`0.1.0-rc.14`);
       expect(source,file).not.toContain("0.1.0-rc.6");
     }
     expect(await readFile("README.md","utf8")).toContain("ed2f0acaaa220baa574e97a200535373eca5aa0b");
@@ -395,7 +395,7 @@ owners: [{team: test}]
     expect(dry.updated).toEqual(expect.arrayContaining(["AGENTS.md",".github/workflows/engineering-spec.yml"]));
     expect(await readFile(path.join(root,"AGENTS.md"),"utf8")).toContain("0.1.0-rc.6");
     await adoptRepository({root,specPath:"docs/engineering-specs/change.engineering-spec.md",baseRef:"origin/main",merge:true,upgrade:true});
-    expect(await readFile(path.join(root,"AGENTS.md"),"utf8")).toContain("0.1.0-rc.13");
+    expect(await readFile(path.join(root,"AGENTS.md"),"utf8")).toContain("0.1.0-rc.14");
     expect(await readFile(path.join(root,".github","workflows","engineering-spec.yml"),"utf8")).toContain("ed2f0acaaa220baa574e97a200535373eca5aa0b");
   });
   it("keeps dry-run write-free and rejects unsafe scaffold interpolation",async()=>{

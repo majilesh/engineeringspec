@@ -4,6 +4,8 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+## [0.1.0-rc.14] - 2026-08-17
+
 ### Added
 
 - Trusted-base `engineering-spec.json` defaults for zero-flag daily commands, with workspace drift reported but ignored for authorization.

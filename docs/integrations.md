@@ -13,8 +13,20 @@ EngineeringSpec uses one repository contract and one CLI across agents. Integrat
 
 Run `adopt --quickstart --maintainer @owner --dry-run` for a new setup or `adopt --merge --dry-run` in an established repository. Existing user-authored structured configuration is not overwritten by default. Platform-specific notes live under [`integrations/`](../integrations/README.md).
 
+## Shared agent journey
+
+The normal machine workflow is:
+
+```text
+next -> work <contract-id> -> separately trusted repository checks -> finish <contract-id>
+```
+
+`next` reports lifecycle state and permission but grants no authority. `work` loads the exact approved trusted-base contract before implementation. `finish` checks the complete working state, reports review information and evidence status, and can write only the exact lifecycle close when explicitly requested.
+
+`prepare`, `status`, `review`, `select`, `check`, `context`, and `explain` remain stable deterministic primitives for advanced integrations, CI, and debugging. They are not deprecated, and adapters may consume their structured output when the higher-level workflow is not sufficient.
+
 ## Skill versus plugin
 
-The portable Agent Skill is the primary integration because it works without a hosted service and keeps the contract on disk. Once `prepare` is released, every adapter should delegate to the same `prepare <contract-id> --spec-dir <directory> --base <ref>` decision and stop on a blocked result. A vendor plugin is justified only when it adds genuine discovery, UI, or tool transport over stable CLI/JSON surfaces. It must remain a consumer of EngineeringSpec and must never implement its own authorization semantics.
+The portable Agent Skill is the primary integration because it works without a hosted service and keeps the contract on disk. Every adapter should delegate to the same `next -> work -> finish` workflow and stop when permission is not `implementation`. Stable adapters and control planes may consume the lower-level deterministic CLI/JSON surfaces when appropriate. A vendor plugin is justified only when it adds genuine discovery, UI, or tool transport. It must remain a consumer of EngineeringSpec and must never implement its own authorization semantics.
 
 The deterministic `catalogue --format json` output is the supported foundation for future MCP resources, IDE panels, review bots and plugins.
