@@ -36,6 +36,10 @@ import { proposeDraft } from "./propose.js";
 import { buildReview, reviewMarkdown, reviewText } from "./review.js";
 import { prepareChange, prepareMarkdown, prepareText } from "./prepare.js";
 import { measureScope } from "./measure.js";
+import { nextAction, nextText } from "./next.js";
+import { workOnContract } from "./work.js";
+import { finishContract } from "./finish.js";
+import { resolveRepositoryConfig, summarizeRepositoryConfig } from "../config/repositoryConfig.js";
 
 const STATUS_VALUES = ["draft", "proposed", "approved", "implemented", "superseded", "rejected"] as const;
 
@@ -363,8 +367,8 @@ export function createProgram(setCode: (code: number) => void): Command {
   program
     .command("status")
     .description("Summarize contract lifecycle and the complete working state")
-    .option("--spec-dir <directory>", "repository-relative EngineeringSpec directory", "docs/engineering-specs")
-    .requiredOption("--base <ref>", "trusted base ref")
+    .option("--spec-dir <directory>", "repository-relative EngineeringSpec directory; defaults from trusted config")
+    .option("--base <ref>", "trusted base ref; safely auto-resolved when omitted")
     .option("--head <ref>", "git head ref", "HEAD")
     .option("--changed <path>", "explicit changed path (repeatable)", (value, previous: string[] = []) => previous.concat(value), [])
     .option("--staged", "inspect committed and staged changes only")
@@ -375,16 +379,17 @@ export function createProgram(setCode: (code: number) => void): Command {
     .action(async (options, command) => {
       try {
         const global = command.optsWithGlobals() as GlobalOptions;
+        const config = await resolveRepositoryConfig({ ...(options.base ? { base: options.base } : {}), enforcing: false });
         if (options.changed.length > 0 && options.staged) {
           console.error("status accepts only one of --changed or --staged");
           setCode(ExitCode.usage);
           return;
         }
         const report = await workflowStatus({
-          specDirectory: options.specDir,
-          base: options.base,
+          specDirectory: options.specDir ?? config.config.specDirectory,
+          base: config.baseSha,
           head: options.head,
-          strict: Boolean(global.strict),
+          strict: Boolean(global.strict || config.config.strict),
           staged: Boolean(options.staged),
           worktree: options.staged ? false : options.worktree !== false,
           ...(options.changed.length ? { changed: changedFromPathList(options.changed, options.changeKind as ChangeKind) } : {}),
@@ -401,10 +406,94 @@ export function createProgram(setCode: (code: number) => void): Command {
           `declared coverage: ${report.coverage.status}`,
           `change classification: ${report.routing.governance.classification}`,
           `next: ${report.next.stage} — ${report.next.message}`,
+          ...config.warnings.map((warning) => `warning: ${warning}`),
           ...report.routing.diagnostics.map((diagnostic) => `${diagnostic.severity}: ${diagnostic.code} ${diagnostic.message}`),
         ].join("\n");
-        if (!global.quiet) output(global.format === "json" ? report : text, global.format);
+        if (!global.quiet) output(global.format === "json" ? { ...report, repositoryConfig: summarizeRepositoryConfig(config) } : text, global.format);
         setCode(report.valid ? ExitCode.success : ExitCode.validation);
+      } catch (error) {
+        console.error(error instanceof Error ? error.message : String(error));
+        setCode(ExitCode.io);
+      }
+    });
+
+  program
+    .command("next")
+    .description("Report the next safe action using trusted repository defaults")
+    .option("--base <ref>", "trusted base ref override")
+    .addOption(new Option("--format <format>", "output format").choices(["text", "json"]))
+    .action(async (options, command) => {
+      try {
+        const global = command.optsWithGlobals() as GlobalOptions;
+        const report = await nextAction({ ...(options.base ? { base: options.base } : {}) });
+        if (!global.quiet) output(global.format === "json" ? report : nextText(report), global.format);
+        setCode(report.valid ? ExitCode.success : ExitCode.validation);
+      } catch (error) {
+        console.error(error instanceof Error ? error.message : String(error));
+        setCode(ExitCode.io);
+      }
+    });
+
+  program
+    .command("work")
+    .description("Load a base-pinned implementation brief using trusted repository defaults")
+    .argument("<contract-id>", "exact approved EngineeringSpec contract ID")
+    .option("--base <ref>", "trusted base ref override")
+    .addOption(new Option("--format <format>", "output format").choices(["text", "json", "markdown"]))
+    .action(async (contractId, options, command) => {
+      try {
+        const global = command.optsWithGlobals() as GlobalOptions;
+        const report = await workOnContract({ contractId, ...(options.base ? { base: options.base } : {}) });
+        if (!global.quiet) {
+          if (global.format === "json") output(report, "json");
+          else if (global.format === "markdown") output(prepareMarkdown(report.brief), "text");
+          else output(prepareText(report.brief), "text");
+        }
+        setCode(report.result === "ready" ? ExitCode.success : ExitCode.validation);
+      } catch (error) {
+        console.error(error instanceof Error ? error.message : String(error));
+        setCode(ExitCode.io);
+      }
+    });
+
+  program
+    .command("finish")
+    .description("Check an implementation, prepare trusted evidence metadata, and optionally write its monotonic close")
+    .argument("<contract-id>", "exact approved EngineeringSpec contract ID")
+    .option("--base <ref>", "trusted base ref override")
+    .option("--staged", "evaluate committed and staged changes; disclose excluded working state")
+    .option("--evidence <path>", "bounded external verifier-state JSON")
+    .option("--write-closure", "write only the approved-to-implemented status transition")
+    .option("--output <path>", "write receipt and PR metadata JSON")
+    .addOption(new Option("--format <format>", "output format").choices(["text", "json", "markdown"]))
+    .action(async (contractId, options, command) => {
+      try {
+        const global = command.optsWithGlobals() as GlobalOptions;
+        const report = await finishContract({
+          contractId,
+          ...(options.base ? { base: options.base } : {}),
+          staged: Boolean(options.staged),
+          ...(options.evidence ? { evidence: options.evidence } : {}),
+          writeClosure: Boolean(options.writeClosure),
+          ...(options.output ? { output: options.output } : {}),
+        });
+        const text = report.result === "ready" && report.receipt
+          ? [
+              "finish: ready",
+              `authority: base ${report.receipt.authority.baseSha}`,
+              `contract: ${report.receipt.authority.contractId} revision ${report.receipt.authority.specRevision}`,
+              `change: ${report.receipt.change.digest}; complete working state ${report.receipt.change.completeWorkingState}`,
+              `classification: ${report.receipt.authorization.classification}`,
+              `closure: ${report.closureWritten ? "written" : "not written"}`,
+              ...report.receipt.verification.map((item) => `verification: ${item.verifierId} ${item.state}`),
+            ].join("\n")
+          : `${reviewText(report.review)}\nfinish: blocked`;
+        if (!global.quiet) {
+          if (global.format === "json") output(report, "json");
+          else if (global.format === "markdown" && report.pr) output(report.pr.body, "text");
+          else output(text, "text");
+        }
+        setCode(report.result === "ready" ? ExitCode.success : ExitCode.validation);
       } catch (error) {
         console.error(error instanceof Error ? error.message : String(error));
         setCode(ExitCode.io);
@@ -495,8 +584,8 @@ export function createProgram(setCode: (code: number) => void): Command {
   program
     .command("review")
     .description("Explain the base-pinned authorization decision for the complete working state")
-    .option("--spec-dir <directory>", "repository-relative EngineeringSpec directory", "docs/engineering-specs")
-    .requiredOption("--base <ref>", "trusted base ref")
+    .option("--spec-dir <directory>", "repository-relative EngineeringSpec directory; defaults from trusted config")
+    .option("--base <ref>", "trusted base ref; safely auto-resolved when omitted")
     .option("--head <ref>", "Git head ref", "HEAD")
     .option("--changed <path>", "explicit changed path (repeatable)", (value, previous: string[] = []) => previous.concat(value), [])
     .option("--staged", "inspect committed and staged changes only")
@@ -507,16 +596,17 @@ export function createProgram(setCode: (code: number) => void): Command {
     .action(async (options, command) => {
       try {
         const global = command.optsWithGlobals() as GlobalOptions;
+        const config = await resolveRepositoryConfig({ ...(options.base ? { base: options.base } : {}) });
         if (options.changed.length > 0 && options.staged) {
           console.error("review accepts only one of --changed or --staged");
           setCode(ExitCode.usage);
           return;
         }
         const report = await buildReview({
-          specDirectory: options.specDir,
-          base: options.base,
+          specDirectory: options.specDir ?? config.config.specDirectory,
+          base: config.baseSha,
           head: options.head,
-          strict: Boolean(global.strict),
+          strict: Boolean(global.strict || config.config.strict),
           staged: Boolean(options.staged),
           worktree: options.staged ? false : options.worktree !== false,
           ...(options.changed.length ? { changed: changedFromPathList(options.changed, options.changeKind as ChangeKind) } : {}),
@@ -601,27 +691,23 @@ export function createProgram(setCode: (code: number) => void): Command {
     .action(async (file, options, command) => {
       try {
         const global = command.optsWithGlobals() as GlobalOptions;
-        if (Boolean(file) === Boolean(options.specDir)) {
-          console.error("check requires exactly one EngineeringSpec file or --spec-dir <directory>");
+        if (file && options.specDir) {
+          console.error("check accepts an EngineeringSpec file or --spec-dir, not both");
           setCode(ExitCode.usage);
           return;
         }
-        if (options.specDir) {
-          if (!options.base) {
-            console.error("check --spec-dir requires --base <ref>");
-            setCode(ExitCode.usage);
-            return;
-          }
+        if (!file) {
+          const config = await resolveRepositoryConfig({ ...(options.base ? { base: options.base } : {}) });
           if (options.specFrom) {
             console.error("check --spec-dir always loads candidates from base; --spec-from is not accepted");
             setCode(ExitCode.usage);
             return;
           }
           const routed = await selectSpecs({
-            directory: options.specDir as string,
-            base: options.base as string,
+            directory: (options.specDir as string | undefined) ?? config.config.specDirectory,
+            base: config.baseSha,
             head: options.head as string,
-            strict: Boolean(global.strict),
+            strict: Boolean(global.strict || config.config.strict),
             staged: Boolean(options.staged),
             worktree: options.staged ? false : options.worktree !== false,
             allowContractOnly: Boolean(options.allowContractOnly),
@@ -778,17 +864,18 @@ export function createProgram(setCode: (code: number) => void): Command {
     .command("prepare")
     .description("Load one approved base contract as a concise pre-code implementation brief")
     .argument("<contract-id>", "exact EngineeringSpec contract ID")
-    .requiredOption("--spec-dir <directory>", "base-pinned EngineeringSpec directory")
-    .requiredOption("--base <ref>", "approved Git base ref")
+    .option("--spec-dir <directory>", "base-pinned EngineeringSpec directory; defaults from trusted config")
+    .option("--base <ref>", "approved Git base ref; safely auto-resolved when omitted")
     .addOption(new Option("--format <format>", "output format").choices(["text", "json", "markdown"]))
     .action(async (contractId, options, command) => {
       try {
         const global = command.optsWithGlobals() as GlobalOptions;
+        const config = await resolveRepositoryConfig({ ...(options.base ? { base: options.base } : {}) });
         const report = await prepareChange({
           contractId,
-          specDirectory: options.specDir,
-          base: options.base,
-          strict: Boolean(global.strict),
+          specDirectory: options.specDir ?? config.config.specDirectory,
+          base: config.baseSha,
+          strict: Boolean(global.strict || config.config.strict),
         });
         if (!global.quiet) {
           if (global.format === "json") output(report, "json");

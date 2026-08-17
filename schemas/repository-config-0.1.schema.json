@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://engineeringspec.org/schemas/repository-config-0.1.schema.json",
+  "title": "EngineeringSpec repository configuration 0.1",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "$schema": { "type": "string" },
+    "specDirectory": { "type": "string", "minLength": 1 },
+    "strict": { "type": "boolean" },
+    "trustedBase": { "type": "string", "minLength": 1 },
+    "trustedVerifiers": {
+      "type": "object",
+      "propertyNames": { "pattern": "^[A-Za-z][A-Za-z0-9_-]*#[A-Z][A-Z0-9_-]*$" },
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["argv"],
+        "properties": {
+          "argv": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } },
+          "workingDirectory": { "type": "string", "minLength": 1 },
+          "timeoutSeconds": { "type": "integer", "minimum": 1, "maximum": 3600 },
+          "network": { "enum": ["deny", "allow"] }
+        }
+      }
+    }
+  }
+}

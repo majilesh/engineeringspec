@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://engineeringspec.org/schemas/authority-diff-0.1.schema.json",
+  "title": "EngineeringSpec authority diff 0.1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["format", "formatVersion", "contractId", "base", "head", "lifecycle", "pathAuthority", "targets", "constraints", "verifiers", "contracts", "sources", "otherSemanticChange", "authorityChanged", "safeMonotonicClose"],
+  "properties": {
+    "format": { "const": "engineering-spec-authority-diff" },
+    "formatVersion": { "const": "0.1" },
+    "contractId": { "type": "string" },
+    "base": { "$ref": "#/$defs/identity" },
+    "head": { "$ref": "#/$defs/identity" },
+    "lifecycle": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["from", "to"],
+      "properties": { "from": { "type": "string" }, "to": { "type": "string" } }
+    },
+    "pathAuthority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["writableAdded", "writableRemoved", "createAdded", "createRemoved", "protectedAdded", "protectedRemoved"],
+      "properties": {
+        "writableAdded": { "$ref": "#/$defs/paths" },
+        "writableRemoved": { "$ref": "#/$defs/paths" },
+        "createAdded": { "$ref": "#/$defs/paths" },
+        "createRemoved": { "$ref": "#/$defs/paths" },
+        "protectedAdded": { "$ref": "#/$defs/paths" },
+        "protectedRemoved": { "$ref": "#/$defs/paths" }
+      }
+    },
+    "targets": { "$ref": "#/$defs/changes" },
+    "constraints": { "$ref": "#/$defs/changes" },
+    "verifiers": { "$ref": "#/$defs/changes" },
+    "contracts": { "$ref": "#/$defs/changes" },
+    "sources": { "$ref": "#/$defs/changes" },
+    "otherSemanticChange": { "type": "boolean" },
+    "authorityChanged": { "type": "boolean" },
+    "safeMonotonicClose": { "type": "boolean" }
+  },
+  "$defs": {
+    "identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["contractId", "revision", "semanticDigest"],
+      "properties": {
+        "contractId": { "type": "string" },
+        "revision": { "type": "integer", "minimum": 1 },
+        "semanticDigest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" }
+      }
+    },
+    "paths": { "type": "array", "items": { "type": "string" } },
+    "changes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "change"],
+        "properties": {
+          "id": { "type": "string" },
+          "change": { "enum": ["added", "removed", "modified"] },
+          "beforeDigest": { "type": "string" },
+          "afterDigest": { "type": "string" }
+        }
+      }
+    }
+  }
+}

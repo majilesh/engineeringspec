@@ -1,0 +1,7 @@
+{
+  "$schema": "./schemas/repository-config-0.1.schema.json",
+  "specDirectory": "docs/engineering-specs",
+  "strict": true,
+  "trustedBase": "origin/main",
+  "trustedVerifiers": {}
+}

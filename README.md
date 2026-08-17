@@ -67,6 +67,18 @@ Local source paths are repository-relative. The CLI discovers the current Git ro
 
 ## Quick start
 
+After adoption, `engineering-spec.json` supplies repository defaults from the resolved trusted base. Daily use becomes:
+
+```sh
+engineeringspec next
+engineeringspec work ES-my-change
+# edit only the reported writable surfaces; run repository-owned checks
+engineeringspec finish ES-my-change --format markdown
+engineeringspec finish ES-my-change --write-closure --output engineering-spec-receipt.json
+```
+
+`next` is informational. `work` loads the exact approved base contract. `finish` checks the change, emits bound evidence and PR metadata, and writes no closure unless `--write-closure` is explicit. It never stages, commits, pushes, approves, merges, or executes a runner declared inside a specification.
+
 ```sh
 npx --yes @engineeringspec/cli@0.1.0-rc.13 adopt . --quickstart --maintainer @your-org/platform --dry-run
 npx --yes @engineeringspec/cli@0.1.0-rc.13 propose --id ES-my-change --title "My change" --from-diff --base origin/main --dry-run
@@ -98,6 +110,8 @@ For a first adoption, follow [Getting started](docs/getting-started.md) and the 
 explore -> propose -> approve -> implement -> verify -> close
 ```
 
+New authority normally uses two pull requests: one reviewed authority PR that lands `approved`, followed by one implementation PR that may include the exact `approved -> implemented` close.
+
 Exploration and proposal grant no authority. Merge the contract-only approval first; dependent code changes then route against that approved base. Before editing, `prepare` loads one explicitly named approved contract from the immutable base and presents its writable surfaces, read boundary, technical contracts, obligations, verifier identities, source intent, digests, and unresolved questions. It does not infer scope, expose runner payloads, or edit files. `interface_only` remains path-level access, and final authorization for actual paths remains subject to multi-contract routing. `doctor` diagnoses the repository setup, while `status` reports lifecycle counts, complete working-state routing, declared coverage, and the safest next stage.
 
 The multi-spec router can be exercised from a built checkout:
@@ -111,7 +125,7 @@ Directory routing enumerates candidates from one resolved base tree, validates t
 
 A successfully inspected state with zero changed paths is reported as successful and `not_applicable`, even when all historical contracts are closed. This authorizes nothing: as soon as any path changes, the normal approved-contract requirement and fail-closed routing apply.
 
-The additive `--allow-contract-only` policy classifies a non-empty change as governance only when every old and new path remains under the configured specification directory and workspace specs validate strictly. It reports `contract_only` without claiming selection by a base contract. Mixed changes, cross-boundary renames, invalid specs, and unsafe paths retain normal fail-closed routing. Keep this lane reviewer-owned with CODEOWNERS and required checks.
+The additive `--allow-contract-only` policy classifies a non-empty change as governance only when every old and new path remains under the configured specification directory and workspace specs validate strictly. It reports `contract_only` without claiming selection by a base contract. A mixed implementation may include only an exact `approved -> implemented` close of its base-authorizing contract; the head document cannot widen or contribute authority. Other mixed changes, cross-boundary renames, invalid specs, and unsafe paths fail closed. Keep the authority lane reviewer-owned with CODEOWNERS and required checks.
 
 Directory validation discovers `ENGINEERING_SPEC.md`, `*.engineering-spec.md`, and `*.engineeringspec.md` recursively. Add repository-relative glob patterns to `.engineeringspecignore` to exclude generated content or intentionally invalid fixtures.
 

@@ -1,0 +1,10 @@
+{
+  "authority": {
+    "baseSha": "wrong",
+    "contractId": "ES-change",
+    "specRevision": 1,
+    "semanticDigest": "sha256:wrong"
+  },
+  "changeDigest": "sha256:wrong",
+  "verification": [{ "verifierId": "VER-1", "state": "passed" }]
+}

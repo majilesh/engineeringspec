@@ -1,6 +1,6 @@
 # RFC 0011: Maximum safety with minimum ceremony
 
-- Status: Proposed
+- Status: Accepted
 - Date: 2026-08-17
 - Contract: `ES-rc14-maximum-safety-minimum-ceremony`
 

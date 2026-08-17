@@ -74,6 +74,13 @@ function files(specPath: string, baseRef: string, version: string): Record<strin
   const workflow = managedWorkflow(specPath, baseRef, version);
   const specDirectory = path.posix.dirname(specPath);
   return {
+    "engineering-spec.json": `${JSON.stringify({
+      $schema: "https://engineeringspec.org/schemas/repository-config-0.1.schema.json",
+      specDirectory,
+      strict: true,
+      trustedBase: baseRef,
+      trustedVerifiers: {},
+    }, null, 2)}\n`,
     "AGENTS.md": workflow,
     "CLAUDE.md": "@AGENTS.md\n",
     ".cursor/rules/engineering-spec.mdc": `---\ndescription: Apply the repository EngineeringSpec contract\nalwaysApply: true\n---\n\nFollow @AGENTS.md.\n`,

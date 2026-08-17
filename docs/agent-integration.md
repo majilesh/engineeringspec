@@ -6,6 +6,14 @@ EngineeringSpec is the shared change contract. Agent-specific files only explain
 
 Codex, Claude Code, Cursor, and human contributors should follow the same thin workflow over the repository files and CLI:
 
+```sh
+engineeringspec next
+engineeringspec work <contract-id>
+engineeringspec finish <contract-id> --format markdown
+```
+
+These commands read authorization settings from the trusted-base `engineering-spec.json`. Explicit options remain available, and CI should keep supplying its event base explicitly.
+
 1. **Explore** repository context without granting authority.
 2. **Propose** a draft contract with explicit targets and obligations.
 3. **Approve** the contract in a maintainer-owned, contract-only PR.

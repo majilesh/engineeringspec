@@ -279,6 +279,7 @@ owners: [{team: test}]
     execFileSync("git",["init","-q",root]);
     execFileSync("git",["-C",root,"add","."]);
     execFileSync("git",["-C",root,"-c","user.name=Test","-c","user.email=test@example.com","commit","-qm","fixture"]);
+    execFileSync("git",["-C",root,"config","engineeringspec.trustedBase","HEAD"]);
     const original=process.cwd();
     process.chdir(root);
     try {
@@ -300,7 +301,7 @@ owners: [{team: test}]
       expect(JSON.stringify(prepared.verification)).not.toContain("argv");
       expect(await invoke(["prepare","ES-missing","--spec-dir","specs","--base","HEAD","--strict","--quiet"])).toBe(1);
       expect(await invoke(["check","--spec-dir","specs","--base","HEAD","--strict","--quiet"])).toBe(0);
-      expect(await invoke(["check","--spec-dir","specs","--quiet"])).toBe(2);
+      expect(await invoke(["check","--spec-dir","specs","--quiet"])).toBe(0);
       await writeFile(path.join(root,"specs","change.engineering-spec.md"),(await readFile(path.join(root,"specs","change.engineering-spec.md"),"utf8")).replace("status: approved","status: implemented"));
       expect(await invoke(["check","--spec-dir","specs","--base","HEAD","--strict","--quiet"])).toBe(1);
       expect(await invoke(["check","--spec-dir","specs","--base","HEAD","--allow-contract-only","--strict","--quiet"])).toBe(0);
@@ -328,7 +329,7 @@ owners: [{team: test}]
     expect(await readFile(path.join(root,".github/workflows/engineering-spec.yml"),"utf8")).toContain("majilesh/engineeringspec@e2d485cfeeb4ce745a57293db089ff70cc4648de");
     expect(await readFile(path.join(root,"CLAUDE.md"),"utf8")).toContain("@AGENTS.md");
     const dry=await adoptRepository({root,specPath:"docs/engineering-specs/ES-change.engineering-spec.md",dryRun:true});
-    expect(dry.skipped).toHaveLength(5);
+    expect(dry.skipped).toHaveLength(6);
   });
   it("pins generated agent context to an explicit approved base and immutable CLI version",async()=>{
     const root=await mkdtemp(path.join(os.tmpdir(),"es-adopt-base-"));
@@ -390,7 +391,7 @@ owners: [{team: test}]
   it("keeps dry-run write-free and rejects unsafe scaffold interpolation",async()=>{
     const root=await mkdtemp(path.join(os.tmpdir(),"es-adopt-dry-"));
     const result=await adoptRepository({root,specPath:"docs/spec.engineering-spec.md",baseRef:"origin/main",dryRun:true});
-    expect(result.created).toHaveLength(5);
+    expect(result.created).toHaveLength(6);
     await expect(readFile(path.join(root,"AGENTS.md"),"utf8")).rejects.toThrow();
     await expect(adoptRepository({root,specPath:"docs/spec.yml\ngate-base: attacker",baseRef:"origin/main"})).rejects.toThrow("safe repository-relative path");
     await expect(adoptRepository({root,specPath:"docs/spec.engineering-spec.md",baseRef:"origin/main\nmalicious"})).rejects.toThrow("safe Git ref");
@@ -398,7 +399,7 @@ owners: [{team: test}]
   it("previews and creates a safe quickstart with draft authority and maintainer ownership",async()=>{
     const root=await mkdtemp(path.join(os.tmpdir(),"es-adopt-quickstart-"));
     const dry=await adoptRepository({root,quickstart:true,maintainer:"@acme/platform",dryRun:true});
-    expect(dry.created).toHaveLength(7);
+    expect(dry.created).toHaveLength(8);
     expect(dry.specPath).toBe("docs/engineering-specs/ES-first-change.engineeringspec.md");
     await expect(readFile(path.join(root,dry.specPath),"utf8")).rejects.toThrow();
     const result=await adoptRepository({root,quickstart:true,maintainer:"@acme/platform"});

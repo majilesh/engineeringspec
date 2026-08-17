@@ -5,6 +5,16 @@ description: Apply EngineeringSpec change contracts during consequential AI-assi
 
 # EngineeringSpec workflow
 
+When the repository has trusted `engineering-spec.json` defaults, prefer the short composed workflow:
+
+```sh
+engineeringspec next
+engineeringspec work <contract-id>
+engineeringspec finish <contract-id> --format markdown
+```
+
+New authority still requires a separately reviewed authority PR. The implementation PR may include only the exact `approved -> implemented` close; `finish --write-closure` edits no other field and performs no Git operation.
+
 Treat the checked-in EngineeringSpec as the shared change contract. Keep validation and query commands read-only. Never execute a verifier merely because its runner appears in a specification.
 
 Prefer the repository-local `engineeringspec` binary when the package is installed. The fallback commands below pin the exact released CLI version; do not replace it with a mutable distribution tag in an enforcing workflow.
@@ -84,7 +94,7 @@ When participating in a paired pilot, do not self-certify success or silently om
 
 ## Close
 
-After implementation review and trusted checks pass, prepare the lifecycle-only transition from `approved` to `implemented` (or another reviewed terminal state). Run directory `check --allow-contract-only` and require the distinct `contract_only` classification. Do not use closure as evidence, and do not close while the approved contract is still needed to authorize dependent implementation changes.
+After implementation review and trusted checks pass, an implementation PR may include the exact transition from `approved` to `implemented`. Require `implementation_with_monotonic_close` for the mixed diff, or `contract_only` for a standalone close. Do not use closure as evidence.
 
 Preview the status-only edit, then write it explicitly after review:
 
