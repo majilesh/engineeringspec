@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://engineeringspec.org/schemas/implementation-receipt-0.2.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["format", "formatVersion", "generatedAt", "cliVersion", "authority", "change", "authorization", "verification"],
+  "properties": {
+    "format": { "const": "engineering-spec-implementation-receipt" },
+    "formatVersion": { "const": "0.2" },
+    "generatedAt": { "type": "string", "format": "date-time" },
+    "cliVersion": { "type": "string" },
+    "authority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["baseSha", "contractId", "specRevision", "semanticDigest"],
+      "properties": {
+        "baseSha": { "type": "string", "pattern": "^[0-9a-f]{40,64}$" },
+        "contractId": { "type": "string", "minLength": 1 },
+        "specRevision": { "type": "integer", "minimum": 1 },
+        "semanticDigest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" }
+      }
+    },
+    "change": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["digest", "completeWorkingState", "excludedPaths"],
+      "properties": {
+        "digest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+        "completeWorkingState": { "type": "boolean" },
+        "excludedPaths": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "authorization": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["valid", "classification", "limitations"],
+      "properties": {
+        "valid": { "type": "boolean" },
+        "classification": { "type": "string" },
+        "limitations": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "verification": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["verifierId", "state"],
+        "properties": {
+          "verifierId": { "type": "string" },
+          "state": { "enum": ["declared", "mapped", "attempted", "passed", "failed", "rejected", "not_run"] },
+          "artifact": { "type": "string" },
+          "digest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+          "note": { "type": "string" }
+        }
+      }
+    }
+  }
+}

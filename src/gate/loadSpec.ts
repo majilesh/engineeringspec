@@ -84,6 +84,43 @@ export async function readGitBlob(ref: string, repoRelativePath: string, cwd?: s
   }
 }
 
+export async function tryReadGitBlob(ref: string, repoRelativePath: string, cwd?: string): Promise<string | undefined> {
+  try {
+    const { stdout } = await execFileAsync("git", ["show", `${ref}:${repoRelativePath}`], {
+      cwd,
+      maxBuffer: 4 * 1024 * 1024,
+      encoding: "utf8",
+    });
+    return stdout;
+  } catch (error) {
+    const candidate = error as { stderr?: string };
+    const detail = candidate.stderr ?? (error instanceof Error ? error.message : String(error));
+    if (/does not exist in|exists on disk, but not in|Path .* does not exist/u.test(detail)) return undefined;
+    throw new Error(`Unable to read ${repoRelativePath} from ${ref}: ${detail}`);
+  }
+}
+
+export async function readGitConfig(key: string, cwd?: string): Promise<string | undefined> {
+  try {
+    const { stdout } = await execFileAsync("git", ["config", "--get", key], { cwd, encoding: "utf8" });
+    return stdout.trim() || undefined;
+  } catch (error) {
+    const candidate = error as { code?: number };
+    if (candidate.code === 1) return undefined;
+    throw error;
+  }
+}
+
+export async function resolveOriginHead(cwd?: string): Promise<string | undefined> {
+  try {
+    const { stdout } = await execFileAsync("git", ["symbolic-ref", "refs/remotes/origin/HEAD"], { cwd, encoding: "utf8" });
+    const ref = stdout.trim().replace(/^refs\/remotes\//u, "");
+    return ref || undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 export async function resolveCommitSha(ref: string, cwd?: string): Promise<string> {
   const { stdout } = await execFileAsync("git", ["rev-parse", ref], { cwd, encoding: "utf8" });
   return stdout.trim();

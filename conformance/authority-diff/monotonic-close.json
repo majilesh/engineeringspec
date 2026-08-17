@@ -1,0 +1,7 @@
+{
+  "description": "Only approved to implemented and optional updatedAt may close with implementation",
+  "from": "approved",
+  "to": "implemented",
+  "semanticChange": false,
+  "expected": "safe_monotonic_close"
+}

@@ -7,6 +7,7 @@ import { normalize } from "../normalizer/normalize.js";
 import { validateMarkdown } from "../validator/validateFile.js";
 import { workflowStatus, type WorkflowStatusReport } from "./status.js";
 import { displaySafe, markdownCode, markdownText } from "./render.js";
+import { authorityDiffMarkdown, authorityDiffText, type AuthorityDiff } from "../authority/diff.js";
 
 export interface ReviewOptions {
   specDirectory: string;
@@ -42,6 +43,7 @@ export interface ReviewReport {
   next: WorkflowStatusReport["next"];
   routes: WorkflowStatusReport["routing"]["routes"];
   contracts: ReviewContract[];
+  authorityDiffs: AuthorityDiff[];
   diagnostics: Diagnostic[];
 }
 
@@ -115,6 +117,7 @@ export async function buildReview(options: ReviewOptions): Promise<ReviewReport>
     next: status.next,
     routes: status.routing.routes,
     contracts,
+    authorityDiffs: status.routing.governance.authorityDiffs ?? [],
     diagnostics: status.routing.diagnostics.map((item) => ({
       code: item.code,
       severity: item.severity,
@@ -163,6 +166,7 @@ export function reviewMarkdown(report: ReviewReport): string {
       lines.push("", `Verification identities: ${contract.verification.map((item) => markdownCode(item.id)).join(", ")}`);
     }
   }
+  for (const authorityDiff of report.authorityDiffs) lines.push("", authorityDiffMarkdown(authorityDiff));
   if (report.diagnostics.length > 0) {
     lines.push("", "### Diagnostics", "", ...report.diagnostics.map((item) => `- **${safe(item.code)}** ${safe(item.file ? `${item.file}: ${item.message}` : item.message)}`));
   }
@@ -191,6 +195,7 @@ export function reviewText(report: ReviewReport): string {
       ...contract.constraints.map((item) => `obligation: ${displaySafe(item.id)} (${displaySafe(item.level)}) ${displaySafe(item.statement)}`),
       ...contract.verification.map((item) => `verification: ${displaySafe(item.id)} (${displaySafe(item.kind)}) proves ${item.proves.map(displaySafe).join(", ")}`),
     ]),
+    ...report.authorityDiffs.map(authorityDiffText),
     ...report.diagnostics.map((item) => `${displaySafe(item.severity)}: ${displaySafe(item.code)} ${item.file ? `${displaySafe(item.file)}: ` : ""}${displaySafe(item.message)}`),
     `next: ${displaySafe(report.next.stage)} — ${displaySafe(report.next.message)}`,
   ].join("\n");

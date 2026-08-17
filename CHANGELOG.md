@@ -4,6 +4,23 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+### Added
+
+- Trusted-base `engineering-spec.json` defaults for zero-flag daily commands, with workspace drift reported but ignored for authorization.
+- Thin `next`, `work`, and `finish` commands composing existing status, prepare, routing, review, transition, and receipt primitives.
+- Versioned semantic authority diffs, bound implementation receipts, and copy-ready pull-request metadata.
+
+### Changed
+
+- An implementation may close its exact authorizing contract in the same pull request through `approved -> implemented` when every other normalized field is unchanged.
+- `status`, directory `check`, `review`, and `prepare` can use trusted repository defaults while retaining explicit options.
+
+### Security
+
+- Head configuration and head contracts never contribute authority; configuration and verifier mappings come only from one resolved base SHA.
+- Mixed close routing excludes the contract path only after exact semantic identity succeeds. Any other semantic edit fails closed.
+- Specification runners remain inert. Evidence states bind the base, contract, semantic digest, and intended-change digest.
+
 ## [0.1.0-rc.13] - 2026-08-16
 
 ### Fixed

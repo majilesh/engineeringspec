@@ -2,6 +2,10 @@
 
 EngineeringSpec uses one human-readable workflow around the format's lifecycle states.
 
+For new authority, the default review boundary is two pull requests: merge one reviewed authority PR whose contract is `approved`, then merge one implementation PR that may also transition that exact contract to `implemented`. The second PR passes only when the base and head documents are semantically identical except for `metadata.status` and an optional valid `metadata.updatedAt`.
+
+With trusted repository configuration on the base, use `engineeringspec next`, `engineeringspec work <contract-id>`, and `engineeringspec finish <contract-id>`. Explicit flags remain supported for debugging and CI.
+
 | Workflow stage | Typical contract state | Authority and outcome |
 |---|---|---|
 | Explore | none | Read-only discovery; no implementation authority |
@@ -29,14 +33,14 @@ Use `superseded` when a reviewed replacement contract owns the change. Use `reje
 
 ## Closing
 
-After the dependent implementation merges, change only the approved contract lifecycle to `implemented` and run:
+The implementation PR may change only the approved contract lifecycle to `implemented` and run:
 
 ```sh
 npx --yes @engineeringspec/cli@0.1.0-rc.13 check --spec-dir docs/engineering-specs \
   --base origin/main --allow-contract-only --strict
 ```
 
-The result must say `change classification: contract_only`. Require normal repository checks and maintainer review before merging. If any implementation path is present, the governance classification is unavailable and approved-base routing applies to the entire change.
+With code in the same diff, the result must say `change classification: implementation_with_monotonic_close`; a standalone closure remains `contract_only`. Require normal repository checks and maintainer review before merging. Approved-base routing still applies to every implementation path.
 
 Avoid manual frontmatter edits by previewing the exact status-only transition first:
 

@@ -91,7 +91,27 @@ describe("Git-tree multi-spec routing", () => {
     });
   });
 
-  it("keeps mixed changes and invalid workspace governance fail closed", async () => {
+  it("preserves standalone terminal closures and rejects closing an unspent contract beside code", async () => {
+    const standalone = await repository();
+    const standaloneFile = path.join(standalone.root, "specs", "change.engineering-spec.md");
+    await writeFile(standaloneFile, (await readFile(standaloneFile, "utf8")).replace("status: approved", "status: superseded"));
+    const superseded = await selectSpecs({ directory: "specs", base: standalone.baseSha, cwd: standalone.root, strict: true, allowContractOnly: true });
+    expect(superseded).toMatchObject({ valid: true, governance: { classification: "contract_only", lifecycleOnly: true, implementationCloseOnly: false } });
+
+    const mixed = await repository();
+    await writeFile(path.join(mixed.root, "specs", "other.engineering-spec.md"), document({ id: "ES-other", target: "other/**" }));
+    execFileSync("git", ["-C", mixed.root, "add", "."]);
+    execFileSync("git", ["-C", mixed.root, "-c", "user.name=Test", "-c", "user.email=test@example.com", "commit", "-qm", "second contract"]);
+    const baseSha = execFileSync("git", ["-C", mixed.root, "rev-parse", "HEAD"], { encoding: "utf8" }).trim();
+    const other = path.join(mixed.root, "specs", "other.engineering-spec.md");
+    await writeFile(other, (await readFile(other, "utf8")).replace("status: approved", "status: implemented"));
+    await writeFile(path.join(mixed.root, "src", "a.ts"), "export const changed = true;\n");
+    const report = await selectSpecs({ directory: "specs", base: baseSha, cwd: mixed.root, strict: true, allowContractOnly: true });
+    expect(report.valid).toBe(false);
+    expect(report.diagnostics).toContainEqual(expect.objectContaining({ code: "ESRT006", message: expect.stringContaining("ES-other") }));
+  });
+
+  it("requires the exact monotonic close to be spent and still fails uncovered paths", async () => {
     const { root, baseSha } = await repository();
     const file = path.join(root, "specs", "change.engineering-spec.md");
     await writeFile(file, (await readFile(file, "utf8")).replace("status: approved", "status: implemented"));
@@ -101,10 +121,9 @@ describe("Git-tree multi-spec routing", () => {
     expect(mixed.governance.classification).toBe("implementation");
     expect(mixed.diagnostics).toContainEqual(expect.objectContaining({
       code: "ESRT002",
-      file: "specs/change.engineering-spec.md",
-      hint: expect.stringContaining("Split specification"),
+      file: "outside.ts",
     }));
-    expect(mixed.diagnostics.find((item) => item.file === "specs/change.engineering-spec.md")?.hint).not.toContain("--allow-contract-only");
+    expect(mixed.diagnostics).toContainEqual(expect.objectContaining({ code: "ESRT006" }));
 
     await unlink(path.join(root, "outside.ts"));
     await writeFile(file, "# invalid\n");

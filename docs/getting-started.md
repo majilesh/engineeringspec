@@ -8,6 +8,16 @@ EngineeringSpec gives product, architecture, engineering, coding agents, reviewe
 
 Install or invoke the pinned CLI, create `docs/engineering-specs/`, and follow the [first-change tutorial](first-change-tutorial.md). Keep enforcement advisory until the team understands the two-PR lifecycle.
 
+Adoption also creates `engineering-spec.json`. Once it is on the trusted base, normal work does not repeat the specification directory, base, or strictness flags:
+
+```sh
+engineeringspec next
+engineeringspec work ES-change
+engineeringspec finish ES-change --format markdown
+```
+
+The authority PR must merge before implementation. The implementation PR can include the exact monotonic close, so a separate closure PR is unnecessary.
+
 Preview the complete safe scaffold:
 
 ```sh

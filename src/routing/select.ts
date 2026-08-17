@@ -53,20 +53,55 @@ export async function selectSpecs(options: SelectSpecsOptions): Promise<RoutingR
   const classification = options.allowContractOnly
     ? contractOnlyClassification
     : changed.length === 0 ? "none" : "implementation";
-  const governanceInspection = classification === "contract_only"
+  const isSpecChange = (change: ChangedFile): boolean => directory !== "."
+    && change.path.startsWith(`${directory}/`)
+    && isEngineeringSpecFilename(change.path)
+    && (!change.fromPath || (change.fromPath.startsWith(`${directory}/`) && isEngineeringSpecFilename(change.fromPath)));
+  const specChanges = changed.filter(isSpecChange);
+  const implementationChanges = changed.filter((change) => !isSpecChange(change));
+  const mixed = specChanges.length > 0 && implementationChanges.length > 0;
+  const governanceInspection = classification === "contract_only" || mixed
     ? await inspectWorkspaceGovernance({
       directory,
-      changed,
+      changed: classification === "contract_only" ? changed : specChanges,
       baseCandidates: candidates,
       strict: Boolean(options.strict),
       ...(options.cwd ? { cwd: options.cwd } : {}),
     })
     : undefined;
+  let safeMixedClose = Boolean(mixed && governanceInspection?.report.implementationCloseOnly);
+  if (safeMixedClose && governanceInspection) {
+    governanceInspection.report.classification = "implementation_with_monotonic_close";
+  }
+  if (mixed && !safeMixedClose && governanceInspection) {
+    governanceInspection.diagnostics.push({
+      code: Codes.routingUnsafeClosure,
+      severity: "error",
+      message: "Implementation and specification changes may share a PR only when every specification change is an exact approved-to-implemented monotonic close.",
+      hint: "Remove semantic specification edits, or merge authority changes in a contract-only PR before implementation.",
+    });
+  }
+  const routeableChanges = safeMixedClose ? implementationChanges : changed;
   const routed = loadFailed
     ? { candidates: candidates.map((candidate) => ({ path: candidate.path, digest: candidate.digest, specId: candidate.spec.metadata.id, status: candidate.spec.metadata.status, eligible: requiredStatuses.includes(candidate.spec.metadata.status) })), routes: [], diagnostics: [], changedDigest: digestRoutedChanges(changed) }
     : classification === "contract_only"
       ? { ...routeChanges(candidates, [], requiredStatuses), changedDigest: digestRoutedChanges(changed) }
-      : routeChanges(candidates, changed, requiredStatuses);
+      : { ...routeChanges(candidates, routeableChanges, requiredStatuses), changedDigest: digestRoutedChanges(changed) };
+  if (safeMixedClose && governanceInspection) {
+    const closedIds = new Set((governanceInspection.report.authorityDiffs ?? []).map((item) => item.contractId));
+    const selectedIds = new Set(routed.routes.flatMap((route) => route.selected ? [route.selected.specId] : []));
+    const unrelated = [...closedIds].filter((id) => !selectedIds.has(id));
+    if (unrelated.length > 0) {
+      safeMixedClose = false;
+      governanceInspection.report.classification = "implementation";
+      governanceInspection.diagnostics.push({
+        code: Codes.routingUnsafeClosure,
+        severity: "error",
+        message: `Mixed closure contract(s) ${unrelated.join(", ")} did not authorize any implementation path in this change.`,
+        hint: "Close only the exact base contract spent by the implementation, or submit a standalone lifecycle-only close.",
+      });
+    }
+  }
   const routeDiagnostics = routed.diagnostics.map((diagnostic) => diagnostic.code === Codes.routingUncovered
     && diagnostic.file
     && isEngineeringSpecFilename(diagnostic.file)

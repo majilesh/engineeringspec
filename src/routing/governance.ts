@@ -6,12 +6,13 @@ import { gitShowToplevel } from "../gate/loadSpec.js";
 import { assertSafeRepoPath } from "../gate/collectDiff.js";
 import type { ChangedFile } from "../gate/types.js";
 import type { Status } from "../model/types.js";
+import { buildAuthorityDiff, type AuthorityDiff } from "../authority/diff.js";
 import { canonicalJson } from "../normalizer/canonicalize.js";
 import { normalize } from "../normalizer/normalize.js";
 import { validateFile } from "../validator/validateFile.js";
 import type { LoadedRoutingCandidate } from "./types.js";
 
-export type ChangeClassification = "none" | "contract_only" | "implementation";
+export type ChangeClassification = "none" | "contract_only" | "implementation" | "implementation_with_monotonic_close";
 
 export interface GovernanceTransition {
   path: string;
@@ -26,7 +27,9 @@ export interface GovernanceReport {
   workspaceErrors?: number;
   workspaceWarnings?: number;
   lifecycleOnly?: boolean;
+  implementationCloseOnly?: boolean;
   transitions?: GovernanceTransition[];
+  authorityDiffs?: AuthorityDiff[];
 }
 
 function pathInside(directory: string, candidate: string): boolean {
@@ -46,11 +49,8 @@ export function classifyGovernanceChanges(directory: string, changed: ChangedFil
   return allInside ? "contract_only" : "implementation";
 }
 
-function withoutStatus(candidate: LoadedRoutingCandidate["spec"], status: Status): string {
-  return canonicalJson({
-    ...candidate,
-    metadata: { ...candidate.metadata, status },
-  });
+function statusOnly(candidate: LoadedRoutingCandidate["spec"], status: Status): string {
+  return canonicalJson({ ...candidate, metadata: { ...candidate.metadata, status } });
 }
 
 export async function inspectWorkspaceGovernance(options: {
@@ -118,20 +118,30 @@ export async function inspectWorkspaceGovernance(options: {
 
   const base = new Map(options.baseCandidates.map((candidate) => [candidate.path, candidate.spec]));
   const transitions: GovernanceTransition[] = [];
+  const authorityDiffs: AuthorityDiff[] = [];
   let lifecycleOnly = options.changed.length > 0;
+  let implementationCloseOnly = options.changed.length > 0;
   for (const change of options.changed) {
     const before = base.get(change.path);
     const after = workspace.get(change.path);
     if (change.kind !== "modified" || change.fromPath || !before || !after
-      || before.metadata.status !== "approved"
-      || !(["implemented", "superseded", "rejected"] as Status[]).includes(after.metadata.status)
-      || withoutStatus(after, before.metadata.status) !== canonicalJson(before)) {
+      || before.metadata.status !== "approved") {
       lifecycleOnly = false;
       continue;
     }
-    transitions.push({ path: change.path, from: before.metadata.status, to: after.metadata.status });
+    const authorityDiff = buildAuthorityDiff(before, after);
+    authorityDiffs.push(authorityDiff);
+    const legacyTerminalClose = (["implemented", "superseded", "rejected"] as Status[]).includes(after.metadata.status)
+      && statusOnly(after, before.metadata.status) === canonicalJson(before);
+    if (!authorityDiff.safeMonotonicClose && !legacyTerminalClose) {
+      lifecycleOnly = false;
+    }
+    if (!authorityDiff.safeMonotonicClose) implementationCloseOnly = false;
+    if (authorityDiff.safeMonotonicClose || legacyTerminalClose) transitions.push({ path: change.path, from: before.metadata.status, to: after.metadata.status });
   }
   lifecycleOnly = lifecycleOnly && transitions.length === options.changed.length;
+  implementationCloseOnly = implementationCloseOnly && authorityDiffs.length === options.changed.length
+    && authorityDiffs.every((item) => item.safeMonotonicClose);
 
   return {
     report: {
@@ -141,7 +151,9 @@ export async function inspectWorkspaceGovernance(options: {
       workspaceErrors: errors,
       workspaceWarnings: warnings,
       lifecycleOnly,
+      implementationCloseOnly,
       transitions,
+      authorityDiffs,
     },
     diagnostics,
   };

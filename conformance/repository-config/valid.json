@@ -1,0 +1,8 @@
+{
+  "specDirectory": "docs/engineering-specs",
+  "strict": true,
+  "trustedBase": "origin/main",
+  "trustedVerifiers": {
+    "ES-change#VER-1": { "argv": ["npm", "test"], "network": "deny", "timeoutSeconds": 900 }
+  }
+}

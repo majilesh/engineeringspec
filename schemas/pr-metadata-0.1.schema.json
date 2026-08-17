@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://engineeringspec.org/schemas/pr-metadata-0.1.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["format", "formatVersion", "title", "body", "receipt"],
+  "properties": {
+    "format": { "const": "engineering-spec-pr-metadata" },
+    "formatVersion": { "const": "0.1" },
+    "title": { "type": "string" },
+    "body": { "type": "string" },
+    "receipt": { "$ref": "implementation-receipt-0.2.schema.json" }
+  }
+}
