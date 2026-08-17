@@ -1,7 +1,7 @@
 ---
 spec_format: engineering-spec
 spec_format_version: "0.1"
-spec_revision: 1
+spec_revision: 2
 id: ES-rc14-maximum-safety-minimum-ceremony
 title: Maximum safety with minimum ceremony
 status: approved
@@ -137,6 +137,7 @@ Reduce the normal new-authority workflow to two meaningful pull requests and zer
     - conformance/governance/manifest.json
     - test/conformance/governance.test.ts
     - test/integration/cli.test.ts
+    - test/integration/routing.test.ts
     - test/unit/governance.test.ts
     - test/unit/doctor.test.ts
     - test/unit/package-contents.test.ts
