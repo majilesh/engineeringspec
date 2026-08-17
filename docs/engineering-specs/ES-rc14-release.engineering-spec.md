@@ -60,12 +60,20 @@ Prepare a coherent `0.1.0-rc.14` repository release candidate after the reviewed
     - docs/cli-reference.md
     - docs/first-change-tutorial.md
     - docs/getting-started.md
+    - docs/integrations.md
     - docs/lifecycle.md
     - docs/maintaining-specs.md
     - docs/production-gate.md
     - docs/troubleshooting.md
     - docs/upgrading.md
+    - integrations/README.md
+    - integrations/claude/README.md
+    - integrations/codex/README.md
+    - integrations/copilot/README.md
+    - integrations/cursor/README.md
+    - integrations/generic/README.md
     - skills/engineering-spec/SKILL.md
+    - .cursor/rules/engineering-spec.mdc
   change_policy: modify
 - id: TARGET-tests
   component: rc14-release-identity-regressions
@@ -94,7 +102,7 @@ Prepare a coherent `0.1.0-rc.14` repository release candidate after the reviewed
 ```engineering-constraints
 - id: CON-1
   level: must
-  statement: Commit A must set package.json and the root package-lock metadata to exact version 0.1.0-rc.14 and align current CLI examples, generated guidance, tests, changelog, and site output with that version without rewriting historical contracts, historical changelog text, receipts, benchmarks, or retained evidence.
+  statement: Commit A must set package.json and the root package-lock metadata to exact version 0.1.0-rc.14 and align current CLI examples, generated guidance, package-shipped integration guidance, active agent handoffs, tests, changelog, and site output with that version without rewriting historical contracts, historical changelog text, receipts, benchmarks, or retained evidence.
   applies_to: [TARGET-package, TARGET-guidance, TARGET-tests, TARGET-site]
   enforcement: { kind: test, verifier_ref: VER-IDENTITY }
 - id: CON-2
@@ -109,12 +117,12 @@ Prepare a coherent `0.1.0-rc.14` repository release candidate after the reviewed
   enforcement: { kind: test, verifier_ref: VER-PIN }
 - id: CON-4
   level: must
-  statement: Full-history release verification must inspect Commit A rather than only the current checkout and prove that the pinned tree contains base-only authorization, implementation_with_monotonic_close routing, exact lifecycle-close handling, unsafe and unrelated closure rejection, runner inertness, and the release-compatible Action entrypoint.
+  statement: A separate deterministic release-review step in a full-history checkout must inspect Commit A rather than only the current tree and use local Git operations to prove that Commit A exists, is an ancestor of Commit B, identifies as 0.1.0-rc.14, and contains the release-compatible Action entrypoint, approved-base-only authority loading, implementation_with_monotonic_close routing, unsafe mixed-closure rejection, unrelated-closure rejection, and runner inertness. This verification must require no network access after full history is available.
   applies_to: [TARGET-action-pin, TARGET-tests]
-  enforcement: { kind: test, verifier_ref: VER-PIN }
+  enforcement: { kind: review, reviewer_role: release-maintainer }
 - id: CON-5
   level: must
-  statement: Current public documentation, generated adoption output, package metadata, compiled CLI identity, deterministic site output, and release regressions must agree on CLI version 0.1.0-rc.14 and the Commit A Action pin at the final Commit B tree.
+  statement: Current public documentation, package-shipped integration guidance, active repository agent handoffs, generated adoption output, package metadata, compiled CLI identity, deterministic site output, and release regressions must agree on CLI version 0.1.0-rc.14 and the Commit A Action pin at the final Commit B tree.
   applies_to: [TARGET-package, TARGET-action-pin, TARGET-guidance, TARGET-tests, TARGET-site]
   enforcement: { kind: test, verifier_ref: VER-IDENTITY }
 - id: CON-6
@@ -129,12 +137,12 @@ Prepare a coherent `0.1.0-rc.14` repository release candidate after the reviewed
   enforcement: { kind: test, verifier_ref: VER-GOVERNANCE }
 - id: CON-8
   level: must
-  statement: Current RC13 references must be upgraded only where they describe the currently recommended release; historical RC13 contracts, release notes, evidence, and provenance must retain their original identities.
-  applies_to: [TARGET-guidance, TARGET-site]
-  enforcement: { kind: review, reviewer_role: release-maintainer }
+  statement: An explicit allowlist of current release and adoption surfaces must control RC14 identity updates. Historical RC13 contracts, prior release sections in the changelog, retained evidence, benchmark records, receipts, provenance, and historical RFC facts must retain their original versions and pins; implementation must not perform a repository-wide blind replacement, and deterministic regressions must distinguish designated current surfaces from designated historical artifacts.
+  applies_to: [TARGET-guidance, TARGET-tests, TARGET-site]
+  enforcement: { kind: test, verifier_ref: VER-IDENTITY }
 - id: CON-9
   level: must
-  statement: Before review, the final tree must pass lint, typecheck, unit tests, conformance tests, build, package-content audit, deterministic site generation, clean-package smoke testing, RC14 Action-pin full-history verification, and the strict complete-working-state EngineeringSpec check.
+  statement: Before review, the final tree must pass lint, typecheck, unit tests, conformance tests, build, package-content audit, deterministic site generation, clean-package smoke testing, static current-tree release regressions, the separate RC14 Action-pin full-history release-review step, and the strict complete-working-state EngineeringSpec check.
   applies_to: [TARGET-package, TARGET-action-pin, TARGET-guidance, TARGET-tests, TARGET-site, TARGET-contract]
   enforcement: { kind: review, reviewer_role: maintainer }
 - id: CON-10
@@ -142,13 +150,18 @@ Prepare a coherent `0.1.0-rc.14` repository release candidate after the reviewed
   statement: External publication must require a separate explicit maintainer decision after the repository preparation merges; published npm, tag, and GitHub release identities must never be inferred or performed merely from this contract.
   applies_to: [TARGET-package, TARGET-action-pin, TARGET-contract]
   enforcement: { kind: review, reviewer_role: release-maintainer }
+- id: CON-11
+  level: must
+  statement: Public integration guidance must present next followed by work for the selected contract, separately trusted repository checks, and finish as the normal agent journey. Prepare, status, review, select, check, context, and explain must remain available as deterministic advanced, CI, or debugging primitives and must not be described as deprecated. Vendor-specific handoffs must remain thin consumers of AGENTS.md and must not define a second authorization model.
+  applies_to: [TARGET-guidance]
+  enforcement: { kind: test, verifier_ref: VER-IDENTITY }
 ```
 
 ## Verification
 
 ```engineering-verification
 - id: VER-IDENTITY
-  proves: [CON-1, CON-5]
+  proves: [CON-1, CON-5, CON-8, CON-11]
   kind: test
   runner:
     type: command
@@ -156,13 +169,19 @@ Prepare a coherent `0.1.0-rc.14` repository release candidate after the reviewed
     network: deny
   expected: { exit_code: 0 }
 - id: VER-PIN
-  proves: [CON-3, CON-4]
+  proves: [CON-3]
   kind: security
   runner:
     type: command
     argv: [npm, test]
     network: deny
   expected: { exit_code: 0 }
+- id: VER-FULL-HISTORY
+  proves: [CON-4]
+  kind: human_review
+  runner:
+    type: manual
+    reference: Deterministic full-history release review using local git cat-file, git merge-base --is-ancestor, and git show against Commit A and Commit B; ordinary unit tests prove only static current-tree release consistency
 - id: VER-GOVERNANCE
   proves: [CON-6, CON-7]
   kind: security
@@ -172,7 +191,7 @@ Prepare a coherent `0.1.0-rc.14` repository release candidate after the reviewed
     network: deny
   expected: { exit_code: 0 }
 - id: VER-RELEASE-REVIEW
-  proves: [CON-2, CON-8, CON-9, CON-10]
+  proves: [CON-2, CON-9, CON-10]
   kind: human_review
   runner:
     type: manual
@@ -188,7 +207,7 @@ steps:
   - Change only status from proposed to approved and merge that authority before preparing RC14.
   - Create Commit A with the RC14 package identity, current version guidance, tests, and deterministic site; run all trusted repository and packaging checks.
   - Record Commit A's full immutable SHA, then create Commit B that aligns the Action pin and current examples, regenerates deterministic outputs as needed, and exactly closes this contract.
-  - Verify Commit A from full Git history, verify the final Commit B tree, and merge the reviewed repository-preparation pull request.
+  - In a full-history checkout, use local Git object and ancestry checks to verify Commit A independently from the static current-tree regressions; verify the final Commit B tree and merge the reviewed repository-preparation pull request.
   - Stop and obtain an explicit maintainer publication decision before creating the npm package, npm dist-tag, Git tag, GitHub release, or consumer updates.
 rollback:
   actions:
@@ -200,4 +219,4 @@ rollback:
 
 ## Non-goals
 
-Publishing npm, changing npm dist-tags, tagging Git, creating a GitHub release, updating downstream consumers, changing runtime behavior, modifying the Action entrypoint, changing format 0.1, and weakening grant-versus-spend are outside this contract.
+Publishing npm, changing npm dist-tags, tagging Git, creating a GitHub release, updating downstream consumers, changing runtime behavior, modifying the Action entrypoint or CI workflows, changing format 0.1, and weakening grant-versus-spend are outside this contract.
