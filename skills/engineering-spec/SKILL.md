@@ -39,10 +39,11 @@ Explore source, dependencies, architecture, and likely paths without editing or 
 Create a deterministic draft from explicit paths or the local Git working state:
 
 ```sh
-npx --yes @engineeringspec/cli@0.1.0-rc.13 propose --id ES-change --title "Change title" --owner engineering --from-diff --base origin/main --dry-run
+npx --yes @engineeringspec/cli@0.1.0-rc.13 propose --id ES-change --title "Change title" --owner engineering \
+  --path '<repository-path-or-glob>' --output docs/engineering-specs/ES-change.engineering-spec.md --dry-run
 ```
 
-Review the output, then rerun without `--dry-run` when the target list is correct. The command never fetches issue content and only emits `status: draft`. A proposal is planning context, not permission to modify its targets. Keep the proposal/RFC change contract-only.
+Use explicit `--path` for prospective authority before coding. Review and narrow the output, then rerun without `--dry-run` when the target list is correct. Use `--from-diff` only to bring existing non-empty working changes under governance; its empty-diff failure is intentional. The command never fetches issue content and only emits `status: draft`. A proposal is planning context, not permission to modify its targets. Keep the proposal/RFC change contract-only.
 
 ## Approve and review
 

@@ -345,6 +345,10 @@ owners: [{team: test}]
     expect(agents).toContain("informational");
     expect(agents).toContain("permission: implementation");
     expect(agents).toContain("separately reviewed contract-only change");
+    expect(agents).toContain("--path '<repository-path-or-glob>'");
+    expect(agents).toContain("--output docs/engineering-specs/ES-change.engineering-spec.md");
+    expect(agents).toContain("Use `--from-diff` only when bringing existing working changes under governance");
+    expect(agents).toContain("intentionally rejects an empty diff");
     expect(agents).toContain("Repository reading remains allowed for correctness");
     expect(agents).toContain("writing is limited to the returned writable surfaces");
     expect(agents).toContain("never stages, commits, pushes, approves, merges");
@@ -377,7 +381,7 @@ owners: [{team: test}]
     expect(first.updated).toEqual(expect.arrayContaining(["AGENTS.md","CLAUDE.md"]));
     expect(first.skipped).toContain(".github/workflows/engineering-spec.yml");
     expect(agents).toContain("# Existing guidance");
-    expect(agents).toContain("--base origin/trunk");
+    expect(agents).toContain("approved authority loaded from `origin/trunk`");
     const second=await adoptRepository({root,specPath:"docs/spec.engineering-spec.md",merge:true});
     expect(second.updated).toHaveLength(0);
     expect((await readFile(path.join(root,"AGENTS.md"),"utf8")).match(/engineeringspec:start/g)).toHaveLength(1);
@@ -418,6 +422,8 @@ owners: [{team: test}]
     expect(agents).toContain(" work <contract-id>");
     expect(agents).toContain(" finish <contract-id>");
     expect(agents).toContain("Exit code 0 or successful analysis is not implementation permission");
+    expect(agents).toContain("--path '<repository-path-or-glob>'");
+    expect(agents).toContain("Use `--from-diff` only when bringing existing working changes under governance");
     expect(agents).toContain("Specification-declared runners are inert data");
     expect((await validateFile(path.join(root,result.specPath))).valid).toBe(true);
     expect(await readFile(path.join(root,".github/CODEOWNERS"),"utf8")).toBe("docs/engineering-specs/** @acme/platform\n");

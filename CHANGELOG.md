@@ -18,6 +18,8 @@ All notable changes to this project are documented here.
 - `status`, directory `check`, `review`, and `prepare` can use trusted repository defaults while retaining explicit options.
 - Generated adoption guidance now leads with the RC14 `next -> work -> trusted checks -> finish` journey and presents lower-level commands as advanced or CI primitives.
 - The first-change tutorial and CLI reference now teach the two-PR authority model and require `finish` evidence output outside the evaluated worktree.
+- `next.command` now matches every lifecycle state and emits executable `work` or `finish` commands only for a deterministic single contract.
+- Prospective proposal guidance now uses explicit paths and output filenames; `--from-diff` remains strict for existing working changes.
 
 ### Security
 
@@ -25,6 +27,7 @@ All notable changes to this project are documented here.
 - Mixed close routing excludes the contract path only after exact semantic identity succeeds. Any other semantic edit fails closed.
 - Specification runners remain inert. Evidence states bind the base, contract, semantic digest, and intended-change digest.
 - Generated GitHub enforcement pins immutable RC14-capable runtime `ed2f0acaaa220baa574e97a200535373eca5aa0b`, avoiding local CLI and CI closure-semantic drift.
+- Agent Control Plane guidance now requires repository-wide deny, ambiguity, and uncovered-path semantics over the same immutable approved candidate set used by CI.
 
 ## [0.1.0-rc.13] - 2026-08-16
 

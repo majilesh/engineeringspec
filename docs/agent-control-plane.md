@@ -81,12 +81,24 @@ base SHA
 contract ID
 spec revision
 contract semantic digest
+candidate-set identity or digest
+routing policy and version
 allowed surfaces
 constraints
 verifier identities
 ```
 
 Resolve a movable branch ref once at admission and retain the resulting base SHA. Do not continually reinterpret authority against a moving branch during execution.
+
+Where available, bind the task to EngineeringSpec's existing deterministic candidate-set and routing-decision digests rather than creating a competing control-plane representation.
+
+## Repository-wide effective authorization
+
+`work <contract-id>` provides the intended contract's base-pinned pre-code context and write envelope. It does not replace repository-wide routing, and the intended contract is not the sole authority universe merely because a task was admitted through `work <id>`.
+
+Effective authorization depends on every approved candidate loaded from the same immutable base. Another contract can deny a path that the intended contract allows, two contracts can make a path ambiguous, and a changed path can remain uncovered. Runtime write authorization **must** preserve cross-contract deny-overrides, ambiguity detection, and uncovered-path failure against the same immutable approved candidate set used by repository enforcement.
+
+The control plane may narrow the resulting repository-wide decision further. It must not select only the intended contract, discard competing candidates, reinterpret their policies, or turn an ambiguous, denied, or uncovered route into an allow. CI still recomputes the decision independently over the actual proposed change.
 
 The intended flow is:
 

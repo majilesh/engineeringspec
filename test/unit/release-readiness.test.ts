@@ -21,6 +21,9 @@ describe("RC14 release readiness", () => {
     expect(tutorial).toContain("PR 1 — grant authority");
     expect(tutorial).toContain("PR 2 — spend authority and close exactly");
     expect(tutorial).toContain("implementation_with_monotonic_close");
+    expect(tutorial).toContain("--path 'src/settings/**'");
+    expect(tutorial).toContain("--output docs/engineering-specs/ES-dark-mode.engineering-spec.md");
+    expect(tutorial).toContain("Use `--from-diff` instead only when an existing non-empty working change is being brought under governance");
     expect(tutorial).not.toContain("After the implementation merges");
     expect(tutorial).not.toContain("A mixed spec-and-code closure must fail");
     expect(readme).toContain("--output ../engineering-spec-receipt.json");
@@ -51,6 +54,11 @@ describe("RC14 release readiness", () => {
     expect(source).toContain("The control plane consumes reviewed EngineeringSpec authority. It does not manufacture authority.");
     expect(source).toContain("Specification runners remain inert");
     expect(source).toContain("independently usable with Git, the CLI, CI, and human review");
+    expect(source).toContain("does not replace repository-wide routing");
+    expect(source).toContain("candidate-set identity or digest");
+    expect(source).toContain("routing policy and version");
+    expect(source).toContain("cross-contract deny-overrides, ambiguity detection, and uncovered-path failure");
+    expect(source).toContain("same immutable approved candidate set used by repository enforcement");
   });
 
   it("organizes commands by developer, advanced, enforcement, and measurement use", async () => {
@@ -59,5 +67,13 @@ describe("RC14 release readiness", () => {
     expect(source).toContain("## Advanced inspection and troubleshooting");
     expect(source).toContain("## CI and enforcement primitives");
     expect(source).toContain("## Measurement and research");
+  });
+
+  it("documents non-self-referential RC14 release pin choreography", async () => {
+    const source = await readFile("docs/maintaining-specs.md", "utf8");
+    expect(source).toContain("RC runtime/version anchor");
+    expect(source).toContain("sets `CURRENT_ACTION_SHA`, examples, and tests to the anchor SHA");
+    expect(source).toContain("full-history checkout");
+    expect(source).toContain("Checking only the current checkout does not prove the pinned commit has those capabilities");
   });
 });

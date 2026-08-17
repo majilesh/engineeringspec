@@ -40,3 +40,23 @@ Keep specs beside the code when their content is sensitive. The reference CLI re
 ## Evidence maintenance
 
 Pin measurement to immutable base and head revisions and retain opaque participant, reviewer, task, and run identities. V2 measurement loads the complete approved candidate set, so contract overlap, denials, and uncovered paths remain evidence rather than being hidden by single-contract gating. Treat receipts as unsigned observations, not approvals or proof of verification. Review `--include-paths` for privacy. Do not publish quantitative scope claims unless `--require-publishable` passes, and still disclose sample size, authority breadth, metric-ineligibility reasons, negative outcomes, and the absence of causal inference.
+
+## Release identity and immutable Action pins
+
+An Action release cannot pin the commit that is still being created. Use two separately reviewed release commits:
+
+1. Create and fully verify an RC runtime/version anchor with the final package version, aligned lockfile, runtime, and documentation identity.
+2. After that immutable SHA exists, create the final release commit that sets `CURRENT_ACTION_SHA`, examples, and tests to the anchor SHA.
+3. Fully verify again, then tag, publish npm, and create the GitHub release from the final reviewed state.
+
+For RC14, the current implementation branch keeps `ed2f0acaaa220baa574e97a200535373eca5aa0b` because it already contains the required RC14 routing semantics and predates the release commit. A separately authorized release change should replace it with the future RC14-identity anchor SHA before publication.
+
+Release verification should use a full-history checkout and inspect the pinned object itself without adding network access to ordinary unit tests. At minimum, confirm the commit exists and that its routing source contains mixed monotonic-close classification, unsafe mixed-close rejection, and unrelated-close rejection:
+
+```sh
+git cat-file -e '<action-sha>^{commit}'
+git show '<action-sha>:src/routing/governance.ts'
+git show '<action-sha>:src/routing/select.ts'
+```
+
+The release reviewer should record the inspected SHA and capability result. Checking only the current checkout does not prove the pinned commit has those capabilities.

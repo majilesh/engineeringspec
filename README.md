@@ -81,7 +81,8 @@ engineeringspec finish ES-my-change --write-closure --output ../engineering-spec
 
 ```sh
 npx --yes @engineeringspec/cli@0.1.0-rc.13 adopt . --quickstart --maintainer @your-org/platform --dry-run
-npx --yes @engineeringspec/cli@0.1.0-rc.13 propose --id ES-my-change --title "My change" --from-diff --base origin/main --dry-run
+npx --yes @engineeringspec/cli@0.1.0-rc.13 propose --id ES-my-change --title "My change" \
+  --path 'src/example/**' --output docs/engineering-specs/ES-my-change.engineering-spec.md --dry-run
 npx --yes @engineeringspec/cli@0.1.0-rc.13 review --spec-dir docs/engineering-specs --base origin/main --strict --format markdown
 npx --yes @engineeringspec/cli@0.1.0-rc.13 prepare ES-my-change --spec-dir docs/engineering-specs --base origin/main --strict --format markdown
 npx --yes @engineeringspec/cli@0.1.0-rc.13 init --template feature --id ES-my-change

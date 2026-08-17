@@ -9,10 +9,14 @@ Ask the coding agent to inspect the styling system, preference storage, tests, a
 ```sh
 npx --yes @engineeringspec/cli@0.1.0-rc.13 next
 npx --yes @engineeringspec/cli@0.1.0-rc.13 propose \
-  --id ES-dark-mode --title "Add dark mode" --from-diff --base origin/main --dry-run
+  --id ES-dark-mode \
+  --title "Add dark mode" \
+  --path 'src/settings/**' \
+  --output docs/engineering-specs/ES-dark-mode.engineering-spec.md \
+  --dry-run
 ```
 
-`next` is informational. Exit code 0 and `analysisValid: true` mean only that the repository was analyzed successfully. They do not authorize implementation. Review the proposed paths, then create the draft contract without `--dry-run` when the scope is correct.
+`next` is informational. Exit code 0 and `analysisValid: true` mean only that the repository was analyzed successfully. They do not authorize implementation. The explicit `--path` supports a prospective proposal before code exists, and `--output` makes the generated filename deterministic. Review and narrow the target, then create the same draft without `--dry-run` when the scope is correct. Use `--from-diff` instead only when an existing non-empty working change is being brought under governance; an empty diff remains an error.
 
 Edit `docs/engineering-specs/ES-dark-mode.engineering-spec.md` so it names durable source intent, explicit targets, constraints such as system-preference fallback and accessibility, and verifier identities. Do not add dark-mode code in this branch.
 

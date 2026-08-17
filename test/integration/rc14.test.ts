@@ -34,11 +34,11 @@ owners: [{team: test}]
 \`\`\`
 `;
 
-async function repository(): Promise<string> {
+async function repository(source = CONTRACT): Promise<string> {
   const root = await mkdtemp(path.join(os.tmpdir(), "es-rc14-"));
   await mkdir(path.join(root, "specs"));
   await mkdir(path.join(root, "src"));
-  await writeFile(path.join(root, "specs", "change.engineering-spec.md"), CONTRACT);
+  await writeFile(path.join(root, "specs", "change.engineering-spec.md"), source);
   await writeFile(path.join(root, "src", "change.ts"), "export const value = 1;\n");
   await writeFile(path.join(root, "engineering-spec.json"), JSON.stringify({ specDirectory: "specs", strict: true, trustedBase: "HEAD", trustedVerifiers: { "ES-rc14-test#VER-1": { argv: ["must-not-run"] } } }));
   execFileSync("git", ["init", "-q", root]);
@@ -49,6 +49,61 @@ async function repository(): Promise<string> {
 }
 
 describe("RC14 minimum-ceremony workflow", () => {
+  it("keeps next commands coherent across every lifecycle state", async () => {
+    const none = await nextAction({ cwd: await repository(CONTRACT.replace("status: approved", "status: implemented")) });
+    expect(none).toMatchObject({ workflowState: "explore", permission: "none", command: "Explore intent and identify explicit paths before proposing authority." });
+
+    const draft = await nextAction({ cwd: await repository(CONTRACT.replace("status: approved", "status: draft")) });
+    expect(draft).toMatchObject({ workflowState: "propose", permission: "none", command: "Complete and review the existing draft contract." });
+
+    const proposed = await nextAction({ cwd: await repository(CONTRACT.replace("status: approved", "status: proposed")) });
+    expect(proposed).toMatchObject({ workflowState: "approve", permission: "none", command: "Review and merge the existing contract-only proposal." });
+
+    const approvedRoot = await repository();
+    const approved = await nextAction({ cwd: approvedRoot });
+    expect(approved).toMatchObject({ workflowState: "implement", permission: "implementation", command: "engineeringspec work ES-rc14-test" });
+
+    const multipleRoot = await repository(CONTRACT.replace("status: approved", "status: draft"));
+    await writeFile(
+      path.join(multipleRoot, "specs", "other.engineering-spec.md"),
+      CONTRACT.replaceAll("ES-rc14-test", "ES-rc14-other").replace("status: approved", "status: proposed"),
+    );
+    execFileSync("git", ["-C", multipleRoot, "add", "."]);
+    execFileSync("git", ["-C", multipleRoot, "-c", "user.name=Test", "-c", "user.email=test@example.com", "commit", "-qm", "multiple proposals"]);
+    const multiple = await nextAction({ cwd: multipleRoot });
+    expect(multiple).toMatchObject({ workflowState: "explore", permission: "none", command: "Explore intent and identify explicit paths before proposing authority." });
+
+    const multipleApprovedRoot = await repository();
+    await writeFile(
+      path.join(multipleApprovedRoot, "specs", "other.engineering-spec.md"),
+      CONTRACT.replaceAll("ES-rc14-test", "ES-rc14-other").replace("[src/**]", "[other/**]"),
+    );
+    execFileSync("git", ["-C", multipleApprovedRoot, "add", "."]);
+    execFileSync("git", ["-C", multipleApprovedRoot, "-c", "user.name=Test", "-c", "user.email=test@example.com", "commit", "-qm", "multiple approvals"]);
+    const multipleApproved = await nextAction({ cwd: multipleApprovedRoot });
+    expect(multipleApproved).toMatchObject({
+      workflowState: "implement",
+      permission: "none",
+      command: "Choose the intended approved contract before requesting implementation permission.",
+    });
+
+    await writeFile(path.join(approvedRoot, "src", "change.ts"), "export const value = 2;\n");
+    const verify = await nextAction({ cwd: approvedRoot });
+    expect(verify).toMatchObject({ workflowState: "verify", permission: "none", command: "engineeringspec finish ES-rc14-test" });
+
+    const closeRoot = await repository();
+    await writeFile(
+      path.join(closeRoot, "specs", "change.engineering-spec.md"),
+      CONTRACT.replace("status: approved", "status: implemented"),
+    );
+    const close = await nextAction({ cwd: closeRoot });
+    expect(close).toMatchObject({ workflowState: "close", permission: "none", command: "Review and merge the exact lifecycle-only closure." });
+
+    for (const report of [none, draft, proposed, multiple, multipleApproved, verify, close]) {
+      expect(report.command).not.toMatch(/^engineeringspec work\b/u);
+    }
+  });
+
   it("uses zero-flag trusted defaults and finishes with a safe monotonic close", async () => {
     const root = await repository();
     const next = await nextAction({ cwd: root });
@@ -89,7 +144,9 @@ describe("RC14 minimum-ceremony workflow", () => {
       analysisValid: true,
       workflowState: "blocked",
       permission: "none",
+      command: "Resolve the reported routing or contract diagnostics.",
     });
+    expect(next.command).not.toMatch(/^engineeringspec (?:work|finish)\b/u);
   });
 
   it("keeps generated output outside the checked tree and never stages a written close", async () => {
