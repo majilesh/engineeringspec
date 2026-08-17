@@ -2,7 +2,7 @@ import { readFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
 import { CURRENT_ACTION_SHA } from "../../src/adoption/releases.js";
 
-const RC14_ACTION_SHA = "ed2f0acaaa220baa574e97a200535373eca5aa0b";
+const RC14_ACTION_SHA = "1b9fe313353584862456d607c495f4e660e3fdf3";
 
 describe("RC14 release readiness", () => {
   it("aligns current release surfaces while preserving historical identities", async () => {
@@ -40,6 +40,15 @@ describe("RC14 release readiness", () => {
     expect(governance).toContain('"implementation_with_monotonic_close"');
     expect(selection).toContain("approved-to-implemented monotonic close");
     expect(selection).toContain("did not authorize any implementation path");
+
+    for (const file of ["README.md", "CHANGELOG.md", "docs/maintaining-specs.md", "docs/production-gate.md"]) {
+      expect(await readFile(file, "utf8"), file).toContain(RC14_ACTION_SHA);
+    }
+    for (const file of ["README.md", "docs/maintaining-specs.md", "docs/production-gate.md"]) {
+      const source = await readFile(file, "utf8");
+      expect(source, file).not.toContain("ed2f0acaaa220baa574e97a200535373eca5aa0b");
+      expect(source, file).not.toContain("e2d485cfeeb4ce745a57293db089ff70cc4648de");
+    }
   });
 
   it("keeps the two-PR journey and safe finish output consistent in primary docs", async () => {

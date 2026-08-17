@@ -326,7 +326,7 @@ owners: [{team: test}]
     expect(await readFile(path.join(root,".github/workflows/engineering-spec.yml"),"utf8")).toContain("gate-require-status: approved");
     expect(await readFile(path.join(root,".github/workflows/engineering-spec.yml"),"utf8")).toContain("gate-allow-contract-only: true");
     expect(await readFile(path.join(root,".github/workflows/engineering-spec.yml"),"utf8")).toContain("steps.approved-base.outputs.ref");
-    expect(await readFile(path.join(root,".github/workflows/engineering-spec.yml"),"utf8")).toContain("majilesh/engineeringspec@ed2f0acaaa220baa574e97a200535373eca5aa0b");
+    expect(await readFile(path.join(root,".github/workflows/engineering-spec.yml"),"utf8")).toContain("majilesh/engineeringspec@1b9fe313353584862456d607c495f4e660e3fdf3");
     expect(await readFile(path.join(root,"CLAUDE.md"),"utf8")).toContain("@AGENTS.md");
     const dry=await adoptRepository({root,specPath:"docs/engineering-specs/ES-change.engineering-spec.md",dryRun:true});
     expect(dry.skipped).toHaveLength(6);
@@ -365,7 +365,7 @@ owners: [{team: test}]
       expect(source,file).toContain(`0.1.0-rc.14`);
       expect(source,file).not.toContain("0.1.0-rc.6");
     }
-    expect(await readFile("README.md","utf8")).toContain("ed2f0acaaa220baa574e97a200535373eca5aa0b");
+    expect(await readFile("README.md","utf8")).toContain("1b9fe313353584862456d607c495f4e660e3fdf3");
   });
   it("detects origin HEAD and safely merges text guidance",async()=>{
     const root=await mkdtemp(path.join(os.tmpdir(),"es-adopt-merge-"));
@@ -396,7 +396,7 @@ owners: [{team: test}]
     expect(await readFile(path.join(root,"AGENTS.md"),"utf8")).toContain("0.1.0-rc.6");
     await adoptRepository({root,specPath:"docs/engineering-specs/change.engineering-spec.md",baseRef:"origin/main",merge:true,upgrade:true});
     expect(await readFile(path.join(root,"AGENTS.md"),"utf8")).toContain("0.1.0-rc.14");
-    expect(await readFile(path.join(root,".github","workflows","engineering-spec.yml"),"utf8")).toContain("ed2f0acaaa220baa574e97a200535373eca5aa0b");
+    expect(await readFile(path.join(root,".github","workflows","engineering-spec.yml"),"utf8")).toContain("1b9fe313353584862456d607c495f4e660e3fdf3");
   });
   it("keeps dry-run write-free and rejects unsafe scaffold interpolation",async()=>{
     const root=await mkdtemp(path.join(os.tmpdir(),"es-adopt-dry-"));

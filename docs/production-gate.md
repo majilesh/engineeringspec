@@ -4,10 +4,10 @@ EngineeringSpec’s `gate` is a **diff-scope gate** (path + change-type allowlis
 
 ## Recommended pin (immutable Action)
 
-Prefer a full commit SHA. This is the sanitized equivalent of the reviewed RC12 Action implementation merge:
+Prefer a full commit SHA. This is the reviewed RC14 runtime/version anchor:
 
 ```text
-majilesh/engineeringspec@e2d485cfeeb4ce745a57293db089ff70cc4648de
+majilesh/engineeringspec@1b9fe313353584862456d607c495f4e660e3fdf3
 ```
 
 Re-pin to this repository’s reviewed merge tip after each change to `action.yml` or gate semantics. `majilesh/engineeringspec@v0.1.0-rc.14` is the corresponding release-candidate tag after publication; SHA pins remain the stronger supply-chain default ([GitHub guidance](https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#using-third-party-actions)).
@@ -21,7 +21,7 @@ engineering-spec:
     - uses: actions/checkout@v4
       with:
         fetch-depth: 0
-    - uses: majilesh/engineeringspec@e2d485cfeeb4ce745a57293db089ff70cc4648de
+    - uses: majilesh/engineeringspec@1b9fe313353584862456d607c495f4e660e3fdf3
       with:
         path: docs/engineering-specs
         strict: true

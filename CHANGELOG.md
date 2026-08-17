@@ -28,7 +28,7 @@ All notable changes to this project are documented here.
 - Head configuration and head contracts never contribute authority; configuration and verifier mappings come only from one resolved base SHA.
 - Mixed close routing excludes the contract path only after exact semantic identity succeeds. Any other semantic edit fails closed.
 - Specification runners remain inert. Evidence states bind the base, contract, semantic digest, and intended-change digest.
-- Generated GitHub enforcement pins immutable RC14-capable runtime `ed2f0acaaa220baa574e97a200535373eca5aa0b`, avoiding local CLI and CI closure-semantic drift.
+- Generated GitHub enforcement pins immutable RC14 runtime anchor `1b9fe313353584862456d607c495f4e660e3fdf3`, avoiding local CLI and CI closure-semantic drift.
 - Agent Control Plane guidance now requires repository-wide deny, ambiguity, and uncovered-path semantics over the same immutable approved candidate set used by CI.
 
 ## [0.1.0-rc.13] - 2026-08-16

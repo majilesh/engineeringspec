@@ -3917,7 +3917,7 @@
     {
       "id": "ES-rc14-release",
       "title": "Prepare the immutable RC14 release",
-      "status": "approved",
+      "status": "implemented",
       "file": "ES-rc14-release.engineering-spec.md",
       "owners": [
         "EngineeringSpec maintainers"

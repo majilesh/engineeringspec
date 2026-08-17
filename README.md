@@ -154,7 +154,7 @@ steps:
   - uses: actions/checkout@v4
     with:
       fetch-depth: 0
-  - uses: majilesh/engineeringspec@ed2f0acaaa220baa574e97a200535373eca5aa0b
+  - uses: majilesh/engineeringspec@1b9fe313353584862456d607c495f4e660e3fdf3
     with:
       path: docs/engineering-specs
       strict: true
