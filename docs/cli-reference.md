@@ -113,7 +113,7 @@ Measurement grants no authority, executes no verifier, and proves neither correc
 Preview a managed integration upgrade before applying it:
 
 ```sh
-npx --yes @engineeringspec/cli@0.1.0-rc.13 adopt . \
+npx --yes @engineeringspec/cli@0.1.0-rc.14 adopt . \
   --spec docs/engineering-specs/change.engineering-spec.md \
   --merge --upgrade --dry-run
 ```

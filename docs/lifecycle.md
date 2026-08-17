@@ -36,8 +36,8 @@ Use `superseded` when a reviewed replacement contract owns the change. Use `reje
 After repository-owned checks pass, the implementation PR may change only the exact authorizing contract lifecycle to `implemented`:
 
 ```sh
-npx --yes @engineeringspec/cli@0.1.0-rc.13 finish ES-change --format markdown
-npx --yes @engineeringspec/cli@0.1.0-rc.13 finish ES-change --write-closure
+npx --yes @engineeringspec/cli@0.1.0-rc.14 finish ES-change --format markdown
+npx --yes @engineeringspec/cli@0.1.0-rc.14 finish ES-change --write-closure
 ```
 
 With code in the same diff, the result must say `change classification: implementation_with_monotonic_close`; a standalone closure remains `contract_only`. Any semantic edit, authority widening, or unrelated contract close fails. Require normal repository checks and maintainer review before merging. Approved-base routing still applies to every implementation path.

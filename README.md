@@ -80,29 +80,29 @@ engineeringspec finish ES-my-change --write-closure --output ../engineering-spec
 `next` is informational: success is not authorization. An agent may implement only when `permission` is `implementation` and `work ES-my-change` successfully loads that exact approved trusted-base contract. Repository reading remains available for correctness, while writes remain limited to the returned surfaces. `finish` checks the change, emits bound evidence and PR metadata, and writes no closure unless `--write-closure` is explicit. It never stages, commits, pushes, approves, merges, or executes a runner declared inside a specification. Evidence output must be outside the evaluated Git worktree so writing the receipt cannot mutate the state whose digest was just evaluated.
 
 ```sh
-npx --yes @engineeringspec/cli@0.1.0-rc.13 adopt . --quickstart --maintainer @your-org/platform --dry-run
-npx --yes @engineeringspec/cli@0.1.0-rc.13 propose --id ES-my-change --title "My change" \
+npx --yes @engineeringspec/cli@0.1.0-rc.14 adopt . --quickstart --maintainer @your-org/platform --dry-run
+npx --yes @engineeringspec/cli@0.1.0-rc.14 propose --id ES-my-change --title "My change" \
   --path 'src/example/**' --output docs/engineering-specs/ES-my-change.engineering-spec.md --dry-run
-npx --yes @engineeringspec/cli@0.1.0-rc.13 review --spec-dir docs/engineering-specs --base origin/main --strict --format markdown
-npx --yes @engineeringspec/cli@0.1.0-rc.13 prepare ES-my-change --spec-dir docs/engineering-specs --base origin/main --strict --format markdown
-npx --yes @engineeringspec/cli@0.1.0-rc.13 init --template feature --id ES-my-change
-npx --yes @engineeringspec/cli@0.1.0-rc.13 validate ENGINEERING_SPEC.md
-npx --yes @engineeringspec/cli@0.1.0-rc.13 validate docs/engineering-specs
-npx --yes @engineeringspec/cli@0.1.0-rc.13 normalize ENGINEERING_SPEC.md --digest
-npx --yes @engineeringspec/cli@0.1.0-rc.13 inspect ENGINEERING_SPEC.md --path src/example.ts
-npx --yes @engineeringspec/cli@0.1.0-rc.13 coverage ENGINEERING_SPEC.md --fail-on uncovered
-npx --yes @engineeringspec/cli@0.1.0-rc.13 gate ENGINEERING_SPEC.md --base origin/main --receipt gate-receipt.json
-npx --yes @engineeringspec/cli@0.1.0-rc.13 check ENGINEERING_SPEC.md --base origin/main --strict
-npx --yes @engineeringspec/cli@0.1.0-rc.13 context ENGINEERING_SPEC.md --path src/example.ts --base origin/main --format markdown
-npx --yes @engineeringspec/cli@0.1.0-rc.13 explain ENGINEERING_SPEC.md --path src/example.ts --base origin/main
-npx --yes @engineeringspec/cli@0.1.0-rc.13 catalogue docs/engineering-specs --query session --format json
+npx --yes @engineeringspec/cli@0.1.0-rc.14 review --spec-dir docs/engineering-specs --base origin/main --strict --format markdown
+npx --yes @engineeringspec/cli@0.1.0-rc.14 prepare ES-my-change --spec-dir docs/engineering-specs --base origin/main --strict --format markdown
+npx --yes @engineeringspec/cli@0.1.0-rc.14 init --template feature --id ES-my-change
+npx --yes @engineeringspec/cli@0.1.0-rc.14 validate ENGINEERING_SPEC.md
+npx --yes @engineeringspec/cli@0.1.0-rc.14 validate docs/engineering-specs
+npx --yes @engineeringspec/cli@0.1.0-rc.14 normalize ENGINEERING_SPEC.md --digest
+npx --yes @engineeringspec/cli@0.1.0-rc.14 inspect ENGINEERING_SPEC.md --path src/example.ts
+npx --yes @engineeringspec/cli@0.1.0-rc.14 coverage ENGINEERING_SPEC.md --fail-on uncovered
+npx --yes @engineeringspec/cli@0.1.0-rc.14 gate ENGINEERING_SPEC.md --base origin/main --receipt gate-receipt.json
+npx --yes @engineeringspec/cli@0.1.0-rc.14 check ENGINEERING_SPEC.md --base origin/main --strict
+npx --yes @engineeringspec/cli@0.1.0-rc.14 context ENGINEERING_SPEC.md --path src/example.ts --base origin/main --format markdown
+npx --yes @engineeringspec/cli@0.1.0-rc.14 explain ENGINEERING_SPEC.md --path src/example.ts --base origin/main
+npx --yes @engineeringspec/cli@0.1.0-rc.14 catalogue docs/engineering-specs --query session --format json
 ```
 
 Diagnose setup and inspect the current lifecycle with the current release candidate:
 
 ```sh
-npx --yes @engineeringspec/cli@0.1.0-rc.13 doctor . --spec-dir docs/engineering-specs --base origin/main --strict
-npx --yes @engineeringspec/cli@0.1.0-rc.13 status --spec-dir docs/engineering-specs --base origin/main --allow-contract-only --strict
+npx --yes @engineeringspec/cli@0.1.0-rc.14 doctor . --spec-dir docs/engineering-specs --base origin/main --strict
+npx --yes @engineeringspec/cli@0.1.0-rc.14 status --spec-dir docs/engineering-specs --base origin/main --allow-contract-only --strict
 ```
 
 For a first adoption, follow [Getting started](docs/getting-started.md) and the [first-change tutorial](docs/first-change-tutorial.md). The memorable workflow is:
@@ -136,11 +136,11 @@ Directory validation discovers `ENGINEERING_SPEC.md`, `*.engineering-spec.md`, a
 
 ```sh
 # Enforcing CI: load the approved contract from the base branch (prevents PR self-widening)
-npx --yes @engineeringspec/cli@0.1.0-rc.13 gate docs/engineering-specs/ES-my-change.engineering-spec.md \
+npx --yes @engineeringspec/cli@0.1.0-rc.14 gate docs/engineering-specs/ES-my-change.engineering-spec.md \
   --base origin/main --require-status approved --receipt gate-receipt.json
 
 # Local / CI smoke without git history
-npx --yes @engineeringspec/cli@0.1.0-rc.13 gate docs/engineering-specs/ES-my-change.engineering-spec.md --changed src/api.ts
+npx --yes @engineeringspec/cli@0.1.0-rc.14 gate docs/engineering-specs/ES-my-change.engineering-spec.md --changed src/api.ts
 ```
 
 Use one EngineeringSpec per consequential change, protect `docs/engineering-specs/**` with CODEOWNERS, and configure the gate job as a **required** status check so failures block merge. Full checklist: [Production diff-scope gate](docs/production-gate.md).
@@ -154,7 +154,7 @@ steps:
   - uses: actions/checkout@v4
     with:
       fetch-depth: 0
-  - uses: majilesh/engineeringspec@ed2f0acaaa220baa574e97a200535373eca5aa0b
+  - uses: majilesh/engineeringspec@1b9fe313353584862456d607c495f4e660e3fdf3
     with:
       path: docs/engineering-specs
       strict: true
@@ -166,11 +166,11 @@ steps:
 
 The action validates specs and, when `gate-spec-dir` is set, routes implementation diffs against approved candidates loaded from `gate-base`. It also writes the deterministic base-pinned review report to the GitHub job summary; it does not edit pull requests and needs no write permission. `gate-allow-contract-only` explicitly accepts only strictly valid EngineeringSpec-only governance diffs; it is incompatible with `gate-spec` and never authorizes mixed implementation changes. The compatible `gate-spec` input remains available for single-spec gates and receipts. It never executes declared verification runners. Use `fetch-depth: 0` so the base ref exists. If you use merge queues, add a `merge_group` trigger on the workflow that runs this Action.
 
-After tagging, `majilesh/engineeringspec@v0.1.0-rc.13` is acceptable for less sensitive repos; SHA pins remain preferred. See [production-gate.md](docs/production-gate.md) for required checks and CODEOWNERS.
+After tagging, `majilesh/engineeringspec@v0.1.0-rc.14` is acceptable for less sensitive repos; SHA pins remain preferred. See [production-gate.md](docs/production-gate.md) for required checks and CODEOWNERS.
 
 ```sh
 # CLI (exact release-candidate version; npm dist-tag `next` points at the current release candidate)
-npx --yes @engineeringspec/cli@0.1.0-rc.13 validate docs/engineering-specs
+npx --yes @engineeringspec/cli@0.1.0-rc.14 validate docs/engineering-specs
 ```
 
 ## Coding agents
@@ -182,7 +182,7 @@ The normal pre-code command is `work <contract-id>`: it composes the exact base-
 Bootstrap an existing repository without overwriting its agent files by default:
 
 ```sh
-npx --yes @engineeringspec/cli@0.1.0-rc.13 adopt . \
+npx --yes @engineeringspec/cli@0.1.0-rc.14 adopt . \
   --spec docs/engineering-specs/ES-my-change.engineering-spec.md \
   --merge --dry-run
 ```
