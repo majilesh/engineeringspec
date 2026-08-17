@@ -12,7 +12,7 @@ export interface NextReport {
 }
 
 export async function nextAction(options: { base?: string; cwd?: string } = {}): Promise<NextReport> {
-  const config = await resolveRepositoryConfig(options);
+  const config = await resolveRepositoryConfig({ ...options, enforcing: false });
   const status = await workflowStatus({
     specDirectory: config.config.specDirectory,
     base: config.baseSha,
@@ -49,6 +49,7 @@ export function nextText(report: NextReport): string {
     `cli: ${report.cliVersion}`,
     `authority: base ${report.config.baseSha}`,
     `config: ${report.config.source}${report.config.workspaceDrift ? "; workspace drift ignored" : ""}`,
+    ...report.config.warnings.map((warning) => `warning: ${warning}`),
     `working state: ${report.status.workingState.changed} changed, ${report.status.workingState.violations} violations`,
     `action: ${report.status.next.message}`,
     `command: ${report.command}`,

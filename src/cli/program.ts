@@ -39,7 +39,7 @@ import { measureScope } from "./measure.js";
 import { nextAction, nextText } from "./next.js";
 import { workOnContract } from "./work.js";
 import { finishContract } from "./finish.js";
-import { resolveRepositoryConfig } from "../config/repositoryConfig.js";
+import { resolveRepositoryConfig, summarizeRepositoryConfig } from "../config/repositoryConfig.js";
 
 const STATUS_VALUES = ["draft", "proposed", "approved", "implemented", "superseded", "rejected"] as const;
 
@@ -379,7 +379,7 @@ export function createProgram(setCode: (code: number) => void): Command {
     .action(async (options, command) => {
       try {
         const global = command.optsWithGlobals() as GlobalOptions;
-        const config = await resolveRepositoryConfig({ ...(options.base ? { base: options.base } : {}) });
+        const config = await resolveRepositoryConfig({ ...(options.base ? { base: options.base } : {}), enforcing: false });
         if (options.changed.length > 0 && options.staged) {
           console.error("status accepts only one of --changed or --staged");
           setCode(ExitCode.usage);
@@ -406,9 +406,10 @@ export function createProgram(setCode: (code: number) => void): Command {
           `declared coverage: ${report.coverage.status}`,
           `change classification: ${report.routing.governance.classification}`,
           `next: ${report.next.stage} — ${report.next.message}`,
+          ...config.warnings.map((warning) => `warning: ${warning}`),
           ...report.routing.diagnostics.map((diagnostic) => `${diagnostic.severity}: ${diagnostic.code} ${diagnostic.message}`),
         ].join("\n");
-        if (!global.quiet) output(global.format === "json" ? report : text, global.format);
+        if (!global.quiet) output(global.format === "json" ? { ...report, repositoryConfig: summarizeRepositoryConfig(config) } : text, global.format);
         setCode(report.valid ? ExitCode.success : ExitCode.validation);
       } catch (error) {
         console.error(error instanceof Error ? error.message : String(error));

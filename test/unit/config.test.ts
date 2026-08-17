@@ -38,4 +38,15 @@ describe("trusted repository configuration", () => {
     expect(summary.trustedVerifierIds).toEqual(["ES-1#VER-1"]);
     expect(JSON.stringify(summary)).not.toContain("secret-command");
   });
+
+  it("reports explicit-base mismatch for informational inspection but fails enforcing use", async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), "es-config-mode-"));
+    execFileSync("git", ["init", "-q", root]);
+    await writeFile(path.join(root, "engineering-spec.json"), '{"specDirectory":"specs","strict":true,"trustedBase":"origin/main","trustedVerifiers":{}}\n');
+    execFileSync("git", ["-C", root, "add", "."]);
+    execFileSync("git", ["-C", root, "-c", "user.name=Test", "-c", "user.email=test@example.com", "commit", "-qm", "base"]);
+    const informational = await resolveRepositoryConfig({ base: "HEAD", cwd: root, enforcing: false });
+    expect(informational.warnings).toContainEqual(expect.stringContaining("no authority was granted"));
+    await expect(resolveRepositoryConfig({ base: "HEAD", cwd: root })).rejects.toThrow('expects "origin/main"');
+  });
 });

@@ -107,7 +107,7 @@ export function parseRepositoryConfig(text: string, label = REPOSITORY_CONFIG_PA
   };
 }
 
-export async function resolveRepositoryConfig(options: { base?: string; cwd?: string } = {}): Promise<ResolvedRepositoryConfig> {
+export async function resolveRepositoryConfig(options: { base?: string; cwd?: string; enforcing?: boolean } = {}): Promise<ResolvedRepositoryConfig> {
   const root = await gitShowToplevel(options.cwd);
   const configuredBase = await readGitConfig("engineeringspec.trustedBase", root);
   const originHead = await resolveOriginHead(root);
@@ -116,7 +116,8 @@ export async function resolveRepositoryConfig(options: { base?: string; cwd?: st
   const baseSha = await resolveCommitSha(baseRef, root);
   const trustedText = await tryReadGitBlob(baseSha, REPOSITORY_CONFIG_PATH, root);
   const config = trustedText === undefined ? { ...DEFAULT_CONFIG, trustedVerifiers: {} } : parseRepositoryConfig(trustedText, `${baseSha}:${REPOSITORY_CONFIG_PATH}`);
-  if (config.trustedBase && config.trustedBase !== baseRef && config.trustedBase !== baseSha) {
+  const baseMismatch = Boolean(config.trustedBase && config.trustedBase !== baseRef && config.trustedBase !== baseSha);
+  if (baseMismatch && options.enforcing !== false) {
     throw new Error(`Trusted-base config expects ${JSON.stringify(config.trustedBase)} but authority was resolved from ${JSON.stringify(baseRef)}`);
   }
   let workspaceDrift = false;
@@ -133,7 +134,10 @@ export async function resolveRepositoryConfig(options: { base?: string; cwd?: st
     source: trustedText === undefined ? "defaults" : "trusted_base",
     path: REPOSITORY_CONFIG_PATH,
     workspaceDrift,
-    warnings: workspaceDrift ? ["Workspace repository config differs from the trusted-base config and was ignored for authority."] : [],
+    warnings: [
+      ...(workspaceDrift ? ["Workspace repository config differs from the trusted-base config and was ignored for authority."] : []),
+      ...(baseMismatch ? [`Trusted-base config expects ${JSON.stringify(config.trustedBase)} but informational inspection used ${JSON.stringify(baseRef)}; no authority was granted.`] : []),
+    ],
   };
 }
 
