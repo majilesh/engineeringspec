@@ -4,7 +4,7 @@ spec_format_version: "0.1"
 spec_revision: 1
 id: ES-rc14-maximum-safety-minimum-ceremony
 title: Maximum safety with minimum ceremony
-status: draft
+status: approved
 owners:
   - team: EngineeringSpec maintainers
 repository:
