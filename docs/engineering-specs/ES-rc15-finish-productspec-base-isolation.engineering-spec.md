@@ -1,7 +1,7 @@
 ---
 spec_format: engineering-spec
 spec_format_version: "0.1"
-spec_revision: 1
+spec_revision: 2
 id: ES-rc15-finish-productspec-base-isolation
 title: Fix finish ProductSpec base isolation for RC15
 status: approved
@@ -65,6 +65,7 @@ This contract grants no implementation authority while `draft` or `proposed`.
 - id: TARGET-release-tests
   component: minimal-rc15-version-regressions
   paths:
+    - test/unit/doctor.test.ts
     - test/unit/release-readiness.test.ts
     - test/unit/version.test.ts
   change_policy: modify
