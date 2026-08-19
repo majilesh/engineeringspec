@@ -47,7 +47,11 @@ export async function finishContract(options: { contractId: string; base?: strin
     if (!review.valid) return { result: "blocked", review, closureWritten };
   }
   const candidate = review.contracts.find((item) => item.id === options.contractId);
-  const baseSpec = await validateMarkdown(await readGitBlob(config.baseSha, brief.authority.specPath, options.cwd), `${config.baseSha}:${brief.authority.specPath}`);
+  const baseSpec = await validateMarkdown(
+    await readGitBlob(config.baseSha, brief.authority.specPath, options.cwd),
+    `${config.baseSha}:${brief.authority.specPath}`,
+    { resolveProfiles: false },
+  );
   if (!candidate || !baseSpec.spec) return { result: "blocked", review, closureWritten };
   const specRevision = baseSpec.spec.metadata.specRevision;
   const semanticDigest = digest(normalize(baseSpec.spec));

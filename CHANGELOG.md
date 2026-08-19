@@ -4,6 +4,17 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+## [0.1.0-rc.15] - 2026-08-19
+
+### Fixed
+
+- `finish --write-closure` now accepts base-approved EngineeringSpecs containing repository-local ProductSpec references while preserving strict structural, semantic, lifecycle, routing, and exact-close validation.
+
+### Security
+
+- Trusted-base EngineeringSpec Git blobs used by `review` and `finish` no longer resolve local ProductSpec references against mutable workspace or head content. Workspace ProductSpec changes cannot authorize or alter base authority or its semantic digest.
+- Ordinary explicit-root ProductSpec validation remains enabled and unchanged. RC15 introduces no EngineeringSpec contract-format or schema change.
+
 ## [0.1.0-rc.14] - 2026-08-17
 
 ### Added

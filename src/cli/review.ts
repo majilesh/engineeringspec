@@ -78,6 +78,7 @@ export async function buildReview(options: ReviewOptions): Promise<ReviewReport>
     const validation = await validateMarkdown(
       await readGitBlob(status.baseSha, candidate.path, options.cwd),
       `${status.baseSha}:${candidate.path}`,
+      { resolveProfiles: false },
     );
     const failed = !validation.spec
       || validation.diagnostics.some((item) => item.severity === "error")
