@@ -1,0 +1,13 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "$id":"https://engineeringspec.org/schemas/ceremony-0.1.schema.json",
+  "type":"object",
+  "required":["format","formatVersion","scenarios"],
+  "properties":{
+    "format":{"const":"engineering-spec-ceremony-scenarios"},
+    "formatVersion":{"const":"0.1"},
+    "scenarios":{"type":"array","minItems":7,"maxItems":7,"items":{"$ref":"#/$defs/scenario"}}
+  },
+  "additionalProperties":false,
+  "$defs":{"scenario":{"type":"object","required":["id","name","commands","pullRequests","lifecycleEdits","handEditedFiles","concepts","mutations","expectedOutcome","actualOutcome","diagnostics","remediation","currentAuthorityGranted","runnerExecutions"],"properties":{"id":{"enum":["A","B","C","D","E","F","G"]},"name":{"type":"string"},"commands":{"type":"integer","minimum":0},"pullRequests":{"type":"integer","minimum":0},"lifecycleEdits":{"type":"integer","minimum":0},"handEditedFiles":{"type":"integer","minimum":0},"concepts":{"type":"array","items":{"type":"string"}},"mutations":{"type":"integer","minimum":0},"expectedOutcome":{"type":"string"},"actualOutcome":{"type":"string"},"diagnostics":{"type":"array","items":{"type":"string"}},"remediation":{"enum":["work","request-approval","resolve-authority-conflict","historical-replay","finish"]},"currentAuthorityGranted":{"type":"boolean"},"runnerExecutions":{"const":0}},"additionalProperties":false}}
+}

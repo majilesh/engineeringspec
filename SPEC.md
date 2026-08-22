@@ -35,6 +35,7 @@ Recognized YAML blocks are:
 - `engineering-rollout`
 - `engineering-evidence`
 - `engineering-exceptions`
+- `engineering-authority-controls` (optional)
 
 An unknown `engineering-x-<organization>-<name>` block is a namespaced extension and MUST be preserved. Other unknown `engineering-*` blocks MUST be preserved and produce a warning. Prose outside structured blocks MUST survive parsing and normalization.
 
@@ -47,6 +48,8 @@ Target surfaces declare repositories, components, and relative paths or globs go
 Target path patterns use a **restricted EngineeringSpec glob dialect** for authorization interoperability: literal path segments plus `*`, `**`, and `?` only. Leading `!` / `#`, extglob parentheses, brace expansion, character classes, backslashes, and parent-directory segments (`..`) are invalid (`ESPTH002`). Independent implementations MUST interpret this dialect identically; they MUST NOT silently adopt host-library extras.
 
 Among non-forbidden matching targets, the reference gate uses **any-writable-allow** composition: if any matching writable policy permits the Git change kind, the path is allowed. Narrower writable policies such as `create` do not automatically intersect broader `modify` matches. Documents SHOULD avoid overlapping writable policies with incompatible intents.
+
+An optional `engineering-authority-controls` block has `mode: maintenance` and one or more suspensions. Each suspension pins an approved contract ID, revision, closure semantic digest, and exact safe repository-relative file paths. The containing controller and referenced contracts MUST be uniquely approved candidates from the same immutable trusted-base commit. A valid control may subtract only the referenced contract's positive writable claim where the controller also positively claims the exact path. It MUST NOT add authority, suppress `read_only` or `observe`, suppress a denial, use globs, chain controllers, resolve remaining ambiguity, or derive effect from head/workspace content. Invalid, stale, duplicated, cyclic, competing, or inapplicable controls fail closed with `ESRT007`; absent controls preserve existing routing semantics.
 
 `interface_only` is a **path-writable label** meaning “intended for interface-surface edits.” Reference tooling MUST NOT treat it as AST/API/ABI enforcement unless a separate adapter (for example OpenAPI or schema diff) is declared and run outside the path gate. The reference gate permits path writes under `interface_only` and emits informational diagnostic `ESG006`; strict mode MUST NOT fail solely for this documented limitation.
 
@@ -131,5 +134,7 @@ Comparing a repository diff to declared targets is **reference-tooling behavior*
 - MUST NOT execute verification runners or mutate the repository
 
 The reference CLI also provides read-only agent helpers: `check` gates the complete working state and reports declared coverage, `context` selects obligations relevant to changed paths, and `explain` reports why a path is allowed or denied. Each command loads the contract from the approved base by default when `--base` is supplied. Agent context omits verifier runner payloads. Contract widening and its dependent implementation therefore require separate changes; an implementation MUST NOT authorize itself from a widened workspace contract.
+
+`replay` is a distinct historical read-only reference-tooling mode. It resolves a required full commit SHA once and reads repository configuration, EngineeringSpecs, ProductSpecs, and repository-local references from that single immutable tree. Candidate changes come only from another immutable commit or a bounded inert path/kind fixture. Replay MUST report `authorityMode: historical_read_only` and `currentAuthorityGranted: false`; it MUST NOT write lifecycle state, modify the index/worktree/refs, execute runners or trusted verifiers, or impersonate current trusted-base authority. Ordinary `work`, `check`, `review`, and `finish` retain trusted-base identity enforcement.
 
 Other implementations MAY provide equivalent gates. Gate results are not part of canonical JSON or digests. Making the gate merge-blocking requires configuring it as a required status check or ruleset in the host forge.

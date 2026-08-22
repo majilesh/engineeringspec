@@ -7,4 +7,5 @@ export const RECOGNISED_BLOCKS = new Set([
   "engineering-source-refs", "engineering-targets", "engineering-decisions",
   "engineering-contracts", "engineering-constraints", "engineering-verification",
   "engineering-rollout", "engineering-evidence", "engineering-exceptions",
+  "engineering-authority-controls",
 ]);

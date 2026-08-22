@@ -11,6 +11,7 @@ Use a repository-local installation when available. In enforcement and durable g
 | `work <contract-id>` | Load the exact approved trusted-base contract and its writable surfaces | No |
 | `finish <contract-id>` | Compose complete-state check, review, bound receipt, and PR metadata | No; closure requires `--write-closure` |
 | `doctor` | Diagnose Git, base, contracts, CI, guidance, CLI, and Action alignment | No |
+| `replay <contract-id>` | Simulate historical review or finish readiness from immutable commits | No; never grants current authority |
 
 The normal path is:
 
@@ -73,6 +74,17 @@ engineeringspec explain docs/engineering-specs/ES-payments-change.engineering-sp
 
 Architecture and catalogue output never grant authority. `interface_only` in a preparation brief is path-level write access, not semantic interface enforcement; pair it with separately trusted API or schema verification.
 
+Historical evaluation is explicit:
+
+```sh
+engineeringspec replay ES-change --at <full-authority-commit> \
+  --operation review --head-at <full-candidate-commit> --format json
+engineeringspec replay ES-change --at <full-authority-commit> \
+  --operation finish-readiness --changes-file changes.json --format json
+```
+
+`--head-at` and `--changes-file` are mutually exclusive. The fixture accepts only bounded path/kind records. Replay has no staged, worktree, force, preference, runner, or write option. Its result always says `historical_read_only` and `currentAuthorityGranted: false`.
+
 ## CI and enforcement primitives
 
 | Command | Purpose |
@@ -97,6 +109,7 @@ For directory routing, `--allow-contract-only` accepts only a non-empty diff com
 engineeringspec measure ES-payments-change --spec-dir docs/engineering-specs \
   --base <base-sha> --head <head-sha> --strict --format json
 engineeringspec benchmark benchmarks/results/*.json --require-publishable --format json
+engineeringspec benchmark --ceremony --format json
 ```
 
 Measurement grants no authority, executes no verifier, and proves neither correctness nor trusted-check execution. It omits individual paths unless disclosure is explicit. Benchmark output preserves failed, slower, amended, open-authority, negative-routing, and incomplete results.
@@ -109,11 +122,13 @@ Measurement grants no authority, executes no verifier, and proves neither correc
 - JSON intended for agents omits specification runner command payloads.
 - High-level commands compose the same deterministic primitives used by CI; they do not implement a second authorization decision.
 - A clean or successfully analyzed state authorizes nothing by itself.
+- Historical replay never grants current authority; a movable or mismatched base supplied to an ordinary authority command does not implicitly select replay mode.
+- Maintenance sequencing is trusted-base-only and subtractive: exact stale-safe pins may remove positive claims, while denies and remaining ambiguity still fail closed.
 
 Preview a managed integration upgrade before applying it:
 
 ```sh
-npx --yes @engineeringspec/cli@0.1.0-rc.14 adopt . \
+npx --yes @engineeringspec/cli@0.1.0-rc.16 adopt . \
   --spec docs/engineering-specs/change.engineering-spec.md \
   --merge --upgrade --dry-run
 ```

@@ -16,6 +16,7 @@ const blockToField: Record<string, string> = {
   "engineering-source-refs": "sourceRefs", "engineering-targets": "targets", "engineering-decisions": "decisions",
   "engineering-contracts": "contracts", "engineering-constraints": "constraints", "engineering-verification": "verification",
   "engineering-rollout": "rollout", "engineering-evidence": "evidence", "engineering-exceptions": "exceptions",
+  "engineering-authority-controls": "authorityControls",
 };
 const camel = (key: string) => key.replace(/_([a-z])/g, (_, c: string) => c.toUpperCase());
 

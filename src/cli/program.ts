@@ -25,7 +25,7 @@ import { packageVersion } from "./version.js";
 import { agentCheck } from "./agentCheck.js";
 import { buildAgentContext, explainPath } from "../query/agentContext.js";
 import { adoptRepository } from "./adopt.js";
-import { summarizeAgentBenchmark } from "./benchmark.js";
+import { evaluateCeremonyBenchmark, summarizeAgentBenchmark } from "./benchmark.js";
 import { selectSpecs } from "../routing/select.js";
 import { diagnoseRepository } from "./doctor.js";
 import { workflowStatus } from "./status.js";
@@ -40,6 +40,7 @@ import { nextAction, nextText } from "./next.js";
 import { workOnContract } from "./work.js";
 import { finishContract } from "./finish.js";
 import { resolveRepositoryConfig, summarizeRepositoryConfig } from "../config/repositoryConfig.js";
+import { replayHistorical } from "../replay/replay.js";
 
 const STATUS_VALUES = ["draft", "proposed", "approved", "implemented", "superseded", "rejected"] as const;
 
@@ -289,12 +290,22 @@ export function createProgram(setCode: (code: number) => void): Command {
   program
     .command("benchmark")
     .description("Summarize paired agent-impact benchmark records")
-    .argument("<files...>", "JSON files containing one record or an array of records")
+    .argument("[files...]", "JSON files containing one record or an array of records")
     .addOption(new Option("--format <format>", "output format").choices(["text", "json"]))
     .option("--require-publishable", "fail unless retained evidence is complete, observed, and publishable")
+    .option("--ceremony", "evaluate the canonical RC16 ceremony scenarios")
     .action(async (files, options, command) => {
       try {
         const global = command.optsWithGlobals() as GlobalOptions;
+        if(options.ceremony){
+          if((files as string[]).length>0) throw new Error("--ceremony does not accept benchmark record files");
+          const scenarios:unknown=JSON.parse(await readFile("benchmarks/ceremony-scenarios.json","utf8"));
+          const report=evaluateCeremonyBenchmark(scenarios);
+          const text=`ceremony: ${report.valid?"pass":"fail"}; scenarios A-G; ${report.summary.commands} commands; ${report.summary.pullRequests} pull requests; ${report.summary.mutations} mutations; runners ${report.summary.runnerExecutions}`;
+          if(!global.quiet) output(global.format==="json"?report:text,global.format);
+          setCode(report.valid?ExitCode.success:ExitCode.validation);return;
+        }
+        if((files as string[]).length===0) throw new Error("benchmark requires record files or --ceremony");
         const records: unknown[] = [];
         for (const file of files as string[]) {
           const parsed: unknown = JSON.parse(await readFile(file, "utf8"));
@@ -431,6 +442,45 @@ export function createProgram(setCode: (code: number) => void): Command {
       } catch (error) {
         console.error(error instanceof Error ? error.message : String(error));
         setCode(ExitCode.io);
+      }
+    });
+
+  program
+    .command("replay")
+    .description("Simulate historical review or finish readiness without granting current authority")
+    .argument("<contract-id>", "exact historical EngineeringSpec contract ID")
+    .requiredOption("--at <commit>", "full immutable authority commit SHA")
+    .addOption(new Option("--operation <operation>").choices(["review", "finish-readiness"]).default("review"))
+    .option("--head-at <commit>", "full immutable candidate commit SHA")
+    .option("--changes-file <path>", "bounded inert changed-path fixture")
+    .addOption(new Option("--format <format>", "output format").choices(["text", "json"]))
+    .action(async (contractId, options, command) => {
+      try {
+        const global = command.optsWithGlobals() as GlobalOptions;
+        const report = await replayHistorical({
+          contractId,
+          at: options.at,
+          operation: options.operation,
+          ...(options.headAt ? { headAt: options.headAt } : {}),
+          ...(options.changesFile ? { changesFile: options.changesFile } : {}),
+        });
+        const text = [
+          `replay: ${report.valid ? "ready" : "blocked"}`,
+          `authority mode: ${report.authorityMode}`,
+          `current authority granted: ${report.currentAuthorityGranted}`,
+          `snapshot: ${report.snapshotSha}`,
+          ...(report.candidateSha ? [`candidate: ${report.candidateSha}`] : []),
+          `operation: ${report.operation}`,
+          `contract: ${report.contract?.id ?? "unresolved"} revision ${report.contract?.revision ?? "unknown"}`,
+          `routing: ${report.routing.routes.map(route => `${route.path}=${route.decision}`).join(", ") || "no paths"}`,
+          ...report.diagnostics.map(item => `${item.severity}: ${item.code} ${item.message}`),
+          ...report.limitations.map(item => `limitation: ${item}`),
+        ].join("\n");
+        if (!global.quiet) output(global.format === "json" ? report : text, global.format);
+        setCode(report.valid ? ExitCode.success : ExitCode.validation);
+      } catch (error) {
+        console.error(error instanceof Error ? error.message : String(error));
+        setCode(ExitCode.validation);
       }
     });
 

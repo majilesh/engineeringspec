@@ -7,13 +7,15 @@
 Start with:
 
 ```sh
-npx --yes @engineeringspec/cli@0.1.0-rc.14 doctor . --spec-dir docs/engineering-specs --base origin/main --strict
-npx --yes @engineeringspec/cli@0.1.0-rc.14 status --spec-dir docs/engineering-specs --base origin/main --allow-contract-only --strict
+npx --yes @engineeringspec/cli@0.1.0-rc.16 doctor . --spec-dir docs/engineering-specs --base origin/main --strict
+npx --yes @engineeringspec/cli@0.1.0-rc.16 status --spec-dir docs/engineering-specs --base origin/main --allow-contract-only --strict
 ```
 
 ## Base ref does not resolve
 
 Fetch the trusted default branch and pass its explicit ref, for example `origin/main` or `origin/trunk`. CI checkouts need sufficient history. Do not fall back to a workspace contract to make enforcement pass.
+
+If the intent is historical verification, use explicit read-only replay with a full commit SHA. Do not pass the old SHA to `work`, `check`, `review`, or `finish`; those commands enforce current trusted-base identity. `replay` cannot write and grants no current authority.
 
 ## No eligible EngineeringSpec
 
@@ -29,7 +31,15 @@ Current CLI versions add an informational diagnostic when specification and non-
 
 ## Ambiguous path (`ESRT003`)
 
-More than one approved contract claims the same change. Narrow targets or close stale contracts in a governance change. Do not choose a workspace contract or suppress competing candidates.
+More than one approved contract claims the same exact path. The diagnostic identifies each claimant, revision, contract path, and semantic digest. Narrow the change or authority in a governance PR, or independently approve an exact maintenance controller that pins and subtracts only the competing positive claim. Do not choose a workspace contract, add priority/preference, force a claimant, or disable strict mode.
+
+## Invalid maintenance sequencing (`ESRT007`)
+
+The trusted controller is stale, malformed, broadened, duplicated, chained, cyclic, competing, or inapplicable. Compare its referenced contract ID, revision, closure semantic digest, and exact paths with the same trusted-base commit. Correct and independently approve the controller before implementation. Workspace or head edits cannot activate or widen sequencing.
+
+## Historical ProductSpec/reference unavailable (`ESPR001`)
+
+Replay reads local ProductSpecs and repository-local references only from its immutable snapshot. Restore or select a commit containing the referenced blob and matching revision/digest. Current workspace content is intentionally ignored and cannot be used as fallback.
 
 ## Denied path (`ESRT004`)
 

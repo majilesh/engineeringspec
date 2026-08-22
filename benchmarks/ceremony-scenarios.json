@@ -1,0 +1,13 @@
+{
+  "format": "engineering-spec-ceremony-scenarios",
+  "formatVersion": "0.1",
+  "scenarios": [
+    {"id":"A","name":"Existing approved authority","commands":3,"pullRequests":1,"lifecycleEdits":1,"handEditedFiles":1,"concepts":["trusted base","work","finish"],"mutations":2,"expectedOutcome":"selected","actualOutcome":"selected","diagnostics":[],"remediation":"finish","currentAuthorityGranted":true,"runnerExecutions":0},
+    {"id":"B","name":"New authority","commands":5,"pullRequests":2,"lifecycleEdits":2,"handEditedFiles":2,"concepts":["propose","approve","work","finish"],"mutations":3,"expectedOutcome":"selected","actualOutcome":"selected","diagnostics":[],"remediation":"request-approval","currentAuthorityGranted":true,"runnerExecutions":0},
+    {"id":"C","name":"Maintenance overlap","commands":5,"pullRequests":2,"lifecycleEdits":2,"handEditedFiles":2,"concepts":["trusted sequencing","subtractive claim","finish"],"mutations":3,"expectedOutcome":"selected","actualOutcome":"selected","diagnostics":[],"remediation":"resolve-authority-conflict","currentAuthorityGranted":true,"runnerExecutions":0},
+    {"id":"D","name":"Historical regression","commands":1,"pullRequests":0,"lifecycleEdits":0,"handEditedFiles":0,"concepts":["historical replay"],"mutations":0,"expectedOutcome":"historical_read_only","actualOutcome":"historical_read_only","diagnostics":[],"remediation":"historical-replay","currentAuthorityGranted":false,"runnerExecutions":0},
+    {"id":"E","name":"Competing authority without decision","commands":1,"pullRequests":0,"lifecycleEdits":0,"handEditedFiles":0,"concepts":["ambiguity","deny by default"],"mutations":0,"expectedOutcome":"fail_closed","actualOutcome":"fail_closed","diagnostics":["ESRT003"],"remediation":"resolve-authority-conflict","currentAuthorityGranted":false,"runnerExecutions":0},
+    {"id":"F","name":"Agent self-suspension attempt","commands":1,"pullRequests":0,"lifecycleEdits":0,"handEditedFiles":1,"concepts":["trusted base","no self-authorization"],"mutations":0,"expectedOutcome":"fail_closed","actualOutcome":"fail_closed","diagnostics":["ESRT003"],"remediation":"request-approval","currentAuthorityGranted":false,"runnerExecutions":0},
+    {"id":"G","name":"Workspace profile/config mutation","commands":1,"pullRequests":0,"lifecycleEdits":0,"handEditedFiles":2,"concepts":["snapshot closure","workspace isolation"],"mutations":0,"expectedOutcome":"trusted_result_unchanged","actualOutcome":"trusted_result_unchanged","diagnostics":[],"remediation":"work","currentAuthorityGranted":false,"runnerExecutions":0}
+  ]
+}

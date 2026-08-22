@@ -5,6 +5,7 @@ import { digest } from "../normalizer/digest.js";
 import { normalize } from "../normalizer/normalize.js";
 import { validateMarkdown } from "../validator/validateFile.js";
 import type { LoadedRoutingCandidate } from "./types.js";
+import type { RepositoryContentReader } from "../profiles/productspec/validate.js";
 
 export const MAX_ROUTING_CANDIDATES = 10_000;
 
@@ -26,16 +27,24 @@ export async function loadRoutingCandidates(options: {
   directory: string;
   strict?: boolean;
   cwd?: string;
+  snapshotReader?: RepositoryContentReader & { listPaths(directory:string):Promise<string[]> };
 }): Promise<LoadedCandidateSet> {
-  const directory = await resolveGitRelativeDirectory(options.directory, options.cwd);
-  const paths = (await listGitTreePaths(options.baseSha, directory, options.cwd)).filter(isEngineeringSpecFilename);
+  const directory = options.snapshotReader ? options.directory : await resolveGitRelativeDirectory(options.directory, options.cwd);
+  const paths = (options.snapshotReader
+    ? await options.snapshotReader.listPaths(directory)
+    : await listGitTreePaths(options.baseSha, directory, options.cwd)).filter(isEngineeringSpecFilename);
   assertRoutingCandidateLimit(paths.length);
   const candidates: LoadedRoutingCandidate[] = [];
   const diagnostics: Diagnostic[] = [];
   let candidateFailed = false;
   for (const candidatePath of paths) {
     const label = `${options.baseSha}:${candidatePath}`;
-    const validation = await validateMarkdown(await readGitBlob(options.baseSha, candidatePath, options.cwd), label, { resolveProfiles: false });
+    const content = options.snapshotReader
+      ? Buffer.from(await options.snapshotReader.readBytes(candidatePath)).toString("utf8")
+      : await readGitBlob(options.baseSha, candidatePath, options.cwd);
+    const validation = await validateMarkdown(content, label, options.snapshotReader
+      ? { resolveProfiles: true, strictExternal: true, repositoryContentReader: options.snapshotReader }
+      : { resolveProfiles: false });
     diagnostics.push(...validation.diagnostics);
     const failed = !validation.spec
       || validation.diagnostics.some((item) => item.severity === "error")

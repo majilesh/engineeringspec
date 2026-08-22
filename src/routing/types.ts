@@ -16,12 +16,27 @@ export interface RoutingCandidateSummary {
   specId: string;
   status: Status;
   eligible: boolean;
+  specRevision:number;
+  semanticDigest:string;
 }
 
 export interface RoutingClaim {
   specId: string;
   specPath: string;
   targetIds: string[];
+  specRevision:number;
+  semanticDigest:string;
+}
+
+export interface SequencingAuditRecord {
+  trustedBaseSha?: string;
+  controller: { specId:string; specPath:string; specRevision:number; semanticDigest:string };
+  referenced: { specId:string; specPath?:string; specRevision:number; semanticDigest:string };
+  path:string;
+  applied:boolean;
+  reason:string;
+  remainingPositiveClaims:RoutingClaim[];
+  denyClaims:RoutingClaim[];
 }
 
 export interface PathRoute {
@@ -32,6 +47,7 @@ export interface PathRoute {
   allows: RoutingClaim[];
   denies: RoutingClaim[];
   claims: RoutingClaim[];
+  sequencing?: SequencingAuditRecord[];
 }
 
 export interface RoutingReport {
@@ -52,4 +68,5 @@ export interface RoutingReport {
   };
   routes: PathRoute[];
   diagnostics: Diagnostic[];
+  sequencing: SequencingAuditRecord[];
 }

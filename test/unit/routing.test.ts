@@ -6,6 +6,7 @@ import type { EngineeringSpec, TargetSurface } from "../../src/model/types.js";
 import { routeChanges } from "../../src/routing/route.js";
 import { assertRoutingCandidateLimit } from "../../src/routing/loadCandidates.js";
 import type { LoadedRoutingCandidate } from "../../src/routing/types.js";
+import { closureSemanticDigest } from "../../src/normalizer/digest.js";
 
 function spec(id: string, status: EngineeringSpec["metadata"]["status"], targets: TargetSurface[]): EngineeringSpec {
   return {
@@ -126,5 +127,59 @@ describe("multi-spec routing", () => {
     expect(() => parseGitPathListZ("../outside.engineering-spec.md\0")).toThrow("unsafe");
     expect(() => parseGitPathListZ("specs/bad\nname.engineering-spec.md\0")).toThrow("unsafe");
     expect(() => parseGitPathListZ("specs/a.engineering-spec.md\0specs/a.engineering-spec.md\0")).toThrow("Duplicate");
+  });
+
+  it("applies exact trusted subtractive sequencing and records pinned audit identity",()=>{
+    const feature=candidate("ES-feature",[writable("TARGET-feature","package.json")]);
+    feature.spec.metadata.specRevision=4;
+    const maintenance=candidate("ES-maintenance",[writable("TARGET-maintenance","package.json")]);
+    maintenance.spec.authorityControls={mode:"maintenance",suspensions:[{contractId:"ES-feature",specRevision:4,semanticDigest:closureSemanticDigest(feature.spec),paths:["package.json"]}]};
+    const result=routeChanges([feature,maintenance],[{path:"package.json",kind:"modified"}],undefined,{baseSha:"a".repeat(40)});
+    expect(result.diagnostics).toEqual([]);
+    expect(result.routes[0]).toMatchObject({decision:"selected",selected:{specId:"ES-maintenance"},allows:[{specId:"ES-maintenance"}]});
+    expect(result.sequencing).toMatchObject([{trustedBaseSha:"a".repeat(40),applied:true,path:"package.json",controller:{specId:"ES-maintenance"},referenced:{specId:"ES-feature",specRevision:4},remainingPositiveClaims:[{specId:"ES-maintenance"}]}]);
+  });
+
+  it("fails closed for stale, chained, cyclic, competing, or inapplicable controls",()=>{
+    const feature=candidate("ES-feature",[writable("TARGET-feature","package.json")]);feature.spec.metadata.specRevision=4;
+    const makeController=(id:string,digest=closureSemanticDigest(feature.spec))=>{
+      const item=candidate(id,[writable(`TARGET-${id}`,"package.json")]);
+      item.spec.authorityControls={mode:"maintenance",suspensions:[{contractId:"ES-feature",specRevision:4,semanticDigest:digest,paths:["package.json"]}]};
+      return item;
+    };
+    const stale=routeChanges([feature,makeController("ES-stale","sha256:"+"0".repeat(64))],[{path:"package.json",kind:"modified"}]);
+    expect(stale.diagnostics).toEqual(expect.arrayContaining([expect.objectContaining({code:Codes.routingInvalidSequencing,message:expect.stringContaining("stale semantic digest")}),expect.objectContaining({code:Codes.routingAmbiguous})]));
+    const staleRevision=makeController("ES-stale-revision");staleRevision.spec.authorityControls!.suspensions[0]!.specRevision=3;
+    expect(routeChanges([feature,staleRevision],[{path:"package.json",kind:"modified"}]).diagnostics.some(item=>item.code===Codes.routingInvalidSequencing&&item.message.includes("stale revision"))).toBe(true);
+
+    const chainFeature=structuredClone(feature);chainFeature.spec.authorityControls={mode:"maintenance",suspensions:[{contractId:"ES-other",specRevision:1,semanticDigest:"sha256:"+"1".repeat(64),paths:["package.json"]}]};
+    const chained=makeController("ES-chain",closureSemanticDigest(chainFeature.spec));
+    const other=candidate("ES-other",[writable("TARGET-other","package.json")]);
+    expect(routeChanges([chainFeature,chained,other],[{path:"package.json",kind:"modified"}]).diagnostics.some(item=>item.code===Codes.routingInvalidSequencing&&item.message.includes("cannot chain"))).toBe(true);
+
+    const cycleLeft=candidate("ES-cycle-left",[writable("TARGET-cycle-left","package.json")]);
+    const cycleRight=candidate("ES-cycle-right",[writable("TARGET-cycle-right","package.json")]);
+    cycleLeft.spec.authorityControls={mode:"maintenance",suspensions:[{contractId:"ES-cycle-right",specRevision:1,semanticDigest:closureSemanticDigest(cycleRight.spec),paths:["package.json"]}]};
+    cycleRight.spec.authorityControls={mode:"maintenance",suspensions:[{contractId:"ES-cycle-left",specRevision:1,semanticDigest:closureSemanticDigest(cycleLeft.spec),paths:["package.json"]}]};
+    const cyclic=routeChanges([cycleLeft,cycleRight],[{path:"package.json",kind:"modified"}]);
+    expect(cyclic.routes[0]?.decision).toBe("ambiguous");
+    expect(cyclic.diagnostics.some(item=>item.code===Codes.routingInvalidSequencing&&item.message.includes("cannot chain"))).toBe(true);
+
+    const competing=routeChanges([feature,makeController("ES-one"),makeController("ES-two")],[{path:"package.json",kind:"modified"}]);
+    expect(competing.diagnostics.some(item=>item.code===Codes.routingInvalidSequencing&&item.message.includes("Competing trusted maintenance controllers"))).toBe(true);
+
+    const addedOnly=structuredClone(feature);addedOnly.spec.targets=[{id:"TARGET-create",paths:["package.json"],changePolicy:"create"}];
+    const wrongKind=makeController("ES-wrong-kind",closureSemanticDigest(addedOnly.spec));wrongKind.spec.targets=[{id:"TARGET-create-controller",paths:["package.json"],changePolicy:"create"}];
+    expect(routeChanges([addedOnly,wrongKind],[{path:"package.json",kind:"modified"}]).diagnostics.some(item=>item.code===Codes.routingInvalidSequencing&&item.message.includes("do not both positively authorize"))).toBe(true);
+  });
+
+  it("preserves deny-wins after a valid positive-claim subtraction",()=>{
+    const feature=candidate("ES-feature",[writable("TARGET-feature","package.json")]);
+    const maintenance=candidate("ES-maintenance",[writable("TARGET-maintenance","package.json")]);
+    maintenance.spec.authorityControls={mode:"maintenance",suspensions:[{contractId:"ES-feature",specRevision:1,semanticDigest:closureSemanticDigest(feature.spec),paths:["package.json"]}]};
+    const denial=candidate("ES-deny",[{id:"TARGET-deny",paths:["package.json"],changePolicy:"read_only"}]);
+    const result=routeChanges([feature,maintenance,denial],[{path:"package.json",kind:"modified"}]);
+    expect(result.routes[0]).toMatchObject({decision:"denied",denies:[{specId:"ES-deny"}],allows:[{specId:"ES-maintenance"}]});
+    expect(result.sequencing[0]).toMatchObject({applied:true,denyClaims:[{specId:"ES-deny"}]});
   });
 });

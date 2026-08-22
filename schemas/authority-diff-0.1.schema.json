@@ -4,7 +4,7 @@
   "title": "EngineeringSpec authority diff 0.1",
   "type": "object",
   "additionalProperties": false,
-  "required": ["format", "formatVersion", "contractId", "base", "head", "lifecycle", "pathAuthority", "targets", "constraints", "verifiers", "contracts", "sources", "otherSemanticChange", "authorityChanged", "safeMonotonicClose"],
+  "required": ["format", "formatVersion", "contractId", "base", "head", "lifecycle", "pathAuthority", "targets", "constraints", "verifiers", "contracts", "sources", "sequencing", "otherSemanticChange", "authorityChanged", "safeMonotonicClose"],
   "properties": {
     "format": { "const": "engineering-spec-authority-diff" },
     "formatVersion": { "const": "0.1" },
@@ -35,6 +35,7 @@
     "verifiers": { "$ref": "#/$defs/changes" },
     "contracts": { "$ref": "#/$defs/changes" },
     "sources": { "$ref": "#/$defs/changes" },
+    "sequencing": {"type":"object","additionalProperties":false,"required":["changed"],"properties":{"changed":{"type":"boolean"},"beforeDigest":{"type":"string"},"afterDigest":{"type":"string"}}},
     "otherSemanticChange": { "type": "boolean" },
     "authorityChanged": { "type": "boolean" },
     "safeMonotonicClose": { "type": "boolean" }

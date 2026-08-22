@@ -6,6 +6,8 @@
     { "file": "valid/future-exception.engineering-spec.md", "valid": true, "codes": ["EST002"] },
     { "file": "valid/contract-with-empty-constraints.engineering-spec.md", "valid": true, "codes": [] },
     { "file": "valid/ai-eval.engineering-spec.md", "valid": true, "codes": [] },
+    { "file": "authority-sequencing/valid-maintenance.engineering-spec.md", "valid": true, "codes": [] },
+    { "file": "authority-sequencing/invalid-glob.engineering-spec.md", "valid": false, "codes": ["ESRT007"] },
     { "file": "../examples/standalone/bug-fix.engineering-spec.md", "valid": true, "codes": [] },
     { "file": "../examples/infrastructure/infrastructure.engineering-spec.md", "valid": true, "codes": [] },
     { "file": "../examples/api-change/customer-api.engineering-spec.md", "valid": true, "codes": [] },

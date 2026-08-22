@@ -4,6 +4,25 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+## [0.1.0-rc.16] - 2026-08-22
+
+### Added
+
+- Explicit `replay` simulations for historical review and finish readiness using one immutable Git snapshot for configuration, EngineeringSpecs, ProductSpecs, and repository-local references.
+- Optional exact-path `engineering-authority-controls` for independently approved, subtractive maintenance sequencing.
+- Deterministic ceremony benchmark scenarios A–G and machine-readable historical replay and ceremony schemas.
+
+### Changed
+
+- Routing, review, preparation, catalogue, status, and authority-diff reports expose stable sequencing identities and outcomes without executable runner payloads.
+- `next` reports deterministic remediation recommendations for work, approval, ambiguity resolution, historical replay, and finish.
+
+### Security
+
+- Historical replay always reports `historical_read_only` and `currentAuthorityGranted: false`; it cannot write, transition lifecycle state, inspect mutable Git state, or execute runners or trusted verifiers.
+- Maintenance sequencing can only subtract a pinned positive claim on an exact path also writable by the trusted controller. Denials and remaining ambiguity continue to fail closed.
+- Workspace-only, stale, broad, duplicated, chained, cyclic, competing, and self-authorizing controls have no authority effect and fail closed.
+
 ## [0.1.0-rc.15] - 2026-08-19
 
 ### Fixed

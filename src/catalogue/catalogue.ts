@@ -6,6 +6,7 @@ import { compareCodePoints } from "../normalizer/canonicalize.js";
 import { normalize } from "../normalizer/normalize.js";
 import { applicableTargets } from "../query/applicability.js";
 import { validateFile } from "../validator/validateFile.js";
+import { closureSemanticDigest } from "../normalizer/digest.js";
 
 const MAX_CATALOGUE_DOCUMENTS = 10_000;
 
@@ -20,6 +21,7 @@ export interface CatalogueEntry {
   constraints: Array<{ id: string; level: string; statement: string; appliesTo: string[]; enforcement?: string }>;
   contracts: Array<{ id: string; kind: string; locator?: string; compatibility?: string }>;
   verification: Array<{ id: string; kind: string; proves: string[] }>;
+  authorityControls?:{mode:"maintenance";controllerSemanticDigest:string;suspensions:Array<{contractId:string;specRevision:number;semanticDigest:string;paths:string[]}>};
 }
 
 export interface CatalogueReport {
@@ -63,6 +65,7 @@ export async function buildCatalogue(directory: string, options: { query?: strin
         return { id: contract.id, kind: contract.kind, ...(located !== undefined ? { locator: located } : {}), ...(contract.compatibility ? { compatibility: contract.compatibility } : {}) };
       }),
       verification: spec.verification.map((verification) => ({ id: verification.id, kind: verification.kind, proves: [...verification.proves] })),
+      ...(spec.authorityControls?{authorityControls:{mode:spec.authorityControls.mode,controllerSemanticDigest:closureSemanticDigest(spec),suspensions:spec.authorityControls.suspensions.map(item=>({...item,paths:[...item.paths]}))}}:{}),
     };
     const haystack = JSON.stringify(entry).toLowerCase();
     if (options.query && !haystack.includes(options.query.toLowerCase())) continue;
