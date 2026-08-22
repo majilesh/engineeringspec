@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://engineeringspec.org/schemas/historical-snapshot-evaluation-0.1.schema.json",
+  "title": "EngineeringSpec historical snapshot evaluation 0.1",
+  "type": "object",
+  "required": ["format", "formatVersion", "valid", "operation", "authorityMode", "currentAuthorityGranted", "snapshotSha", "repositoryConfig", "changed", "routing", "lifecycleReadiness", "diagnostics", "limitations"],
+  "properties": {
+    "format": {"const": "engineering-spec-historical-snapshot-evaluation"},
+    "formatVersion": {"const": "0.1"},
+    "valid": {"type": "boolean"},
+    "operation": {"enum": ["review", "finish-readiness"]},
+    "authorityMode": {"const": "historical_read_only"},
+    "currentAuthorityGranted": {"const": false},
+    "snapshotSha": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "candidateSha": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "changesFixtureDigest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "repositoryConfig": {"type": "object"},
+    "contract": {"type": "object"},
+    "changed": {"type": "array"},
+    "routing": {"type": "object"},
+    "lifecycleReadiness": {"type": "object"},
+    "diagnostics": {"type": "array"},
+    "limitations": {"type": "array", "items": {"type": "string"}}
+  },
+  "additionalProperties": false
+}

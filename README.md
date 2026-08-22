@@ -80,29 +80,29 @@ engineeringspec finish ES-my-change --write-closure --output ../engineering-spec
 `next` is informational: success is not authorization. An agent may implement only when `permission` is `implementation` and `work ES-my-change` successfully loads that exact approved trusted-base contract. Repository reading remains available for correctness, while writes remain limited to the returned surfaces. `finish` checks the change, emits bound evidence and PR metadata, and writes no closure unless `--write-closure` is explicit. It never stages, commits, pushes, approves, merges, or executes a runner declared inside a specification. Evidence output must be outside the evaluated Git worktree so writing the receipt cannot mutate the state whose digest was just evaluated.
 
 ```sh
-npx --yes @engineeringspec/cli@0.1.0-rc.14 adopt . --quickstart --maintainer @your-org/platform --dry-run
-npx --yes @engineeringspec/cli@0.1.0-rc.14 propose --id ES-my-change --title "My change" \
+npx --yes @engineeringspec/cli@0.1.0-rc.16 adopt . --quickstart --maintainer @your-org/platform --dry-run
+npx --yes @engineeringspec/cli@0.1.0-rc.16 propose --id ES-my-change --title "My change" \
   --path 'src/example/**' --output docs/engineering-specs/ES-my-change.engineering-spec.md --dry-run
-npx --yes @engineeringspec/cli@0.1.0-rc.14 review --spec-dir docs/engineering-specs --base origin/main --strict --format markdown
-npx --yes @engineeringspec/cli@0.1.0-rc.14 prepare ES-my-change --spec-dir docs/engineering-specs --base origin/main --strict --format markdown
-npx --yes @engineeringspec/cli@0.1.0-rc.14 init --template feature --id ES-my-change
-npx --yes @engineeringspec/cli@0.1.0-rc.14 validate ENGINEERING_SPEC.md
-npx --yes @engineeringspec/cli@0.1.0-rc.14 validate docs/engineering-specs
-npx --yes @engineeringspec/cli@0.1.0-rc.14 normalize ENGINEERING_SPEC.md --digest
-npx --yes @engineeringspec/cli@0.1.0-rc.14 inspect ENGINEERING_SPEC.md --path src/example.ts
-npx --yes @engineeringspec/cli@0.1.0-rc.14 coverage ENGINEERING_SPEC.md --fail-on uncovered
-npx --yes @engineeringspec/cli@0.1.0-rc.14 gate ENGINEERING_SPEC.md --base origin/main --receipt gate-receipt.json
-npx --yes @engineeringspec/cli@0.1.0-rc.14 check ENGINEERING_SPEC.md --base origin/main --strict
-npx --yes @engineeringspec/cli@0.1.0-rc.14 context ENGINEERING_SPEC.md --path src/example.ts --base origin/main --format markdown
-npx --yes @engineeringspec/cli@0.1.0-rc.14 explain ENGINEERING_SPEC.md --path src/example.ts --base origin/main
-npx --yes @engineeringspec/cli@0.1.0-rc.14 catalogue docs/engineering-specs --query session --format json
+npx --yes @engineeringspec/cli@0.1.0-rc.16 review --spec-dir docs/engineering-specs --base origin/main --strict --format markdown
+npx --yes @engineeringspec/cli@0.1.0-rc.16 prepare ES-my-change --spec-dir docs/engineering-specs --base origin/main --strict --format markdown
+npx --yes @engineeringspec/cli@0.1.0-rc.16 init --template feature --id ES-my-change
+npx --yes @engineeringspec/cli@0.1.0-rc.16 validate ENGINEERING_SPEC.md
+npx --yes @engineeringspec/cli@0.1.0-rc.16 validate docs/engineering-specs
+npx --yes @engineeringspec/cli@0.1.0-rc.16 normalize ENGINEERING_SPEC.md --digest
+npx --yes @engineeringspec/cli@0.1.0-rc.16 inspect ENGINEERING_SPEC.md --path src/example.ts
+npx --yes @engineeringspec/cli@0.1.0-rc.16 coverage ENGINEERING_SPEC.md --fail-on uncovered
+npx --yes @engineeringspec/cli@0.1.0-rc.16 gate ENGINEERING_SPEC.md --base origin/main --receipt gate-receipt.json
+npx --yes @engineeringspec/cli@0.1.0-rc.16 check ENGINEERING_SPEC.md --base origin/main --strict
+npx --yes @engineeringspec/cli@0.1.0-rc.16 context ENGINEERING_SPEC.md --path src/example.ts --base origin/main --format markdown
+npx --yes @engineeringspec/cli@0.1.0-rc.16 explain ENGINEERING_SPEC.md --path src/example.ts --base origin/main
+npx --yes @engineeringspec/cli@0.1.0-rc.16 catalogue docs/engineering-specs --query session --format json
 ```
 
 Diagnose setup and inspect the current lifecycle with the current release candidate:
 
 ```sh
-npx --yes @engineeringspec/cli@0.1.0-rc.14 doctor . --spec-dir docs/engineering-specs --base origin/main --strict
-npx --yes @engineeringspec/cli@0.1.0-rc.14 status --spec-dir docs/engineering-specs --base origin/main --allow-contract-only --strict
+npx --yes @engineeringspec/cli@0.1.0-rc.16 doctor . --spec-dir docs/engineering-specs --base origin/main --strict
+npx --yes @engineeringspec/cli@0.1.0-rc.16 status --spec-dir docs/engineering-specs --base origin/main --allow-contract-only --strict
 ```
 
 For a first adoption, follow [Getting started](docs/getting-started.md) and the [first-change tutorial](docs/first-change-tutorial.md). The memorable workflow is:
@@ -124,6 +124,14 @@ node dist/cli.js check --spec-dir docs/engineering-specs --base origin/main --al
 
 Directory routing enumerates candidates from one resolved base tree, validates them before filtering, considers `approved` contracts by default, and requires every changed path to have exactly one allowing contract. Uncovered paths, ambiguous allows, duplicate IDs, and any matching denial fail closed. RC4 exposes the corresponding `gate-spec-dir` Action input and generated adoption scaffolds use it by default.
 
+RC16 adds two explicit, non-bypass workflows. `replay` evaluates review or finish readiness from immutable commit snapshots and always reports `authorityMode: historical_read_only` with `currentAuthorityGranted: false`; it cannot write or execute runners. Trusted maintenance sequencing is an optional `engineering-authority-controls` block on an already approved base contract. It may subtract only a pinned competing contract's positive claim for exact shared paths. Denials, `read_only`, `observe`, uncovered paths, remaining ambiguity, stale pins, workspace-only controls, and controller conflicts still fail closed.
+
+```sh
+engineeringspec replay ES-historical --at <full-commit-sha> \
+  --operation review --head-at <full-commit-sha> --format json
+engineeringspec benchmark --ceremony --format json
+```
+
 A successfully inspected state with zero changed paths is reported as successful and `not_applicable`, even when all historical contracts are closed. This authorizes nothing: as soon as any path changes, the normal approved-contract requirement and fail-closed routing apply.
 
 The additive `--allow-contract-only` policy classifies a non-empty change as governance only when every old and new path remains under the configured specification directory and workspace specs validate strictly. It reports `contract_only` without claiming selection by a base contract. A mixed implementation may include only an exact `approved -> implemented` close of its base-authorizing contract; the head document cannot widen or contribute authority. Other mixed changes, cross-boundary renames, invalid specs, and unsafe paths fail closed. Keep the authority lane reviewer-owned with CODEOWNERS and required checks.
@@ -136,11 +144,11 @@ Directory validation discovers `ENGINEERING_SPEC.md`, `*.engineering-spec.md`, a
 
 ```sh
 # Enforcing CI: load the approved contract from the base branch (prevents PR self-widening)
-npx --yes @engineeringspec/cli@0.1.0-rc.14 gate docs/engineering-specs/ES-my-change.engineering-spec.md \
+npx --yes @engineeringspec/cli@0.1.0-rc.16 gate docs/engineering-specs/ES-my-change.engineering-spec.md \
   --base origin/main --require-status approved --receipt gate-receipt.json
 
 # Local / CI smoke without git history
-npx --yes @engineeringspec/cli@0.1.0-rc.14 gate docs/engineering-specs/ES-my-change.engineering-spec.md --changed src/api.ts
+npx --yes @engineeringspec/cli@0.1.0-rc.16 gate docs/engineering-specs/ES-my-change.engineering-spec.md --changed src/api.ts
 ```
 
 Use one EngineeringSpec per consequential change, protect `docs/engineering-specs/**` with CODEOWNERS, and configure the gate job as a **required** status check so failures block merge. Full checklist: [Production diff-scope gate](docs/production-gate.md).
@@ -170,7 +178,7 @@ After tagging, `majilesh/engineeringspec@v0.1.0-rc.14` is acceptable for less se
 
 ```sh
 # CLI (exact release-candidate version; npm dist-tag `next` points at the current release candidate)
-npx --yes @engineeringspec/cli@0.1.0-rc.14 validate docs/engineering-specs
+npx --yes @engineeringspec/cli@0.1.0-rc.16 validate docs/engineering-specs
 ```
 
 ## Coding agents
@@ -182,7 +190,7 @@ The normal pre-code command is `work <contract-id>`: it composes the exact base-
 Bootstrap an existing repository without overwriting its agent files by default:
 
 ```sh
-npx --yes @engineeringspec/cli@0.1.0-rc.14 adopt . \
+npx --yes @engineeringspec/cli@0.1.0-rc.16 adopt . \
   --spec docs/engineering-specs/ES-my-change.engineering-spec.md \
   --merge --dry-run
 ```
@@ -193,7 +201,7 @@ The portable [EngineeringSpec skill](skills/engineering-spec/SKILL.md) is the pr
 
 Thin setup notes are available for [Codex](integrations/codex/README.md), [Claude Code](integrations/claude/README.md), [Cursor](integrations/cursor/README.md), [GitHub Copilot](integrations/copilot/README.md), and [generic agents](integrations/generic/README.md). All use the same CLI decision; none can approve or widen a contract. Run the [local fail-closed demo](examples/demo/README.md) with `npm run demo`.
 
-Measure the effect rather than assuming it: [the agent-impact benchmark](benchmarks/README.md) retains paired success, failures, routing outcomes, eligible scope precision, review effort, amendments, exploration breadth, duration, and tokens. `measure` generates an unsigned v2 receipt from the same repository-wide approved-base routing decision used by enforcement; negative outcomes remain visible, while paths stay private by default. The receipt grants no authority and proves neither correctness nor trusted-check success. Synthetic examples are never presented as observed impact.
+Measure the effect rather than assuming it: [the agent-impact benchmark](benchmarks/README.md) retains paired success, failures, routing outcomes, eligible scope precision, review effort, amendments, exploration breadth, duration, and tokens. `benchmark --ceremony` separately evaluates the deterministic security and ceremony scenarios A–G without executing runners. `measure` generates an unsigned v2 receipt from the same repository-wide approved-base routing decision used by enforcement; negative outcomes remain visible, while paths stay private by default. These reports grant no authority and prove neither correctness nor trusted-check success. Synthetic examples are never presented as observed impact.
 
 Private repositories are supported: the CLI and Action operate on the checked-out Git tree and do not upload specification or source content. Normal package installation and GitHub Actions still use their configured package/network access. See the [CLI reference](docs/cli-reference.md), [coding-agent integrations](docs/integrations.md), [architecture bridge](docs/architecture-bridge.md), [Agent Control Plane boundary](docs/agent-control-plane.md), [upgrade guide](docs/upgrading.md), [roles and responsibilities](docs/roles-and-responsibilities.md), [lifecycle](docs/lifecycle.md), [maintaining specs](docs/maintaining-specs.md), and [troubleshooting](docs/troubleshooting.md).
 

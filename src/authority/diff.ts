@@ -29,6 +29,7 @@ export interface AuthorityDiff {
   verifiers: AuthorityItemChange[];
   contracts: AuthorityItemChange[];
   sources: AuthorityItemChange[];
+  sequencing: { changed:boolean; beforeDigest?:string; afterDigest?:string };
   otherSemanticChange: boolean;
   authorityChanged: boolean;
   safeMonotonicClose: boolean;
@@ -90,10 +91,13 @@ export function buildAuthorityDiff(before: EngineeringSpec, after: EngineeringSp
   const verifiers = changes(before.verification, after.verification);
   const contracts = changes(before.contracts ?? [], after.contracts ?? []);
   const sources = changes(before.sourceRefs, after.sourceRefs);
+  const beforeSequencing=before.authorityControls?digest(before.authorityControls):undefined;
+  const afterSequencing=after.authorityControls?digest(after.authorityControls):undefined;
+  const sequencing={changed:beforeSequencing!==afterSequencing,...(beforeSequencing?{beforeDigest:beforeSequencing}:{}),...(afterSequencing?{afterDigest:afterSequencing}:{})};
   const otherSemanticChange = digest(remainder(before)) !== digest(remainder(after));
   const beforePaths = pathSets(before.targets);
   const afterPaths = pathSets(after.targets);
-  const authorityChanged = targets.length + constraints.length + verifiers.length + contracts.length + sources.length > 0 || otherSemanticChange;
+  const authorityChanged = targets.length + constraints.length + verifiers.length + contracts.length + sources.length > 0 || sequencing.changed || otherSemanticChange;
   return {
     format: "engineering-spec-authority-diff",
     formatVersion: "0.1",
@@ -114,6 +118,7 @@ export function buildAuthorityDiff(before: EngineeringSpec, after: EngineeringSp
     verifiers,
     contracts,
     sources,
+    sequencing,
     otherSemanticChange,
     authorityChanged,
     safeMonotonicClose: isSafeImplementedClosure(before, after),
@@ -137,6 +142,7 @@ export function authorityDiffText(report: AuthorityDiff): string {
     `lifecycle: ${report.lifecycle.from} -> ${report.lifecycle.to}`,
     ...sections.flatMap(([label, values]) => values.map((value) => `${label}: ${value}`)),
     ...(["targets", "constraints", "verifiers", "contracts", "sources"] as const).flatMap((key) => report[key].map((item) => `${key}: ${item.id} ${item.change}`)),
+    `sequencing changed: ${report.sequencing.changed}`,
     `other semantic change: ${report.otherSemanticChange}`,
     `safe monotonic close: ${report.safeMonotonicClose}`,
   ].join("\n");

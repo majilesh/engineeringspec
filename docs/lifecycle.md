@@ -23,6 +23,10 @@ For repositories that enable the portable governance policy, pass `--allow-contr
 
 Never widen a workspace contract and use that same unmerged content to authorize dependent code. Merge the contract-only amendment first, update the implementation branch from the trusted base, then continue. This applies even when one person or one agent performs both tasks.
 
+Trusted maintenance sequencing preserves that boundary for overlapping approved work. A maintenance controller containing exact `engineering-authority-controls` must first be reviewed and merged as `approved`. On the next trusted base it may subtract only the pinned feature contract's positive claim for exact paths also writable by the controller. The implementation PR may close that controller exactly to `implemented`; once merged, the controller naturally leaves approved-only routing and the feature contract participates normally again. There is no suspended lifecycle state, lease, mutable activation, or workspace self-approval.
+
+Historical replay is outside the lifecycle. It simulates an old review or finish-readiness decision from immutable commits, reports zero current authority, and performs no transition or closure write.
+
 ## Clean state
 
 A clean repository with no approved contract reports `not_applicable`. This means there is no change to route; it does not authorize the next edit. Rerun `status` and `check` after changes appear.
@@ -36,8 +40,8 @@ Use `superseded` when a reviewed replacement contract owns the change. Use `reje
 After repository-owned checks pass, the implementation PR may change only the exact authorizing contract lifecycle to `implemented`:
 
 ```sh
-npx --yes @engineeringspec/cli@0.1.0-rc.14 finish ES-change --format markdown
-npx --yes @engineeringspec/cli@0.1.0-rc.14 finish ES-change --write-closure
+npx --yes @engineeringspec/cli@0.1.0-rc.16 finish ES-change --format markdown
+npx --yes @engineeringspec/cli@0.1.0-rc.16 finish ES-change --write-closure
 ```
 
 With code in the same diff, the result must say `change classification: implementation_with_monotonic_close`; a standalone closure remains `contract_only`. Any semantic edit, authority widening, or unrelated contract close fails. Require normal repository checks and maintainer review before merging. Approved-base routing still applies to every implementation path.

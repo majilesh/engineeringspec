@@ -6,6 +6,8 @@ import { isSafeRelativePath } from "./pathSafety.js";
 
 const digestPattern = /^sha256:[a-fA-F0-9]{64}$/;
 const FORBIDDEN_POLICIES = new Set(["read_only", "observe"]);
+const WRITABLE_POLICIES = new Set(["modify", "create", "delete", "interface_only"]);
+const GLOB_META = /[*?[\]{}!]/u;
 
 function digestValid(value: unknown): boolean {
   if (typeof value === "string") return digestPattern.test(value);
@@ -146,6 +148,23 @@ export function validateSemantics(spec: EngineeringSpec, file?: string): Diagnos
     }
   }
   warnOverlappingTargetPolicies(spec, add);
+
+  if (spec.authorityControls) {
+    const referenced = new Set<string>();
+    for (const suspension of spec.authorityControls.suspensions) {
+      if (suspension.contractId === spec.metadata.id) add({ code: Codes.routingInvalidSequencing, severity: "error", message: `Authority controls on ${spec.metadata.id} cannot reference the controller itself` });
+      if (referenced.has(suspension.contractId)) add({ code: Codes.routingInvalidSequencing, severity: "error", message: `Authority controls duplicate referenced contract ${JSON.stringify(suspension.contractId)}` });
+      referenced.add(suspension.contractId);
+      for (const controlledPath of suspension.paths) {
+        if (!isSafeRelativePath(controlledPath) || GLOB_META.test(controlledPath) || controlledPath.endsWith("/")) {
+          add({ code: Codes.routingInvalidSequencing, severity: "error", message: `Maintenance sequencing path must be an exact safe repository-relative file path: ${JSON.stringify(controlledPath)}` });
+          continue;
+        }
+        const controllerAllows = spec.targets.some(target => WRITABLE_POLICIES.has(target.changePolicy) && target.paths.some(pattern => matchTargetGlob(controlledPath, pattern)));
+        if (!controllerAllows) add({ code: Codes.routingInvalidSequencing, severity: "error", message: `Controller ${spec.metadata.id} does not positively authorize exact sequencing path ${JSON.stringify(controlledPath)}` });
+      }
+    }
+  }
 
   for (const constraint of spec.constraints ?? []) {
     for (const id of constraint.appliesTo ?? []) {

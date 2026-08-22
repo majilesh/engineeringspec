@@ -223,4 +223,29 @@ describe("Git-tree multi-spec routing", () => {
     expect(loose.diagnostics).toContainEqual(expect.objectContaining({ code: "ESG006", severity: "info" }));
     expect(strict.valid).toBe(true);
   });
+
+  it("does not let mutable workspace authority controls self-resolve trusted-base ambiguity",async()=>{
+    const root=await mkdtemp(path.join(os.tmpdir(),"es-routing-self-auth-"));
+    await mkdir(path.join(root,"specs"));await mkdir(path.join(root,"src"));
+    await writeFile(path.join(root,"specs","feature.engineering-spec.md"),document({id:"ES-feature",target:"src/a.ts"}));
+    await writeFile(path.join(root,"specs","maintenance.engineering-spec.md"),document({id:"ES-maintenance",target:"src/a.ts"}));
+    await writeFile(path.join(root,"src","a.ts"),"export {};\n");
+    runGit(root,["init","-q"]);runGit(root,["add","."]);runGit(root,["-c","user.name=Test","-c","user.email=test@example.com","commit","-qm","ambiguous trusted base"]);
+    const baseSha=runGit(root,["rev-parse","HEAD"]);
+    const maintenance=path.join(root,"specs","maintenance.engineering-spec.md");
+    await writeFile(maintenance,(await readFile(maintenance,"utf8"))+`\n\`\`\`engineering-authority-controls
+mode: maintenance
+suspensions:
+  - contract_id: ES-feature
+    spec_revision: 1
+    semantic_digest: sha256:${"0".repeat(64)}
+    paths: [src/a.ts]
+\`\`\`\n`);
+    await writeFile(path.join(root,"src","a.ts"),"export const changed=true;\n");
+    const report=await selectSpecs({directory:"specs",base:baseSha,cwd:root,strict:true});
+    expect(report.valid).toBe(false);
+    expect(report.routes.find(route=>route.path==="src/a.ts")).toMatchObject({decision:"ambiguous",allows:[{specId:"ES-feature"},{specId:"ES-maintenance"}]});
+    expect(report.diagnostics.some(item=>item.code==="ESRT003")).toBe(true);
+    expect(report.sequencing).toEqual([]);
+  });
 });

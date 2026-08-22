@@ -1,6 +1,7 @@
 import { resolveRepositoryConfig, summarizeRepositoryConfig, type RepositoryConfigSummary } from "../config/repositoryConfig.js";
 import { packageVersion } from "./version.js";
 import { workflowStatus, type LifecycleStage, type WorkflowStatusReport } from "./status.js";
+import { Codes } from "../diagnostics/codes.js";
 
 export interface NextReport {
   valid: boolean;
@@ -11,6 +12,7 @@ export interface NextReport {
   config: RepositoryConfigSummary;
   status: WorkflowStatusReport;
   command: string;
+  recommendation:{code:"work"|"request-approval"|"resolve-authority-conflict"|"historical-replay"|"finish";reason:string;diagnostics:string[];command:string};
 }
 
 function nextCommand(status: WorkflowStatusReport, approvedIds: string[]): string {
@@ -48,6 +50,17 @@ export async function nextAction(options: { base?: string; cwd?: string } = {}):
   });
   const approvedIds = status.routing.candidates.filter((item) => item.eligible).map((item) => item.specId);
   const analysisValid = status.routing.diagnostics.every((item) => item.code.startsWith("ESRT"));
+  const command=nextCommand(status,approvedIds);
+  const ambiguous=status.routing.diagnostics.some(item=>item.code===Codes.routingAmbiguous);
+  const historicalMismatch=config.warnings.some(item=>item.includes("informational inspection"));
+  const code:NextReport["recommendation"]["code"]=historicalMismatch?"historical-replay"
+    :ambiguous?"resolve-authority-conflict"
+      :status.next.stage==="approve"||status.next.stage==="propose"?"request-approval"
+        :status.next.stage==="verify"||status.next.stage==="close"?"finish":"work";
+  const recommendationCommand=code==="historical-replay"
+    ? "engineeringspec replay <contract-id> --at <full-commit-sha> --operation review --head-at <full-commit-sha>"
+    :code==="resolve-authority-conflict"?"Narrow paths or merge an independently approved exact maintenance controller."
+      :command;
   return {
     valid: analysisValid,
     analysisValid,
@@ -56,7 +69,8 @@ export async function nextAction(options: { base?: string; cwd?: string } = {}):
     cliVersion: packageVersion(),
     config: summarizeRepositoryConfig(config),
     status,
-    command: nextCommand(status, approvedIds),
+    command,
+    recommendation:{code,reason:status.next.message,diagnostics:status.routing.diagnostics.map(item=>item.code),command:recommendationCommand},
   };
 }
 

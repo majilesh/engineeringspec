@@ -1,7 +1,7 @@
 import { isEngineeringSpecFilename } from "../discovery/discover.js";
 import { listGitTreePaths, readGitBlob, resolveCommitSha, resolveGitRelativeDirectory } from "../gate/loadSpec.js";
 import { compareCodePoints } from "../normalizer/canonicalize.js";
-import { digest } from "../normalizer/digest.js";
+import { closureSemanticDigest, digest } from "../normalizer/digest.js";
 import { normalize } from "../normalizer/normalize.js";
 import { briefDisplaySafe, buildChangeBrief, type ChangeBrief } from "../query/changeBrief.js";
 import { validateMarkdown } from "../validator/validateFile.js";
@@ -32,7 +32,7 @@ export interface BlockedPrepareReport {
   diagnostics: Array<{ code: string; severity: string; message: string; file?: string }>;
 }
 
-export type PrepareReport = ChangeBrief | BlockedPrepareReport;
+export type PrepareReport = (ChangeBrief & {sequencing?:{controller:{id:string;revision:number;semanticDigest:string};suspensions:Array<{contractId:string;specRevision:number;semanticDigest:string;paths:string[]}>}}) | BlockedPrepareReport;
 
 function blocked(
   options: PrepareOptions,
@@ -131,12 +131,14 @@ export async function prepareChange(options: PrepareOptions): Promise<PrepareRep
 
   const match = matches[0]!;
   const spec = normalize(match.spec);
-  return buildChangeBrief(spec, {
+  const brief:PrepareReport=buildChangeBrief(spec, {
     baseRef: options.base,
     baseSha,
     specPath: match.path,
     specDigest: digest(spec),
   });
+  if(spec.authorityControls&&brief.result==="ready") brief.sequencing={controller:{id:spec.metadata.id,revision:spec.metadata.specRevision,semanticDigest:closureSemanticDigest(spec)},suspensions:spec.authorityControls.suspensions.map(item=>({...item,paths:[...item.paths]}))};
+  return brief;
 }
 
 function markdownSafe(value: string): string {
@@ -179,6 +181,7 @@ export function prepareText(report: PrepareReport): string {
     ...report.technicalContracts.map((item) => `technical contract: ${displaySafe(item.id)} (${displaySafe(item.kind)})${item.locator ? ` ${displaySafe(item.locator)}` : ""}${item.compatibility ? `; compatibility ${displaySafe(item.compatibility)}` : ""}`),
     ...report.verification.map((item) => `verification: ${displaySafe(item.id)} (${displaySafe(item.kind)}; runner inert) proves ${item.proves.map(displaySafe).join(", ")}`),
     ...report.sourceIntent.map((item) => `source: ${displaySafe(item.id)} (${displaySafe(item.type)}) ${displaySafe(item.locator)}${item.title ? `; ${displaySafe(item.title)}` : ""}${item.revision !== undefined ? `; revision ${displaySafe(String(item.revision))}` : ""}${item.digest ? `; ${displaySafe(item.digest)}` : "; digest unavailable"}`),
+    ...(report.sequencing?report.sequencing.suspensions.map(item=>`sequencing: ${displaySafe(report.sequencing!.controller.id)} subtracts ${displaySafe(item.contractId)} revision ${item.specRevision} ${displaySafe(item.semanticDigest)} on ${item.paths.map(displaySafe).join(", ")}`):[]),
     ...(report.unresolvedQuestions.length > 0
       ? report.unresolvedQuestions.map((item) => `unresolved: ${displaySafe(item.id)} ${displaySafe(item.question)}`)
       : ["unresolved: none declared"]),
@@ -243,6 +246,7 @@ export function prepareMarkdown(report: PrepareReport): string {
     : ["None declared."]));
   lines.push("", "### Verification identities", "", ...report.verification.map((item) => `- ${markdownCode(item.id)} (${markdownSafe(item.kind)}; runner inert): proves ${item.proves.map(markdownCode).join(", ")}`));
   lines.push("", "### Source intent", "", ...report.sourceIntent.map((item) => `- ${markdownCode(item.id)} (${markdownSafe(item.type)}): ${markdownSafe(item.locator)}${item.title ? ` — ${markdownSafe(item.title)}` : ""}${item.revision !== undefined ? ` — revision ${markdownSafe(String(item.revision))}` : ""}${item.digest ? ` — ${markdownCode(item.digest)}` : " — digest unavailable"}`));
+  if(report.sequencing) lines.push("","### Trusted maintenance sequencing","",...report.sequencing.suspensions.map(item=>`- ${markdownCode(report.sequencing!.controller.id)} subtracts ${markdownCode(item.contractId)} revision ${item.specRevision} (${markdownCode(item.semanticDigest)}) on ${item.paths.map(markdownCode).join(", ")}`));
   lines.push("", "### Unresolved questions", "", ...(report.unresolvedQuestions.length > 0
     ? report.unresolvedQuestions.map((item) => `- **${markdownSafe(item.id)}** ${markdownSafe(item.question)}`)
     : ["None declared through an `escalate` constraint."]));

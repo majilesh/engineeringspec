@@ -10,6 +10,7 @@ import { digestRoutedChanges, routeChanges } from "./route.js";
 import type { RoutingReport } from "./types.js";
 import { classifyGovernanceChanges, inspectWorkspaceGovernance } from "./governance.js";
 import { loadRoutingCandidates } from "./loadCandidates.js";
+import { closureSemanticDigest } from "../normalizer/digest.js";
 
 export interface SelectSpecsOptions {
   directory: string;
@@ -83,10 +84,10 @@ export async function selectSpecs(options: SelectSpecsOptions): Promise<RoutingR
   }
   const routeableChanges = safeMixedClose ? implementationChanges : changed;
   const routed = loadFailed
-    ? { candidates: candidates.map((candidate) => ({ path: candidate.path, digest: candidate.digest, specId: candidate.spec.metadata.id, status: candidate.spec.metadata.status, eligible: requiredStatuses.includes(candidate.spec.metadata.status) })), routes: [], diagnostics: [], changedDigest: digestRoutedChanges(changed) }
+    ? { candidates: candidates.map((candidate) => ({ path: candidate.path, digest: candidate.digest, specId: candidate.spec.metadata.id, status: candidate.spec.metadata.status, eligible: requiredStatuses.includes(candidate.spec.metadata.status),specRevision:candidate.spec.metadata.specRevision,semanticDigest:closureSemanticDigest(candidate.spec) })), routes: [], diagnostics: [], changedDigest: digestRoutedChanges(changed), sequencing: [] }
     : classification === "contract_only"
-      ? { ...routeChanges(candidates, [], requiredStatuses), changedDigest: digestRoutedChanges(changed) }
-      : { ...routeChanges(candidates, routeableChanges, requiredStatuses), changedDigest: digestRoutedChanges(changed) };
+      ? { ...routeChanges(candidates, [], requiredStatuses, { baseSha }), changedDigest: digestRoutedChanges(changed) }
+      : { ...routeChanges(candidates, routeableChanges, requiredStatuses, { baseSha }), changedDigest: digestRoutedChanges(changed) };
   if (safeMixedClose && governanceInspection) {
     const closedIds = new Set((governanceInspection.report.authorityDiffs ?? []).map((item) => item.contractId));
     const selectedIds = new Set(routed.routes.flatMap((route) => route.selected ? [route.selected.specId] : []));
@@ -143,5 +144,6 @@ export async function selectSpecs(options: SelectSpecsOptions): Promise<RoutingR
     coverage: { status: coverageStatus, specs: specCoverage },
     routes: loadFailed ? [] : routed.routes,
     diagnostics,
+    sequencing: routed.sequencing,
   };
 }

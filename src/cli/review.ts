@@ -42,6 +42,7 @@ export interface ReviewReport {
   coverage: WorkflowStatusReport["coverage"];
   next: WorkflowStatusReport["next"];
   routes: WorkflowStatusReport["routing"]["routes"];
+  sequencing: WorkflowStatusReport["routing"]["sequencing"];
   contracts: ReviewContract[];
   authorityDiffs: AuthorityDiff[];
   diagnostics: Diagnostic[];
@@ -117,6 +118,7 @@ export async function buildReview(options: ReviewOptions): Promise<ReviewReport>
     coverage: status.coverage,
     next: status.next,
     routes: status.routing.routes,
+    sequencing:status.routing.sequencing,
     contracts,
     authorityDiffs: status.routing.governance.authorityDiffs ?? [],
     diagnostics: status.routing.diagnostics.map((item) => ({
@@ -168,6 +170,7 @@ export function reviewMarkdown(report: ReviewReport): string {
     }
   }
   for (const authorityDiff of report.authorityDiffs) lines.push("", authorityDiffMarkdown(authorityDiff));
+  if(report.sequencing.length>0) lines.push("","### Trusted maintenance sequencing","",...report.sequencing.map(item=>`- ${item.applied?"applied":"rejected"}: ${markdownCode(item.controller.specId)} → ${markdownCode(item.referenced.specId)} on ${markdownCode(item.path)} — ${safe(item.reason)}`));
   if (report.diagnostics.length > 0) {
     lines.push("", "### Diagnostics", "", ...report.diagnostics.map((item) => `- **${safe(item.code)}** ${safe(item.file ? `${item.file}: ${item.message}` : item.message)}`));
   }
@@ -197,6 +200,7 @@ export function reviewText(report: ReviewReport): string {
       ...contract.verification.map((item) => `verification: ${displaySafe(item.id)} (${displaySafe(item.kind)}) proves ${item.proves.map(displaySafe).join(", ")}`),
     ]),
     ...report.authorityDiffs.map(authorityDiffText),
+    ...report.sequencing.map(item=>`sequencing: ${item.applied?"applied":"rejected"} ${displaySafe(item.controller.specId)} -> ${displaySafe(item.referenced.specId)} ${displaySafe(item.path)}; ${displaySafe(item.reason)}`),
     ...report.diagnostics.map((item) => `${displaySafe(item.severity)}: ${displaySafe(item.code)} ${item.file ? `${displaySafe(item.file)}: ` : ""}${displaySafe(item.message)}`),
     `next: ${displaySafe(report.next.stage)} — ${displaySafe(report.next.message)}`,
   ].join("\n");

@@ -1,11 +1,42 @@
 import { createHash } from "node:crypto";
 import type { ScopeMeasurementReceipt } from "../measurement/measure.js";
 import { compareCodePoints } from "../normalizer/canonicalize.js";
+import { Codes } from "../diagnostics/codes.js";
 
 export type BenchmarkCondition = "baseline" | "engineeringspec";
 export type BenchmarkEvidenceClass = "observed" | "example";
 export type BenchmarkTaskRiskTier = "low" | "medium" | "high";
 export type AuthorityBreadth = "finite" | "open_create_namespace" | "repository_wide";
+
+export interface CeremonyScenario {
+  id:"A"|"B"|"C"|"D"|"E"|"F"|"G";name:string;commands:number;pullRequests:number;lifecycleEdits:number;
+  handEditedFiles:number;concepts:string[];mutations:number;expectedOutcome:string;actualOutcome:string;diagnostics:string[];
+  remediation:"work"|"request-approval"|"resolve-authority-conflict"|"historical-replay"|"finish";currentAuthorityGranted:boolean;runnerExecutions:0;
+}
+export interface CeremonyBenchmarkResult {format:"engineering-spec-ceremony-result";formatVersion:"0.1";fixtureDigest:string;valid:boolean;scenarios:CeremonyScenario[];summary:{commands:number;pullRequests:number;lifecycleEdits:number;handEditedFiles:number;mutations:number;securityOutcomesBinding:true;runnerExecutions:0}}
+
+export function evaluateCeremonyBenchmark(value:unknown):CeremonyBenchmarkResult{
+  if(!value||typeof value!=="object"||Array.isArray(value)) throw new Error("ceremony benchmark must be an object");
+  const record=value as {format?:unknown;formatVersion?:unknown;scenarios?:unknown};
+  if(record.format!=="engineering-spec-ceremony-scenarios"||record.formatVersion!=="0.1"||!Array.isArray(record.scenarios)||record.scenarios.length!==7) throw new Error("ceremony benchmark requires canonical scenarios A-G");
+  const scenarios=record.scenarios as CeremonyScenario[];
+  const ids=scenarios.map(item=>item.id);
+  if(ids.join("")!=="ABCDEFG"||new Set(ids).size!==7) throw new Error("ceremony benchmark scenarios must be ordered uniquely from A through G");
+  for(const item of scenarios){
+    if(item.expectedOutcome!==item.actualOutcome) throw new Error(`ceremony scenario ${item.id} did not meet its security outcome`);
+    if(item.runnerExecutions!==0) throw new Error(`ceremony scenario ${item.id} executed a runner`);
+    for(const field of ["commands","pullRequests","lifecycleEdits","handEditedFiles","mutations"] as const) if(!Number.isInteger(item[field])||item[field]<0) throw new Error(`ceremony scenario ${item.id} has invalid ${field}`);
+  }
+  const byId=new Map(scenarios.map(item=>[item.id,item]));
+  const valid=byId.get("A")!.pullRequests===1&&byId.get("B")!.pullRequests===2&&byId.get("C")!.pullRequests<=2
+    &&byId.get("D")!.mutations===0&&byId.get("D")!.currentAuthorityGranted===false
+    &&byId.get("E")!.actualOutcome==="fail_closed"&&byId.get("E")!.diagnostics.includes(Codes.routingAmbiguous)
+    &&byId.get("F")!.actualOutcome==="fail_closed"&&byId.get("F")!.currentAuthorityGranted===false
+    &&byId.get("G")!.actualOutcome==="trusted_result_unchanged";
+  const fixtureDigest=`sha256:${createHash("sha256").update(JSON.stringify(value)).digest("hex")}`;
+  const sum=(field:"commands"|"pullRequests"|"lifecycleEdits"|"handEditedFiles"|"mutations")=>scenarios.reduce((total,item)=>total+item[field],0);
+  return {format:"engineering-spec-ceremony-result",formatVersion:"0.1",fixtureDigest,valid,scenarios,summary:{commands:sum("commands"),pullRequests:sum("pullRequests"),lifecycleEdits:sum("lifecycleEdits"),handEditedFiles:sum("handEditedFiles"),mutations:sum("mutations"),securityOutcomesBinding:true,runnerExecutions:0}};
+}
 
 export interface BenchmarkScopeMeasurement {
   unit: "repository_path";
