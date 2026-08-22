@@ -1,7 +1,7 @@
 ---
 spec_format: engineering-spec
 spec_format_version: "0.1"
-spec_revision: 1
+spec_revision: 2
 id: ES-RC16-DX-AUTHORITY
 title: Add historical replay and trusted maintenance sequencing for RC16
 status: approved
@@ -15,7 +15,7 @@ repository:
 
 Design and, only after separate approval, implement a read-only historical snapshot evaluator, a fail-closed path-scoped maintenance sequencing primitive, actionable conflict remediation, and a reproducible ceremony benchmark for `0.1.0-rc.16`. Preserve immutable trusted-base authority, deny-wins routing, the two-phase authority boundary, exact implementation-plus-close semantics, and inert specification runners.
 
-This contract is a draft. It grants no implementation authority. Approval must be reviewed and merged as a contract-only governance change before any dependent source, schema, test, documentation, benchmark, or release-metadata change begins.
+This contract grants implementation authority only when this exact approved revision is present on the trusted base. A proposed amendment, including this revision while unmerged, grants no additional authority until independently reviewed and merged as a contract-only governance change.
 
 ## Source intent
 
@@ -129,8 +129,10 @@ This contract is a draft. It grants no implementation authority. Approval must b
     - test/unit/catalogue.test.ts
     - test/unit/config.test.ts
     - test/unit/diagnostic-codes.test.ts
+    - test/unit/doctor.test.ts
     - test/unit/finish.test.ts
     - test/unit/prepare.test.ts
+    - test/unit/release-readiness.test.ts
     - test/unit/review.test.ts
     - test/unit/routing.test.ts
     - test/unit/status.test.ts
