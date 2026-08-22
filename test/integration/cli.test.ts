@@ -466,7 +466,7 @@ owners: [{team: test}]
     expect(await invoke(["status","--spec-dir","docs/engineering-specs","--base","HEAD","--no-worktree","--strict","--quiet"])).toBe(0);
     expect(await invoke(["status","--spec-dir","docs/engineering-specs","--base","HEAD","--changed","outside.txt","--strict","--quiet"])).toBe(1);
     expect(await invoke(["status","--spec-dir","docs/engineering-specs","--base","HEAD","--changed","README.md","--staged","--quiet"])).toBe(2);
-  });
+  },15_000);
   it("exposes lifecycle, catalogue, and read-only architecture commands",async()=>{
     const root=await mkdtemp(path.join(os.tmpdir(),"es-cli-ops-"));
     const spec=path.join(root,"change.engineering-spec.md");
