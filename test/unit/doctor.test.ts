@@ -46,7 +46,7 @@ async function repository(source = contract()): Promise<string> {
   await mkdir(path.join(root, ".github", "workflows"), { recursive: true });
   await writeFile(path.join(root, "docs", "engineering-specs", "change.engineering-spec.md"), source);
   await writeFile(path.join(root, "AGENTS.md"), "# EngineeringSpec\nRun npx --yes @engineeringspec/cli@0.1.0-rc.16 check before completion.\n");
-  await writeFile(path.join(root, ".github", "workflows", "engineering-spec.yml"), "gate-spec-dir: docs/engineering-specs\ngate-base: origin/main\ngate-require-status: approved\nuses: majilesh/engineeringspec@1b9fe313353584862456d607c495f4e660e3fdf3\n");
+  await writeFile(path.join(root, ".github", "workflows", "engineering-spec.yml"), "gate-spec-dir: docs/engineering-specs\ngate-base: origin/main\ngate-require-status: approved\nuses: majilesh/engineeringspec@ddf813e4e69d9b2f9a9eb3f0f241747746021cf3\n");
   execFileSync("git", ["init", "-q", root]);
   execFileSync("git", ["-C", root, "add", "."]);
   execFileSync("git", ["-C", root, "-c", "user.name=Test", "-c", "user.email=test@example.com", "commit", "-qm", "fixture"]);

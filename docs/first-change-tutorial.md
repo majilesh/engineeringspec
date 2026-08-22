@@ -1,14 +1,16 @@
 # First-change tutorial
 
-This walkthrough adds a fictional dark-mode preference to `src/settings/**`. It demonstrates the RC14 safety boundary; adapt the paths and trusted checks to your repository.
+This walkthrough adds a fictional dark-mode preference to `src/settings/**`. It demonstrates the current RC16 two-PR safety boundary; adapt the paths and trusted checks to your repository.
+
+Use the repository-local RC16 CLI before publication; the exact `npx` package examples below become externally installable only after the separate RC16 publication ceremony.
 
 ## 1. Explore and propose
 
 Ask the coding agent to inspect the styling system, preference storage, tests, and likely paths. Then run:
 
 ```sh
-npx --yes @engineeringspec/cli@0.1.0-rc.14 next
-npx --yes @engineeringspec/cli@0.1.0-rc.14 propose \
+npx --yes @engineeringspec/cli@0.1.0-rc.16 next
+npx --yes @engineeringspec/cli@0.1.0-rc.16 propose \
   --id ES-dark-mode \
   --title "Add dark mode" \
   --path 'src/settings/**' \
@@ -31,8 +33,8 @@ This trusted-base merge is the authorization event. A workspace draft, an agent 
 Update the implementation branch from the trusted base, then run:
 
 ```sh
-npx --yes @engineeringspec/cli@0.1.0-rc.14 next
-npx --yes @engineeringspec/cli@0.1.0-rc.14 work ES-dark-mode
+npx --yes @engineeringspec/cli@0.1.0-rc.16 next
+npx --yes @engineeringspec/cli@0.1.0-rc.16 work ES-dark-mode
 ```
 
 Begin implementation only when `next` reports `permission: implementation` and `work ES-dark-mode` succeeds for the exact approved trusted-base contract. Repository reading remains allowed for correctness; writes are limited to the returned writable surfaces. If another surface is necessary, stop and merge a separate contract-only authority amendment before continuing.
@@ -44,7 +46,7 @@ Implement only the declared targets. Run the repository's separately trusted tes
 Then review the complete working state:
 
 ```sh
-npx --yes @engineeringspec/cli@0.1.0-rc.14 finish ES-dark-mode --format markdown
+npx --yes @engineeringspec/cli@0.1.0-rc.16 finish ES-dark-mode --format markdown
 ```
 
 The PR description should identify selected targets and the trusted results relevant to each `CON-*`, `CONTRACT-*`, and `VER-*`. Declared verifier identities are obligations, not proof that a command ran.
@@ -54,7 +56,7 @@ The PR description should identify selected targets and the trusted results rele
 After trusted checks pass, write the exact close:
 
 ```sh
-npx --yes @engineeringspec/cli@0.1.0-rc.14 finish ES-dark-mode --write-closure
+npx --yes @engineeringspec/cli@0.1.0-rc.16 finish ES-dark-mode --write-closure
 ```
 
 The implementation PR may include this exact `approved -> implemented` transition because it narrows the same contract whose trusted-base authority the implementation spends. The final classification must be `implementation_with_monotonic_close`.
@@ -63,7 +65,7 @@ The mixed PR fails closed if it also changes the contract's targets, constraints
 
 `finish` never stages, commits, pushes, approves, merges, or executes specification-declared runners. Review and merge remain human/repository responsibilities.
 
-A standalone lifecycle-only closure is still valid and is classified `contract_only`, but it is no longer normally required. The usual RC14 journey is therefore:
+A standalone lifecycle-only closure is still valid and is classified `contract_only`, but it is no longer normally required. The usual RC16 journey is therefore:
 
 ```text
 PR 1: review and merge approved authority

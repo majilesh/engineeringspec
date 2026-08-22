@@ -14,6 +14,8 @@ engineeringspec finish <contract-id> --format markdown
 
 These commands read authorization settings from the trusted-base `engineering-spec.json`. Explicit options remain available, and CI should keep supplying its event base explicitly.
 
+The repository-local CLI already identifies as `0.1.0-rc.16`. The exact `npx` examples below become externally installable only after the separate RC16 publication ceremony.
+
 `next` is informational. Exit code 0 or successful analysis does not grant authority. Implementation may begin only when `permission` is `implementation` and `work <contract-id>` successfully loads that exact approved trusted-base contract. `work` permits repository reading for correctness but limits writes to the returned surfaces.
 
 1. **Explore** repository context without granting authority.
@@ -26,8 +28,8 @@ These commands read authorization settings from the trusted-base `engineering-sp
 Start an unfamiliar repository with `doctor`, and use `status` whenever the next lifecycle action is unclear:
 
 ```sh
-npx --yes @engineeringspec/cli@0.1.0-rc.14 doctor . --spec-dir docs/engineering-specs --base origin/main --strict
-npx --yes @engineeringspec/cli@0.1.0-rc.14 status --spec-dir docs/engineering-specs --base origin/main --allow-contract-only --strict
+npx --yes @engineeringspec/cli@0.1.0-rc.16 doctor . --spec-dir docs/engineering-specs --base origin/main --strict
+npx --yes @engineeringspec/cli@0.1.0-rc.16 status --spec-dir docs/engineering-specs --base origin/main --allow-contract-only --strict
 ```
 
 ## Repository setup
@@ -35,7 +37,7 @@ npx --yes @engineeringspec/cli@0.1.0-rc.14 status --spec-dir docs/engineering-sp
 Generate the starter files safely with:
 
 ```sh
-npx --yes @engineeringspec/cli@0.1.0-rc.14 adopt . --spec docs/engineering-specs/ES-change.engineering-spec.md
+npx --yes @engineeringspec/cli@0.1.0-rc.16 adopt . --spec docs/engineering-specs/ES-change.engineering-spec.md
 ```
 
 Existing files are skipped unless `--force` is explicitly supplied. Review generated guidance before committing it.
@@ -70,7 +72,7 @@ write only inside the returned surfaces. Treat CONTRACT-*, CON-*, and VER-*
 obligations as binding. Before ending your turn, run trusted repository checks
 and self-check with:
 
-  npx --yes @engineeringspec/cli@0.1.0-rc.14 finish <contract-id> --format markdown
+  npx --yes @engineeringspec/cli@0.1.0-rc.16 finish <contract-id> --format markdown
 
 Fix gate violations (or update/escalate the contract) before claiming done.
 This checks committed, staged, unstaged, deleted, renamed, and non-ignored
@@ -88,8 +90,8 @@ evidence table mapping changed surfaces and results to the relevant identifiers.
 When a repository can have multiple active change contracts, use the built CLI's base-pinned router:
 
 ```sh
-npx --yes @engineeringspec/cli@0.1.0-rc.14 select docs/engineering-specs --base origin/main --worktree --allow-contract-only --strict
-npx --yes @engineeringspec/cli@0.1.0-rc.14 check --spec-dir docs/engineering-specs --base origin/main --allow-contract-only --strict
+npx --yes @engineeringspec/cli@0.1.0-rc.16 select docs/engineering-specs --base origin/main --worktree --allow-contract-only --strict
+npx --yes @engineeringspec/cli@0.1.0-rc.16 check --spec-dir docs/engineering-specs --base origin/main --allow-contract-only --strict
 ```
 
 The router considers approved contracts by default and assigns every implementation path to exactly one of them. Treat `ESRT002` as missing scope, `ESRT003` as overlapping ownership, and `ESRT004` as a binding denial. Do not resolve ambiguity by loading a workspace spec or omitting competing candidates. With explicit `--allow-contract-only`, a strictly valid diff wholly contained under the configured specification directory is classified as governance without being selected by a base contract. Adding any other path or a cross-boundary rename restores normal approved-base routing for the complete change set.

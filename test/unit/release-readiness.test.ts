@@ -2,9 +2,10 @@ import { readFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
 import { CURRENT_ACTION_SHA } from "../../src/adoption/releases.js";
 
-const RC14_ACTION_SHA = "1b9fe313353584862456d607c495f4e660e3fdf3";
+const RC16_ACTION_SHA = "ddf813e4e69d9b2f9a9eb3f0f241747746021cf3";
+const HISTORICAL_RC14_ACTION_SHA = "1b9fe313353584862456d607c495f4e660e3fdf3";
 
-describe("RC14 guidance and RC16 package readiness", () => {
+describe("RC16 guidance and package readiness", () => {
   it("updates only the corrective package identity while preserving historical identities", async () => {
     const packageSource = JSON.parse(await readFile("package.json", "utf8")) as { version: string };
     expect(packageSource.version).toBe("0.1.0-rc.16");
@@ -32,8 +33,8 @@ describe("RC14 guidance and RC16 package readiness", () => {
     expect(historical).toContain("e2d485cfeeb4ce745a57293db089ff70cc4648de");
   });
 
-  it("pins generated enforcement to the reviewed immutable RC14 runtime", async () => {
-    expect(CURRENT_ACTION_SHA).toBe(RC14_ACTION_SHA);
+  it("pins generated enforcement to the reviewed immutable RC16 runtime", async () => {
+    expect(CURRENT_ACTION_SHA).toBe(RC16_ACTION_SHA);
     expect(CURRENT_ACTION_SHA).toMatch(/^[0-9a-f]{40}$/u);
     const governance = await readFile("src/routing/governance.ts", "utf8");
     const selection = await readFile("src/routing/select.ts", "utf8");
@@ -41,8 +42,11 @@ describe("RC14 guidance and RC16 package readiness", () => {
     expect(selection).toContain("approved-to-implemented monotonic close");
     expect(selection).toContain("did not authorize any implementation path");
 
-    for (const file of ["README.md", "CHANGELOG.md", "docs/maintaining-specs.md", "docs/production-gate.md"]) {
-      expect(await readFile(file, "utf8"), file).toContain(RC14_ACTION_SHA);
+    for (const file of ["README.md", "docs/maintaining-specs.md", "docs/production-gate.md"]) {
+      expect(await readFile(file, "utf8"), file).toContain(RC16_ACTION_SHA);
+    }
+    for (const file of ["CHANGELOG.md", "docs/maintaining-specs.md"]) {
+      expect(await readFile(file, "utf8"), file).toContain(HISTORICAL_RC14_ACTION_SHA);
     }
     for (const file of ["README.md", "docs/maintaining-specs.md", "docs/production-gate.md"]) {
       const source = await readFile(file, "utf8");

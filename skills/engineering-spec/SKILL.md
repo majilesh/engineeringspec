@@ -19,15 +19,15 @@ New authority still requires a separately reviewed authority PR. The implementat
 
 Treat the checked-in EngineeringSpec as the shared change contract. Keep validation and query commands read-only. Never execute a verifier merely because its runner appears in a specification.
 
-Prefer the repository-local `engineeringspec` binary when the package is installed. The fallback commands below pin the exact released CLI version; do not replace it with a mutable distribution tag in an enforcing workflow.
+Prefer the repository-local `engineeringspec` binary when the package is installed. The fallback commands below pin the prepared RC16 CLI identity; they become externally installable only after the separate publication ceremony. Do not replace the exact version with a mutable distribution tag in an enforcing workflow.
 
 ## Explore
 
 Read repository instructions and diagnose the setup:
 
 ```sh
-npx --yes @engineeringspec/cli@0.1.0-rc.14 doctor . --spec-dir docs/engineering-specs --base origin/main --strict
-npx --yes @engineeringspec/cli@0.1.0-rc.14 status --spec-dir docs/engineering-specs --base origin/main --allow-contract-only --strict
+npx --yes @engineeringspec/cli@0.1.0-rc.16 doctor . --spec-dir docs/engineering-specs --base origin/main --strict
+npx --yes @engineeringspec/cli@0.1.0-rc.16 status --spec-dir docs/engineering-specs --base origin/main --allow-contract-only --strict
 ```
 
 If doctor reports version drift, preview a bounded managed upgrade with `adopt --merge --upgrade --dry-run`. Review skipped structured files manually.
@@ -39,7 +39,7 @@ Explore source, dependencies, architecture, and likely paths without editing or 
 Create a deterministic draft from explicit paths or the local Git working state:
 
 ```sh
-npx --yes @engineeringspec/cli@0.1.0-rc.14 propose --id ES-change --title "Change title" --owner engineering \
+npx --yes @engineeringspec/cli@0.1.0-rc.16 propose --id ES-change --title "Change title" --owner engineering \
   --path '<repository-path-or-glob>' --output docs/engineering-specs/ES-change.engineering-spec.md --dry-run
 ```
 
@@ -105,7 +105,7 @@ For discovery across many contracts, use `catalogue <spec-directory> --query <te
 Use `explain` to understand a path decision:
 
 ```sh
-npx --yes @engineeringspec/cli@0.1.0-rc.14 explain <selected-spec> --path <path> --change-kind modified --base origin/main
+npx --yes @engineeringspec/cli@0.1.0-rc.16 explain <selected-spec> --path <path> --change-kind modified --base origin/main
 ```
 
 Do not use a workspace contract to authorize implementation paths it widens in the same change. Submit and merge a contract-only change first, then implement against that approved base. Escalate ambiguous or conflicting obligations to the named owner.
