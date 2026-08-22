@@ -68,7 +68,7 @@ Align current public, generated, and enforcement guidance with the already-revie
   component: rc16-action-anchor-authority-lifecycle
   paths:
     - docs/engineering-specs/ES-RC16-ACTION-ANCHOR.engineering-spec.md
-  change_policy: create
+  change_policy: modify
 ```
 
 ## Decisions
