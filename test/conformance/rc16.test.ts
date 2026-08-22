@@ -1,5 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { describe,expect,it } from "vitest";
+import { digest } from "../../src/normalizer/digest.js";
+import { normalize } from "../../src/normalizer/normalize.js";
 import { validateFile } from "../../src/validator/validateFile.js";
 
 describe("RC16 additive conformance",()=>{
@@ -9,6 +11,7 @@ describe("RC16 additive conformance",()=>{
     expect(valid.spec?.authorityControls).toMatchObject({mode:"maintenance",suspensions:[{contractId:"ES-feature",specRevision:4,paths:["package.json"]}]});
     const legacy=await validateFile("conformance/valid/minimal.engineering-spec.md");
     expect(legacy.valid).toBe(true);expect(legacy.spec?.authorityControls).toBeUndefined();
+    expect(digest(normalize(legacy.spec!))).toBe("sha256:0ec9ee03f0a274e15f5734ab44499d02863ec90d04fc875aa922c9d6c184fcf0");
   });
 
   it("rejects sequencing globs and executable change fixtures",async()=>{

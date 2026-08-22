@@ -460,6 +460,8 @@ owners: [{team: test}]
     expect(await invoke(["benchmark",file,"--require-publishable","--quiet"])).toBe(1);
   });
   it("diagnoses adoption and reports lifecycle status through read-only CLI commands",async()=>{
+    // This four-command integration smoke repeatedly loads and strictly validates
+    // the catalogue; its timeout is a functional CI budget, not a performance guarantee.
     // Keep this CLI wiring smoke self-contained: quality jobs intentionally use
     // shallow checkouts and do not guarantee a remote-tracking base ref.
     expect(await invoke(["doctor",".","--spec-dir","docs/engineering-specs","--base","HEAD","--strict","--quiet"])).toBe(0);

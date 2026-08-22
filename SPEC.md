@@ -95,7 +95,7 @@ Before 1.0, patches fix implementations, minors add compatible fields or behavio
 
 Object keys are ordered lexicographically by Unicode code point (ascending; not locale collation) in canonical JSON. Array order is preserved. Undefined implementation data and internal source locations are excluded unless source locations are explicitly requested. The canonical byte sequence ends with one newline. Digests are lowercase SHA-256 over those canonical JSON bytes, never the original Markdown.
 
-Versioned schemas under `/schemas/0.1/` are immutable after release. Additive draft changes use a new schema and documented compatibility note rather than silently reinterpreting an existing field.
+While EngineeringSpec 0.1 is a prerelease draft, release candidates MAY add backward-compatible draft fields to the 0.1 schema at the existing draft identifier; each published package retains its packaged schema bytes. The first stable 0.1 release freezes every versioned schema under `/schemas/0.1/`: after that release those URLs and bytes are immutable, and further additive changes require a new schema version plus a documented compatibility note.
 
 ## Diagnostics and conformance
 
