@@ -18,12 +18,14 @@ engineeringspec finish ES-change --format markdown
 
 The authority PR must merge before implementation. The implementation PR can include the exact monotonic close, so a separate closure PR is unnecessary.
 
+Use the repository-local RC16 CLI before publication; the exact `npx` package examples below become externally installable only after the separate RC16 publication ceremony.
+
 `next` is informational. Its success never grants permission. Begin implementation only when it reports `permission: implementation` and `work ES-change` successfully loads that exact approved contract from the trusted base.
 
 Preview the complete safe scaffold:
 
 ```sh
-npx --yes @engineeringspec/cli@0.1.0-rc.14 adopt . --quickstart \
+npx --yes @engineeringspec/cli@0.1.0-rc.16 adopt . --quickstart \
   --maintainer @your-org/platform --dry-run
 ```
 
@@ -34,7 +36,7 @@ This creates a **draft** first contract, CODEOWNERS, neutral agent handoffs, and
 Preview neutral agent and GitHub Actions integration without overwriting existing files:
 
 ```sh
-npx --yes @engineeringspec/cli@0.1.0-rc.14 adopt . \
+npx --yes @engineeringspec/cli@0.1.0-rc.16 adopt . \
   --spec docs/engineering-specs/ES-first-change.engineering-spec.md \
   --merge --dry-run
 ```
@@ -42,7 +44,7 @@ npx --yes @engineeringspec/cli@0.1.0-rc.14 adopt . \
 Review the preview, rerun without `--dry-run`, and diagnose the installation:
 
 ```sh
-npx --yes @engineeringspec/cli@0.1.0-rc.14 doctor . \
+npx --yes @engineeringspec/cli@0.1.0-rc.16 doctor . \
   --spec-dir docs/engineering-specs --base origin/main --strict
 ```
 
@@ -56,18 +58,18 @@ Follow [Production gate](production-gate.md). Protect the EngineeringSpec job as
 
 ```sh
 # Informational: discover the next action and current permission
-npx --yes @engineeringspec/cli@0.1.0-rc.14 next
+npx --yes @engineeringspec/cli@0.1.0-rc.16 next
 
 # Load the exact approved trusted-base contract before editing
-npx --yes @engineeringspec/cli@0.1.0-rc.14 work ES-change
+npx --yes @engineeringspec/cli@0.1.0-rc.16 work ES-change
 
 # Edit only returned writable surfaces and run repository-owned checks
 
 # Check, review, and create bound PR metadata without changing Git
-npx --yes @engineeringspec/cli@0.1.0-rc.14 finish ES-change --format markdown
+npx --yes @engineeringspec/cli@0.1.0-rc.16 finish ES-change --format markdown
 
 # After trusted checks, optionally write the exact monotonic close
-npx --yes @engineeringspec/cli@0.1.0-rc.14 finish ES-change --write-closure
+npx --yes @engineeringspec/cli@0.1.0-rc.16 finish ES-change --write-closure
 ```
 
 `work` permits repository reading needed for correctness but limits writing to its reported surfaces. `finish` never stages, commits, pushes, approves, merges, or executes specification runners. If scope must widen, merge the authority amendment first and rerun `work` against the updated trusted base.

@@ -51,6 +51,8 @@ An Action release cannot pin the commit that is still being created. Use two sep
 
 RC14 generated enforcement pins runtime/version anchor `1b9fe313353584862456d607c495f4e660e3fdf3`. The final release commit is its descendant and contains the aligned pin plus the exact release-contract close.
 
+Current RC16 enforcement pins the separately reviewed runtime anchor `ddf813e4e69d9b2f9a9eb3f0f241747746021cf3`. That anchor predates the pin-alignment change and contains the RC16 Action-exercised routing semantics; the RC14 identity above remains a historical release fact.
+
 Release verification should use a full-history checkout and inspect the pinned object itself without adding network access to ordinary unit tests. At minimum, confirm the commit exists and that its routing source contains mixed monotonic-close classification, unsafe mixed-close rejection, and unrelated-close rejection:
 
 ```sh

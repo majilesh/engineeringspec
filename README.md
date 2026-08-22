@@ -162,7 +162,7 @@ steps:
   - uses: actions/checkout@v4
     with:
       fetch-depth: 0
-  - uses: majilesh/engineeringspec@1b9fe313353584862456d607c495f4e660e3fdf3
+  - uses: majilesh/engineeringspec@ddf813e4e69d9b2f9a9eb3f0f241747746021cf3
     with:
       path: docs/engineering-specs
       strict: true
@@ -174,12 +174,14 @@ steps:
 
 The action validates specs and, when `gate-spec-dir` is set, routes implementation diffs against approved candidates loaded from `gate-base`. It also writes the deterministic base-pinned review report to the GitHub job summary; it does not edit pull requests and needs no write permission. `gate-allow-contract-only` explicitly accepts only strictly valid EngineeringSpec-only governance diffs; it is incompatible with `gate-spec` and never authorizes mixed implementation changes. The compatible `gate-spec` input remains available for single-spec gates and receipts. It never executes declared verification runners. Use `fetch-depth: 0` so the base ref exists. If you use merge queues, add a `merge_group` trigger on the workflow that runs this Action.
 
-After tagging, `majilesh/engineeringspec@v0.1.0-rc.14` is acceptable for less sensitive repos; SHA pins remain preferred. See [production-gate.md](docs/production-gate.md) for required checks and CODEOWNERS.
+The `v0.1.0-rc.16` tag is pending separate publication. After it exists, `majilesh/engineeringspec@v0.1.0-rc.16` may be used for less sensitive repositories; the full reviewed SHA remains preferred. See [production-gate.md](docs/production-gate.md) for required checks and CODEOWNERS.
 
 ```sh
 # CLI (exact release-candidate version; npm dist-tag `next` points at the current release candidate)
 npx --yes @engineeringspec/cli@0.1.0-rc.16 validate docs/engineering-specs
 ```
+
+The repository-local CLI already identifies as `0.1.0-rc.16`; the exact npm invocation above becomes available only after the separate RC16 publication ceremony.
 
 ## Coding agents
 

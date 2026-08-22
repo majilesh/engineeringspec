@@ -4,13 +4,13 @@ EngineeringSpec’s `gate` is a **diff-scope gate** (path + change-type allowlis
 
 ## Recommended pin (immutable Action)
 
-Prefer a full commit SHA. This is the reviewed RC14 runtime/version anchor:
+Prefer a full commit SHA. This is the reviewed RC16 runtime anchor:
 
 ```text
-majilesh/engineeringspec@1b9fe313353584862456d607c495f4e660e3fdf3
+majilesh/engineeringspec@ddf813e4e69d9b2f9a9eb3f0f241747746021cf3
 ```
 
-Re-pin to this repository’s reviewed merge tip after each change to `action.yml` or gate semantics. `majilesh/engineeringspec@v0.1.0-rc.14` is the corresponding release-candidate tag after publication; SHA pins remain the stronger supply-chain default ([GitHub guidance](https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#using-third-party-actions)).
+Re-pin only to a separately reviewed immutable runtime anchor after changes to `action.yml` or Action-exercised gate semantics. The `v0.1.0-rc.16` tag has not yet been published; after publication it will be the corresponding release-candidate tag, while SHA pins remain the stronger supply-chain default ([GitHub guidance](https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#using-third-party-actions)).
 
 ## Enforcing CI job
 
@@ -21,7 +21,7 @@ engineering-spec:
     - uses: actions/checkout@v4
       with:
         fetch-depth: 0
-    - uses: majilesh/engineeringspec@1b9fe313353584862456d607c495f4e660e3fdf3
+    - uses: majilesh/engineeringspec@ddf813e4e69d9b2f9a9eb3f0f241747746021cf3
       with:
         path: docs/engineering-specs
         strict: true
@@ -70,9 +70,9 @@ Continue running your repository’s normal tests, schema diffs, security scans,
 ## CLI equivalent
 
 ```sh
-npx --yes @engineeringspec/cli@0.1.0-rc.14 select docs/engineering-specs \
+npx --yes @engineeringspec/cli@0.1.0-rc.16 select docs/engineering-specs \
   --base origin/main --worktree --allow-contract-only --strict
-npx --yes @engineeringspec/cli@0.1.0-rc.14 check --spec-dir docs/engineering-specs \
+npx --yes @engineeringspec/cli@0.1.0-rc.16 check --spec-dir docs/engineering-specs \
   --base origin/main --allow-contract-only --strict
 ```
 
@@ -80,5 +80,5 @@ Both commands resolve immutable SHAs before candidate discovery. Candidate speci
 
 ## Release / npm
 
-- Action + git tag: `v0.1.0-rc.14` (when published) tracks package version `0.1.0-rc.14`.
-- npm dist-tag: `next` identifies the current release candidate; enforcing commands above pin exact version `0.1.0-rc.14`.
+- Pending publication: `v0.1.0-rc.16` will track package version `0.1.0-rc.16`; neither identity is claimed as published here.
+- After publication, npm dist-tag `next` is expected to identify `0.1.0-rc.16`; enforcing commands above pin the exact prepared version.
