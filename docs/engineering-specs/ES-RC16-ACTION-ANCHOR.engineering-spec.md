@@ -4,7 +4,7 @@ spec_format_version: "0.1"
 spec_revision: 1
 id: ES-RC16-ACTION-ANCHOR
 title: Align the immutable Action anchor with RC16
-status: proposed
+status: approved
 owners:
   - team: EngineeringSpec maintainers
 repository:
