@@ -4,7 +4,7 @@ spec_format_version: "0.1"
 spec_revision: 1
 id: ES-ONBOARDING-FRICTION-COLLAPSE
 title: Collapse onboarding friction for EngineeringSpec
-status: approved
+status: implemented
 owners:
   - team: EngineeringSpec maintainers
 repository:
