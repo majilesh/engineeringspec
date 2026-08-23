@@ -3,13 +3,79 @@
 [![CI](https://github.com/majilesh/engineeringspec/actions/workflows/ci.yml/badge.svg)](https://github.com/majilesh/engineeringspec/actions/workflows/ci.yml)
 [![Specification](https://img.shields.io/badge/spec-0.1%20draft-3974d8)](https://engineeringspec.org/spec/0.1/)
 
-EngineeringSpec is the open change-control layer for AI coding agents, powered by an open, agent-neutral format for versioned engineering change contracts. It connects source intent to affected technical surfaces, authoritative contracts, enforceable constraints, verification obligations, rollout controls, and implementation evidence.
+**Change authority for AI coding agents.** Review what an agent may change before it writes code. Verify the final Git diff against that authority.
 
-This repository contains a **draft open specification and reference implementation**. It is not a project planner, agent runtime, test runner, policy engine, or replacement for ProductSpec, AGENTS.md, ADRs, OpenAPI, AsyncAPI, JSON Schema, Protocol Buffers, SARIF, OPA, SLSA, or in-toto.
+EngineeringSpec uses a reviewed contract on the trusted Git base to grant bounded repository change authority. The authority is merged before an agent spends it, so a workspace draft cannot widen its own scope and implement against that wider scope in the same change.
 
-EngineeringSpec gives coding agents, CI, and reviewers the same scoped obligations and traceability graph. Deterministic validation is possible where a contract or adapter exists; the format does not claim to guarantee correct code or infer all architecture drift.
+```text
+adopt -> propose bounded authority -> human review + merge
+      -> next -> work <contract-id> -> code
+      -> finish <contract-id> -> implementation PR + exact close
+```
 
-## Minimal example
+Preview adoption with the published RC16 CLI:
+
+```sh
+npx --yes @engineeringspec/cli@0.1.0-rc.16 adopt . --quickstart \
+  --maintainer @YOUR_GITHUB_USER_OR_TEAM --dry-run
+```
+
+After adoption, the normal daily loop is deliberately short:
+
+```sh
+engineeringspec next
+engineeringspec work ES-my-change
+# edit only the returned writable surfaces; run repository-owned checks
+engineeringspec finish ES-my-change --format markdown
+```
+
+Start with [Getting started](docs/getting-started.md) or the [first-change tutorial](docs/first-change-tutorial.md). When evaluation is complete, configure the [production diff-scope gate](docs/production-gate.md). Advanced commands and exact behavior live in the [CLI reference](docs/cli-reference.md) and [draft specification](SPEC.md).
+
+## Grant before spend
+
+The normal workflow uses two pull requests:
+
+1. A contract-only PR is reviewed, reaches `approved`, and merges to the trusted base. That merge grants authority.
+2. An implementation PR changes only approved surfaces and may include the exact `approved -> implemented` close. That PR spends and closes the authority.
+
+`next` is informational. Implementation is permitted only when it reports `permission: implementation` and `work <contract-id>` loads that exact approved trusted-base contract. Repository reading may be broader for correctness; writing remains limited to the returned surfaces. If scope must widen, stop and merge a separately reviewed authority amendment first.
+
+`finish` evaluates the complete Git working state, emits review/evidence data, and can write only the exact close when `--write-closure` is explicit. It never stages, commits, pushes, approves, merges, or executes a runner declared inside a specification.
+
+When a bound receipt is needed, write it outside the evaluated worktree so the evidence file cannot mutate the state it describes:
+
+```sh
+engineeringspec finish ES-my-change --write-closure --output ../engineering-spec-receipt.json
+```
+
+Git records what changed. Agent platforms may record what the agent did. EngineeringSpec records what the change was authorized to do and evaluates whether the resulting Git diff stayed inside it.
+
+## TRY and PRODUCTION
+
+**TRY** previews the scaffold, teaches the lifecycle, and runs a first governed change. EngineeringSpec may remain informative or advisory while the team evaluates it.
+
+**PRODUCTION** adds maintainer ownership over the contract directory, a required EngineeringSpec GitHub check, a trusted base, and an immutable Action pin. Advisory use does not provide the same merge enforcement.
+
+For production, pin the Action to the reviewed immutable commit:
+
+```yaml
+steps:
+  - uses: actions/checkout@v4
+    with:
+      fetch-depth: 0
+  - uses: majilesh/engineeringspec@ddf813e4e69d9b2f9a9eb3f0f241747746021cf3
+    with:
+      path: docs/engineering-specs
+      strict: true
+      gate-spec-dir: docs/engineering-specs
+      gate-allow-contract-only: true
+      gate-base: origin/main
+      gate-require-status: approved
+```
+
+The Action loads authority from the configured base, routes every changed path, and fails when a path is uncovered, ambiguous, or denied. Deny wins. A workspace proposal cannot contribute authority. Protect the job as a required check and protect `docs/engineering-specs/**` with CODEOWNERS. See [Production diff-scope gate](docs/production-gate.md).
+
+## Minimal contract
 
 ````markdown
 ---
@@ -49,166 +115,37 @@ owners: [{ team: identity }]
 ```
 ````
 
-ProductSpec is optional. Enable its profile in frontmatter and reference durable product IDs without copying their content:
+ProductSpec is optional. Enable its profile in frontmatter and reference durable product IDs without copying their content. Local source paths are repository-relative; resolved files and symlink targets must remain inside the repository root.
 
-```yaml
-profiles: [{ name: productspec, version: "0.1" }]
-```
+## What EngineeringSpec is—and is not
 
-```yaml
-- id: SRC-1
-  type: productspec
-  path: docs/product/ticket-triage.product-spec.md
-  revision: 3
-  item_ids: [AC-1, EVAL-1]
-```
+EngineeringSpec governs repository change authority using approved trusted-base contracts and independently evaluates the Git diff against that authority. It is an open, agent-neutral format and reference implementation, not an agent sandbox, filesystem containment system, IDE or model router, generic command executor, or AST/API compatibility checker. `interface_only` is path-level authority, not semantic enforcement. Declared runners are inert data; run only repository-owned trusted checks.
 
-Local source paths are repository-relative. The CLI discovers the current Git root automatically; use `validate --repository-root <path>` when validating from outside that worktree. Library callers must pass `repositoryRoot` when profile resolution is enabled. Resolved files, including symlink targets, must remain inside that root.
+Broad targets such as `**` create broad authority if a maintainer approves them. Skills and agent adapters are optional discovery aids; the checked-in contract and CLI decision remain authoritative. EngineeringSpec complements rather than replaces tests, OpenAPI, JSON Schema, OPA, SARIF, SLSA, and other engineering controls. It does not guarantee correct code.
 
-## Quick start
+## Advanced workflows
 
-After adoption, `engineering-spec.json` supplies repository defaults from the resolved trusted base. Daily use becomes:
+The short workflow composes deterministic lower-level primitives for validation, diagnosis, CI, and integration. Their complete options are documented in the [CLI reference](docs/cli-reference.md):
 
-```sh
-engineeringspec next
-engineeringspec work ES-my-change
-# edit only the reported writable surfaces; run repository-owned checks
-engineeringspec finish ES-my-change --format markdown
-engineeringspec finish ES-my-change --write-closure --output ../engineering-spec-receipt.json
-```
+- `doctor` and `status` diagnose adoption and lifecycle state.
+- `prepare`, `review`, `select`, and `check` expose base-pinned routing and complete-state checks.
+- `context` and `explain` inspect obligations and individual path decisions.
+- `catalogue` searches contracts; `architecture` supplies read-only proposal context.
+- `replay` evaluates a historical snapshot without granting current authority.
+- `benchmark --ceremony` evaluates deterministic ceremony scenarios without executing runners.
 
-`next` is informational: success is not authorization. An agent may implement only when `permission` is `implementation` and `work ES-my-change` successfully loads that exact approved trusted-base contract. Repository reading remains available for correctness, while writes remain limited to the returned surfaces. `finish` checks the change, emits bound evidence and PR metadata, and writes no closure unless `--write-closure` is explicit. It never stages, commits, pushes, approves, merges, or executes a runner declared inside a specification. Evidence output must be outside the evaluated Git worktree so writing the receipt cannot mutate the state whose digest was just evaluated.
+Historical replay always reports `authorityMode: historical_read_only`, `currentAuthorityGranted: false`, and does not permit writes. Trusted maintenance sequencing can only subtract pinned positive claims from contracts at the same trusted-base commit; it cannot remove denials, manufacture authority, or use mutable workspace content.
 
-```sh
-npx --yes @engineeringspec/cli@0.1.0-rc.16 adopt . --quickstart --maintainer @your-org/platform --dry-run
-npx --yes @engineeringspec/cli@0.1.0-rc.16 propose --id ES-my-change --title "My change" \
-  --path 'src/example/**' --output docs/engineering-specs/ES-my-change.engineering-spec.md --dry-run
-npx --yes @engineeringspec/cli@0.1.0-rc.16 review --spec-dir docs/engineering-specs --base origin/main --strict --format markdown
-npx --yes @engineeringspec/cli@0.1.0-rc.16 prepare ES-my-change --spec-dir docs/engineering-specs --base origin/main --strict --format markdown
-npx --yes @engineeringspec/cli@0.1.0-rc.16 init --template feature --id ES-my-change
-npx --yes @engineeringspec/cli@0.1.0-rc.16 validate ENGINEERING_SPEC.md
-npx --yes @engineeringspec/cli@0.1.0-rc.16 validate docs/engineering-specs
-npx --yes @engineeringspec/cli@0.1.0-rc.16 normalize ENGINEERING_SPEC.md --digest
-npx --yes @engineeringspec/cli@0.1.0-rc.16 inspect ENGINEERING_SPEC.md --path src/example.ts
-npx --yes @engineeringspec/cli@0.1.0-rc.16 coverage ENGINEERING_SPEC.md --fail-on uncovered
-npx --yes @engineeringspec/cli@0.1.0-rc.16 gate ENGINEERING_SPEC.md --base origin/main --receipt gate-receipt.json
-npx --yes @engineeringspec/cli@0.1.0-rc.16 check ENGINEERING_SPEC.md --base origin/main --strict
-npx --yes @engineeringspec/cli@0.1.0-rc.16 context ENGINEERING_SPEC.md --path src/example.ts --base origin/main --format markdown
-npx --yes @engineeringspec/cli@0.1.0-rc.16 explain ENGINEERING_SPEC.md --path src/example.ts --base origin/main
-npx --yes @engineeringspec/cli@0.1.0-rc.16 catalogue docs/engineering-specs --query session --format json
-```
+Directory routing validates all candidate contracts from one resolved base and requires every changed path to have exactly one allowing contract. The contract-only governance lane accepts only strictly valid specification-directory changes. A mixed implementation may include only the exact close of its base-authorizing contract; other semantic contract edits fail closed.
 
-Diagnose setup and inspect the current lifecycle with the current release candidate:
+## Agent integration and references
 
-```sh
-npx --yes @engineeringspec/cli@0.1.0-rc.16 doctor . --spec-dir docs/engineering-specs --base origin/main --strict
-npx --yes @engineeringspec/cli@0.1.0-rc.16 status --spec-dir docs/engineering-specs --base origin/main --allow-contract-only --strict
-```
+The portable [EngineeringSpec skill](skills/engineering-spec/SKILL.md), [AGENTS.md](AGENTS.md), [Claude import](CLAUDE.md), and [Cursor rule](.cursor/rules/engineering-spec.mdc) all defer to the same CLI decision. A plugin or MCP server is not required. See [Agent integration](docs/agent-integration.md), [coding-agent integrations](docs/integrations.md), and the notes for [Codex](integrations/codex/README.md), [Claude Code](integrations/claude/README.md), [Cursor](integrations/cursor/README.md), [GitHub Copilot](integrations/copilot/README.md), and [generic agents](integrations/generic/README.md).
 
-For a first adoption, follow [Getting started](docs/getting-started.md) and the [first-change tutorial](docs/first-change-tutorial.md). The memorable workflow is:
+Run the [local fail-closed demo](examples/demo/README.md) with `npm run demo`. Further references include [lifecycle](docs/lifecycle.md), [maintaining specs](docs/maintaining-specs.md), [roles and responsibilities](docs/roles-and-responsibilities.md), [architecture bridge](docs/architecture-bridge.md), [troubleshooting](docs/troubleshooting.md), [SECURITY.md](SECURITY.md), and the [v0.1 draft specification](SPEC.md).
 
-```text
-explore -> propose -> approve -> implement -> verify -> close
-```
-
-New authority normally uses two pull requests: one reviewed authority PR that lands `approved`, followed by one implementation PR that may include the exact `approved -> implemented` close.
-
-Exploration and proposal grant no authority. Merge the contract-only approval first; dependent code changes then route against that approved base. Before editing, `prepare` loads one explicitly named approved contract from the immutable base and presents its writable surfaces, read boundary, technical contracts, obligations, verifier identities, source intent, digests, and unresolved questions. It does not infer scope, expose runner payloads, or edit files. `interface_only` remains path-level access, and final authorization for actual paths remains subject to multi-contract routing. `doctor` diagnoses the repository setup, while `status` reports lifecycle counts, complete working-state routing, declared coverage, and the safest next stage.
-
-The multi-spec router can be exercised from a built checkout:
-
-```sh
-node dist/cli.js select docs/engineering-specs --base origin/main --worktree --allow-contract-only --strict
-node dist/cli.js check --spec-dir docs/engineering-specs --base origin/main --allow-contract-only --strict
-```
-
-Directory routing enumerates candidates from one resolved base tree, validates them before filtering, considers `approved` contracts by default, and requires every changed path to have exactly one allowing contract. Uncovered paths, ambiguous allows, duplicate IDs, and any matching denial fail closed. RC4 exposes the corresponding `gate-spec-dir` Action input and generated adoption scaffolds use it by default.
-
-RC16 adds two explicit, non-bypass workflows. `replay` evaluates review or finish readiness from immutable commit snapshots and always reports `authorityMode: historical_read_only` with `currentAuthorityGranted: false`; it cannot write or execute runners. Trusted maintenance sequencing is an optional `engineering-authority-controls` block on an already approved base contract. It may subtract only a pinned competing contract's positive claim for exact shared paths. Denials, `read_only`, `observe`, uncovered paths, remaining ambiguity, stale pins, workspace-only controls, and controller conflicts still fail closed.
-
-```sh
-engineeringspec replay ES-historical --at <full-commit-sha> \
-  --operation review --head-at <full-commit-sha> --format json
-engineeringspec benchmark --ceremony --format json
-```
-
-A successfully inspected state with zero changed paths is reported as successful and `not_applicable`, even when all historical contracts are closed. This authorizes nothing: as soon as any path changes, the normal approved-contract requirement and fail-closed routing apply.
-
-The additive `--allow-contract-only` policy classifies a non-empty change as governance only when every old and new path remains under the configured specification directory and workspace specs validate strictly. It reports `contract_only` without claiming selection by a base contract. A mixed implementation may include only an exact `approved -> implemented` close of its base-authorizing contract; the head document cannot widen or contribute authority. Other mixed changes, cross-boundary renames, invalid specs, and unsafe paths fail closed. Keep the authority lane reviewer-owned with CODEOWNERS and required checks.
-
-Directory validation discovers `ENGINEERING_SPEC.md`, `*.engineering-spec.md`, and `*.engineeringspec.md` recursively. Add repository-relative glob patterns to `.engineeringspecignore` to exclude generated content or intentionally invalid fixtures.
-
-## Diff-scope gate
-
-`gate` is a **diff-scope gate**: it compares a git diff (or explicit `--changed` paths) to declared targets and `change_policy` values. It does **not** prove constraints, run verifiers, or inspect file contents. Out-of-scope files, `read_only`/`observe` matches (deny-overrides), and policy mismatches fail with `ESG001`–`ESG003`. Unknown git statuses fail with `ESG004`. Optional `--require-status approved` fails drafts with `ESG005`. `interface_only` is a path-writable label (informational `ESG006`), not AST/API enforcement—pair it with a separately trusted OpenAPI/schema adapter.
-
-```sh
-# Enforcing CI: load the approved contract from the base branch (prevents PR self-widening)
-npx --yes @engineeringspec/cli@0.1.0-rc.16 gate docs/engineering-specs/ES-my-change.engineering-spec.md \
-  --base origin/main --require-status approved --receipt gate-receipt.json
-
-# Local / CI smoke without git history
-npx --yes @engineeringspec/cli@0.1.0-rc.16 gate docs/engineering-specs/ES-my-change.engineering-spec.md --changed src/api.ts
-```
-
-Use one EngineeringSpec per consequential change, protect `docs/engineering-specs/**` with CODEOWNERS, and configure the gate job as a **required** status check so failures block merge. Full checklist: [Production diff-scope gate](docs/production-gate.md).
-
-## GitHub Action
-
-Pin the Action to a full commit SHA for production (mutable `@main` is only for quick trials):
-
-```yaml
-steps:
-  - uses: actions/checkout@v4
-    with:
-      fetch-depth: 0
-  - uses: majilesh/engineeringspec@ddf813e4e69d9b2f9a9eb3f0f241747746021cf3
-    with:
-      path: docs/engineering-specs
-      strict: true
-      gate-spec-dir: docs/engineering-specs
-      gate-allow-contract-only: true
-      gate-base: origin/main
-      gate-require-status: approved # enforcing mode
-```
-
-The action validates specs and, when `gate-spec-dir` is set, routes implementation diffs against approved candidates loaded from `gate-base`. It also writes the deterministic base-pinned review report to the GitHub job summary; it does not edit pull requests and needs no write permission. `gate-allow-contract-only` explicitly accepts only strictly valid EngineeringSpec-only governance diffs; it is incompatible with `gate-spec` and never authorizes mixed implementation changes. The compatible `gate-spec` input remains available for single-spec gates and receipts. It never executes declared verification runners. Use `fetch-depth: 0` so the base ref exists. If you use merge queues, add a `merge_group` trigger on the workflow that runs this Action.
-
-The `v0.1.0-rc.16` tag is pending separate publication. After it exists, `majilesh/engineeringspec@v0.1.0-rc.16` may be used for less sensitive repositories; the full reviewed SHA remains preferred. See [production-gate.md](docs/production-gate.md) for required checks and CODEOWNERS.
-
-```sh
-# CLI (exact release-candidate version; npm dist-tag `next` points at the current release candidate)
-npx --yes @engineeringspec/cli@0.1.0-rc.16 validate docs/engineering-specs
-```
-
-The repository-local CLI already identifies as `0.1.0-rc.16`; the exact npm invocation above becomes available only after the separate RC16 publication ceremony.
-
-## Coding agents
-
-Use [AGENTS.md](AGENTS.md) as the shared workflow for Codex and other compatible agents. [CLAUDE.md](CLAUDE.md) imports the same guidance for Claude Code, and the checked-in [Cursor rule](.cursor/rules/engineering-spec.mdc) applies it in Cursor. See [Agent integration](docs/agent-integration.md) for a reusable setup and prompt.
-
-The normal pre-code command is `work <contract-id>`: it composes the exact base-pinned preparation brief and fails closed unless that contract is uniquely approved. The normal completion command is `finish <contract-id>`, which composes complete-state checking, review, receipt, and optional exact closure. `prepare`, `check`, `context`, `explain`, and the other deterministic primitives remain available for CI, debugging, and advanced inspection. None execute declared runners.
-
-Bootstrap an existing repository without overwriting its agent files by default:
-
-```sh
-npx --yes @engineeringspec/cli@0.1.0-rc.16 adopt . \
-  --spec docs/engineering-specs/ES-my-change.engineering-spec.md \
-  --merge --dry-run
-```
-
-`adopt` detects the default branch from `origin/HEAD` (falling back to `origin/main`); override it with `--base`. Review the dry-run, then rerun without `--dry-run`. Generated agent commands pin the current CLI version, context is loaded from the approved base, and generated enforcing CI requires an `approved` contract. Merge mode updates AGENTS.md and the Claude import without replacing existing content. `--upgrade` may additionally update one recognisable immutable Action pin; ambiguous structured files remain untouched.
-
-The portable [EngineeringSpec skill](skills/engineering-spec/SKILL.md) is the primary integration for skill-aware agents. The generated AGENTS.md, Claude import, and Cursor rule cover file-instruction agents without putting vendor behavior in the format. A plugin or MCP server is not required for the core workflow; add thin adapters only when real usage shows discovery or transport friction.
-
-Thin setup notes are available for [Codex](integrations/codex/README.md), [Claude Code](integrations/claude/README.md), [Cursor](integrations/cursor/README.md), [GitHub Copilot](integrations/copilot/README.md), and [generic agents](integrations/generic/README.md). All use the same CLI decision; none can approve or widen a contract. Run the [local fail-closed demo](examples/demo/README.md) with `npm run demo`.
-
-Measure the effect rather than assuming it: [the agent-impact benchmark](benchmarks/README.md) retains paired success, failures, routing outcomes, eligible scope precision, review effort, amendments, exploration breadth, duration, and tokens. `benchmark --ceremony` separately evaluates the deterministic security and ceremony scenarios A–G without executing runners. `measure` generates an unsigned v2 receipt from the same repository-wide approved-base routing decision used by enforcement; negative outcomes remain visible, while paths stay private by default. These reports grant no authority and prove neither correctness nor trusted-check success. Synthetic examples are never presented as observed impact.
-
-Private repositories are supported: the CLI and Action operate on the checked-out Git tree and do not upload specification or source content. Normal package installation and GitHub Actions still use their configured package/network access. See the [CLI reference](docs/cli-reference.md), [coding-agent integrations](docs/integrations.md), [architecture bridge](docs/architecture-bridge.md), [Agent Control Plane boundary](docs/agent-control-plane.md), [upgrade guide](docs/upgrading.md), [roles and responsibilities](docs/roles-and-responsibilities.md), [lifecycle](docs/lifecycle.md), [maintaining specs](docs/maintaining-specs.md), and [troubleshooting](docs/troubleshooting.md).
-
-Specifications are untrusted input. Declared commands are inert data: validation never executes them. See [engineeringspec.org](https://engineeringspec.org), [SECURITY.md](SECURITY.md), [SPEC.md](SPEC.md), and [CONTRIBUTING.md](CONTRIBUTING.md).
+Private repositories are supported: the CLI and Action operate on the checked-out Git tree and do not upload repository source or specification content. Normal installation and GitHub Actions still use their configured package and network access.
 
 ## Status
 
-The parser, schema, semantic validator, normalizer, query API, ProductSpec profile, CLI, conformance fixtures, fail-closed **diff gate**, agent self-check loop, adoption scaffold, portable skill, deterministic catalogue, static Explorer, and read-only architecture map form the v0.1 release candidate. A read-only MCP adapter remains deliberately deferred until measured adoption friction warrants another transport.
+`@engineeringspec/cli@0.1.0-rc.16` and `v0.1.0-rc.16` are published release-candidate identities. The repository remains a draft open specification and reference implementation. A read-only MCP adapter remains deliberately deferred until measured adoption friction warrants another transport.
