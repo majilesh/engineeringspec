@@ -10,7 +10,7 @@ Prefer a full commit SHA. This is the reviewed RC16 runtime anchor:
 majilesh/engineeringspec@ddf813e4e69d9b2f9a9eb3f0f241747746021cf3
 ```
 
-Re-pin only to a separately reviewed immutable runtime anchor after changes to `action.yml` or Action-exercised gate semantics. The `v0.1.0-rc.16` tag has not yet been published; after publication it will be the corresponding release-candidate tag, while SHA pins remain the stronger supply-chain default ([GitHub guidance](https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#using-third-party-actions)).
+Re-pin only to a separately reviewed immutable runtime anchor after changes to `action.yml` or Action-exercised gate semantics. The published `v0.1.0-rc.16` release-candidate tag is available, while the full reviewed SHA remains the stronger supply-chain default for production ([GitHub guidance](https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#using-third-party-actions)).
 
 ## Enforcing CI job
 
@@ -80,5 +80,5 @@ Both commands resolve immutable SHAs before candidate discovery. Candidate speci
 
 ## Release / npm
 
-- Pending publication: `v0.1.0-rc.16` will track package version `0.1.0-rc.16`; neither identity is claimed as published here.
-- After publication, npm dist-tag `next` is expected to identify `0.1.0-rc.16`; enforcing commands above pin the exact prepared version.
+- `@engineeringspec/cli@0.1.0-rc.16` and `v0.1.0-rc.16` are published.
+- npm dist-tag `next` identifies `0.1.0-rc.16`; `latest` remains `0.1.0-rc.15`. Enforcing commands above pin the exact RC16 version rather than either mutable dist-tag.

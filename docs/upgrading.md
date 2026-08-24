@@ -2,7 +2,7 @@
 
 CLI packages, generated guidance and the GitHub Action are independent identities. Upgrade them deliberately.
 
-The repository-local CLI already identifies as `0.1.0-rc.16`. The exact `npx` example below becomes externally installable only after the separate RC16 publication ceremony.
+The repository-local CLI and the published package example below use the exact identity `@engineeringspec/cli@0.1.0-rc.16`.
 
 1. Read the release notes and choose the exact CLI version and immutable Action SHA.
 2. Run `doctor --strict` to identify drift.
