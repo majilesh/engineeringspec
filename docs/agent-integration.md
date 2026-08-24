@@ -14,7 +14,7 @@ engineeringspec finish <contract-id> --format markdown
 
 These commands read authorization settings from the trusted-base `engineering-spec.json`. Explicit options remain available, and CI should keep supplying its event base explicitly.
 
-The repository-local CLI already identifies as `0.1.0-rc.16`. The exact `npx` examples below become externally installable only after the separate RC16 publication ceremony.
+The repository-local CLI and the published package examples below use the exact identity `@engineeringspec/cli@0.1.0-rc.16`.
 
 `next` is informational. Exit code 0 or successful analysis does not grant authority. Implementation may begin only when `permission` is `implementation` and `work <contract-id>` successfully loads that exact approved trusted-base contract. `work` permits repository reading for correctness but limits writes to the returned surfaces.
 
