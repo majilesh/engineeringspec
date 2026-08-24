@@ -4,7 +4,7 @@ spec_format_version: "0.1"
 spec_revision: 1
 id: ES-RC16-PUBLISHED-GUIDANCE-CORRECTION
 title: Correct published RC16 guidance
-status: proposed
+status: approved
 owners:
   - team: EngineeringSpec maintainers
 repository:
