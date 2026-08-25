@@ -4,7 +4,7 @@ spec_format_version: "0.1"
 spec_revision: 2
 id: ES-agent-ready-adoption
 title: Agent-neutral repository adoption workflow
-status: proposed
+status: superseded
 owners:
   - team: EngineeringSpec maintainers
 repository:
@@ -15,6 +15,8 @@ base_revision: b79c3c7
 # Agent-neutral repository adoption workflow
 
 Make the reference repository directly useful in CI and consistently consumable by Codex, Claude Code, Cursor, and human contributors.
+
+Historical note: Implemented by commit `c39cf1de1f4216ec651c4b27c91bf4e416292220`; the later implemented `ES-multi-spec-routing` and `ES-frictionless-adoption-launch` authorities superseded this proposal.
 
 ## Source intent
 

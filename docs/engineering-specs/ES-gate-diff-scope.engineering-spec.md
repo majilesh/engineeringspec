@@ -4,7 +4,7 @@ spec_format_version: "0.1"
 spec_revision: 10
 id: ES-gate-diff-scope
 title: Fail-closed diff gate against declared targets
-status: proposed
+status: superseded
 owners:
   - team: EngineeringSpec maintainers
 repository:
@@ -14,6 +14,8 @@ repository:
 # Fail-closed diff gate against declared targets
 
 Add and harden `engineeringspec gate` so CI can reject changes outside declared `TARGET-*` paths and change policies. Validation remains inert; the gate is a separate trust boundary over git diffs. Includes SHA-first evaluation, restricted globs, typed refs, durable unsigned receipts, and production dogfooding of the safe default.
+
+Historical note: The RC2/RC3 gate series shipped this work; the implemented `ES-multi-spec-routing` contract superseded this proposal.
 
 ## Source intent
 

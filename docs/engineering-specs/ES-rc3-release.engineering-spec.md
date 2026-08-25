@@ -4,7 +4,7 @@ spec_format_version: "0.1"
 spec_revision: 1
 id: ES-rc3-release
 title: Publish the agent-first RC3 release
-status: proposed
+status: superseded
 owners:
   - team: EngineeringSpec maintainers
 repository:
@@ -14,6 +14,8 @@ repository:
 # Publish the agent-first RC3 release
 
 Prepare `v0.1.0-rc.3` from the reviewed agent-first implementation. Keep package metadata synchronized, update adopter examples to the immutable merged commit, and preserve the existing tag-driven trusted-publishing boundary.
+
+Historical note: Implemented by commit `e72c134298b329be70cfd21f4e26923b708452d3` and released as tag `v0.1.0-rc.3`; the later implemented `ES-rc14-release` authority superseded this proposal.
 
 ## Source intent
 
