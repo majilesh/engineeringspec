@@ -4,7 +4,7 @@ spec_format_version: "0.1"
 spec_revision: 1
 id: ES-discontinue-stale-proposed
 title: Discontinue three replaced proposed contracts on main
-status: approved
+status: implemented
 owners:
   - team: EngineeringSpec maintainers
 repository:
