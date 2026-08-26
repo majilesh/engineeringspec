@@ -2,10 +2,13 @@ import { execFileSync } from "node:child_process";
 import { mkdir, mkdtemp, readFile, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { finishContract } from "../../src/cli/finish.js";
-import { nextAction } from "../../src/cli/next.js";
-import { workOnContract } from "../../src/cli/work.js";
+import { nextAction, nextTicket } from "../../src/cli/next.js";
+import { workOnContract, workTicket } from "../../src/cli/work.js";
+import { createProgram } from "../../src/cli/program.js";
+import * as routing from "../../src/routing/select.js";
+import { reviewText } from "../../src/cli/review.js";
 
 const CONTRACT = `---
 spec_format: engineering-spec
@@ -97,6 +100,74 @@ async function repository(source = CONTRACT, extraFiles: Record<string, string> 
 }
 
 describe("RC14 minimum-ceremony workflow", () => {
+  it("retains trusted permission before a later all-spec governance diff without changing finish semantics", async () => {
+    const controller = CONTRACT.replace("[src/**]", "[specs/stale.engineering-spec.md]");
+    const stale = CONTRACT.replaceAll("ES-rc14-test", "ES-stale").replace("status: approved", "status: proposed");
+    const root = await repository(controller, { "specs/stale.engineering-spec.md": stale });
+    expect(nextTicket(await nextAction({ cwd: root }))).toMatchObject({ permission: "implementation", currentChangeClassification: "none", approvedIds: ["ES-rc14-test"], proposedIds: ["ES-stale"] });
+    const authority = workTicket(await workOnContract({ contractId: "ES-rc14-test", cwd: root }));
+    expect(authority).toMatchObject({ result: "ready", permission: "implementation", specRevision: 1 });
+
+    await writeFile(path.join(root, "specs/stale.engineering-spec.md"), stale.replace("status: proposed", "status: superseded") + "\nHistorical work was replaced by a later contract.\n");
+    const checked = await routing.selectSpecs({ directory: "specs", base: "HEAD", strict: true, cwd: root, worktree: true });
+    expect(checked).toMatchObject({ valid: true, governance: { classification: "implementation" }, routes: [{ decision: "selected", selected: { specId: "ES-rc14-test" } }] });
+    expect(nextTicket(await nextAction({ cwd: root }))).toMatchObject({ permission: "none", workflowState: "approve", currentChangeClassification: "contract_only", blockers: [] });
+    expect(workTicket(await workOnContract({ contractId: "ES-rc14-test", cwd: root }))).toEqual(authority);
+    const finish = await finishContract({ contractId: "ES-rc14-test", cwd: root });
+    expect(finish).toMatchObject({ result: "blocked", closureWritten: false, review: { valid: true, classification: "contract_only" } });
+    expect(finish.receipt).toBeUndefined();
+    expect(reviewText(finish.review)).toContain("decision: contract_only_no_implementation_authority");
+    expect(await readFile(path.join(root, "specs/change.engineering-spec.md"), "utf8")).toBe(controller);
+  });
+
+  it("projects implementation and monotonic close without upgrading informational permission", async () => {
+    const root = await repository();
+    await writeFile(path.join(root, "src/change.ts"), "export const value = 2;\n");
+    expect(nextTicket(await nextAction({ cwd: root }))).toMatchObject({ permission: "none", currentChangeClassification: "implementation", workflowState: "verify" });
+    await writeFile(path.join(root, "specs/change.engineering-spec.md"), CONTRACT.replace("status: approved", "status: implemented"));
+    expect(nextTicket(await nextAction({ cwd: root }))).toMatchObject({ permission: "none", currentChangeClassification: "implementation_with_monotonic_close", workflowState: "verify" });
+  });
+
+  it("never derives work permission from a workspace or head approval", async () => {
+    const root = await repository(CONTRACT.replace("status: approved", "status: draft"));
+    await writeFile(path.join(root, "engineering-spec.json"), JSON.stringify({ specDirectory: "specs", strict: true, trustedBase: "trusted" }));
+    execFileSync("git", ["-C", root, "add", "."]);
+    execFileSync("git", ["-C", root, "-c", "user.name=Test", "-c", "user.email=test@example.com", "commit", "-qm", "pin trusted branch"]);
+    execFileSync("git", ["-C", root, "branch", "trusted"]);
+    execFileSync("git", ["-C", root, "config", "engineeringspec.trustedBase", "trusted"]);
+    await writeFile(path.join(root, "specs/change.engineering-spec.md"), CONTRACT);
+    expect(workTicket(await workOnContract({ contractId: "ES-rc14-test", cwd: root }))).toMatchObject({ result: "blocked", permission: "none", writablePaths: [] });
+    execFileSync("git", ["-C", root, "add", "."]);
+    execFileSync("git", ["-C", root, "-c", "user.name=Test", "-c", "user.email=test@example.com", "commit", "-qm", "untrusted approval"]);
+    expect(workTicket(await workOnContract({ contractId: "ES-rc14-test", cwd: root }))).toMatchObject({ result: "blocked", permission: "none", writablePaths: [] });
+  });
+
+  it.each(["uncovered", "denied", "ambiguous", "no-candidates"] as const)("explains %s through the existing directory router", async (scenario) => {
+    const extra = scenario === "denied" || scenario === "ambiguous"
+      ? { "specs/other.engineering-spec.md": CONTRACT.replaceAll("ES-rc14-test", "ES-other").replace("change_policy: modify", scenario === "denied" ? "change_policy: read_only" : "change_policy: modify") }
+      : {};
+    const root = await repository(scenario === "no-candidates" ? CONTRACT.replace("status: approved", "status: implemented") : CONTRACT, extra);
+    const changedPath = scenario === "uncovered" || scenario === "no-candidates" ? "outside.ts" : "src/change.ts";
+    await writeFile(path.join(root, changedPath), "export const value = 2;\n");
+    const full = await nextAction({ cwd: root });
+    const ticket = nextTicket(full);
+    expect(ticket).toMatchObject({ permission: "none", workflowState: "blocked" });
+    expect(ticket.command).toContain("engineeringspec explain --spec-dir");
+    const blockedPath = full.status.routing.routes.find((item) => item.decision !== "selected") ?? full.status.routing.changed[0]!;
+    const select = routing.selectSpecs;
+    const delegate = vi.spyOn(routing, "selectSpecs").mockImplementation((options) => select({ ...options, cwd: root }));
+    const log = vi.spyOn(console, "log").mockImplementation(() => {});
+    try {
+      let code = -1;
+      await createProgram((value) => { code = value; }).parseAsync(["node", "engineeringspec", "explain", "--spec-dir", "specs", "--base", full.config.baseSha, "--path", blockedPath.path, "--change-kind", blockedPath.kind, "--strict", "--format", "json"]);
+      expect(code).toBe(1);
+      const explanation = JSON.parse(String(log.mock.calls.at(-1)![0]));
+      expect(explanation.routes).toEqual(full.status.routing.routes);
+      expect(explanation.valid).toBe(false);
+      expect(delegate).toHaveBeenCalledWith(expect.objectContaining({ base: full.config.baseSha, strict: true, changed: [{ path: blockedPath.path, kind: blockedPath.kind }] }));
+    } finally { delegate.mockRestore(); log.mockRestore(); }
+  });
+
   it("finishes a strict base-approved ProductSpec contract without trusting workspace profile content", async () => {
     const root = await repository(PRODUCTSPEC_CONTRACT, { "product/feature.product-spec.md": PRODUCTSPEC });
     const work = await workOnContract({ contractId: "ES-productspec-finish", cwd: root });

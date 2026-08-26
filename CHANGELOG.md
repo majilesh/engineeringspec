@@ -4,6 +4,13 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+### Changed
+
+- `next` and `work` default JSON now project compact permission tickets; `--verbose` restores their previous full reports and exit behavior.
+- `next` exposes the existing current-change classification separately from permission, names approved and draft/proposed IDs, and gives executable directory `explain` commands for routing blockers.
+- `work` retains base identity, policy-bearing writable/protected paths, constraints, technical contracts, verifier identities, and stop conditions without predicting a lane or finish mode.
+- Shared agent guidance uses `engineeringspec` consistently and documents the authorized all-specification governance case. `finish`, routing decisions, and trusted-base authority semantics are unchanged.
+
 ## [0.1.0-rc.16] - 2026-08-22
 
 ### Added

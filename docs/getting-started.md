@@ -64,6 +64,8 @@ engineeringspec work ES-first
 
 If another path is needed, stop. Propose and merge a separately reviewed authority amendment before editing that path.
 
+For machine consumption in the unreleased compact-ticket increment, add `--format json` to `next` or `work`. `next` names the approved and pending contract IDs and reports the current diff classification separately from permission; `none` means no diff yet. `work` returns only pre-code authority, not a predicted workflow lane. Use `--verbose` when an existing consumer needs the previous full JSON reports.
+
 ## 6. Finish
 
 Implement the change and run the repository's separately trusted checks. Then evaluate the complete working state:
@@ -88,6 +90,8 @@ PR 2 = spend authority + exact close
 ```
 
 No routine third closure PR is needed. Any scope widening still requires its own reviewed authority merge before implementation.
+
+An all-specification governance change is an exception: `finish` may report `contract_only_no_implementation_authority` despite valid permission before editing. This describes how the resulting diff is reviewed, not an authorization failure. Merge the reviewed governance change, then close its authorizing contract separately; do not force a receipt or reinterpret `finish`.
 
 ## Where to go next
 

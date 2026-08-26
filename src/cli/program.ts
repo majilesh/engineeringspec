@@ -36,8 +36,8 @@ import { proposeDraft } from "./propose.js";
 import { buildReview, reviewMarkdown, reviewText } from "./review.js";
 import { prepareChange, prepareMarkdown, prepareText } from "./prepare.js";
 import { measureScope } from "./measure.js";
-import { nextAction, nextText } from "./next.js";
-import { workOnContract } from "./work.js";
+import { nextAction, nextText, nextTicket } from "./next.js";
+import { workOnContract, workTicket } from "./work.js";
 import { finishContract } from "./finish.js";
 import { resolveRepositoryConfig, summarizeRepositoryConfig } from "../config/repositoryConfig.js";
 import { replayHistorical } from "../replay/replay.js";
@@ -432,12 +432,13 @@ export function createProgram(setCode: (code: number) => void): Command {
     .command("next")
     .description("Report the next safe action using trusted repository defaults")
     .option("--base <ref>", "trusted base ref override")
+    .option("--verbose", "restore the full pre-ticket status/routing payload")
     .addOption(new Option("--format <format>", "output format").choices(["text", "json"]))
     .action(async (options, command) => {
       try {
         const global = command.optsWithGlobals() as GlobalOptions;
         const report = await nextAction({ ...(options.base ? { base: options.base } : {}) });
-        if (!global.quiet) output(global.format === "json" ? report : nextText(report), global.format);
+        if (!global.quiet) output(global.format === "json" ? (options.verbose ? report : nextTicket(report)) : nextText(report, Boolean(options.verbose)), global.format);
         setCode(report.valid ? ExitCode.success : ExitCode.validation);
       } catch (error) {
         console.error(error instanceof Error ? error.message : String(error));
@@ -489,13 +490,14 @@ export function createProgram(setCode: (code: number) => void): Command {
     .description("Load a base-pinned implementation brief using trusted repository defaults")
     .argument("<contract-id>", "exact approved EngineeringSpec contract ID")
     .option("--base <ref>", "trusted base ref override")
+    .option("--verbose", "restore the full pre-ticket preparation payload")
     .addOption(new Option("--format <format>", "output format").choices(["text", "json", "markdown"]))
     .action(async (contractId, options, command) => {
       try {
         const global = command.optsWithGlobals() as GlobalOptions;
         const report = await workOnContract({ contractId, ...(options.base ? { base: options.base } : {}) });
         if (!global.quiet) {
-          if (global.format === "json") output(report, "json");
+          if (global.format === "json") output(options.verbose ? report : workTicket(report), "json");
           else if (global.format === "markdown") output(prepareMarkdown(report.brief), "text");
           else output(prepareText(report.brief), "text");
         }
@@ -1009,7 +1011,8 @@ export function createProgram(setCode: (code: number) => void): Command {
   program
     .command("explain")
     .description("Explain why one path and change kind is allowed or denied")
-    .argument("<file>", "EngineeringSpec file")
+    .argument("[file]", "EngineeringSpec file (mutually exclusive with --spec-dir)")
+    .option("--spec-dir <directory>", "explain through the complete approved-base candidate set")
     .requiredOption("--path <path>")
     .option("--base <ref>", "approved base ref; loads the contract from base by default")
     .addOption(new Option("--spec-from <source>").choices(["workspace", "base"]))
@@ -1017,6 +1020,27 @@ export function createProgram(setCode: (code: number) => void): Command {
     .action(async (file, options, command) => {
       try {
         const global = command.optsWithGlobals() as GlobalOptions;
+        if (Boolean(file) === Boolean(options.specDir)) {
+          console.error("explain requires exactly one file or --spec-dir");
+          setCode(ExitCode.usage);
+          return;
+        }
+        if (options.specDir) {
+          if (!options.base || options.specFrom === "workspace") {
+            console.error("explain --spec-dir requires --base and cannot use workspace authority");
+            setCode(ExitCode.usage);
+            return;
+          }
+          const report = await selectSpecs({
+            directory: options.specDir,
+            base: options.base,
+            strict: Boolean(global.strict),
+            changed: [{ path: options.path, kind: options.changeKind as ChangeKind }],
+          });
+          if (!global.quiet) output(report, global.format);
+          setCode(report.valid ? ExitCode.success : ExitCode.validation);
+          return;
+        }
         const specFrom: SpecSource = options.specFrom ?? (options.base ? "base" : "workspace");
         if (specFrom === "base" && !options.base) {
           console.error("explain --spec-from base requires --base <ref>");

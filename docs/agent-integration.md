@@ -85,6 +85,12 @@ evidence table mapping changed surfaces and results to the relevant identifiers.
 
 `work` composes the same base-pinned preparation primitive and requires one exact approved contract. `prepare` remains available for advanced inspection and reports source intent, technical contracts, constraints, verifier identities, and unresolved questions without exposing runner payloads. Continue to pass `--base origin/main` to lower-level `context`, `explain`, and `check` calls when debugging path decisions.
 
+The unreleased compact-ticket JSON defaults expose the action, named approved/proposed IDs, and blockers from `next`, and base identity, policy-bearing writable/protected paths, obligations, verifier identities, and stop conditions from `work`. Existing full JSON consumers must add `--verbose`; the full payload and exit semantics are preserved.
+
+Keep permission and workflow classification separate. `next.currentChangeClassification` is an exact projection of the current diff (`none`, `contract_only`, `implementation`, or `implementation_with_monotonic_close`), never new authority or a future prediction. `work` has no lane or finish-mode field. A specification-only change may have been legitimately authorized before editing and still go through governance-only review afterward. Preserve that `finish` result and close the authorizing contract separately after the governance cleanup merges.
+
+For routing blockers, run the ticket's `engineeringspec explain --spec-dir ... --base ... --path ... --change-kind ... --strict` command. It delegates to the full approved-base router; it does not choose a preferred contract to erase ambiguity. The ticket is not a Context Plane envelope: architecture, ownership, dependencies, standards, inferred impact, and external knowledge remain separately reviewable read-only context, outside this increment.
+
 ## Multiple active contracts
 
 When a repository can have multiple active change contracts, use the built CLI's base-pinned router:

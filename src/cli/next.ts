@@ -2,6 +2,8 @@ import { resolveRepositoryConfig, summarizeRepositoryConfig, type RepositoryConf
 import { packageVersion } from "./version.js";
 import { workflowStatus, type LifecycleStage, type WorkflowStatusReport } from "./status.js";
 import { Codes } from "../diagnostics/codes.js";
+import { compareCodePoints } from "../normalizer/canonicalize.js";
+import { displaySafe } from "./render.js";
 
 export interface NextReport {
   valid: boolean;
@@ -74,17 +76,64 @@ export async function nextAction(options: { base?: string; cwd?: string } = {}):
   };
 }
 
-export function nextText(report: NextReport): string {
+export interface NextTicket {
+  permission: NextReport["permission"];
+  workflowState: LifecycleStage;
+  currentChangeClassification: WorkflowStatusReport["routing"]["governance"]["classification"];
+  command: string;
+  approvedIds: string[];
+  proposedIds: string[];
+  blockers: Array<{ code: string; message: string; path?: string }>;
+}
+
+// Quote data, not syntax: diagnostic paths may contain shell metacharacters.
+function shellArgument(value: string): string {
+  return `'${value.replaceAll("'", "'\\''")}'`;
+}
+
+export function nextTicket(report: NextReport): NextTicket {
+  const routing = report.status.routing;
+  const observedPath = routing.changed[0];
+  // No-eligible reports fail before producing routes. Explain one already
+  // collected path without inventing a claim or changing that decision.
+  const blockedPath = routing.routes.find((route) => route.decision !== "selected")
+    ?? (observedPath && routing.diagnostics.some((item) => item.code === Codes.routingNoEligible)
+      ? { path: observedPath.path, kind: observedPath.kind === "renamed" ? "added" : observedPath.kind }
+      : undefined);
+  const command = report.workflowState === "blocked" && blockedPath
+    ? `engineeringspec explain --spec-dir ${shellArgument(routing.candidateDirectory)} --base ${shellArgument(routing.baseSha)} --path ${shellArgument(blockedPath.path)} --change-kind ${blockedPath.kind} --strict`
+    : report.command;
+  return {
+    permission: report.permission,
+    workflowState: report.workflowState,
+    currentChangeClassification: routing.governance.classification,
+    command,
+    approvedIds: [...new Set(routing.candidates.filter((item) => item.eligible).map((item) => item.specId))].sort(compareCodePoints),
+    proposedIds: [...new Set(routing.candidates.filter((item) => item.status === "proposed" || item.status === "draft").map((item) => item.specId))].sort(compareCodePoints),
+    blockers: routing.diagnostics
+      .filter((item) => item.severity === "error" || (item.severity === "warning" && !report.status.valid))
+      .map((item) => ({ code: item.code, message: item.message, ...(item.file ? { path: item.file } : {}) })),
+  };
+}
+
+export function nextText(report: NextReport, verbose = false): string {
+  const ticket = nextTicket(report);
   return [
     `next: ${report.status.next.stage}`,
     `analysis: ${report.analysisValid ? "valid" : "invalid"}`,
     `permission: ${report.permission}`,
+    ...(!verbose ? [
+      `currentChangeClassification: ${ticket.currentChangeClassification}`,
+      `approvedIds: ${ticket.approvedIds.map(displaySafe).join(", ") || "none"}`,
+      `proposedIds: ${ticket.proposedIds.map(displaySafe).join(", ") || "none"}`,
+      ...ticket.blockers.map((item) => `blocker: ${displaySafe(item.code)} ${displaySafe(item.message)}`),
+    ] : []),
     `cli: ${report.cliVersion}`,
     `authority: base ${report.config.baseSha}`,
     `config: ${report.config.source}${report.config.workspaceDrift ? "; workspace drift ignored" : ""}`,
     ...report.config.warnings.map((warning) => `warning: ${warning}`),
     `working state: ${report.status.workingState.changed} changed, ${report.status.workingState.violations} violations`,
     `action: ${report.status.next.message}`,
-    `command: ${report.command}`,
+    `command: ${verbose ? report.command : displaySafe(ticket.command)}`,
   ].join("\n");
 }

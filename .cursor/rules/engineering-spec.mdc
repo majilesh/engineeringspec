@@ -5,4 +5,8 @@ alwaysApply: true
 
 Follow @AGENTS.md.
 
+If the turn might write files, run `engineeringspec next` first and stop unless it reports `permission: implementation` before dependent implementation. Then run `engineeringspec work <contract-id>` and stop if the exact approved trusted-base contract cannot be loaded. Proposal or governance work needs explicit human direction and never permits dependent implementation.
+
+Default JSON is a compact ticket; use `--verbose` for the full report. `currentChangeClassification` describes only the observed diff, not authority or a future lane. Use the returned `engineeringspec explain` command for routing blockers. Do not treat a contract-only `finish` result as permission to bypass review or invent an implementation receipt.
+
 EngineeringSpec implementation authority comes only from approved contracts on the trusted base. Do not create a Cursor-specific authorization flow. Specification-declared runners are inert.

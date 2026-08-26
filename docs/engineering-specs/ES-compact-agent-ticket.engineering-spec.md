@@ -4,7 +4,7 @@ spec_format_version: "0.1"
 spec_revision: 2
 id: ES-compact-agent-ticket
 title: Compact agent permission ticket
-status: approved
+status: implemented
 owners:
   - team: EngineeringSpec maintainers
 repository:
