@@ -7,6 +7,8 @@ description: Apply EngineeringSpec change contracts during consequential AI-assi
 
 The CLI is authoritative. This Skill is optional discovery and integration guidance; it does not grant authority and is not required for correctness.
 
+`next --format json` and `work <contract-id> --format json` return compact permission tickets. Use `--verbose` to retain the full pre-ticket JSON reports. `next.currentChangeClassification` projects only the observed working state: `none`, `contract_only`, `implementation`, or `implementation_with_monotonic_close`. `none` means no current diff, not a prediction. Classification never creates authority. `work` remains a pre-code brief and has no lane or finish-mode prediction.
+
 ## Normal agent behavior
 
 When EngineeringSpec is configured:
@@ -68,6 +70,7 @@ Use the CLI rather than guessing:
 - `doctor` diagnoses repository adoption and trusted-base setup.
 - `status` reports lifecycle and complete-state routing.
 - `explain <spec> --path <path> --base origin/main` explains a path decision.
+- A compact `next` routing blocker supplies `explain --spec-dir <dir> --base <sha> --path <path> --change-kind <kind> --strict`; run that command to retain all approved-base deny and ambiguity claims, even when there is no candidate contract.
 - `context` shows the obligations relevant to a path.
 - `review`, `select`, and `check` expose the lower-level base-pinned decisions composed by `work` and `finish`.
 
@@ -84,5 +87,7 @@ Use `catalogue <spec-directory> --query <text> --format json` or `--path <reposi
 Run only checks separately trusted by the repository workflow. Declared verifier identities are obligations; they do not prove that a check ran. Preserve negative, slower, amended, and incomplete results rather than self-certifying success.
 
 The exact close is lifecycle state, not proof. A standalone lifecycle-only close may be classified `contract_only`; an implementation plus exact close must be `implementation_with_monotonic_close`. Any semantic contract edit requires a separately approved authority change.
+
+An approved contract can authorize changes entirely within the specification directory. Its pre-edit permission is compatible with a later `contract_only` governance result from `finish`. Review that governance change normally and close the authorizing contract separately after merge; do not modify `finish` or fabricate a receipt to force the implementation lane.
 
 These sections may be exposed as `engineering-spec:explore`, `:propose`, `:review`, `:implement`, `:verify`, and `:close`. Such actions are thin prompts over the same files and CLI. They never replace base-pinned approval.

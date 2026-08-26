@@ -35,6 +35,23 @@ engineeringspec finish ES-change \
 
 Writing evidence inside the worktree would mutate the working state whose digest `finish` just evaluated, so it is rejected.
 
+### Compact agent JSON
+
+In the unreleased compact-ticket increment, `next --format json` returns `permission`, `workflowState`, `currentChangeClassification`, `command`, `approvedIds`, `proposedIds`, and `blockers`. IDs come from the trusted-base candidates; `proposedIds` includes both drafts and proposals. Blockers retain diagnostic codes, messages, and paths without the full routing-candidate dump.
+
+`currentChangeClassification` is the existing classification of the observed complete working state, not the source of permission:
+
+- `none`: no currently observed changed paths; no future lane is predicted.
+- `contract_only`: specification-directory governance review; grants no implementation authority.
+- `implementation`: the observed change uses implementation routing, including when blocked.
+- `implementation_with_monotonic_close`: implementation plus the existing exact-close classification.
+
+`work <id> --format json` projects `prepare` into `result`, `permission`, `contractId`, `baseSha`, `specRevision`, `semanticDigest`, `writablePaths`, `protectedPaths`, `constraints`, `verifiers`, `technicalContracts`, and `stopWhen`. Each path entry preserves its target identity and change policy, including the `interface_only` limitation. Verifiers contain only `id` and `proves`; no runner payloads are exposed. Blocked tickets include a reason and remediation command. No `lane`, `expectedLane`, future classification, or `finishMode` is computed.
+
+Add `--verbose` to either command to restore the full pre-ticket JSON report, including its existing field names, nesting, values, and exit behavior. Consumers of the former default JSON must opt into `--verbose`; text/Markdown `work` still provides the preparation brief. Compact output is a projection, not another authority decision.
+
+An authorized all-specification change may later be classified `contract_only`. `finish` still reports its governance-only result without an implementation receipt; review and merge that governance change, then perform a standalone lifecycle close. Earlier implementation permission and later governance classification are not contradictory.
+
 ## Authority authoring and lifecycle maintenance
 
 | Command | Purpose | Writes by default |
@@ -73,6 +90,14 @@ engineeringspec explain docs/engineering-specs/ES-payments-change.engineering-sp
 ```
 
 Architecture and catalogue output never grant authority. `interface_only` in a preparation brief is path-level write access, not semantic interface enforcement; pair it with separately trusted API or schema verification.
+
+For uncovered, denied, or ambiguous routing, compact `next` emits a copy-ready, shell-quoted command such as:
+
+```sh
+engineeringspec explain --spec-dir 'docs/engineering-specs' --base '<full-base-sha>' --path 'src/change.ts' --change-kind modified --strict
+```
+
+This directory form delegates to the same approved-base router for the indicated path, including all candidates and deny overrides. It requires `--base`, forbids workspace authority, and is mutually exclusive with the existing single-file form. A diagnostic explanation is not permission for the whole working state. `work` composes preparation rather than current-diff routing, so a ready `work` ticket never cancels a `next` or `finish` routing blocker.
 
 Historical evaluation is explicit:
 
