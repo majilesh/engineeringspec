@@ -2,7 +2,7 @@
 
 CLI packages, generated guidance and the GitHub Action are independent identities. Upgrade them deliberately.
 
-The repository-local CLI and the published package example below use the exact identity `@engineeringspec/cli@0.1.0-rc.16`.
+The repository-local CLI is prepared as the unpublished `@engineeringspec/cli@0.1.0-rc.17` candidate. The runnable package example below remains pinned to published `@engineeringspec/cli@0.1.0-rc.16` until separately reviewed publication authority completes.
 
 1. Read the release notes and choose the exact CLI version and immutable Action SHA.
 2. Run `doctor --strict` to identify drift.

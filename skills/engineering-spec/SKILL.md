@@ -46,7 +46,7 @@ engineeringspec finish <contract-id> --write-closure
 
 Require `implementation_with_monotonic_close` for that mixed diff. `finish` never stages, commits, pushes, approves, merges, or executes declared runners.
 
-Prefer the repository-local CLI. When a package invocation is necessary, pin the published identity `@engineeringspec/cli@0.1.0-rc.16`; do not use a mutable distribution tag in an enforcing workflow.
+Prefer the repository-local RC17 candidate CLI. When a package invocation is necessary before RC17 publication, pin the published identity `@engineeringspec/cli@0.1.0-rc.16`; do not use a mutable distribution tag in an enforcing workflow.
 
 ## Proposing and approving authority
 

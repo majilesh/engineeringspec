@@ -80,5 +80,6 @@ Both commands resolve immutable SHAs before candidate discovery. Candidate speci
 
 ## Release / npm
 
+- Repository source is prepared as the unpublished `@engineeringspec/cli@0.1.0-rc.17` candidate; separate publication authority must name the exact reviewed release-source SHA before any external release operation.
 - `@engineeringspec/cli@0.1.0-rc.16` and `v0.1.0-rc.16` are published.
 - npm dist-tag `next` identifies `0.1.0-rc.16`; `latest` remains `0.1.0-rc.15`. Enforcing commands above pin the exact RC16 version rather than either mutable dist-tag.

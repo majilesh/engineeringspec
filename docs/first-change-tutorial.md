@@ -2,6 +2,8 @@
 
 This walkthrough adds a fictional dark-mode preference under `src/settings/**`. It teaches one boundary: grant authority first, then spend it.
 
+Repository source is prepared as the unpublished RC17 candidate. The runnable package command below remains pinned to published RC16 until separate publication approval.
+
 ## 1. Explore
 
 Ask the coding agent to read the styling system, preference storage, and tests. Exploration is read-only and grants no implementation authority.
