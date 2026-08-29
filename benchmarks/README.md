@@ -49,4 +49,4 @@ The summary reports provenance, evidence quality, publishability, sample size, m
 
 `--require-publishable` fails incomplete, example, mixed, or inconsistent evidence. Under the risk-stratified pilot protocol, missing `taskRiskTier` is incomplete but remains readable without publication enforcement. Passing the policy means only that the declared evidence fields are complete; results remain descriptive and never establish causality. The bundled [example](example-results.json) is synthetic and must not be presented as observed impact.
 
-Use the [pilot guide](pilot-guide.md) and [pilot kit](pilots/README.md) before recruiting external participants.
+Before recruiting external participants, follow the [pilot guide](pilot-guide.md) and use the [participant pilot kit](pilots/README.md). Both paths are part of the public repository and are written for either a clean checkout or the exact public `@engineeringspec/cli@0.1.0-rc.17` package.
