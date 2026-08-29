@@ -64,7 +64,7 @@ engineeringspec work ES-first
 
 If another path is needed, stop. Propose and merge a separately reviewed authority amendment before editing that path.
 
-For machine consumption in the unreleased compact-ticket increment, add `--format json` to `next` or `work`. `next` names the approved and pending contract IDs and reports the current diff classification separately from permission; `none` means no diff yet. `work` returns only pre-code authority, not a predicted workflow lane. Use `--verbose` when an existing consumer needs the previous full JSON reports.
+For machine consumption in the unpublished RC17 compact-ticket candidate, add `--format json` to the repository-local `next` or `work`. `next` names the approved and pending contract IDs and reports the current diff classification separately from permission; `none` means no diff yet. `work` returns only pre-code authority, not a predicted workflow lane. Use `--verbose` when an existing consumer needs the previous full JSON reports. The runnable `npx` examples remain on published RC16 until RC17 receives separate publication approval.
 
 ## 6. Finish
 

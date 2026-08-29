@@ -6,6 +6,8 @@ For new authority, the default review boundary is two pull requests: merge one r
 
 With trusted repository configuration on the base, use `engineeringspec next`, `engineeringspec work <contract-id>`, and `engineeringspec finish <contract-id>`. Explicit lower-level commands and flags remain supported for debugging and CI. `next` is informational: successful analysis is not implementation authority. Start implementation only when it reports `permission: implementation` and `work` successfully loads the exact approved trusted-base contract.
 
+Repository source is prepared as the unpublished `@engineeringspec/cli@0.1.0-rc.17` candidate. Runnable package examples remain pinned to published RC16 until separate publication approval.
+
 | Workflow stage | Typical contract state | Authority and outcome |
 |---|---|---|
 | Explore | none | Read-only discovery; no implementation authority |

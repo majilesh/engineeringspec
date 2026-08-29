@@ -5,10 +5,10 @@ import { CURRENT_ACTION_SHA } from "../../src/adoption/releases.js";
 const RC16_ACTION_SHA = "ddf813e4e69d9b2f9a9eb3f0f241747746021cf3";
 const HISTORICAL_RC14_ACTION_SHA = "1b9fe313353584862456d607c495f4e660e3fdf3";
 
-describe("RC16 guidance and package readiness", () => {
+describe("RC17 candidate and RC16 published guidance readiness", () => {
   it("updates only the corrective package identity while preserving historical identities", async () => {
     const packageSource = JSON.parse(await readFile("package.json", "utf8")) as { version: string };
-    expect(packageSource.version).toBe("0.1.0-rc.16");
+    expect(packageSource.version).toBe("0.1.0-rc.17");
 
     for (const file of [
       "README.md",

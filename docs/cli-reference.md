@@ -37,7 +37,7 @@ Writing evidence inside the worktree would mutate the working state whose digest
 
 ### Compact agent JSON
 
-In the unreleased compact-ticket increment, `next --format json` returns `permission`, `workflowState`, `currentChangeClassification`, `command`, `approvedIds`, `proposedIds`, and `blockers`. IDs come from the trusted-base candidates; `proposedIds` includes both drafts and proposals. Blockers retain diagnostic codes, messages, and paths without the full routing-candidate dump.
+In the unpublished RC17 candidate, `next --format json` returns `permission`, `workflowState`, `currentChangeClassification`, `command`, `approvedIds`, `proposedIds`, and `blockers`. IDs come from the trusted-base candidates; `proposedIds` includes both drafts and proposals. Blockers retain diagnostic codes, messages, and paths without the full routing-candidate dump. Runnable package examples remain on published RC16 until RC17 receives separate publication approval.
 
 `currentChangeClassification` is the existing classification of the observed complete working state, not the source of permission:
 

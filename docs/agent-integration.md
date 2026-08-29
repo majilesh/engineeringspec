@@ -14,7 +14,7 @@ engineeringspec finish <contract-id> --format markdown
 
 These commands read authorization settings from the trusted-base `engineering-spec.json`. Explicit options remain available, and CI should keep supplying its event base explicitly.
 
-The repository-local CLI and the published package examples below use the exact identity `@engineeringspec/cli@0.1.0-rc.16`.
+The repository-local CLI is prepared as the unpublished `@engineeringspec/cli@0.1.0-rc.17` candidate. Runnable package examples below remain pinned to the published `@engineeringspec/cli@0.1.0-rc.16` fallback until separately reviewed publication authority completes.
 
 `next` is informational. Exit code 0 or successful analysis does not grant authority. Implementation may begin only when `permission` is `implementation` and `work <contract-id>` successfully loads that exact approved trusted-base contract. `work` permits repository reading for correctness but limits writes to the returned surfaces.
 
@@ -85,7 +85,7 @@ evidence table mapping changed surfaces and results to the relevant identifiers.
 
 `work` composes the same base-pinned preparation primitive and requires one exact approved contract. `prepare` remains available for advanced inspection and reports source intent, technical contracts, constraints, verifier identities, and unresolved questions without exposing runner payloads. Continue to pass `--base origin/main` to lower-level `context`, `explain`, and `check` calls when debugging path decisions.
 
-The unreleased compact-ticket JSON defaults expose the action, named approved/proposed IDs, and blockers from `next`, and base identity, policy-bearing writable/protected paths, obligations, verifier identities, and stop conditions from `work`. Existing full JSON consumers must add `--verbose`; the full payload and exit semantics are preserved.
+The RC17 candidate compact-ticket JSON defaults expose the action, named approved/proposed IDs, and blockers from `next`, and base identity, policy-bearing writable/protected paths, obligations, verifier identities, and stop conditions from `work`. Existing full JSON consumers must add `--verbose`; the full payload and exit semantics are preserved.
 
 Keep permission and workflow classification separate. `next.currentChangeClassification` is an exact projection of the current diff (`none`, `contract_only`, `implementation`, or `implementation_with_monotonic_close`), never new authority or a future prediction. `work` has no lane or finish-mode field. A specification-only change may have been legitimately authorized before editing and still go through governance-only review afterward. Preserve that `finish` result and close the authorizing contract separately after the governance cleanup merges.
 

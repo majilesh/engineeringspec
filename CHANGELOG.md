@@ -4,12 +4,21 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+## [0.1.0-rc.17] - 2026-08-29
+
+Prepared release candidate; it is not published until separate publication authority is reviewed and approved for the exact release-source SHA.
+
 ### Changed
 
 - `next` and `work` default JSON now project compact permission tickets; `--verbose` restores their previous full reports and exit behavior.
 - `next` exposes the existing current-change classification separately from permission, names approved and draft/proposed IDs, and gives executable directory `explain` commands for routing blockers.
 - `work` retains base identity, policy-bearing writable/protected paths, constraints, technical contracts, verifier identities, and stop conditions without predicting a lane or finish mode.
-- Shared agent guidance uses `engineeringspec` consistently and documents the authorized all-specification governance case. `finish`, routing decisions, and trusted-base authority semantics are unchanged.
+- RFC 0012 and shared agent guidance document the compact authority envelope, the `--verbose` compatibility path, executable blocker recovery, and the authorized all-specification governance case.
+
+### Security
+
+- Compact tickets remain projections of existing trusted-base decisions. `finish`, routing decisions, specification-runner inertness, and authorization semantics are unchanged.
+- The stale-proposal governance regression preserves the separation between trusted implementation permission and current-diff classification.
 
 ## [0.1.0-rc.16] - 2026-08-22
 

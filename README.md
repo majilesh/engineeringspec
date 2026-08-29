@@ -148,4 +148,4 @@ Private repositories are supported: the CLI and Action operate on the checked-ou
 
 ## Status
 
-`@engineeringspec/cli@0.1.0-rc.16` and `v0.1.0-rc.16` are published release-candidate identities. The repository remains a draft open specification and reference implementation. A read-only MCP adapter remains deliberately deferred until measured adoption friction warrants another transport.
+The repository source is prepared as the unpublished `@engineeringspec/cli@0.1.0-rc.17` candidate with compact PermissionTickets. Runnable package examples remain pinned to the published `@engineeringspec/cli@0.1.0-rc.16` fallback until separately reviewed publication authority completes. The immutable Action runtime remains independently pinned. The repository remains a draft open specification and reference implementation. A read-only MCP adapter remains deliberately deferred until measured adoption friction warrants another transport.
