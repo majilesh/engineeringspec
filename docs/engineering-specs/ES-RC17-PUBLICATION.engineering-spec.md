@@ -4,7 +4,7 @@ spec_format_version: "0.1"
 spec_revision: 1
 id: ES-RC17-PUBLICATION
 title: Publish EngineeringSpec 0.1.0-rc.17
-status: proposed
+status: approved
 owners:
   - team: EngineeringSpec maintainers
 repository:
