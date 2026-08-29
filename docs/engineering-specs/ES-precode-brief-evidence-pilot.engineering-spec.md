@@ -4,7 +4,7 @@ spec_format_version: "0.1"
 spec_revision: 1
 id: ES-precode-brief-evidence-pilot
 title: Pre-code work brief and adoption evidence pilot
-status: proposed
+status: superseded
 owners:
   - team: EngineeringSpec maintainers
 repository:
@@ -13,6 +13,8 @@ base_revision: "85f42b2"
 ---
 
 # Pre-code work brief and adoption evidence pilot
+
+Historical note: The pre-code brief, benchmark, measurement, evidence-integrity, and compact PermissionTicket functionality described here shipped through RC17 under later reviewed contracts. `ES-external-adopter-pilot-execution` replaces this mixed product-and-pilot proposal with narrow authority for the remaining participant-readiness and external-evidence work.
 
 Stop expanding product breadth and test the central thesis. Add one thin pre-code work brief over existing approved-base semantics, then strengthen and run the paired benchmark—including scope precision—so real teams can evaluate whether EngineeringSpec enables safer bounded autonomy.
 
