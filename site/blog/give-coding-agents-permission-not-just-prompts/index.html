@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Prompts provide intent, but coding agents also need reviewed, testable boundaries around what they are allowed to change.">
+  <link rel="canonical" href="https://engineeringspec.org/blog/give-coding-agents-permission-not-just-prompts/">
+  <meta property="og:title" content="Give Coding Agents Permission, Not Just Prompts">
+  <meta property="og:description" content="Context answers what an agent knows. Validation asks whether its change worked. Authority defines what it was allowed to change.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://engineeringspec.org/blog/give-coding-agents-permission-not-just-prompts/">
+  <meta property="article:published_time" content="2026-08-29">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Give Coding Agents Permission, Not Just Prompts">
+  <meta name="twitter:description" content="Context answers what an agent knows. Validation asks whether its change worked. Authority defines what it was allowed to change.">
+  <title>Give Coding Agents Permission, Not Just Prompts — EngineeringSpec</title>
+  <style>
+    :root{color-scheme:dark;--bg:#0b1020;--panel:#121a2f;--text:#edf2ff;--muted:#a7b4d3;--accent:#72a7ff;--accent-strong:#9bc0ff;--line:#273554;--glow:#172b55;--code:#070b15;--good:#8fe1bb;--warn:#ffd38a}*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:radial-gradient(circle at 82% 0,var(--glow) 0,transparent 30%),var(--bg);color:var(--text);font:18px/1.75 ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}a{color:var(--accent-strong);text-underline-offset:3px}a:hover{color:#c4d9ff}a:focus-visible{outline:3px solid var(--accent);outline-offset:4px;border-radius:4px}.shell{max-width:1120px;margin:auto;padding:40px 24px 96px}.site-nav{display:flex;justify-content:space-between;align-items:center;margin-bottom:84px;font-size:16px}.site-nav a{text-decoration:none}.brand{font-weight:760;letter-spacing:-.02em;color:var(--text)}.nav-links{display:flex;align-items:center;gap:24px;color:var(--muted)}.nav-links a{color:inherit}.nav-links a[aria-current="page"]{color:var(--text)}.article-header{max-width:940px;margin:0 auto 72px}.kicker{display:flex;gap:12px;align-items:center;color:var(--accent);font-size:13px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;margin:0 0 22px}.kicker::before{content:"";width:34px;height:1px;background:var(--accent)}h1{font-size:clamp(48px,8vw,88px);line-height:.96;letter-spacing:-.06em;margin:0 0 30px}.dek{color:#c2cdea;font-size:clamp(21px,3vw,27px);line-height:1.45;max-width:880px;margin:0 0 28px}.byline{display:flex;flex-wrap:wrap;gap:10px 18px;color:var(--muted);font-size:15px}.article-layout{display:grid;grid-template-columns:minmax(0,760px) 180px;gap:72px;justify-content:center}.article-body{min-width:0}.article-body>p:first-child{font-size:21px;color:#d9e2f8}.article-body h2{font-size:clamp(30px,4vw,42px);line-height:1.14;letter-spacing:-.035em;margin:82px 0 24px}.article-body h3{font-size:23px;line-height:1.3;margin:42px 0 16px}.article-body p{margin:0 0 25px}.article-body strong{color:#fff}.article-body ul{padding-left:24px;margin:0 0 28px}.article-body li{margin-bottom:10px}.article-body blockquote{margin:32px 0;padding:2px 0 2px 24px;border-left:3px solid var(--accent);color:#dbe6ff;font-size:21px}.article-body blockquote p{margin:10px 0}.article-body pre{margin:34px 0;padding:24px;overflow:auto;max-width:100%;background:var(--code);border:1px solid var(--line);border-radius:14px;color:#c9dcff;font:15px/1.7 ui-monospace,SFMono-Regular,Menlo,monospace;white-space:pre}.article-body code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}.triad{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:38px 0}.triad div{padding:22px;border:1px solid var(--line);border-radius:14px;background:color-mix(in srgb,var(--panel) 90%,transparent)}.triad strong{display:block;color:var(--accent-strong);font-size:15px;margin-bottom:8px}.triad p{color:var(--muted);font-size:16px;line-height:1.55;margin:0}.ticket{margin:36px 0;padding:26px;border:1px solid var(--line);border-radius:16px;background:color-mix(in srgb,var(--panel) 88%,transparent)}.ticket h3{font-size:18px;margin:0 0 18px}.ticket dl{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:9px 18px;margin:0;font-size:15px}.ticket dt{color:var(--accent-strong);font-family:ui-monospace,SFMono-Regular,Menlo,monospace}.ticket dd{color:#d8e2fa;margin:0}.scope-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:34px 0}.scope-card{padding:24px;border:1px solid var(--line);border-radius:14px;background:#0d1427}.scope-card h3{font-size:17px;margin:0 0 16px}.scope-card ul{list-style:none;padding:0;margin:0}.scope-card li{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:14px;margin:0 0 9px;overflow-wrap:anywhere}.scope-card.allowed{border-color:#356b59}.scope-card.allowed h3{color:var(--good)}.scope-card.outside{border-color:#715a36}.scope-card.outside h3{color:var(--warn)}.flow{margin:48px 0;padding:28px;border:1px solid var(--line);border-radius:18px;background:color-mix(in srgb,var(--panel) 88%,transparent)}.flow figcaption{font-weight:780;font-size:18px;margin-bottom:22px}.flow ol{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;list-style:none;margin:0;padding:0}.flow li{position:relative;display:flex;min-height:76px;align-items:center;justify-content:center;text-align:center;padding:12px 8px;border:1px solid var(--line);border-radius:10px;background:#0d1427;font-size:14px;font-weight:720}.flow li:not(:last-child)::after{content:"→";position:absolute;right:-10px;z-index:2;color:var(--accent);background:var(--panel);line-height:18px}.agent-flow{display:flex;align-items:center;justify-content:center;gap:18px;margin-top:18px;padding-top:18px;border-top:1px solid var(--line);color:var(--accent-strong);font:750 15px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace}.agent-flow span:not(:last-child)::after{content:"→";padding-left:18px;color:var(--accent)}.callout{margin:38px 0;padding:26px;border:1px solid #385c91;border-radius:16px;background:#101d36}.callout p:last-child{margin-bottom:0}.evidence{border-color:#6a5530;background:#211b12}.closing{margin-top:72px;padding:30px;border:1px solid var(--line);border-radius:16px;background:color-mix(in srgb,var(--panel) 90%,transparent)}.closing h2{margin:0 0 20px}.closing p:last-child{margin-bottom:0}.link-list{display:grid;grid-template-columns:1fr 1fr;gap:12px 24px;padding:0;list-style:none}.link-list a{display:block;padding:12px 0;border-bottom:1px solid var(--line)}.toc{position:sticky;top:32px;align-self:start;padding-left:18px;border-left:1px solid var(--line);font-size:13px}.toc strong{display:block;color:var(--text);margin-bottom:12px;text-transform:uppercase;letter-spacing:.1em}.toc a{display:block;color:var(--muted);text-decoration:none;line-height:1.35;margin:0 0 12px}.toc a:hover{color:var(--text)}.article-footer{max-width:1012px;margin:88px auto 0;padding-top:24px;border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:24px;color:var(--muted);font-size:15px}.article-footer a{text-decoration:none}@media(max-width:940px){.article-layout{grid-template-columns:minmax(0,760px)}.toc{display:none}.flow ol{grid-template-columns:repeat(3,1fr)}.flow li:nth-child(3)::after{display:none}}@media(max-width:680px){body{font-size:17px}.shell{padding:28px 18px 72px}.site-nav{align-items:flex-start;margin-bottom:58px}.nav-links{gap:14px;flex-wrap:wrap;justify-content:flex-end}.article-header{margin-bottom:52px}.byline{display:block}.byline span{display:block;margin-bottom:3px}.article-body h2{margin-top:62px}.triad,.scope-grid,.link-list{grid-template-columns:1fr}.ticket{padding:20px}.ticket dl{grid-template-columns:1fr;gap:4px}.ticket dd{margin-bottom:10px}.flow{padding:20px 14px}.flow ol{grid-template-columns:1fr}.flow li{min-height:56px}.flow li:not(:last-child)::after{content:"↓";right:auto;bottom:-10px}.flow li:nth-child(3)::after{display:block}.agent-flow{flex-direction:column;gap:7px}.agent-flow span:not(:last-child)::after{content:"↓";display:block;text-align:center;padding:7px 0 0}.article-footer{flex-direction:column}}@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header>
+      <nav class="site-nav" aria-label="Primary">
+        <a class="brand" href="/">EngineeringSpec</a>
+        <span class="nav-links"><a href="/blog/" aria-current="page">Blog</a><a href="/explorer.html">Explorer</a><a href="https://github.com/majilesh/engineeringspec">GitHub</a><a href="/spec/0.1/">Specification</a></span>
+      </nav>
+      <div class="article-header">
+        <p class="kicker">Engineering change authority</p>
+        <h1>Give Coding Agents Permission, Not Just Prompts</h1>
+        <p class="dek">A reviewed Git history can define bounded change authority before an agent starts coding—and verify the resulting diff against that authority afterward.</p>
+        <div class="byline"><span>EngineeringSpec</span><span><time datetime="2026-08-29">August 29, 2026</time></span><span>8 min read</span></div>
+      </div>
+    </header>
+
+    <main class="article-layout">
+      <article class="article-body">
+        <p>A coding agent receives a precise prompt: refresh authentication sessions without interrupting active users. It reads the repository, finds the right abstractions, writes clean code, and passes every trusted test.</p>
+
+        <p>It also changes shared authentication middleware, migrates a database table, and edits deployment configuration.</p>
+
+        <p>The code may be technically correct. The tests may be green. The change can still exceed the scope anybody approved.</p>
+
+        <p>That is the gap EngineeringSpec is trying to make explicit. Better prompts help express intent. More context helps an agent understand a system. Stronger validation helps determine whether the result works. None of those, by itself, answers what the agent was <em>allowed</em> to change.</p>
+
+        <div class="triad" aria-label="Context, validation, and authority">
+          <div><strong>Context</strong><p>What does the agent know?</p></div>
+          <div><strong>Validation</strong><p>Did the resulting change work?</p></div>
+          <div><strong>Authority</strong><p>What was the agent allowed to change?</p></div>
+        </div>
+
+        <p>These controls complement each other, but they are not interchangeable. A prompt is not an approval record. Repository access is not write authority. A successful analysis or test run does not widen scope.</p>
+
+        <h2 id="permission">Permission should be reviewable data</h2>
+
+        <p>EngineeringSpec represents an engineering change as a versioned contract in the repository. The contract names the intended targets, path policies, constraints, technical obligations, verifier identities, and stop conditions. A human can review that boundary as a normal Git change before an implementation agent consumes it.</p>
+
+        <p>The authority comes from the exact approved contract in immutable, reviewed Git history—the trusted base—not from a prompt, an unmerged workspace document, or whatever happens to be present at the branch head. An agent may read broadly when that is necessary for correctness, while its write authority remains bounded to the policy-bearing paths the contract grants.</p>
+
+        <p>This matters because implementation discovers things. If the approved boundary turns out to be too narrow, the safe answer is not to reinterpret the task generously. It is to stop and make the wider decision visible.</p>
+
+        <h2 id="workflow">The RC17 agent workflow</h2>
+
+        <p>The default workflow in EngineeringSpec 0.1.0-rc.17 is deliberately small:</p>
+
+        <pre><code>engineeringspec next
+engineeringspec work ES-session-refresh
+
+# agent implements
+
+engineeringspec finish ES-session-refresh</code></pre>
+
+        <p><code>next</code> describes the current lifecycle action. <code>work</code> loads one exact approved contract from the trusted base and returns the pre-code authority envelope. After implementation and separately trusted repository checks, <code>finish</code> evaluates the complete Git state and can prepare the exact monotonic lifecycle close when the authority has been spent correctly.</p>
+
+        <p>The compact <code>next</code> PermissionTicket uses the actual RC17 fields <code>permission</code>, <code>workflowState</code>, <code>currentChangeClassification</code>, <code>command</code>, <code>approvedIds</code>, <code>proposedIds</code>, and <code>blockers</code>. It reports what the agent may do now, what the current diff is, and an executable diagnostic command when routing is blocked.</p>
+
+        <div class="ticket">
+          <h3>A valid pre-edit state</h3>
+          <dl>
+            <dt>permission</dt><dd><code>implementation</code></dd>
+            <dt>workflowState</dt><dd><code>implement</code></dd>
+            <dt>currentChangeClassification</dt><dd><code>none</code></dd>
+            <dt>approvedIds</dt><dd><code>ES-session-refresh</code></dd>
+            <dt>proposedIds</dt><dd>none</dd>
+            <dt>blockers</dt><dd>none</dd>
+          </dl>
+        </div>
+
+        <p>The compact <code>work</code> PermissionTicket identifies <code>result</code>, <code>permission</code>, <code>contractId</code>, <code>baseSha</code>, and—when available—<code>specRevision</code> and <code>semanticDigest</code>. It preserves policy-bearing <code>writablePaths</code> and <code>protectedPaths</code>, along with <code>constraints</code>, verifier identities in <code>verifiers</code>, <code>technicalContracts</code>, and <code>stopWhen</code>. Verifier runner payloads are not exposed or executed.</p>
+
+        <p>In this fictional case, the ticket names <code>contractId: ES-session-refresh</code> and <code>specRevision: 1</code>. Its <code>baseSha</code> is the exact 40-character commit containing the reviewed approval—not a mutable branch name—and its semantic digest binds the contract content loaded from that base.</p>
+
+        <p>For an existing consumer that needs the previous full JSON reports and exit behavior, <code>--verbose</code> remains the compatibility path. The compact projection reduces parsing; it does not create a new source of permission.</p>
+
+        <h2 id="independent">Permission and classification are independent</h2>
+
+        <p>The pre-edit ticket above is not contradictory:</p>
+
+        <blockquote><p><code>permission = implementation</code> and <code>currentChangeClassification = none</code> can coexist.</p></blockquote>
+
+        <p><strong>Permission</strong> comes from reviewed trusted-base authority. <strong>Classification</strong> describes the diff that currently exists. Before the first edit, there may be no changed paths to classify, even though a reviewed contract already grants implementation permission.</p>
+
+        <p>Later, the observed diff may classify as <code>implementation</code>. An exact approved-to-implemented contract transition beside the authorised implementation may classify as <code>implementation_with_monotonic_close</code>. A governance-only change can classify as <code>contract_only</code>. These are observations about the complete current change. Classification never grants or widens authority, and it is not a forecast of the lane an agent will eventually produce.</p>
+
+        <p>The inverse is important too: a diff can classify as implementation while the agent has no permission to create it. A successful command or a plausible classification does not retroactively authorise the work.</p>
+
+        <h2 id="scope">A bounded session-refresh change</h2>
+
+        <p>Suppose the reviewed <code>ES-session-refresh</code> contract grants writes only under two surfaces:</p>
+
+        <div class="scope-grid">
+          <section class="scope-card allowed" aria-labelledby="allowed-title">
+            <h3 id="allowed-title">Approved writes</h3>
+            <ul>
+              <li>src/auth/session/**</li>
+              <li>test/auth/session/**</li>
+            </ul>
+          </section>
+          <section class="scope-card outside" aria-labelledby="outside-title">
+            <h3 id="outside-title">Outside authority</h3>
+            <ul>
+              <li>src/auth/middleware/**</li>
+              <li>db/**</li>
+              <li>infra/**</li>
+            </ul>
+          </section>
+        </div>
+
+        <p>The agent is still free to read middleware, database, infrastructure, architecture, and tests when needed to understand the change. Reading for correctness does not silently turn those paths into writable surfaces.</p>
+
+        <p>If the implementation genuinely requires broader writes, the recovery path is explicit:</p>
+
+        <blockquote><p><strong>Stop → explain the blocker → obtain a separately reviewed authority amendment → continue from the new trusted base.</strong></p></blockquote>
+
+        <p>The amendment can change the contract, but it must be reviewed and merged as authority before dependent writes rely on it. A workspace edit that widens scope cannot approve itself.</p>
+
+        <h2 id="control-loop">One control loop, two views</h2>
+
+        <p>The human-facing lifecycle is a six-stage control loop:</p>
+
+        <figure class="flow">
+          <figcaption>Reviewed engineering change control</figcaption>
+          <ol>
+            <li>Explore</li>
+            <li>Propose</li>
+            <li>Approve</li>
+            <li>Implement</li>
+            <li>Verify</li>
+            <li>Close</li>
+          </ol>
+          <div class="agent-flow" aria-label="Lower-ceremony agent projection"><span>next</span><span>work</span><span>finish</span></div>
+        </figure>
+
+        <p><strong>Explore</strong> is read-only. <strong>Propose</strong> turns intent into a reviewable contract without granting implementation permission. <strong>Approve</strong> places the reviewed boundary on trusted history. <strong>Implement</strong> consumes that base-pinned authority. <strong>Verify</strong> combines separately trusted checks with complete-state routing. <strong>Close</strong> records the exact lifecycle transition after the evidence is reviewed.</p>
+
+        <p><code>next → work → finish</code> is a lower-ceremony projection of that same lifecycle for an agent. It is not a second authorization mechanism. <code>next</code> does not approve work, <code>work</code> cannot trust a workspace contract, and <code>finish</code> cannot manufacture a valid close for an unauthorised diff.</p>
+
+        <h2 id="rc17">What changed in RC17</h2>
+
+        <p>RC17 changes the agent-facing projection, not the underlying authority model:</p>
+
+        <ul>
+          <li>compact <code>next</code> PermissionTickets by default;</li>
+          <li>compact, pre-code <code>work</code> PermissionTickets by default;</li>
+          <li><code>--verbose</code> compatibility for previous full reports and exit behavior;</li>
+          <li>executable blocker recovery for uncovered, denied, ambiguous, or missing-candidate routing;</li>
+          <li>an explicit separation between permission and current-change classification;</li>
+          <li>aligned guidance for coding agents and repository maintainers.</li>
+        </ul>
+
+        <p>Trusted-base authority, multi-contract routing, <code>finish</code> semantics, and specification-runner inertness are unchanged. RC17 does not predict a future lane, execute declared verification runners, or make a compact ticket into a parallel approval system.</p>
+
+        <h2 id="verification">What verification can—and cannot—say</h2>
+
+        <p>EngineeringSpec checks the complete Git state: committed, staged, unstaged, deleted, renamed, and untracked paths. Repository routing can identify paths selected for an approved contract, selected for another contract, denied, uncovered, or ambiguous. Governance and implementation classifications describe that complete state, including the exact monotonic close when present.</p>
+
+        <p>That answers whether the observed change fits the reviewed authority. It does not answer every engineering question.</p>
+
+        <p>Verification runners declared in a specification remain inert data. Teams run their tests, linters, security checks, review processes, and acceptance procedures separately. EngineeringSpec does not claim that a valid route proves software correctness, security, productivity, acceptable implementation quality, or successful checks.</p>
+
+        <p>The boundary is intentional: authority evidence and software-quality evidence should be clear enough to inspect separately, then review together.</p>
+
+        <h2 id="non-goals">No new control plane required</h2>
+
+        <p>EngineeringSpec is an open, agent-neutral, Git-and-CI-oriented format with a CLI and reference implementation. It does not require an MCP server, ACP or hosted control plane, a specific coding agent, a context graph, or a telemetry service.</p>
+
+        <p>Those systems may be useful in some environments. They are not prerequisites and are not current EngineeringSpec features. The smallest useful setup is deliberately ordinary: a reviewed contract in Git, a coding agent that can consume the permission ticket, and repository checks that compare the resulting change with trusted authority.</p>
+
+        <h2 id="evidence">What we do not know yet</h2>
+
+        <div class="callout evidence">
+          <p><strong>We do not yet have evidence that EngineeringSpec makes coding agents faster, more productive, safer, or more correct.</strong></p>
+          <p>The model is testable. That is different from having tested it with external adopters.</p>
+        </div>
+
+        <p>The public pilot uses paired tasks: a baseline condition and an EngineeringSpec condition receive the same task, same immutable base, same agent and model, same harness, same permissions, and same trusted checks. Time limits, acceptance criteria, and reviewer identity are also held constant.</p>
+
+        <p>The target is two to five external users or repositories and at least ten paired tasks where practical. Failed, slower, amended, onboarding-blocked, scope-violating, protocol-deviating, and inconclusive runs are retained rather than filtered away. Synthetic examples remain separate from observed evidence.</p>
+
+        <p>Any eventual result will describe the retained sample, its missing data, and its limitations. It will not establish causality or general adoption. A negative result—extra ceremony with no useful control benefit for a class of tasks—is useful evidence too.</p>
+
+        <section class="closing" aria-labelledby="try-title">
+          <h2 id="try-title">Challenge the authority model</h2>
+          <p>If you maintain a repository where coding agents do real work, we would value criticism more than agreement. Try one paired task. Tell us where the authority boundary is too rigid, too vague, or too expensive. Contribute negative results. Propose an alternative approach that preserves explicit review without slowing the inner loop to a crawl.</p>
+
+          <p>Install the exact release candidate:</p>
+
+          <pre><code>npm install --save-exact @engineeringspec/cli@0.1.0-rc.17</code></pre>
+
+          <ul class="link-list">
+            <li><a href="https://github.com/majilesh/engineeringspec">EngineeringSpec on GitHub</a></li>
+            <li><a href="https://github.com/majilesh/engineeringspec/releases/tag/v0.1.0-rc.17">v0.1.0-rc.17 GitHub prerelease</a></li>
+            <li><a href="https://www.npmjs.com/package/@engineeringspec/cli/v/0.1.0-rc.17">Exact npm package</a></li>
+            <li><a href="/spec/0.1/">EngineeringSpec 0.1 specification</a></li>
+            <li><a href="https://github.com/majilesh/engineeringspec/blob/main/benchmarks/pilot-guide.md">Public paired-task pilot guide</a></li>
+            <li><a href="https://github.com/majilesh/engineeringspec/blob/main/benchmarks/pilots/README.md">External-adopter participant kit</a></li>
+          </ul>
+        </section>
+      </article>
+
+      <aside class="toc" aria-label="Article contents">
+        <strong>In this article</strong>
+        <a href="#permission">Reviewable permission</a>
+        <a href="#workflow">RC17 workflow</a>
+        <a href="#independent">Permission vs classification</a>
+        <a href="#scope">Bounded scope</a>
+        <a href="#control-loop">Control loop</a>
+        <a href="#rc17">RC17 changes</a>
+        <a href="#verification">Verification boundary</a>
+        <a href="#non-goals">Non-goals</a>
+        <a href="#evidence">Evidence</a>
+        <a href="#try-title">Try the pilot</a>
+      </aside>
+    </main>
+
+    <footer class="article-footer"><a href="/blog/">← Back to the blog</a><span>Change authority for AI coding agents.</span></footer>
+  </div>
+</body>
+</html>
