@@ -4,7 +4,7 @@ spec_format_version: "0.1"
 spec_revision: 1
 id: ES-external-adopter-pilot-execution
 title: Prepare and run the external-adopter evidence pilot
-status: proposed
+status: approved
 owners:
   - team: EngineeringSpec maintainers
 repository:
