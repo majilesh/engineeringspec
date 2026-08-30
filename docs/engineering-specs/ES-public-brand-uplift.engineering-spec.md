@@ -4,7 +4,7 @@ spec_format_version: "0.1"
 spec_revision: 1
 id: ES-public-brand-uplift
 title: Adopt the mark-first public identity and sharpen change-authority positioning
-status: approved
+status: implemented
 owners:
   - team: EngineeringSpec maintainers
 repository:
