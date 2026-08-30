@@ -15,9 +15,10 @@ It complements prompts, repository context, testing, and review. It does not cla
 
 ## Identity
 
-- Primary: hexagonal document/check/rails mark plus outlined EngineeringSpec wordmark.
+- Primary: rail-free hexagonal document/check mark plus outlined EngineeringSpec wordmark.
 - Use the horizontal lockup in navigation and README headers.
 - Use the mark alone for favicons and avatars.
+- Keep attached horizontal rails out of logo geometry. Background rules may be used as quiet structure but must not touch the mark.
 - Never recolour, rotate, stretch, shadow, or reconstruct the mark.
 - Do not use a mascot, AI-generated lockup, or wombat as the default public or GitHub identity.
 - Keep the project under `majilesh/engineeringspec` until a separately reviewed migration is justified.

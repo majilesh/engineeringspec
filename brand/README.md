@@ -19,6 +19,8 @@ This directory contains the repository-ready subset of the reviewed mark-first b
 
 The logo SVGs contain outlined wordmarks and do not depend on an installed font. Website text uses the locally served Latin-subset WOFF2 files in `fonts/`; Sora is display type and Inter is body type. The SIL OFL licences are included.
 
+The primary mark is rail-free across lockups, navigation, avatars, favicons, and social assets. The favicon uses a chunkier optical drawing for small-pixel clarity, not a different identity.
+
 The source generator is the reviewed `engineeringspec-brand-kit` dated 2026-08-30. Public exports in this directory were copied from one deterministic build and are verified against a second byte-identical non-PDF build. See [BRAND.md](BRAND.md) for usage rules and [exports/SIZES.md](exports/SIZES.md) for the public export matrix.
 
 The wombat concept is intentionally absent from this public subset. It remains optional editorial source material outside the repository and is not the project logo, avatar, favicon, or link-preview identity.
