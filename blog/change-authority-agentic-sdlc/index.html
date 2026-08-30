@@ -1,0 +1,396 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+  <meta name="description" content="As coding agents generate more pull requests, validation is not enough. We also need an explicit answer to what an agent was authorised to change.">
+  <link rel="canonical" href="https://engineeringspec.org/blog/change-authority-agentic-sdlc/">
+  <meta property="og:title" content="When 70% of Pull Requests Come From Agents, Who Decides What They’re Allowed to Change?">
+  <meta property="og:description" content="Validation tells us whether an agent’s change worked. Change authority tells us whether it was allowed to make that change at all.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://engineeringspec.org/blog/change-authority-agentic-sdlc/">
+  <meta property="article:published_time" content="2026-08-25">
+  <meta property="og:image" content="https://engineeringspec.org/og.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="When 70% of Pull Requests Come From Agents, Who Decides What They’re Allowed to Change?">
+  <meta name="twitter:description" content="Validation tells us whether an agent’s change worked. Change authority tells us whether it was allowed to make that change at all.">
+  <title>When 70% of Pull Requests Come From Agents — EngineeringSpec</title>
+  <link rel="stylesheet" href="/assets/site.css">
+</head>
+<body>
+  <div class="shell">
+    <header>
+      <nav class="site-nav" aria-label="Primary">
+        <a class="brand" href="/" aria-label="EngineeringSpec home"><img src="/assets/lockup.svg" alt="EngineeringSpec" width="1052" height="172"></a>
+        <span class="nav-links"><a href="/blog/" aria-current="page">Journal</a><a href="/explorer.html">Explorer</a><a href="https://github.com/majilesh/engineeringspec">GitHub</a><a href="/spec/0.1/">Specification</a></span>
+      </nav>
+      <div class="article-header">
+        <p class="kicker">Change authority</p>
+        <h1>When 70% of Pull Requests Come From Agents, Who Decides What They’re Allowed to Change?</h1>
+        <p class="dek">Uber’s agentic SDLC offers a glimpse of where software engineering is heading. It also exposes a question we may soon need to answer explicitly: what was an AI coding agent actually authorised to change?</p>
+        <div class="byline"><span>EngineeringSpec</span><span><time datetime="2026-08-25">August 25, 2026</time></span><span>12 min read</span></div>
+      </div>
+    </header>
+
+    <main class="article-layout">
+      <article class="article-body">
+        <p>At a recent <a href="https://aie-wf.sentry.dev/talks/aiewf-117-agentic-sdlc-at-uber">AI Engineer talk</a>, Uber described an engineering environment that would have sounded futuristic only a short time ago.</p>
+
+        <p>More than 70% of its pull requests now originate from local or cloud agents. Lines of code per engineer have doubled year over year. Automated migrations have changed millions of lines of code.</p>
+
+        <p>But the interesting part of Uber’s story isn’t the code-generation number.</p>
+
+        <p>It is the infrastructure they had to build around it.</p>
+
+        <p>Uber described a model gateway handling identity, PII redaction, safety controls, and attribution. An MCP gateway exposes internal tools efficiently to agents. Pre-provisioned development environments give autonomous agents isolated places to work. A managed skills marketplace provides reusable capabilities. A large context graph connects code, ownership, documentation, incidents, and dependencies.</p>
+
+        <p>Then those pieces come together in an agentic software development lifecycle.</p>
+
+        <p>An idea can begin in Slack, move through business research and product requirements, connect to design, pass to a coding agent, produce a draft pull request, validate itself, go through CI and review, and eventually enter managed maintenance loops.</p>
+
+        <p>This is much more interesting than “AI writes code.”</p>
+
+        <p>It looks like the beginning of a <strong>software factory for agents</strong>.</p>
+
+        <p>And once software development starts operating this way, another problem becomes important.</p>
+
+        <h2 id="validation">Validation answers “did it work?”</h2>
+
+        <p>One detail in Uber’s workflow is particularly important.</p>
+
+        <p>Their cloud coding agent, Minion, can deliberately stop at a draft pull request before sending work into CI.</p>
+
+        <p>Why?</p>
+
+        <p>Because pushing every generated attempt into an expensive shared CI system does not scale.</p>
+
+        <p>Instead, Uber is moving more validation into the agent’s inner loop.</p>
+
+        <p>Static analysis can happen earlier. A mobile simulator can be launched. Screenshots can be compared with Figma designs. Frontend and backend behaviour can be tested together. Parts of code review can happen before the outer CI loop.</p>
+
+        <p>By the time an autonomous change reaches a human reviewer, the pull request can include evidence showing which checks the agent has already performed.</p>
+
+        <p>That makes sense.</p>
+
+        <p>If agents generate increasing amounts of software, humans cannot compensate simply by reviewing more generated code manually.</p>
+
+        <p>Agents must increasingly <strong>prove their work before asking for human attention</strong>.</p>
+
+        <p>But validation answers only part of the problem.</p>
+
+        <p>It can tell us:</p>
+
+        <blockquote>
+          <p>Did the tests pass?</p>
+          <p>Does the interface match the design?</p>
+          <p>Did static analysis succeed?</p>
+          <p>Does the implementation behave correctly?</p>
+        </blockquote>
+
+        <p>There is another question.</p>
+
+        <blockquote><p><strong>Was the agent authorised to make this change in the first place?</strong></p></blockquote>
+
+        <p>Those are different questions.</p>
+
+        <h2 id="unauthorised">Correct code can still be an unauthorised change</h2>
+
+        <p>Imagine an agent receives a task to modify session-refresh behaviour.</p>
+
+        <p>It discovers that the easiest implementation also requires changing authentication middleware, modifying a shared database model, and updating a deployment configuration.</p>
+
+        <p>The agent may be completely correct.</p>
+
+        <p>Every test may pass.</p>
+
+        <p>The implementation may even be better than the originally anticipated solution.</p>
+
+        <p>But something important happened along the way:</p>
+
+        <p><strong>the scope of the change expanded.</strong></p>
+
+        <p>Today, we often expect a human reviewer to notice this.</p>
+
+        <p>That assumption becomes harder to sustain when agent-generated changes become the majority of changes rather than the exception.</p>
+
+        <p>Context doesn’t completely solve the problem either.</p>
+
+        <p>Giving an agent access to architecture documents, dependency graphs, source code, Jira tickets, incident history, and internal knowledge can dramatically improve its decisions.</p>
+
+        <p>But <strong>knowing about something is not the same as having authority to change it</strong>.</p>
+
+        <p>This distinction will matter increasingly in agentic software development.</p>
+
+        <h2 id="context-authority">Context and authority are different primitives</h2>
+
+        <p>Uber’s context graph is a good example of the emerging context layer.</p>
+
+        <p>An agent may need to know:</p>
+
+        <blockquote>
+          <p>Who owns this service?</p>
+          <p>Where is the implementation?</p>
+          <p>What depends on it?</p>
+          <p>Which internal patterns should be followed?</p>
+          <p>Which incidents involved this component?</p>
+          <p>Which design documents are relevant?</p>
+        </blockquote>
+
+        <p>That is enormously valuable.</p>
+
+        <p>But consider a slightly different set of questions:</p>
+
+        <blockquote>
+          <p>Which files may this agent modify?</p>
+          <p>Which files must it not modify?</p>
+          <p>Which constraints must remain true?</p>
+          <p>Which repository-owned checks provide evidence?</p>
+          <p>Who approved this scope?</p>
+          <p>Which trusted version of that approval applies to this implementation?</p>
+          <p>Did the final Git diff remain inside that approved scope?</p>
+        </blockquote>
+
+        <p>Those aren’t primarily context-retrieval questions.</p>
+
+        <p>They are <strong>change-authority questions</strong>.</p>
+
+        <p>This is the problem EngineeringSpec is exploring.</p>
+
+        <figure class="architecture" aria-labelledby="architecture-caption">
+          <figcaption id="architecture-caption">An agentic delivery path needs distinct controls</figcaption>
+          <ol aria-label="Context flows to authority, agent work, validation, CI, and human review">
+            <li>Context</li>
+            <li class="authority"><span><span class="authority-label">EngineeringSpec boundary</span>Authority</span></li>
+            <li>Agent</li>
+            <li>Validation</li>
+            <li>CI</li>
+            <li>Human review</li>
+          </ol>
+          <div class="diff-check"><strong>EngineeringSpec verification:</strong> compare the final Git diff with the approved authority before review and merge.</div>
+        </figure>
+
+        <h2 id="grant-authority">Grant authority before the agent spends it</h2>
+
+        <p>EngineeringSpec is an open experiment in <strong>change authority for AI coding agents</strong>.</p>
+
+        <p>Its basic idea is deliberately simple:</p>
+
+        <blockquote><p>Review what an agent may change before it writes code. Verify the final Git diff against that authority.</p></blockquote>
+
+        <p>Instead of allowing an agent to create a specification and immediately treat its own specification as permission, the authority comes from a reviewed contract already present on the trusted Git base.</p>
+
+        <p>Conceptually, the lifecycle is:</p>
+
+        <pre><code>propose bounded authority
+        ↓
+human review
+        ↓
+merge authority to trusted base
+        ↓
+agent implements
+        ↓
+evaluate final Git state
+        ↓
+implementation review / merge</code></pre>
+
+        <p>This creates a separation between <strong>granting authority</strong> and <strong>spending authority</strong>.</p>
+
+        <p>That separation is important.</p>
+
+        <p>An agent can propose that it needs broader access.</p>
+
+        <p>It cannot silently grant that broader access to itself.</p>
+
+        <p>If implementation discovers that additional surfaces need to change, the authority can be amended and reviewed separately.</p>
+
+        <p>The implementation then continues against the newly approved authority.</p>
+
+        <h2 id="independent-controls">An agentic SDLC needs several independent controls</h2>
+
+        <p>It is tempting to think there will eventually be one platform responsible for “AI governance.”</p>
+
+        <p>That probably isn’t the right model.</p>
+
+        <p>Different controls solve different problems.</p>
+
+        <div class="table-wrap">
+          <table>
+            <caption>Independent control layers in an agentic software-development lifecycle</caption>
+            <thead><tr><th scope="col">Layer</th><th scope="col">Question</th></tr></thead>
+            <tbody>
+              <tr><td>Model gateway</td><td>Which model calls are permitted and attributable?</td></tr>
+              <tr><td>Tool/MCP gateway</td><td>Which tools can the agent access?</td></tr>
+              <tr><td>Sandbox</td><td>Where can the agent execute?</td></tr>
+              <tr><td>Context system</td><td>What should the agent know?</td></tr>
+              <tr><td>Tests and evaluation</td><td>Does the implementation work?</td></tr>
+              <tr><td>Code review</td><td>Is this implementation acceptable?</td></tr>
+              <tr><td>Change authority</td><td><strong>Was this repository change within the scope humans approved?</strong></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p>These layers complement one another.</p>
+
+        <p>A sandbox controls execution boundaries.</p>
+
+        <p>A model gateway controls model access.</p>
+
+        <p>A context graph improves understanding.</p>
+
+        <p>Tests validate behaviour.</p>
+
+        <p>EngineeringSpec does not attempt to replace any of them.</p>
+
+        <p>Its narrower goal is to make <strong>repository change authority explicit and machine-verifiable</strong>.</p>
+
+        <p>That narrowness is intentional.</p>
+
+        <h2 id="git-authority">Git tells us what changed. We also need to know what was allowed to change.</h2>
+
+        <p>Git already gives engineering teams an excellent historical record.</p>
+
+        <p>We can determine exactly which files changed, who committed them, which branch they came from, and which pull request merged them.</p>
+
+        <p>Agent platforms can provide another category of evidence: prompts, tool calls, reasoning traces, generated patches, and execution histories.</p>
+
+        <p>Those tell us what happened.</p>
+
+        <p>Change authority records something subtly different:</p>
+
+        <p><strong>what was authorised to happen.</strong></p>
+
+        <p>That enables a deterministic comparison.</p>
+
+        <p>Suppose an approved change contract permits modifications under:</p>
+
+        <pre><code>src/session/**
+tests/session/**</code></pre>
+
+        <p>and explicitly denies:</p>
+
+        <pre><code>infra/**</code></pre>
+
+        <p>If the resulting Git diff modifies:</p>
+
+        <pre><code>src/session/refresh.ts
+tests/session/refresh.test.ts
+infra/production/auth.yaml</code></pre>
+
+        <p>the question is no longer whether an LLM reviewer <em>believes</em> that infrastructure change looks suspicious.</p>
+
+        <p>The authority check can fail deterministically.</p>
+
+        <p>The changed path was outside the granted authority.</p>
+
+        <p>Humans can then decide whether the implementation was wrong or whether the authorised scope needs to change.</p>
+
+        <p>The machine doesn’t make that product or architecture decision.</p>
+
+        <p>It simply prevents the decision from happening invisibly.</p>
+
+        <h2 id="reviewer-experience">The reviewer experience may be where this becomes most valuable</h2>
+
+        <p>Uber demonstrated another important idea: give reviewers evidence about what an autonomous change has already done.</p>
+
+        <p>As agent-generated code increases, the pull request itself may evolve.</p>
+
+        <p>Instead of presenting humans with only a diff, future pull requests may carry an evidence package:</p>
+
+        <p>the product intent, the approved change boundary, tests executed, visual comparisons, policy checks, affected components, agent provenance, and final authority evaluation.</p>
+
+        <p>The human review question can then change from:</p>
+
+        <blockquote><p>“Can I reconstruct everything this agent did and determine whether it looks safe?”</p></blockquote>
+
+        <p>to:</p>
+
+        <blockquote><p>“Here is the intent, here is the authority we approved, here is the implementation, and here is the evidence. Do I approve the result?”</p></blockquote>
+
+        <p>That is a substantially better human-machine boundary.</p>
+
+        <h2 id="speed">The goal isn’t to slow agents down</h2>
+
+        <p>Governance mechanisms often fail because they add ceremony to every change.</p>
+
+        <p>That would be particularly damaging for coding agents.</p>
+
+        <p>If agents can produce changes in minutes but every change requires filling out a large governance document manually, the control will eventually be bypassed.</p>
+
+        <p>The useful version of change authority therefore has to be small, composable, and increasingly generated from information teams already possess.</p>
+
+        <p>A task, issue, or product requirement can help propose the authority.</p>
+
+        <p>Repository architecture can help identify likely writable surfaces.</p>
+
+        <p>Agents can draft the contract.</p>
+
+        <p>Humans review the consequential boundary.</p>
+
+        <p>The machine handles deterministic enforcement.</p>
+
+        <p>The important human action isn’t typing YAML or Markdown.</p>
+
+        <p>It is making an explicit decision:</p>
+
+        <blockquote><p><strong>Yes. For this change, these are the boundaries I am willing to authorise.</strong></p></blockquote>
+
+        <h2 id="software-factories">From coding agents to managed software factories</h2>
+
+        <p>Uber’s talk suggests that the important shift is already underway.</p>
+
+        <p>The industry started by asking whether AI could generate useful code.</p>
+
+        <p>Then we asked whether agents could complete entire engineering tasks.</p>
+
+        <p>Now companies are building the infrastructure needed to run those agents at scale: gateways, environments, tools, context systems, skills, evaluation loops, and automated maintenance.</p>
+
+        <p>As those systems mature, the bottleneck moves again.</p>
+
+        <p>Uber ends its presentation with an important observation: when building becomes dramatically easier, the harder question becomes whether something <strong>should</strong> be built.</p>
+
+        <p>There is a parallel engineering question:</p>
+
+        <blockquote><p>When making a change becomes dramatically easier, <strong>who authorised the change, and what exactly did they authorise?</strong></p></blockquote>
+
+        <p>That question is unlikely to be answered by a larger context window or a smarter coding model.</p>
+
+        <p>It is a control-plane problem.</p>
+
+        <p>And if agent-generated software becomes normal, change authority may need to become a first-class primitive of the software development lifecycle.</p>
+
+        <div class="closing">
+          <p><strong>EngineeringSpec</strong> is an open-source draft specification and reference implementation exploring this problem: bounded, reviewed repository change authority for AI coding agents, independently verified against the resulting Git diff.</p>
+          <p><a href="https://github.com/majilesh/engineeringspec">Explore EngineeringSpec on GitHub →</a></p>
+        </div>
+
+        <p class="disclaimer">EngineeringSpec does not claim that Uber uses EngineeringSpec, nor that Uber lacks internal controls not discussed publicly. Uber’s Agentic SDLC presentation is used here as an example of the broader architectural direction emerging as organisations adopt coding agents at scale.</p>
+
+        <section class="sources" aria-labelledby="sources-title">
+          <h2 id="sources-title">Sources</h2>
+          <ul>
+            <li><a href="https://aie-wf.sentry.dev/talks/aiewf-117-agentic-sdlc-at-uber">Agentic SDLC at Uber — Uday Kiran Medisetty and Adam Huda</a>, AI Engineer World’s Fair 2026.</li>
+            <li><a href="https://engineeringspec.org/">EngineeringSpec project documentation</a>.</li>
+          </ul>
+        </section>
+      </article>
+
+      <aside class="toc" aria-label="Article contents">
+        <strong>In this article</strong>
+        <a href="#validation">Validation</a>
+        <a href="#unauthorised">Unauthorised change</a>
+        <a href="#context-authority">Context vs authority</a>
+        <a href="#grant-authority">Granting authority</a>
+        <a href="#independent-controls">Independent controls</a>
+        <a href="#git-authority">Git and authority</a>
+        <a href="#reviewer-experience">Reviewer experience</a>
+        <a href="#speed">Keeping agents fast</a>
+        <a href="#software-factories">Software factories</a>
+      </aside>
+    </main>
+
+    <footer class="article-footer"><a href="/blog/">← Back to the blog</a><span>Change authority for AI coding agents.</span></footer>
+  </div>
+</body>
+</html>

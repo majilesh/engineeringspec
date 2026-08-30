@@ -1,0 +1,12 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "$id":"https://engineeringspec.org/schemas/0.1/implementation-receipt.schema.json",
+  "title":"EngineeringSpec implementation receipt 0.1",
+  "type":"object",
+  "required":["receipt_format","receipt_format_version","spec","implementation","verification_results","drift"],
+  "properties":{
+    "receipt_format":{"const":"engineering-spec-receipt"},"receipt_format_version":{"const":"0.1"},
+    "spec":{"type":"object","required":["id","revision","digest"]},"implementation":{"type":"object","required":["repository","base_revision","result_revision"]},
+    "verification_results":{"type":"array"},"drift":{"type":"object","required":["source_revision_changed","engineering_spec_changed","unverified_obligations"]}
+  },"additionalProperties":true
+}
