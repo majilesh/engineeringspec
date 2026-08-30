@@ -1,8 +1,1912 @@
 {
   "valid": true,
   "directory": "docs/engineering-specs",
-  "documents": 27,
+  "documents": 41,
   "entries": [
+    {
+      "id": "ES-ONBOARDING-FRICTION-COLLAPSE",
+      "title": "Collapse onboarding friction for EngineeringSpec",
+      "status": "implemented",
+      "file": "ES-ONBOARDING-FRICTION-COLLAPSE.engineering-spec.md",
+      "owners": [
+        "EngineeringSpec maintainers"
+      ],
+      "sourceRefs": [
+        {
+          "id": "SRC-TRUSTED-MAIN",
+          "type": "other",
+          "locator": "48316158a8c58ac22e13f9d5223c03311b5efff0",
+          "title": "Trusted main after RC16 publication lifecycle closure"
+        },
+        {
+          "id": "SRC-README",
+          "type": "document",
+          "locator": "README.md",
+          "title": "Current repository introduction and quick start"
+        },
+        {
+          "id": "SRC-GETTING-STARTED",
+          "type": "document",
+          "locator": "docs/getting-started.md",
+          "title": "Current first-adoption guide"
+        },
+        {
+          "id": "SRC-FIRST-CHANGE",
+          "type": "document",
+          "locator": "docs/first-change-tutorial.md",
+          "title": "Current dark-mode first-change tutorial"
+        },
+        {
+          "id": "SRC-HOMEPAGE",
+          "type": "document",
+          "locator": "site/index.html",
+          "title": "Current public homepage and quick-start example"
+        },
+        {
+          "id": "SRC-AGENT-SKILL",
+          "type": "document",
+          "locator": "skills/engineering-spec/SKILL.md",
+          "title": "Current optional portable agent guidance"
+        },
+        {
+          "id": "SRC-DEMO",
+          "type": "document",
+          "locator": "examples/demo/README.md",
+          "title": "Current local fail-closed demonstration guide"
+        },
+        {
+          "id": "SRC-AGENT-INSTRUCTIONS",
+          "type": "document",
+          "locator": "AGENTS.md",
+          "title": "Repository-owned EngineeringSpec workflow guidance"
+        },
+        {
+          "id": "SRC-PRODUCTION-GATE",
+          "type": "document",
+          "locator": "docs/production-gate.md",
+          "title": "Existing required-check and immutable-Action production guidance"
+        },
+        {
+          "id": "SRC-RC16-PUBLICATION",
+          "type": "document",
+          "locator": "docs/engineering-specs/ES-RC16-PUBLICATION.engineering-spec.md",
+          "title": "Implemented RC16 publication authority and evidence boundary"
+        }
+      ],
+      "targets": [
+        {
+          "id": "TARGET-POSITIONING",
+          "component": "first-impression-value-and-current-release-guidance",
+          "paths": [
+            "README.md",
+            "site/index.html"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-FIRST-USER-GUIDES",
+          "component": "advisory-first-adoption-and-first-governed-change",
+          "paths": [
+            "docs/getting-started.md",
+            "docs/first-change-tutorial.md"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-AGENT-SKILL",
+          "component": "optional-progressively-disclosed-agent-guidance",
+          "paths": [
+            "skills/engineering-spec/SKILL.md"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-DEMO-GUIDE",
+          "component": "three-minute-fail-closed-demonstration",
+          "paths": [
+            "examples/demo/README.md"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-CONTRACT",
+          "component": "onboarding-friction-authority-lifecycle",
+          "paths": [
+            "docs/engineering-specs/ES-ONBOARDING-FRICTION-COLLAPSE.engineering-spec.md"
+          ],
+          "changePolicy": "modify"
+        }
+      ],
+      "constraints": [
+        {
+          "id": "CON-POSITIONING",
+          "level": "must",
+          "statement": "Current-facing positioning must lead with \"Change authority for AI coding agents\" or an equally precise formulation, explain that maintainers review what an agent may change before code is written and the final Git diff is independently evaluated against approved trusted-base authority, and avoid claims that EngineeringSpec prevents local writes or guarantees correct code.",
+          "appliesTo": [
+            "TARGET-POSITIONING",
+            "TARGET-FIRST-USER-GUIDES",
+            "TARGET-AGENT-SKILL"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-COMPARISON",
+          "level": "must",
+          "statement": "Any comparison with Git or agent platforms must remain factual: Git records what changed, agent platforms may record what an agent did, and EngineeringSpec records reviewed change authority and evaluates whether the resulting diff stayed inside it; the guidance must not disparage or misrepresent adjacent tools.",
+          "appliesTo": [
+            "TARGET-POSITIONING",
+            "TARGET-FIRST-USER-GUIDES"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-FIRST-TIME-MENTAL-MODEL",
+          "level": "must",
+          "statement": "The primary onboarding path must teach adopt, bounded prospective authority proposal, human review and trusted-base approval, next, work, coding within returned writable surfaces, repository-owned checks, finish, implementation pull request, and the exact monotonic close as one visual or equivalently scannable intent-to-authority-to-diff-to-verification flow.",
+          "appliesTo": [
+            "TARGET-POSITIONING",
+            "TARGET-FIRST-USER-GUIDES"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-README-HIERARCHY",
+          "level": "must",
+          "statement": "README content above the fold must focus on what EngineeringSpec is, why reviewed authority exists, one short mental model, one current install or adoption command, the next-to-work-to-finish loop, and links to Getting Started, production enforcement, and advanced CLI or reference material; a dense inventory of advanced commands must not dominate first use.",
+          "appliesTo": [
+            "TARGET-POSITIONING"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-GETTING-STARTED-FLOW",
+          "level": "must",
+          "statement": "The primary Getting Started flow must end after preview adoption, apply adoption, propose one small explicit-path change, open and merge the reviewed authority pull request, run next, run work, code, run finish, and open the implementation pull request; doctor, status, production enforcement, diagnostics, and lower-level commands must be secondary links unless needed to resolve failure.",
+          "appliesTo": [
+            "TARGET-FIRST-USER-GUIDES"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-GRANT-BEFORE-SPEND",
+          "level": "must",
+          "statement": "The first-change tutorial must optimize the dark-mode-style example for grant versus spend, use prospective explicit paths for the clean new change, show PR 1 as reviewed authority and PR 2 as implementation plus the exact approved-to-implemented close, state that no third closure pull request is normally needed, and retain --from-diff only as advanced import-existing-work guidance.",
+          "appliesTo": [
+            "TARGET-FIRST-USER-GUIDES"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-AGENT-LOOP",
+          "level": "must",
+          "statement": "Primary agent guidance must say to run next, stop unless permission is implementation, run work for the named contract, edit only returned writable surfaces while allowing broader repository reading for correctness, run separately trusted repository checks, run finish, and never infer, widen, approve, or manufacture authority.",
+          "appliesTo": [
+            "TARGET-AGENT-SKILL",
+            "TARGET-FIRST-USER-GUIDES",
+            "TARGET-POSITIONING"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-SKILL-BOUNDARY",
+          "level": "must",
+          "statement": "The Skill must remain optional integration and discovery over repository instructions and the CLI, make the short normal loop dominant, and must not reproduce routing or authorization logic, grant authority, claim enforcement, or become a second authorization path.",
+          "appliesTo": [
+            "TARGET-AGENT-SKILL"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-PROGRESSIVE-DISCLOSURE",
+          "level": "must",
+          "statement": "prepare, select, review, check, context, explain, coverage, gate, normalize, catalogue, transition, replay, and benchmark must remain supported and discoverable under advanced CLI, CI or enforcement, debugging, historical inspection, or reference concepts, but must not dominate the first-user path; useful technical material moved from an introductory surface must retain a sensible durable home or link.",
+          "appliesTo": [
+            "TARGET-POSITIONING",
+            "TARGET-FIRST-USER-GUIDES",
+            "TARGET-AGENT-SKILL"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-ADVISORY-PRODUCTION-BOUNDARY",
+          "level": "must",
+          "statement": "First-use guidance must distinguish TRY as adoption preview, advisory understanding, and a first governed change from PRODUCTION as a required EngineeringSpec check plus contract-directory maintainer ownership, immutable Action SHA, and trusted base; it must not imply advisory mode provides merge-blocking assurance or weaken existing production enforcement guidance.",
+          "appliesTo": [
+            "TARGET-POSITIONING",
+            "TARGET-FIRST-USER-GUIDES"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-DEMO-STORY",
+          "level": "must",
+          "statement": "The demo guide must present a roughly three-minute fail-closed story in which approved authority covers src/settings, an intended settings change is allowed, an additional src/auth change fails closed, authority is not edited and spent in the same implementation pull request, and the implementation succeeds only after separately reviewed authority exists; it must remain a differentiator demonstration rather than a complete CLI tutorial.",
+          "appliesTo": [
+            "TARGET-DEMO-GUIDE"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-RC16-CURRENT",
+          "level": "must",
+          "statement": "Current-facing guidance in scope must treat @engineeringspec/cli@0.1.0-rc.16 and v0.1.0-rc.16 as published, use the exact RC16 package where shown, preserve npm latest at RC15 as a registry fact when relevant, and remove stale claims that RC16 publication or exact npx availability is pending.",
+          "appliesTo": [
+            "TARGET-POSITIONING",
+            "TARGET-FIRST-USER-GUIDES",
+            "TARGET-AGENT-SKILL"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-SECURITY-INVARIANTS",
+          "level": "must",
+          "statement": "Guidance must preserve that authority comes only from approved trusted-base contracts, workspace drafts grant no implementation authority, a change cannot widen and spend its own authority in the same pull request, uncovered and ambiguous paths fail closed, denial overrides allowance, only the exact monotonic close may accompany implementation, runners remain inert, Git remains the authority source, production Action usage remains immutable-SHA-pinned, and historical replay grants no current authority.",
+          "appliesTo": [
+            "TARGET-POSITIONING",
+            "TARGET-FIRST-USER-GUIDES",
+            "TARGET-AGENT-SKILL",
+            "TARGET-DEMO-GUIDE"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-ACCURATE-LIMITATIONS",
+          "level": "must",
+          "statement": "Current guidance must keep factual answers discoverable that EngineeringSpec is not an agent sandbox, IDE, model router, filesystem containment system, generic verifier execution engine, or AST-level policy engine; declared runners are inert, interface_only is path-level rather than AST or API enforcement, agents cannot approve workspace drafts, two pull requests enforce grant before spend, broad globs require human authority-quality review, and Skills are optional.",
+          "appliesTo": [
+            "TARGET-POSITIONING",
+            "TARGET-FIRST-USER-GUIDES",
+            "TARGET-AGENT-SKILL"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-USABILITY-HYPOTHESIS",
+          "level": "must",
+          "statement": "The implementation must present the 15-minute first-use objective as an unproven Phase-0 hypothesis excluding human pull-request review latency, not as measured product performance or a guarantee.",
+          "appliesTo": [
+            "TARGET-POSITIONING",
+            "TARGET-FIRST-USER-GUIDES"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-USABILITY-PLAN",
+          "level": "must",
+          "statement": "The guidance must define a lightweight validation plan for 5 to 10 fresh users or repositories measuring time to understand the one-line value, adoption dry-run, successful scaffold, documents opened, commands and setup errors, grant-versus-spend explanation, first draft authority, amendment rate, false-block or confusion points, and first implementation-ready state after approval; measurement must be manual or local/private with no telemetry or repository source or spec upload.",
+          "appliesTo": [
+            "TARGET-FIRST-USER-GUIDES"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-DOCUMENTATION-ONLY",
+          "level": "must_not",
+          "statement": "This authority must not add CLI commands, change runtime, routing, replay, lifecycle states, approval behavior, verifier execution, format, schema, package or lock identity, Action or Action pin, workflow, generated catalogue, stable release status, RC17 features, MCP, TUI, IDE plugin, hosted service, signed receipts, consumer state, or Agent Control Plane state; inability to meet the measured goal through documentation requires a separate reviewed authority decision.",
+          "appliesTo": [
+            "TARGET-POSITIONING",
+            "TARGET-FIRST-USER-GUIDES",
+            "TARGET-AGENT-SKILL",
+            "TARGET-DEMO-GUIDE",
+            "TARGET-CONTRACT"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-PUBLIC-OSS-DISCIPLINE",
+          "level": "must_not",
+          "statement": "Public artifacts must not contain private prompts, conversation transcripts, private reviewer notes, internal deliberation, commercial strategy, unpublished launch tactics, or private scoring; public guidance may contain only durable technical and product facts.",
+          "appliesTo": [
+            "TARGET-POSITIONING",
+            "TARGET-FIRST-USER-GUIDES",
+            "TARGET-AGENT-SKILL",
+            "TARGET-DEMO-GUIDE",
+            "TARGET-CONTRACT"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-EXACT-CLOSE",
+          "level": "must",
+          "statement": "After implementation and separately trusted verification complete, the implementation pull request may change this exact revision only from approved to implemented without changing any other contract content; proposal and approval remain separate contract-only lifecycle changes.",
+          "appliesTo": [
+            "TARGET-CONTRACT"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-RUNNERS-INERT",
+          "level": "must_not",
+          "statement": "Specification-declared runners are inert data and must not be executed merely because they appear in this contract.",
+          "appliesTo": [
+            "TARGET-CONTRACT"
+          ],
+          "enforcement": "review"
+        }
+      ],
+      "contracts": [],
+      "verification": [
+        {
+          "id": "VER-GUIDANCE-REVIEW",
+          "kind": "human_review",
+          "proves": [
+            "CON-POSITIONING",
+            "CON-COMPARISON",
+            "CON-FIRST-TIME-MENTAL-MODEL",
+            "CON-README-HIERARCHY",
+            "CON-GETTING-STARTED-FLOW",
+            "CON-GRANT-BEFORE-SPEND",
+            "CON-AGENT-LOOP",
+            "CON-SKILL-BOUNDARY",
+            "CON-PROGRESSIVE-DISCLOSURE",
+            "CON-ADVISORY-PRODUCTION-BOUNDARY",
+            "CON-DEMO-STORY",
+            "CON-USABILITY-HYPOTHESIS"
+          ]
+        },
+        {
+          "id": "VER-SECURITY-REVIEW",
+          "kind": "security",
+          "proves": [
+            "CON-SECURITY-INVARIANTS",
+            "CON-ACCURATE-LIMITATIONS",
+            "CON-DOCUMENTATION-ONLY",
+            "CON-PUBLIC-OSS-DISCIPLINE",
+            "CON-EXACT-CLOSE",
+            "CON-RUNNERS-INERT"
+          ]
+        },
+        {
+          "id": "VER-STATIC-GUIDANCE",
+          "kind": "test",
+          "proves": [
+            "CON-RC16-CURRENT"
+          ]
+        },
+        {
+          "id": "VER-USABILITY-PLAN",
+          "kind": "human_review",
+          "proves": [
+            "CON-USABILITY-PLAN"
+          ]
+        },
+        {
+          "id": "VER-REPOSITORY-CHECKS",
+          "kind": "test",
+          "proves": [
+            "CON-DOCUMENTATION-ONLY",
+            "CON-EXACT-CLOSE"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ES-RC16-ACTION-ANCHOR",
+      "title": "Align the immutable Action anchor with RC16",
+      "status": "implemented",
+      "file": "ES-RC16-ACTION-ANCHOR.engineering-spec.md",
+      "owners": [
+        "EngineeringSpec maintainers"
+      ],
+      "sourceRefs": [
+        {
+          "id": "SRC-RC16-MERGE",
+          "type": "other",
+          "locator": "ddf813e4e69d9b2f9a9eb3f0f241747746021cf3",
+          "title": "Reviewed RC16 implementation merge and prospective immutable Action runtime anchor"
+        },
+        {
+          "id": "SRC-RC16-AUTHORITY",
+          "type": "document",
+          "locator": "docs/engineering-specs/ES-RC16-DX-AUTHORITY.engineering-spec.md",
+          "title": "Implemented RC16 historical replay and maintenance sequencing authority"
+        },
+        {
+          "id": "SRC-ANCHOR-PROCESS",
+          "type": "document",
+          "locator": "docs/maintaining-specs.md",
+          "title": "Existing non-self-referential immutable Action anchor process"
+        },
+        {
+          "id": "SRC-PRODUCTION-GATE",
+          "type": "document",
+          "locator": "docs/production-gate.md",
+          "title": "Current immutable production enforcement guidance"
+        }
+      ],
+      "targets": [
+        {
+          "id": "TARGET-ACTION-PIN",
+          "component": "current-immutable-action-runtime-identity",
+          "paths": [
+            "src/adoption/releases.ts"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-CURRENT-GUIDANCE",
+          "component": "current-public-adoption-and-enforcement-guidance",
+          "paths": [
+            "README.md",
+            "docs/agent-integration.md",
+            "docs/first-change-tutorial.md",
+            "docs/getting-started.md",
+            "docs/maintaining-specs.md",
+            "docs/production-gate.md",
+            "docs/upgrading.md",
+            "site/index.html",
+            "skills/engineering-spec/SKILL.md"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-PIN-REGRESSIONS",
+          "component": "current-action-pin-and-guidance-regressions",
+          "paths": [
+            "test/integration/cli.test.ts",
+            "test/unit/doctor.test.ts",
+            "test/unit/release-readiness.test.ts"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-CONTRACT",
+          "component": "rc16-action-anchor-authority-lifecycle",
+          "paths": [
+            "docs/engineering-specs/ES-RC16-ACTION-ANCHOR.engineering-spec.md"
+          ],
+          "changePolicy": "modify"
+        }
+      ],
+      "constraints": [
+        {
+          "id": "CON-ANCHOR-IDENTITY",
+          "level": "must",
+          "statement": "CURRENT_ACTION_SHA and every current production Action example or generated-adoption expectation in scope must use exactly ddf813e4e69d9b2f9a9eb3f0f241747746021cf3; movable refs are not acceptable for current production guidance.",
+          "appliesTo": [
+            "TARGET-ACTION-PIN",
+            "TARGET-CURRENT-GUIDANCE",
+            "TARGET-PIN-REGRESSIONS"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-ANCHOR-PREEXISTS",
+          "level": "must",
+          "statement": "The selected anchor must remain the already-existing reviewed RC16 merge commit ddf813e4e69d9b2f9a9eb3f0f241747746021cf3 and must be an ancestor of the future pin-alignment implementation; the alignment commit must not pin itself.",
+          "appliesTo": [
+            "TARGET-ACTION-PIN",
+            "TARGET-PIN-REGRESSIONS"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-FULL-HISTORY",
+          "level": "must",
+          "statement": "A separate full-history release review must use deterministic local Git object and ancestry inspection to prove that the anchor commit exists, identifies package version 0.1.0-rc.16, contains action.yml building the Action-local CLI and invoking select and review for directory enforcement, contains trusted-base-only subtractive and deny-preserving maintenance sequencing, fails closed for invalid, stale, chained, cyclic, or competing controls, keeps specification runners inert, and predates the final pin-alignment commit; ordinary unit tests alone are insufficient proof.",
+          "appliesTo": [
+            "TARGET-ACTION-PIN",
+            "TARGET-PIN-REGRESSIONS"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-CURRENT-COHERENCE",
+          "level": "must",
+          "statement": "Current CLI guidance must identify 0.1.0-rc.16, current production Action guidance and generated adopt and doctor expectations must use the RC16 anchor, the site quickstart and production-gate guidance must no longer present RC14 as current, and no guidance may claim that v0.1.0-rc.16 or its npm package already exists before separate publication completes.",
+          "appliesTo": [
+            "TARGET-ACTION-PIN",
+            "TARGET-CURRENT-GUIDANCE",
+            "TARGET-PIN-REGRESSIONS"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-CURRENT-JOURNEY",
+          "level": "must",
+          "statement": "Current first-adoption and prospective site guidance must prefer explicit intended paths when proposing new authority, while the normal memorable agent journey remains next followed by work for the approved contract and finish; propose --from-diff may remain documented as an advanced supported capability but must not be the normal clean prospective-change path.",
+          "appliesTo": [
+            "TARGET-CURRENT-GUIDANCE",
+            "TARGET-PIN-REGRESSIONS"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-HISTORICAL-PRESERVATION",
+          "level": "must",
+          "statement": "Historical RC14 and RC15 EngineeringSpecs, changelog and release-note identities, retained receipts, evidence, benchmark provenance, generated catalogue content that embeds historical contracts, prior immutable-pin facts explicitly presented as historical, and compatibility fixtures must remain unchanged; implementation must not perform a repository-wide blind replacement.",
+          "appliesTo": [
+            "TARGET-CURRENT-GUIDANCE",
+            "TARGET-PIN-REGRESSIONS"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-NO-RUNTIME-CHANGE",
+          "level": "must_not",
+          "statement": "This alignment must not modify action.yml, routing, select, review, replay, authority-control semantics, trusted-base rules, EngineeringSpec schemas, receipt formats, package identity, package-lock identity, release workflow, or any runtime behavior.",
+          "appliesTo": [
+            "TARGET-ACTION-PIN",
+            "TARGET-CURRENT-GUIDANCE",
+            "TARGET-PIN-REGRESSIONS",
+            "TARGET-CONTRACT"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-NO-PUBLICATION",
+          "level": "must_not",
+          "statement": "This authority must not publish npm, move npm dist-tags, create or move Git tags, create GitHub releases, promote npm latest, update downstream consumers, or represent external RC16 publication as complete; publication requires a later separately reviewed contract.",
+          "appliesTo": [
+            "TARGET-ACTION-PIN",
+            "TARGET-CURRENT-GUIDANCE",
+            "TARGET-PIN-REGRESSIONS",
+            "TARGET-CONTRACT"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-NO-ACP",
+          "level": "must_not",
+          "statement": "No Agent Control Plane repository, source, documentation, consumer configuration, or release surface is in scope.",
+          "appliesTo": [
+            "TARGET-ACTION-PIN",
+            "TARGET-CURRENT-GUIDANCE",
+            "TARGET-PIN-REGRESSIONS",
+            "TARGET-CONTRACT"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-VERIFICATION",
+          "level": "must",
+          "statement": "The future alignment must pass lint, typecheck, complete tests, conformance, build, package-content inspection, strict full-catalogue validation, current pin and guidance consistency checks, complete-working-state routing, git diff checks, and the separate full-history anchor review before the exact approved-to-implemented contract close is proposed.",
+          "appliesTo": [
+            "TARGET-ACTION-PIN",
+            "TARGET-CURRENT-GUIDANCE",
+            "TARGET-PIN-REGRESSIONS",
+            "TARGET-CONTRACT"
+          ],
+          "enforcement": "review"
+        }
+      ],
+      "contracts": [],
+      "verification": [
+        {
+          "id": "VER-STATIC",
+          "kind": "test",
+          "proves": [
+            "CON-ANCHOR-IDENTITY",
+            "CON-CURRENT-COHERENCE"
+          ]
+        },
+        {
+          "id": "VER-FULL-HISTORY",
+          "kind": "human_review",
+          "proves": [
+            "CON-ANCHOR-PREEXISTS",
+            "CON-FULL-HISTORY"
+          ]
+        },
+        {
+          "id": "VER-SCOPE",
+          "kind": "security",
+          "proves": [
+            "CON-HISTORICAL-PRESERVATION",
+            "CON-NO-RUNTIME-CHANGE"
+          ]
+        },
+        {
+          "id": "VER-RELEASE-REVIEW",
+          "kind": "human_review",
+          "proves": [
+            "CON-CURRENT-JOURNEY",
+            "CON-NO-PUBLICATION",
+            "CON-NO-ACP",
+            "CON-VERIFICATION"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ES-RC16-DX-AUTHORITY",
+      "title": "Add historical replay and trusted maintenance sequencing for RC16",
+      "status": "implemented",
+      "file": "ES-RC16-DX-AUTHORITY.engineering-spec.md",
+      "owners": [
+        "EngineeringSpec maintainers"
+      ],
+      "sourceRefs": [
+        {
+          "id": "SRC-DOGFOOD",
+          "type": "other",
+          "locator": "agent-control-plane-dogfood-rc14-rc15-ceremony-2026-08-21",
+          "title": "Consumer evidence for trusted-base ProductSpec isolation, approved-authority overlap, and historical verification friction"
+        },
+        {
+          "id": "SRC-RC15",
+          "type": "document",
+          "locator": "docs/engineering-specs/ES-rc15-finish-productspec-base-isolation.engineering-spec.md",
+          "title": "Implemented RC15 trusted-base ProductSpec isolation contract"
+        },
+        {
+          "id": "SRC-RC14-RFC",
+          "type": "document",
+          "locator": "rfcs/0011-maximum-safety-minimum-ceremony.md",
+          "title": "Accepted immutable authority and implementation-plus-close design"
+        },
+        {
+          "id": "SRC-RC16-DESIGN",
+          "type": "document",
+          "locator": "rfcs/0013-rc16-historical-replay-maintenance-sequencing.md",
+          "title": "Proposed RC16 architecture and threat model"
+        },
+        {
+          "id": "SRC-DIAGNOSTICS",
+          "type": "document",
+          "locator": "docs/engineering-specs/ES-actionable-diagnostic-hints.engineering-spec.md",
+          "title": "Existing actionable diagnostic principles"
+        }
+      ],
+      "targets": [
+        {
+          "id": "TARGET-REPLAY-NEW",
+          "component": "historical-snapshot-evaluation",
+          "paths": [
+            "src/cli/replay.ts",
+            "src/replay/**"
+          ],
+          "changePolicy": "create"
+        },
+        {
+          "id": "TARGET-REPLAY-INTEGRATION",
+          "component": "snapshot-resolution-and-cli-integration",
+          "paths": [
+            "src/cli/program.ts",
+            "src/config/repositoryConfig.ts",
+            "src/gate/loadSpec.ts",
+            "src/index.ts",
+            "src/profiles/productspec/resolve.ts",
+            "src/profiles/productspec/validate.ts",
+            "src/validator/validateFile.ts",
+            "src/validator/validateProfiles.ts"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-SEQUENCING-MODEL",
+          "component": "additive-authority-control-format",
+          "paths": [
+            "schemas/engineering-spec-0.1.schema.json",
+            "src/model/constants.ts",
+            "src/model/types.ts",
+            "src/parser/parseMarkdown.ts",
+            "src/normalizer/digest.ts",
+            "src/normalizer/normalize.ts",
+            "src/validator/validateReferences.ts",
+            "src/validator/validateSemantics.ts",
+            "src/validator/validateStructure.ts"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-SEQUENCING-ROUTING",
+          "component": "trusted-positive-claim-subtraction",
+          "paths": [
+            "schemas/authority-diff-0.1.schema.json",
+            "src/authority/diff.ts",
+            "src/catalogue/catalogue.ts",
+            "src/cli/next.ts",
+            "src/cli/prepare.ts",
+            "src/cli/review.ts",
+            "src/cli/status.ts",
+            "src/diagnostics/codes.ts",
+            "src/routing/loadCandidates.ts",
+            "src/routing/route.ts",
+            "src/routing/select.ts",
+            "src/routing/types.ts"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-REPLAY-SCHEMA",
+          "component": "historical-result-contract",
+          "paths": [
+            "schemas/historical-snapshot-evaluation-0.1.schema.json"
+          ],
+          "changePolicy": "create"
+        },
+        {
+          "id": "TARGET-CEREMONY-NEW",
+          "component": "machine-readable-ceremony-benchmark",
+          "paths": [
+            "benchmarks/ceremony.schema.json",
+            "benchmarks/ceremony-scenarios.json"
+          ],
+          "changePolicy": "create"
+        },
+        {
+          "id": "TARGET-CEREMONY-INTEGRATION",
+          "component": "ceremony-benchmark-cli",
+          "paths": [
+            "src/cli/benchmark.ts"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-NEW-TESTS",
+          "component": "rc16-new-regression-suites",
+          "paths": [
+            "test/conformance/rc16.test.ts",
+            "test/integration/replay.test.ts",
+            "test/unit/replay.test.ts",
+            "conformance/authority-sequencing/**",
+            "conformance/historical-replay/**"
+          ],
+          "changePolicy": "create"
+        },
+        {
+          "id": "TARGET-EXISTING-TESTS",
+          "component": "routing-lifecycle-profile-and-dx-regressions",
+          "paths": [
+            "conformance/expected-results/manifest.json",
+            "test/integration/cli.test.ts",
+            "test/integration/rc14.test.ts",
+            "test/integration/routing.test.ts",
+            "test/unit/authority-diff.test.ts",
+            "test/unit/benchmark.test.ts",
+            "test/unit/catalogue.test.ts",
+            "test/unit/config.test.ts",
+            "test/unit/diagnostic-codes.test.ts",
+            "test/unit/doctor.test.ts",
+            "test/unit/finish.test.ts",
+            "test/unit/prepare.test.ts",
+            "test/unit/release-readiness.test.ts",
+            "test/unit/review.test.ts",
+            "test/unit/routing.test.ts",
+            "test/unit/status.test.ts",
+            "test/unit/transition.test.ts"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-DOCS",
+          "component": "rc16-user-guidance",
+          "paths": [
+            "README.md",
+            "SPEC.md",
+            "docs/cli-reference.md",
+            "docs/lifecycle.md",
+            "docs/troubleshooting.md"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-PACKAGE",
+          "component": "rc16-package-identity-and-notes",
+          "paths": [
+            "CHANGELOG.md",
+            "package.json",
+            "package-lock.json"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-CONTRACT",
+          "component": "rc16-authority-lifecycle",
+          "paths": [
+            "docs/engineering-specs/ES-RC16-DX-AUTHORITY.engineering-spec.md"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-DESIGN-READONLY",
+          "component": "reviewed-rc16-design",
+          "paths": [
+            "rfcs/0013-rc16-historical-replay-maintenance-sequencing.md"
+          ],
+          "changePolicy": "read_only"
+        }
+      ],
+      "constraints": [
+        {
+          "id": "CON-HISTORICAL-MODE",
+          "level": "must",
+          "statement": "Historical replay must be an explicit first-class read-only mode that records authority_mode historical_read_only and current_authority_granted false, accepts only immutable commit-based evaluation inputs and inert bounded change fixtures, and never grants current implementation authority.",
+          "appliesTo": [
+            "TARGET-REPLAY-NEW",
+            "TARGET-REPLAY-INTEGRATION",
+            "TARGET-REPLAY-SCHEMA",
+            "TARGET-NEW-TESTS",
+            "TARGET-EXISTING-TESTS"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-HISTORICAL-NO-WRITES",
+          "level": "must_not",
+          "statement": "Replay must not call lifecycle transition or closure writers, modify the evaluated repository, index, worktree, refs, configuration, or contracts, expose any write flag, accept staged or worktree state, or execute specification-declared runners or trusted verifier commands.",
+          "appliesTo": [
+            "TARGET-REPLAY-NEW",
+            "TARGET-REPLAY-INTEGRATION",
+            "TARGET-NEW-TESTS"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-SNAPSHOT-CLOSURE",
+          "level": "must",
+          "statement": "Repository configuration, EngineeringSpecs, ProductSpecs, and every repository-local reference used by historical evaluation must resolve from the same immutable snapshot reader and commit; absent or invalid snapshot content must fail closed without filesystem fallback.",
+          "appliesTo": [
+            "TARGET-REPLAY-NEW",
+            "TARGET-REPLAY-INTEGRATION",
+            "TARGET-NEW-TESTS",
+            "TARGET-EXISTING-TESTS"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-TRUSTED-BASE-SEPARATION",
+          "level": "must",
+          "statement": "The implementation must distinguish symbolic TrustedBaseRef from ResolvedTrustedBaseCommit and historical snapshot identity while preserving current command enforcement of configured trusted-base identity; replay must record but not impersonate the snapshot configuration's symbolic trustedBase value.",
+          "appliesTo": [
+            "TARGET-REPLAY-NEW",
+            "TARGET-REPLAY-INTEGRATION",
+            "TARGET-NEW-TESTS",
+            "TARGET-EXISTING-TESTS"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-WORKSPACE-PROFILES",
+          "level": "must",
+          "statement": "Ordinary workspace and repository validation must continue resolving local ProductSpecs only with an explicit realpath-confined repository root, while workspace ProductSpec or config mutation cannot influence trusted-base or historical contract identity, digest, authority, routing, or readiness.",
+          "appliesTo": [
+            "TARGET-REPLAY-INTEGRATION",
+            "TARGET-NEW-TESTS",
+            "TARGET-EXISTING-TESTS"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-SEQUENCING-TRUST",
+          "level": "must",
+          "statement": "Maintenance sequencing may affect routing only when the controlling maintenance contract and every referenced contract are exact, unique, approved candidates loaded from the same trusted-base commit and every reference pins contract ID, spec revision, semantic digest, and exact safe repository-relative paths.",
+          "appliesTo": [
+            "TARGET-SEQUENCING-MODEL",
+            "TARGET-SEQUENCING-ROUTING",
+            "TARGET-NEW-TESTS",
+            "TARGET-EXISTING-TESTS"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-SEQUENCING-SUBTRACTIVE",
+          "level": "must",
+          "statement": "A valid maintenance control may subtract only the pinned contract's positive writable claim for an exact path also positively claimed by the controlling contract; it must never add a claim, authorize an uncovered path, suppress read_only or observe claims, suppress deny-wins behavior, use globs in RC16, or choose between remaining multiple claimants.",
+          "appliesTo": [
+            "TARGET-SEQUENCING-MODEL",
+            "TARGET-SEQUENCING-ROUTING",
+            "TARGET-NEW-TESTS",
+            "TARGET-EXISTING-TESTS"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-SEQUENCING-FAIL-CLOSED",
+          "level": "must",
+          "statement": "Missing, malformed, stale, broadened, inapplicable, duplicated, chained, cyclic, or competing maintenance controls and any revision, digest, status, path, or candidate mismatch must fail closed; unsequenced overlapping approved contracts must continue returning ESRT003.",
+          "appliesTo": [
+            "TARGET-SEQUENCING-MODEL",
+            "TARGET-SEQUENCING-ROUTING",
+            "TARGET-NEW-TESTS",
+            "TARGET-EXISTING-TESTS"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-NO-SELF-AUTHORIZATION",
+          "level": "must",
+          "statement": "A maintenance contract or authority control created, widened, approved, or edited only in mutable head or workspace content must not affect routing in that operation; proposing sequencing, independently approving it on trusted base, and spending it must remain separate security events unless the exact operation was already authorized by trusted policy.",
+          "appliesTo": [
+            "TARGET-SEQUENCING-ROUTING",
+            "TARGET-NEW-TESTS",
+            "TARGET-EXISTING-TESTS"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-NO-LIFECYCLE-STATE",
+          "level": "must",
+          "statement": "RC16 must not add a suspended lifecycle status or authority lease; existing lifecycle transitions retain their meaning, and exact approved-to-implemented closure of a maintenance controller must automatically remove its sequencing effect on the next trusted base without modifying or reapproving the referenced feature contract.",
+          "appliesTo": [
+            "TARGET-SEQUENCING-MODEL",
+            "TARGET-SEQUENCING-ROUTING",
+            "TARGET-EXISTING-TESTS",
+            "TARGET-DOCS"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-MIXED-CLOSE",
+          "level": "must",
+          "statement": "Implementation plus close must remain valid only for the exact base-approved controller spent by routed implementation paths, with no semantic authority change beyond the allowed monotonic status close; unrelated, widened, or modified sequencing content beside implementation must fail.",
+          "appliesTo": [
+            "TARGET-SEQUENCING-ROUTING",
+            "TARGET-EXISTING-TESTS"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-AUDITABILITY",
+          "level": "must",
+          "statement": "Review, prepare, catalogue, routing, authority-diff, and replay results must identify applied and rejected sequencing by trusted base, controller, referenced contract, revision, semantic digest, exact path, remaining claims, and reason, while omitting runner argv and other executable payloads.",
+          "appliesTo": [
+            "TARGET-SEQUENCING-ROUTING",
+            "TARGET-REPLAY-SCHEMA",
+            "TARGET-NEW-TESTS",
+            "TARGET-EXISTING-TESTS"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-REMEDIATION",
+          "level": "must",
+          "statement": "ESRT003 must report exact overlapping paths and claimant identities and recommend only safe narrowing or independently approved sequencing; ESPR001 and trusted-base mismatch diagnostics must distinguish workspace, current-authority, and historical modes and may recommend replay without implying that replay grants authority.",
+          "appliesTo": [
+            "TARGET-SEQUENCING-ROUTING",
+            "TARGET-REPLAY-INTEGRATION",
+            "TARGET-EXISTING-TESTS",
+            "TARGET-DOCS"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-PROGRESSIVE-DISCLOSURE",
+          "level": "must",
+          "statement": "next may expose stable recommendations for work, request-approval, resolve-authority-conflict, historical-replay, and finish, but must not create or approve contracts, infer hidden lifecycle transitions, invoke replay implicitly, or select an ambiguous contract.",
+          "appliesTo": [
+            "TARGET-SEQUENCING-ROUTING",
+            "TARGET-EXISTING-TESTS",
+            "TARGET-DOCS"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-CEREMONY-BENCHMARK",
+          "level": "must",
+          "statement": "The machine-readable ceremony benchmark must reproduce scenarios A through G and measure commands, pull requests, lifecycle edits, hand-edited files, concepts, mutations, outcome, diagnostics, and remediation while keeping security outcomes binding and specification runners inert.",
+          "appliesTo": [
+            "TARGET-CEREMONY-NEW",
+            "TARGET-CEREMONY-INTEGRATION",
+            "TARGET-NEW-TESTS",
+            "TARGET-EXISTING-TESTS"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-PR-TARGETS",
+          "level": "must",
+          "statement": "Benchmark targets must remain one implementation pull request for existing authority, two pull requests for new authority, no more than two for overlapping maintenance, zero mutations for one-command historical replay, and fail-closed outcomes for unresolved competition and self-suspension even when that increases command count.",
+          "appliesTo": [
+            "TARGET-CEREMONY-NEW",
+            "TARGET-CEREMONY-INTEGRATION",
+            "TARGET-NEW-TESTS",
+            "TARGET-EXISTING-TESTS"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-BACKWARDS-COMPATIBILITY",
+          "level": "must",
+          "statement": "Existing format 0.1 documents must continue validating without rewrites and retain their meaning; absence of authority controls must preserve current routing, old approved contracts must remain unchanged, and older CLIs must fail closed rather than spend sequencing they do not understand.",
+          "appliesTo": [
+            "TARGET-SEQUENCING-MODEL",
+            "TARGET-SEQUENCING-ROUTING",
+            "TARGET-NEW-TESTS",
+            "TARGET-EXISTING-TESTS",
+            "TARGET-DOCS"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-RUNNERS-INERT",
+          "level": "must_not",
+          "statement": "Replay, routing, validation, preparation, review, catalogue, benchmarks, tests, and documentation must not execute specification runner argv; runner declarations remain inert identity data unless a separately trusted execution mechanism is approved later.",
+          "appliesTo": [
+            "TARGET-REPLAY-NEW",
+            "TARGET-REPLAY-INTEGRATION",
+            "TARGET-SEQUENCING-ROUTING",
+            "TARGET-CEREMONY-INTEGRATION",
+            "TARGET-NEW-TESTS",
+            "TARGET-EXISTING-TESTS"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-RC15-REGRESSION",
+          "level": "must",
+          "statement": "All RC15 trusted-base ProductSpec isolation, strict validation, exact-close, complete-working-state, deny-wins, ambiguity, uncovered-path, malformed-candidate, and evidence-binding regressions must remain green.",
+          "appliesTo": [
+            "TARGET-REPLAY-INTEGRATION",
+            "TARGET-SEQUENCING-ROUTING",
+            "TARGET-EXISTING-TESTS"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-RC16-IDENTITY",
+          "level": "must",
+          "statement": "Only after approved implementation passes all trusted checks may package metadata and changelog be prepared as exact version 0.1.0-rc.16; prior package versions, tags, changelog history, Action pins, retained benchmark evidence, and published artifacts must not be rewritten.",
+          "appliesTo": [
+            "TARGET-PACKAGE",
+            "TARGET-EXISTING-TESTS"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-SCOPED-FOLLOWUPS",
+          "level": "must_not",
+          "statement": "This contract must not implement the equivalent agentCheck, context, explain, or single-contract gate base-blob follow-ups; those fail-closed availability and diagnostic risks require a separate narrowly approved hardening contract and may only reuse reviewed snapshot abstractions later.",
+          "appliesTo": [
+            "TARGET-REPLAY-INTEGRATION",
+            "TARGET-SEQUENCING-ROUTING",
+            "TARGET-EXISTING-TESTS"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-NO-ESCAPE-HATCH",
+          "level": "must_not",
+          "statement": "RC16 must not add force selection, preference, priority, latest-wins, last-writer-wins, contract-wins, mutable activation, generic trusted-base mismatch bypass, workspace-derived authority, or any option that resolves ambiguity without separately trusted base-approved sequencing.",
+          "appliesTo": [
+            "TARGET-REPLAY-NEW",
+            "TARGET-REPLAY-INTEGRATION",
+            "TARGET-SEQUENCING-MODEL",
+            "TARGET-SEQUENCING-ROUTING",
+            "TARGET-DOCS"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-NO-RELEASE-OR-ACP",
+          "level": "must_not",
+          "statement": "Implementation work under this contract must not publish npm, move dist-tags, create or move Git tags, create GitHub releases, merge itself automatically, update Action pins, touch Agent Control Plane, or modify surfaces not explicitly declared by this contract.",
+          "appliesTo": [
+            "TARGET-REPLAY-NEW",
+            "TARGET-REPLAY-INTEGRATION",
+            "TARGET-SEQUENCING-MODEL",
+            "TARGET-SEQUENCING-ROUTING",
+            "TARGET-REPLAY-SCHEMA",
+            "TARGET-CEREMONY-NEW",
+            "TARGET-CEREMONY-INTEGRATION",
+            "TARGET-NEW-TESTS",
+            "TARGET-EXISTING-TESTS",
+            "TARGET-DOCS",
+            "TARGET-PACKAGE"
+          ],
+          "enforcement": "review"
+        }
+      ],
+      "contracts": [],
+      "verification": [
+        {
+          "id": "VER-REPLAY",
+          "kind": "test",
+          "proves": [
+            "CON-HISTORICAL-MODE",
+            "CON-SNAPSHOT-CLOSURE",
+            "CON-WORKSPACE-PROFILES"
+          ]
+        },
+        {
+          "id": "VER-SEQUENCING",
+          "kind": "test",
+          "proves": [
+            "CON-SEQUENCING-TRUST",
+            "CON-SEQUENCING-SUBTRACTIVE",
+            "CON-MIXED-CLOSE",
+            "CON-AUDITABILITY"
+          ]
+        },
+        {
+          "id": "VER-SECURITY",
+          "kind": "security",
+          "proves": [
+            "CON-HISTORICAL-NO-WRITES",
+            "CON-SEQUENCING-FAIL-CLOSED",
+            "CON-NO-SELF-AUTHORIZATION",
+            "CON-RUNNERS-INERT",
+            "CON-NO-ESCAPE-HATCH"
+          ]
+        },
+        {
+          "id": "VER-CONFORMANCE",
+          "kind": "schema_check",
+          "proves": [
+            "CON-TRUSTED-BASE-SEPARATION",
+            "CON-NO-LIFECYCLE-STATE",
+            "CON-BACKWARDS-COMPATIBILITY"
+          ]
+        },
+        {
+          "id": "VER-DX",
+          "kind": "test",
+          "proves": [
+            "CON-REMEDIATION",
+            "CON-PROGRESSIVE-DISCLOSURE",
+            "CON-CEREMONY-BENCHMARK",
+            "CON-PR-TARGETS"
+          ]
+        },
+        {
+          "id": "VER-REGRESSION",
+          "kind": "test",
+          "proves": [
+            "CON-RC15-REGRESSION"
+          ]
+        },
+        {
+          "id": "VER-RELEASE",
+          "kind": "test",
+          "proves": [
+            "CON-RC16-IDENTITY"
+          ]
+        },
+        {
+          "id": "VER-REVIEW",
+          "kind": "human_review",
+          "proves": [
+            "CON-SCOPED-FOLLOWUPS",
+            "CON-NO-RELEASE-OR-ACP"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ES-RC16-PUBLICATION",
+      "title": "Publish EngineeringSpec 0.1.0-rc.16",
+      "status": "implemented",
+      "file": "ES-RC16-PUBLICATION.engineering-spec.md",
+      "owners": [
+        "EngineeringSpec maintainers"
+      ],
+      "sourceRefs": [
+        {
+          "id": "SRC-RELEASE-SOURCE",
+          "type": "other",
+          "locator": "38c3be53a681eaee9d0948138250374ba28da69e",
+          "title": "Immutable post-PR-102 RC16 release source"
+        },
+        {
+          "id": "SRC-RC16-AUTHORITY",
+          "type": "document",
+          "locator": "docs/engineering-specs/ES-RC16-DX-AUTHORITY.engineering-spec.md",
+          "title": "Implemented RC16 historical replay and maintenance sequencing authority"
+        },
+        {
+          "id": "SRC-ACTION-ANCHOR",
+          "type": "document",
+          "locator": "docs/engineering-specs/ES-RC16-ACTION-ANCHOR.engineering-spec.md",
+          "title": "Implemented RC16 immutable Action-anchor alignment authority"
+        },
+        {
+          "id": "SRC-PACKAGE",
+          "type": "document",
+          "locator": "package.json",
+          "title": "RC16 npm package identity"
+        },
+        {
+          "id": "SRC-PACKAGE-LOCK",
+          "type": "document",
+          "locator": "package-lock.json",
+          "title": "Locked RC16 npm package identity and dependency graph"
+        },
+        {
+          "id": "SRC-RELEASE-WORKFLOW",
+          "type": "document",
+          "locator": ".github/workflows/release.yml",
+          "title": "Existing tag-triggered npm publication workflow"
+        },
+        {
+          "id": "SRC-RELEASE-NOTES",
+          "type": "document",
+          "locator": "CHANGELOG.md",
+          "title": "Reviewed RC16 release notes"
+        }
+      ],
+      "targets": [
+        {
+          "id": "TARGET-CONTRACT",
+          "component": "rc16-publication-authority-lifecycle",
+          "paths": [
+            "docs/engineering-specs/ES-RC16-PUBLICATION.engineering-spec.md"
+          ],
+          "changePolicy": "modify"
+        }
+      ],
+      "constraints": [
+        {
+          "id": "CON-EXACT-RELEASE-SOURCE",
+          "level": "must",
+          "statement": "The future v0.1.0-rc.16 tag must point exactly to commit 38c3be53a681eaee9d0948138250374ba28da69e; no proposal, approval, publication-contract closure, replacement, or other commit is permitted, and any release-source change requires a new reviewed publication authority decision.",
+          "appliesTo": [
+            "TARGET-CONTRACT"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-IMMUTABLE-TAG",
+          "level": "must",
+          "statement": "Tag v0.1.0-rc.16 must not exist before publication and, once created, must never be force-moved, deleted and recreated, or repointed as a repair mechanism.",
+          "appliesTo": [
+            "TARGET-CONTRACT"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-PACKAGE-IDENTITY",
+          "level": "must",
+          "statement": "At release source 38c3be53a681eaee9d0948138250374ba28da69e, package.json and the root package-lock package must both identify exactly @engineeringspec/cli version 0.1.0-rc.16.",
+          "appliesTo": [
+            "TARGET-CONTRACT"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-RC16-CLOSED",
+          "level": "must",
+          "statement": "ES-RC16-DX-AUTHORITY must be revision 2 and implemented, and ES-RC16-ACTION-ANCHOR must be revision 1 and implemented, at the exact release source.",
+          "appliesTo": [
+            "TARGET-CONTRACT"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-ACTION-IDENTITY",
+          "level": "must",
+          "statement": "CURRENT_ACTION_SHA and current source guidance at the release source must remain pinned to immutable Action commit ddf813e4e69d9b2f9a9eb3f0f241747746021cf3; publication must not change the Action or its pin.",
+          "appliesTo": [
+            "TARGET-CONTRACT"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-EXISTING-WORKFLOW-ONLY",
+          "level": "must",
+          "statement": "The existing reviewed v*-tag-triggered release workflow at the exact release source must own npm publication, must verify tag and package version agreement, and must not be modified or preceded by a duplicate manual npm publish under this authority.",
+          "appliesTo": [
+            "TARGET-CONTRACT"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-NPM-PROVENANCE",
+          "level": "must",
+          "statement": "Publication evidence must show that @engineeringspec/cli@0.1.0-rc.16 was published by the trusted release workflow with public access, npm dist-tag next, and provenance using npm publish --access public --tag next --provenance or its exact verified equivalent.",
+          "appliesTo": [
+            "TARGET-CONTRACT"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-NPM-NEXT",
+          "level": "must",
+          "statement": "After successful publication, npm dist-tag next must resolve exactly to 0.1.0-rc.16.",
+          "appliesTo": [
+            "TARGET-CONTRACT"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-NPM-LATEST",
+          "level": "must",
+          "statement": "npm dist-tag latest must remain at its recorded pre-publication value 0.1.0-rc.15; RC16 is a prerelease and this ceremony must not promote the default or stable channel.",
+          "appliesTo": [
+            "TARGET-CONTRACT"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-GITHUB-PRERELEASE",
+          "level": "must",
+          "statement": "After successful npm publication, GitHub release v0.1.0-rc.16 must be created as a prerelease, not as stable or latest; because the trusted npm workflow does not create it, the approved ceremony may perform only this missing manual release step.",
+          "appliesTo": [
+            "TARGET-CONTRACT"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-RELEASE-NOTES",
+          "level": "must",
+          "statement": "The GitHub prerelease notes must correspond to the reviewed public RC16 CHANGELOG content and must not include private prompts, conversations, commercial strategy, launch plans, reviewer scoring, or internal deliberation.",
+          "appliesTo": [
+            "TARGET-CONTRACT"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-CLEAN-INSTALL",
+          "level": "must",
+          "statement": "Post-publication evidence from a clean temporary directory must show successful installation, CLI version 0.1.0-rc.16, basic strict validation, the replay command, and the packaged RC16 schemas and ceremony assets.",
+          "appliesTo": [
+            "TARGET-CONTRACT"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-REPLAY-SAFETY-SMOKE",
+          "level": "must",
+          "statement": "Where practical, the published-package smoke must show historical replay retaining authorityMode historical_read_only, currentAuthorityGranted false, and writePermitted false; this verification grants no current authority and performs no replay writes or runner execution.",
+          "appliesTo": [
+            "TARGET-CONTRACT"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-NO-SOURCE-CHANGE",
+          "level": "must_not",
+          "statement": "Publication must not modify source, package identity or lock identity, schemas, action.yml, Action pins, release workflows, guidance, format, or the immutable release source; only the later exact approved-to-implemented close of this contract may change the repository under this authority.",
+          "appliesTo": [
+            "TARGET-CONTRACT"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-NO-CONSUMERS",
+          "level": "must_not",
+          "statement": "Publication must not automatically modify downstream repositories, consumers, integrations, or deployment configuration.",
+          "appliesTo": [
+            "TARGET-CONTRACT"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-NO-ACP",
+          "level": "must_not",
+          "statement": "No Agent Control Plane repository, source, documentation, configuration, package, tag, release, or consumer is part of RC16 publication.",
+          "appliesTo": [
+            "TARGET-CONTRACT"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-NO-STABLE-RELEASE",
+          "level": "must_not",
+          "statement": "This ceremony must not create version 0.1.0, move npm latest, mark the GitHub release as stable or latest, or claim EngineeringSpec format 0.1 is a stable release; RC16 remains a release candidate.",
+          "appliesTo": [
+            "TARGET-CONTRACT"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-RUNNERS-INERT",
+          "level": "must_not",
+          "statement": "Specification-declared runners are inert data and must not be executed merely because they appear in this contract.",
+          "appliesTo": [
+            "TARGET-CONTRACT"
+          ],
+          "enforcement": "review"
+        }
+      ],
+      "contracts": [],
+      "verification": [
+        {
+          "id": "VER-RELEASE-SOURCE",
+          "kind": "human_review",
+          "proves": [
+            "CON-EXACT-RELEASE-SOURCE",
+            "CON-PACKAGE-IDENTITY",
+            "CON-RC16-CLOSED",
+            "CON-ACTION-IDENTITY",
+            "CON-EXISTING-WORKFLOW-ONLY",
+            "CON-NO-SOURCE-CHANGE"
+          ]
+        },
+        {
+          "id": "VER-PRE-PUBLICATION",
+          "kind": "human_review",
+          "proves": [
+            "CON-IMMUTABLE-TAG",
+            "CON-NPM-LATEST"
+          ]
+        },
+        {
+          "id": "VER-PUBLICATION-EVIDENCE",
+          "kind": "human_review",
+          "proves": [
+            "CON-NPM-PROVENANCE",
+            "CON-NPM-NEXT",
+            "CON-NPM-LATEST",
+            "CON-GITHUB-PRERELEASE",
+            "CON-RELEASE-NOTES",
+            "CON-CLEAN-INSTALL",
+            "CON-REPLAY-SAFETY-SMOKE"
+          ]
+        },
+        {
+          "id": "VER-HUMAN-RELEASE-REVIEW",
+          "kind": "human_review",
+          "proves": [
+            "CON-NO-SOURCE-CHANGE",
+            "CON-NO-CONSUMERS",
+            "CON-NO-ACP",
+            "CON-NO-STABLE-RELEASE",
+            "CON-RUNNERS-INERT"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ES-RC16-PUBLISHED-GUIDANCE-CORRECTION",
+      "title": "Correct published RC16 guidance",
+      "status": "implemented",
+      "file": "ES-RC16-PUBLISHED-GUIDANCE-CORRECTION.engineering-spec.md",
+      "owners": [
+        "EngineeringSpec maintainers"
+      ],
+      "sourceRefs": [
+        {
+          "id": "SRC-TRUSTED-MAIN",
+          "type": "other",
+          "locator": "a472773ac9616c675a08741375e090914eb7863b",
+          "title": "Trusted main containing the completed onboarding-friction implementation"
+        },
+        {
+          "id": "SRC-PACKAGE-IDENTITY",
+          "type": "document",
+          "locator": "package.json",
+          "title": "Current CLI package identity at 0.1.0-rc.16"
+        },
+        {
+          "id": "SRC-ACTION-ANCHOR",
+          "type": "document",
+          "locator": "src/adoption/releases.ts",
+          "title": "Current immutable RC16 Action anchor"
+        },
+        {
+          "id": "SRC-CURRENT-README",
+          "type": "document",
+          "locator": "README.md",
+          "title": "Current published-RC16 introduction and adoption guidance"
+        },
+        {
+          "id": "SRC-PRODUCTION-GATE",
+          "type": "document",
+          "locator": "docs/production-gate.md",
+          "title": "Production guidance containing stale RC16 pre-publication statements"
+        },
+        {
+          "id": "SRC-AGENT-INTEGRATION",
+          "type": "document",
+          "locator": "docs/agent-integration.md",
+          "title": "Agent guidance containing stale RC16 pre-publication statements"
+        },
+        {
+          "id": "SRC-UPGRADING",
+          "type": "document",
+          "locator": "docs/upgrading.md",
+          "title": "Upgrade guidance containing stale RC16 pre-publication statements"
+        },
+        {
+          "id": "SRC-RC16-RELEASE",
+          "type": "other",
+          "locator": "v0.1.0-rc.16",
+          "title": "Published EngineeringSpec RC16 GitHub prerelease"
+        },
+        {
+          "id": "SRC-RC16-NPM",
+          "type": "other",
+          "locator": "@engineeringspec/cli@0.1.0-rc.16",
+          "title": "Published EngineeringSpec RC16 npm package"
+        }
+      ],
+      "targets": [
+        {
+          "id": "TARGET-CURRENT-GUIDANCE",
+          "component": "published-rc16-current-guidance",
+          "paths": [
+            "docs/production-gate.md",
+            "docs/agent-integration.md",
+            "docs/upgrading.md"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-CONTRACT",
+          "component": "published-rc16-guidance-authority-lifecycle",
+          "paths": [
+            "docs/engineering-specs/ES-RC16-PUBLISHED-GUIDANCE-CORRECTION.engineering-spec.md"
+          ],
+          "changePolicy": "modify"
+        }
+      ],
+      "constraints": [
+        {
+          "id": "CON-PUBLISHED-IDENTITY",
+          "level": "must",
+          "statement": "Current guidance in scope must state accurately that @engineeringspec/cli@0.1.0-rc.16 is published and v0.1.0-rc.16 exists, and must remove future-tense, pending-publication, or later-installability statements about RC16.",
+          "appliesTo": [
+            "TARGET-CURRENT-GUIDANCE"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-EXACT-CLI-PIN",
+          "level": "must",
+          "statement": "Every RC16 CLI example modified under this authority must retain the exact package identity @engineeringspec/cli@0.1.0-rc.16 rather than a mutable dist-tag or unpinned package reference.",
+          "appliesTo": [
+            "TARGET-CURRENT-GUIDANCE"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-IMMUTABLE-ACTION",
+          "level": "must",
+          "statement": "Production Action guidance in scope must retain the immutable anchor ddf813e4e69d9b2f9a9eb3f0f241747746021cf3 and must continue to state that the full reviewed SHA is stronger than a movable or release tag for production use.",
+          "appliesTo": [
+            "TARGET-CURRENT-GUIDANCE"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-DIST-TAGS",
+          "level": "must",
+          "statement": "If npm dist-tags are discussed in the changed guidance, the factual distinction must remain next = 0.1.0-rc.16 and latest = 0.1.0-rc.15; the implementation must not imply that latest already selects RC16.",
+          "appliesTo": [
+            "TARGET-CURRENT-GUIDANCE"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-HISTORICAL-PRESERVATION",
+          "level": "must",
+          "statement": "Historical contracts, changelog entries, release notes, receipts, evidence, and other records that accurately describe their earlier publication state must remain unchanged; implementation must not perform a repository-wide replacement.",
+          "appliesTo": [
+            "TARGET-CURRENT-GUIDANCE",
+            "TARGET-CONTRACT"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-DOCUMENTATION-ONLY",
+          "level": "must_not",
+          "statement": "This authority must not change runtime or CLI source, package or lock identity, schemas, action.yml, the Action anchor, workflows, README, site content, generated catalogues, release artifacts, Git tags, npm packages or dist-tags, consumers, or Agent Control Plane state.",
+          "appliesTo": [
+            "TARGET-CURRENT-GUIDANCE",
+            "TARGET-CONTRACT"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-EXACT-CLOSE",
+          "level": "must",
+          "statement": "After the documentation correction and separately trusted verification pass, an implementation pull request may change this exact revision only from approved to implemented without changing any other contract content; proposal and approval remain separate contract-only lifecycle changes.",
+          "appliesTo": [
+            "TARGET-CONTRACT"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-RUNNERS-INERT",
+          "level": "must_not",
+          "statement": "Specification-declared runners are inert data and must not be executed merely because they appear in this contract.",
+          "appliesTo": [
+            "TARGET-CURRENT-GUIDANCE",
+            "TARGET-CONTRACT"
+          ],
+          "enforcement": "review"
+        }
+      ],
+      "contracts": [],
+      "verification": [
+        {
+          "id": "VER-CURRENT-GUIDANCE",
+          "kind": "test",
+          "proves": [
+            "CON-PUBLISHED-IDENTITY",
+            "CON-IMMUTABLE-ACTION"
+          ]
+        },
+        {
+          "id": "VER-SCOPE",
+          "kind": "security",
+          "proves": [
+            "CON-HISTORICAL-PRESERVATION",
+            "CON-DOCUMENTATION-ONLY"
+          ]
+        },
+        {
+          "id": "VER-REPOSITORY-CHECKS",
+          "kind": "test",
+          "proves": [
+            "CON-EXACT-CLI-PIN",
+            "CON-DIST-TAGS",
+            "CON-EXACT-CLOSE",
+            "CON-RUNNERS-INERT"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ES-RC17-PUBLICATION",
+      "title": "Publish EngineeringSpec 0.1.0-rc.17",
+      "status": "implemented",
+      "file": "ES-RC17-PUBLICATION.engineering-spec.md",
+      "owners": [
+        "EngineeringSpec maintainers"
+      ],
+      "sourceRefs": [
+        {
+          "id": "SRC-RELEASE-SOURCE",
+          "type": "other",
+          "locator": "adee67a580d2f1c681de8d362963a8b0783d2017",
+          "title": "Immutable merged RC17 release-preparation source"
+        },
+        {
+          "id": "SRC-RC17-RELEASE",
+          "type": "document",
+          "locator": "docs/engineering-specs/ES-rc17-release.engineering-spec.md",
+          "title": "Implemented RC17 release-preparation authority"
+        },
+        {
+          "id": "SRC-PACKAGE",
+          "type": "document",
+          "locator": "package.json",
+          "title": "RC17 npm package identity"
+        },
+        {
+          "id": "SRC-PACKAGE-LOCK",
+          "type": "document",
+          "locator": "package-lock.json",
+          "title": "Locked RC17 npm package identity and dependency graph"
+        },
+        {
+          "id": "SRC-RELEASE-WORKFLOW",
+          "type": "document",
+          "locator": ".github/workflows/release.yml",
+          "title": "Existing v-star-tag-triggered npm publication workflow"
+        },
+        {
+          "id": "SRC-RELEASE-NOTES",
+          "type": "document",
+          "locator": "CHANGELOG.md",
+          "title": "Reviewed RC17 release notes"
+        }
+      ],
+      "targets": [
+        {
+          "id": "TARGET-CONTRACT",
+          "component": "rc17-publication-authority-lifecycle",
+          "paths": [
+            "docs/engineering-specs/ES-RC17-PUBLICATION.engineering-spec.md"
+          ],
+          "changePolicy": "modify"
+        }
+      ],
+      "constraints": [
+        {
+          "id": "CON-NO-DRAFT-AUTHORITY",
+          "level": "must",
+          "statement": "This proposed revision grants no publication authority. Publication may begin only after this exact revision is independently reviewed, changed only from proposed to approved in a separate contract-only change, and merged into trusted main.",
+          "appliesTo": [
+            "TARGET-CONTRACT"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-EXACT-RELEASE-SOURCE",
+          "level": "must",
+          "statement": "Tag v0.1.0-rc.17 must point exactly to commit adee67a580d2f1c681de8d362963a8b0783d2017; no proposal, approval, publication-contract closure, replacement, or other commit is permitted, and any release-source change requires new reviewed publication authority.",
+          "appliesTo": [
+            "TARGET-CONTRACT"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-ONLY-RC17-IDENTITY",
+          "level": "must_not",
+          "statement": "This authority must not create, publish, move, delete, recreate, or otherwise operate on any Git tag, npm package version, or GitHub Release other than the exact v0.1.0-rc.17 and @engineeringspec/cli@0.1.0-rc.17 identities constrained here; the only permitted dist-tag change is next resolving to 0.1.0-rc.17.",
+          "appliesTo": [
+            "TARGET-CONTRACT"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-IMMUTABLE-TAG",
+          "level": "must",
+          "statement": "Tag v0.1.0-rc.17 must not exist before publication and, once created, must never be force-moved, deleted and recreated, or repointed, including after partial failure.",
+          "appliesTo": [
+            "TARGET-CONTRACT"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-PACKAGE-IDENTITY",
+          "level": "must",
+          "statement": "At release source adee67a580d2f1c681de8d362963a8b0783d2017, package.json, the package-lock top-level version, and the package-lock root-package version must all identify exactly @engineeringspec/cli version 0.1.0-rc.17; the tag and package identities must agree exactly.",
+          "appliesTo": [
+            "TARGET-CONTRACT"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-RC17-PREPARED",
+          "level": "must",
+          "statement": "ES-rc17-release must be revision 1 and implemented at the exact release source.",
+          "appliesTo": [
+            "TARGET-CONTRACT"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-ACTION-IDENTITY",
+          "level": "must",
+          "statement": "CURRENT_ACTION_SHA and current source guidance at the release source must remain pinned to immutable Action commit ddf813e4e69d9b2f9a9eb3f0f241747746021cf3; publication must not change the Action or its pin.",
+          "appliesTo": [
+            "TARGET-CONTRACT"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-EXISTING-WORKFLOW-ONLY",
+          "level": "must",
+          "statement": "The unchanged existing v*-tag-triggered .github/workflows/release.yml at the exact release source must own npm publication and must verify tag and package version agreement. This authority prohibits any duplicate manual npm publish.",
+          "appliesTo": [
+            "TARGET-CONTRACT"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-NPM-PROVENANCE",
+          "level": "must",
+          "statement": "Publication evidence must show @engineeringspec/cli@0.1.0-rc.17 was published by the trusted release workflow with public access, npm dist-tag next, and provenance using npm publish --access public --tag next --provenance or its exact workflow-defined equivalent.",
+          "appliesTo": [
+            "TARGET-CONTRACT"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-NPM-NEXT",
+          "level": "must",
+          "statement": "After successful publication, npm dist-tag next must resolve exactly to 0.1.0-rc.17.",
+          "appliesTo": [
+            "TARGET-CONTRACT"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-NPM-LATEST",
+          "level": "must",
+          "statement": "npm dist-tag latest must remain at its recorded pre-publication value 0.1.0-rc.15; RC17 must not promote the default or stable channel.",
+          "appliesTo": [
+            "TARGET-CONTRACT"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-GITHUB-PRERELEASE",
+          "level": "must",
+          "statement": "Only after successful npm publication, GitHub Release v0.1.0-rc.17 must be created as a prerelease, not stable or latest, using the reviewed RC17 release notes; this is the only manual publication step authorized because the trusted npm workflow does not create GitHub Releases.",
+          "appliesTo": [
+            "TARGET-CONTRACT"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-CLEAN-REGISTRY-INSTALL",
+          "level": "must",
+          "statement": "Post-publication evidence from a clean temporary directory must install exactly @engineeringspec/cli@0.1.0-rc.17 from the public npm registry, confirm the installed CLI reports 0.1.0-rc.17, and prove the installed artifact identity rather than reusing a local tarball or repository checkout.",
+          "appliesTo": [
+            "TARGET-CONTRACT"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-PERMISSION-TICKET-SMOKE",
+          "level": "must",
+          "statement": "The exact clean registry installation must pass a compact PermissionTicket smoke covering next and work, including expected implementation permission from a base-pinned approved fixture, while preserving the verbose compatibility path and executing no specification-declared runners.",
+          "appliesTo": [
+            "TARGET-CONTRACT"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-PARTIAL-FAILURE",
+          "level": "must",
+          "statement": "After any partial failure, do not move, delete, recreate, or repoint the immutable tag, do not duplicate npm publication, and do not change release identities. Complete only an independently missing GitHub prerelease after npm success, or stop and obtain new reviewed authority for any other correction.",
+          "appliesTo": [
+            "TARGET-CONTRACT"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-NO-SOURCE-CHANGE",
+          "level": "must_not",
+          "statement": "Publication must not modify source, package or lock identity, workflows, schemas, Action code or pins, consumers, dependencies, guidance, tests, features, release notes, or the immutable release source; only the later exact approved-to-implemented close of this contract may change the repository under this authority.",
+          "appliesTo": [
+            "TARGET-CONTRACT"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-NO-CONSUMERS",
+          "level": "must_not",
+          "statement": "Publication must not modify downstream repositories, consumers, integrations, deployment configuration, or dist-tags other than npm next.",
+          "appliesTo": [
+            "TARGET-CONTRACT"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-NO-STABLE-RELEASE",
+          "level": "must_not",
+          "statement": "This ceremony must not create stable version 0.1.0, move npm latest, mark the GitHub Release stable or latest, or claim EngineeringSpec format 0.1 is stable; RC17 remains a prerelease.",
+          "appliesTo": [
+            "TARGET-CONTRACT"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-RUNNERS-INERT",
+          "level": "must_not",
+          "statement": "Specification-declared runners are inert data and must not be executed merely because they appear in this contract.",
+          "appliesTo": [
+            "TARGET-CONTRACT"
+          ],
+          "enforcement": "review"
+        }
+      ],
+      "contracts": [],
+      "verification": [
+        {
+          "id": "VER-RELEASE-SOURCE",
+          "kind": "human_review",
+          "proves": [
+            "CON-EXACT-RELEASE-SOURCE",
+            "CON-ONLY-RC17-IDENTITY",
+            "CON-PACKAGE-IDENTITY",
+            "CON-RC17-PREPARED",
+            "CON-ACTION-IDENTITY",
+            "CON-EXISTING-WORKFLOW-ONLY",
+            "CON-NO-SOURCE-CHANGE"
+          ]
+        },
+        {
+          "id": "VER-PRE-PUBLICATION",
+          "kind": "human_review",
+          "proves": [
+            "CON-NO-DRAFT-AUTHORITY",
+            "CON-IMMUTABLE-TAG",
+            "CON-NPM-LATEST"
+          ]
+        },
+        {
+          "id": "VER-PUBLICATION-EVIDENCE",
+          "kind": "human_review",
+          "proves": [
+            "CON-NPM-PROVENANCE",
+            "CON-NPM-NEXT",
+            "CON-NPM-LATEST",
+            "CON-GITHUB-PRERELEASE",
+            "CON-CLEAN-REGISTRY-INSTALL",
+            "CON-PERMISSION-TICKET-SMOKE",
+            "CON-PARTIAL-FAILURE"
+          ]
+        },
+        {
+          "id": "VER-POST-PUBLICATION-REVIEW",
+          "kind": "human_review",
+          "proves": [
+            "CON-PARTIAL-FAILURE",
+            "CON-NO-SOURCE-CHANGE",
+            "CON-NO-CONSUMERS",
+            "CON-NO-STABLE-RELEASE",
+            "CON-RUNNERS-INERT"
+          ]
+        }
+      ]
+    },
     {
       "id": "ES-actionable-diagnostic-hints",
       "title": "Surface accurate actionable diagnostic hints",
@@ -158,7 +2062,7 @@
     {
       "id": "ES-agent-ready-adoption",
       "title": "Agent-neutral repository adoption workflow",
-      "status": "proposed",
+      "status": "superseded",
       "file": "agent-ready-adoption.engineering-spec.md",
       "owners": [
         "EngineeringSpec maintainers"
@@ -278,6 +2182,387 @@
           "proves": [
             "CON-3",
             "CON-4"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ES-compact-agent-ticket",
+      "title": "Compact agent permission ticket",
+      "status": "implemented",
+      "file": "ES-compact-agent-ticket.engineering-spec.md",
+      "owners": [
+        "EngineeringSpec maintainers"
+      ],
+      "sourceRefs": [
+        {
+          "id": "SRC-1",
+          "type": "document",
+          "locator": "rfcs/0011-maximum-safety-minimum-ceremony.md",
+          "title": "RC14 promised a stable agent JSON envelope that next still over-emits"
+        },
+        {
+          "id": "SRC-2",
+          "type": "other",
+          "locator": "agent-loop-friction-2026-08-18",
+          "title": "Coding-agent review of next/work ceremony, skipped CLI invocation, and blocked recovery"
+        },
+        {
+          "id": "SRC-3",
+          "type": "document",
+          "locator": "docs/engineering-specs/ES-rc14-maximum-safety-minimum-ceremony.engineering-spec.md",
+          "title": "Implemented next/work/finish composition"
+        },
+        {
+          "id": "SRC-4",
+          "type": "document",
+          "locator": "AGENTS.md",
+          "title": "Current contributor workflow still uses node dist/cli.js while the skill uses engineeringspec"
+        },
+        {
+          "id": "SRC-5",
+          "type": "other",
+          "locator": "stale-proposed-cleanup-dogfood-2026-08",
+          "title": "Trusted-base implementation permission and a later contract-only workflow classification are compatible independent results"
+        }
+      ],
+      "targets": [
+        {
+          "id": "TARGET-rfc",
+          "component": "compact-ticket-rfc",
+          "paths": [
+            "rfcs/0012-compact-agent-ticket.md"
+          ],
+          "changePolicy": "create"
+        },
+        {
+          "id": "TARGET-next",
+          "component": "next-permission-ticket",
+          "paths": [
+            "src/cli/next.ts",
+            "src/cli/status.ts",
+            "src/cli/program.ts"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-work",
+          "component": "work-permission-ticket",
+          "paths": [
+            "src/cli/work.ts",
+            "src/cli/prepare.ts"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-tests",
+          "component": "compact-ticket-regressions",
+          "paths": [
+            "test/integration/rc14.test.ts"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-tests-new",
+          "component": "compact-ticket-new-unit-tests",
+          "paths": [
+            "test/unit/next.test.ts",
+            "test/unit/work.test.ts"
+          ],
+          "changePolicy": "create"
+        },
+        {
+          "id": "TARGET-guidance",
+          "component": "one-invocation-agent-guidance",
+          "paths": [
+            "AGENTS.md",
+            "CLAUDE.md",
+            ".cursor/rules/engineering-spec.mdc",
+            "skills/engineering-spec/SKILL.md",
+            "docs/cli-reference.md",
+            "docs/agent-integration.md",
+            "docs/getting-started.md",
+            "CHANGELOG.md"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-contract",
+          "component": "compact-ticket-lifecycle",
+          "paths": [
+            "docs/engineering-specs/ES-compact-agent-ticket.engineering-spec.md"
+          ],
+          "changePolicy": "modify"
+        }
+      ],
+      "constraints": [
+        {
+          "id": "CON-TRUST",
+          "level": "must",
+          "statement": "Authorization remains the exact approved trusted-base contract. Compact tickets, verbose flags, and guidance edits must not create a second authorization path, infer targets from prompts, execute specification-declared runners, or let a workspace or head contract authorize its own implementation.",
+          "appliesTo": [
+            "TARGET-rfc",
+            "TARGET-next",
+            "TARGET-work",
+            "TARGET-tests",
+            "TARGET-tests-new",
+            "TARGET-guidance"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-NEXT-TICKET",
+          "level": "must",
+          "statement": "next text and default JSON must expose a compact ticket containing permission, workflowState, currentChangeClassification, command, approvedIds, proposedIds, and blockers. currentChangeClassification must be the exact existing status governance classification for the observed complete working state and must be one of none, contract_only, implementation, or implementation_with_monotonic_close. Text must name identifiers rather than only counts.",
+          "appliesTo": [
+            "TARGET-next",
+            "TARGET-tests",
+            "TARGET-tests-new"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-NEXT-VERBOSE",
+          "level": "must",
+          "statement": "Default next JSON must omit ineligible implemented-candidate routing dumps. Explicit --verbose must preserve the current full status/routing field names, nesting, values, and exit behavior so existing maintainer consumers can opt into the pre-ticket payload without semantic migration.",
+          "appliesTo": [
+            "TARGET-next",
+            "TARGET-tests",
+            "TARGET-tests-new"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-WORK-TICKET",
+          "level": "must",
+          "statement": "Default work JSON must include a compact ticket with result, permission, contract id, base SHA, writable paths, protected paths, constraints as id/level/statement, verifier identities as id/proves, and stopWhen. The existing brief remains available; agents must not be required to parse nested routing candidates to implement. work must not predict a final workflow classification or finish mode before the resulting complete diff exists.",
+          "appliesTo": [
+            "TARGET-work",
+            "TARGET-tests",
+            "TARGET-tests-new"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-BLOCKED",
+          "level": "must",
+          "statement": "When next or work is blocked by an uncovered, denied, or ambiguous path, command must be an executable engineeringspec explain invocation including --path and --change-kind for at least one blocking path, not a generic resolve-diagnostics sentence.",
+          "appliesTo": [
+            "TARGET-next",
+            "TARGET-work",
+            "TARGET-tests",
+            "TARGET-tests-new"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-DELEGATE",
+          "level": "must",
+          "statement": "next and work must continue to compose status and prepare. Compact tickets are projections of those primitives and must not reimplement routing, candidate loading, or approval.",
+          "appliesTo": [
+            "TARGET-next",
+            "TARGET-work"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-PERMISSION-CLASSIFICATION",
+          "level": "must",
+          "statement": "permission is only the existing reviewed trusted-base authority decision. currentChangeClassification describes only the observed working diff and must never grant, widen, revoke, or reinterpret permission. none means no current changed paths, not a prediction of the final lane. contract_only is a governance review lane and is semantically compatible with earlier implementation permission. finish remains the post-diff source for receipt and closure behavior and must not be changed by this increment.",
+          "appliesTo": [
+            "TARGET-next",
+            "TARGET-work",
+            "TARGET-tests",
+            "TARGET-tests-new",
+            "TARGET-guidance"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-GOVERNANCE-DOGFOOD",
+          "level": "must",
+          "statement": "Regression coverage must include an approved trusted-base contract whose writable implementation is entirely EngineeringSpec documents. Before editing, next must retain permission implementation while currentChangeClassification is none and work must load the exact approved authority. After the authorized all-spec diff exists, next/status must project contract_only without treating it as authority or authorization failure, and finish must retain its existing contract_only_no_implementation_authority governance result rather than fabricate an implementation receipt.",
+          "appliesTo": [
+            "TARGET-next",
+            "TARGET-work",
+            "TARGET-tests",
+            "TARGET-tests-new"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-GUIDANCE",
+          "level": "must",
+          "statement": "AGENTS.md, the portable skill, and the Cursor rule must use one invocation spelling for the daily workflow. The Cursor rule must tell agents that if the turn might write files they run next first and stop unless permission is implementation.",
+          "appliesTo": [
+            "TARGET-guidance"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-NONGOALS",
+          "level": "must_not",
+          "statement": "This increment must not add MCP, ACP, a Context Plane, Context Providers, a Context Graph, hosted services, inferred impact, external knowledge, Cursor-specific authorization, allow-path aliases, prompt-inferred propose targets, telemetry, or a new format version.",
+          "appliesTo": [
+            "TARGET-rfc",
+            "TARGET-next",
+            "TARGET-work",
+            "TARGET-guidance"
+          ],
+          "enforcement": "review"
+        }
+      ],
+      "contracts": [],
+      "verification": [
+        {
+          "id": "VER-CONFORMANCE",
+          "kind": "test",
+          "proves": [
+            "CON-NEXT-TICKET",
+            "CON-NEXT-VERBOSE",
+            "CON-WORK-TICKET",
+            "CON-BLOCKED",
+            "CON-PERMISSION-CLASSIFICATION",
+            "CON-GOVERNANCE-DOGFOOD"
+          ]
+        },
+        {
+          "id": "VER-QUALITY",
+          "kind": "static_analysis",
+          "proves": [
+            "CON-DELEGATE",
+            "CON-GUIDANCE"
+          ]
+        },
+        {
+          "id": "VER-REVIEW",
+          "kind": "human_review",
+          "proves": [
+            "CON-TRUST",
+            "CON-PERMISSION-CLASSIFICATION",
+            "CON-NONGOALS"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ES-discontinue-stale-proposed",
+      "title": "Discontinue three replaced proposed contracts on main",
+      "status": "implemented",
+      "file": "ES-discontinue-stale-proposed.engineering-spec.md",
+      "owners": [
+        "EngineeringSpec maintainers"
+      ],
+      "sourceRefs": [
+        {
+          "id": "SRC-1",
+          "type": "other",
+          "locator": "next-explore-four-proposed-2026-08-18",
+          "title": "next reports four draft/proposed candidates that are not implementation authority"
+        },
+        {
+          "id": "SRC-2",
+          "type": "document",
+          "locator": "docs/engineering-specs/ES-rc14-release.engineering-spec.md",
+          "title": "Implemented RC14 release authority that replaced RC3 release preparation"
+        },
+        {
+          "id": "SRC-3",
+          "type": "document",
+          "locator": "docs/engineering-specs/ES-multi-spec-routing.engineering-spec.md",
+          "title": "Implemented approved-base routing authority that replaced the original diff-gate proposal"
+        },
+        {
+          "id": "SRC-4",
+          "type": "document",
+          "locator": "docs/engineering-specs/ES-frictionless-adoption-launch.engineering-spec.md",
+          "title": "Implemented adoption and agent-integration authority replacing the original adoption proposal"
+        },
+        {
+          "id": "SRC-5",
+          "type": "other",
+          "locator": "c39cf1de1f4216ec651c4b27c91bf4e416292220",
+          "title": "Historical recursive validation, GitHub Action, and public-site implementation commit"
+        },
+        {
+          "id": "SRC-6",
+          "type": "document",
+          "locator": "CHANGELOG.md",
+          "title": "RC3 release record and explicit RC10-RC12 zero-observation external-pilot record"
+        },
+        {
+          "id": "SRC-7",
+          "type": "document",
+          "locator": "docs/lifecycle.md",
+          "title": "superseded is the non-authoritative terminal state for replaced proposals"
+        }
+      ],
+      "targets": [
+        {
+          "id": "TARGET-stale",
+          "component": "leftover-proposed-lifecycle",
+          "paths": [
+            "docs/engineering-specs/ES-gate-diff-scope.engineering-spec.md",
+            "docs/engineering-specs/ES-rc3-release.engineering-spec.md",
+            "docs/engineering-specs/agent-ready-adoption.engineering-spec.md"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-contract",
+          "component": "discontinue-lifecycle",
+          "paths": [
+            "docs/engineering-specs/ES-discontinue-stale-proposed.engineering-spec.md"
+          ],
+          "changePolicy": "modify"
+        }
+      ],
+      "constraints": [
+        {
+          "id": "CON-SUPERSEDE-ONLY",
+          "level": "must",
+          "statement": "Each listed leftover contract may change only metadata.status to superseded plus a short prose pointer to the later shipped contract. Targets, constraints, verifiers, sources, identifiers, and revision semantics of those documents must otherwise remain intact.",
+          "appliesTo": [
+            "TARGET-stale"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-NO-CODE",
+          "level": "must_not",
+          "statement": "This change must not modify source, tests, RFCs, skills, CI, or package metadata.",
+          "appliesTo": [
+            "TARGET-stale",
+            "TARGET-contract"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-POINTERS",
+          "level": "must",
+          "statement": "ES-rc3-release must point at implementation commit e72c134298b329be70cfd21f4e26923b708452d3, tag v0.1.0-rc.3, and the later implemented ES-rc14-release authority; ES-gate-diff-scope must point at the shipped RC2/RC3 gate series and implemented ES-multi-spec-routing successor; agent-ready-adoption must point at implementation commit c39cf1de1f4216ec651c4b27c91bf4e416292220 plus the implemented ES-multi-spec-routing and ES-frictionless-adoption-launch successors. If a maintainer finds any listed leftover still represents unfinished work, that file must be left proposed and removed from this change.",
+          "appliesTo": [
+            "TARGET-stale"
+          ],
+          "enforcement": "review"
+        }
+      ],
+      "contracts": [],
+      "verification": [
+        {
+          "id": "VER-VALIDATE",
+          "kind": "test",
+          "proves": [
+            "CON-SUPERSEDE-ONLY",
+            "CON-POINTERS"
+          ]
+        },
+        {
+          "id": "VER-REVIEW",
+          "kind": "human_review",
+          "proves": [
+            "CON-NO-CODE",
+            "CON-POINTERS"
           ]
         }
       ]
@@ -476,6 +2761,192 @@
             "CON-8",
             "CON-9",
             "CON-11"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ES-engineeringspec-blog-launch",
+      "title": "Launch the EngineeringSpec blog",
+      "status": "implemented",
+      "file": "ES-engineeringspec-blog-launch.engineering-spec.md",
+      "owners": [
+        "EngineeringSpec maintainers"
+      ],
+      "sourceRefs": [
+        {
+          "id": "SRC-1",
+          "type": "other",
+          "locator": "user-supplied-blog-draft-2026-08-25",
+          "title": "When 70% of Pull Requests Come From Agents, Who Decides What They're Allowed to Change?"
+        },
+        {
+          "id": "SRC-2",
+          "type": "document",
+          "locator": "https://aie-wf.sentry.dev/talks/aiewf-117-agentic-sdlc-at-uber",
+          "title": "Agentic SDLC at Uber — AI Engineer World's Fair 2026 session"
+        },
+        {
+          "id": "SRC-3",
+          "type": "document",
+          "locator": "site/index.html",
+          "title": "Existing engineeringspec.org visual language and navigation"
+        }
+      ],
+      "targets": [
+        {
+          "id": "TARGET-home",
+          "component": "site-homepage-blog-entry",
+          "paths": [
+            "site/index.html"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-blog-index",
+          "component": "blog-index",
+          "paths": [
+            "site/blog/index.html"
+          ],
+          "changePolicy": "create"
+        },
+        {
+          "id": "TARGET-article",
+          "component": "change-authority-article",
+          "paths": [
+            "site/blog/change-authority-agentic-sdlc/index.html"
+          ],
+          "changePolicy": "create"
+        }
+      ],
+      "constraints": [
+        {
+          "id": "CON-STATIC",
+          "level": "must",
+          "statement": "The blog index and article must remain dependency-free static HTML and CSS that work when the site directory is served as the document root, with no client-side framework, command execution, persistence, authentication, analytics, or external runtime dependency.",
+          "appliesTo": [
+            "TARGET-blog-index",
+            "TARGET-article"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-NAVIGATION",
+          "level": "must",
+          "statement": "The homepage must expose a clear Blog navigation entry, and the blog index and article must provide working navigation back to the homepage and between the blog index and article using deployment-safe paths.",
+          "appliesTo": [
+            "TARGET-home",
+            "TARGET-blog-index",
+            "TARGET-article"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-ARTICLE",
+          "level": "must",
+          "statement": "The article must preserve the supplied headline, core argument, evidence-versus-authority distinction, layer comparison, approved-authority lifecycle, deterministic path-scope example, reviewer framing, and closing disclaimer while applying only copy edits required for web readability, accuracy, or house style.",
+          "appliesTo": [
+            "TARGET-article"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-ATTRIBUTION",
+          "level": "must",
+          "statement": "Claims attributed to Uber must link to the cited public Agentic SDLC talk or another directly supporting public source, and the article must state that EngineeringSpec neither claims Uber uses EngineeringSpec nor infers the absence of undisclosed internal controls from the public presentation.",
+          "appliesTo": [
+            "TARGET-article"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-DIAGRAM",
+          "level": "must",
+          "statement": "The article must include an accessible architecture graphic showing Context, Authority, Agent, Validation, CI, and Human Review, with EngineeringSpec visually limited to the authority and final-diff-verification boundary; the graphic must use semantic HTML and CSS rather than a generated or inline SVG.",
+          "appliesTo": [
+            "TARGET-article"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-DESIGN",
+          "level": "must",
+          "statement": "New blog surfaces must extend the existing dark EngineeringSpec visual language, prioritize long-form reading, and remain usable without horizontal page scrolling at narrow mobile widths and at desktop widths.",
+          "appliesTo": [
+            "TARGET-blog-index",
+            "TARGET-article"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-METADATA",
+          "level": "must",
+          "statement": "The blog index and article must each provide route-specific title, description, canonical URL, Open Graph title, description, type, URL, and Twitter card metadata; the article metadata must describe the visible article rather than inherit homepage copy.",
+          "appliesTo": [
+            "TARGET-blog-index",
+            "TARGET-article"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-ACCESSIBILITY",
+          "level": "must",
+          "statement": "The new pages must use semantic landmarks, a logical heading hierarchy, visible keyboard focus, sufficient text contrast, descriptive links, accessible table markup, and reduced-motion-safe presentation.",
+          "appliesTo": [
+            "TARGET-blog-index",
+            "TARGET-article"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-EXISTING-SITE",
+          "level": "must",
+          "statement": "The homepage's existing primary headline, calls to action, feature cards, CLI example, specification link, explorer link, guide link, GitHub link, metadata, and responsive behavior must remain intact except for the bounded blog discovery addition.",
+          "appliesTo": [
+            "TARGET-home"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-NO-CLAIMED-DEPLOYMENT",
+          "level": "must_not",
+          "statement": "The implementation must not claim the production domain was updated unless the publishing workflow actually completed successfully, and it must not alter DNS, CNAME, release, package, CLI, specification, schema, catalogue generation, or deployment configuration.",
+          "appliesTo": [
+            "TARGET-home",
+            "TARGET-blog-index",
+            "TARGET-article"
+          ],
+          "enforcement": "review"
+        }
+      ],
+      "contracts": [],
+      "verification": [
+        {
+          "id": "VER-STATIC",
+          "kind": "test",
+          "proves": [
+            "CON-NAVIGATION",
+            "CON-DIAGRAM",
+            "CON-METADATA"
+          ]
+        },
+        {
+          "id": "VER-EDITORIAL",
+          "kind": "human_review",
+          "proves": [
+            "CON-ARTICLE",
+            "CON-ATTRIBUTION",
+            "CON-EXISTING-SITE",
+            "CON-NO-CLAIMED-DEPLOYMENT"
+          ]
+        },
+        {
+          "id": "VER-EXPERIENCE",
+          "kind": "human_review",
+          "proves": [
+            "CON-STATIC",
+            "CON-DESIGN",
+            "CON-ACCESSIBILITY"
           ]
         }
       ]
@@ -759,6 +3230,216 @@
             "CON-10",
             "CON-11",
             "CON-12"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ES-external-adopter-pilot-execution",
+      "title": "Prepare and run the external-adopter evidence pilot",
+      "status": "approved",
+      "file": "ES-external-adopter-pilot-execution.engineering-spec.md",
+      "owners": [
+        "EngineeringSpec maintainers"
+      ],
+      "sourceRefs": [
+        {
+          "id": "SRC-1",
+          "type": "document",
+          "locator": "benchmarks/README.md",
+          "title": "Published RC17 paired agent-impact benchmark overview and broken pilot links"
+        },
+        {
+          "id": "SRC-2",
+          "type": "document",
+          "locator": "docs/engineering-specs/ES-precode-brief-evidence-pilot.engineering-spec.md",
+          "title": "Superseded mixed product-and-pilot proposal"
+        },
+        {
+          "id": "SRC-3",
+          "type": "document",
+          "locator": "docs/engineering-specs/ES-evidence-integrity-before-pilot.engineering-spec.md",
+          "title": "Implemented immutable measurement and evidence-integrity authority"
+        },
+        {
+          "id": "SRC-4",
+          "type": "document",
+          "locator": "docs/engineering-specs/ES-risk-stratified-pilot-evidence.engineering-spec.md",
+          "title": "Implemented risk-stratified paired-evidence authority"
+        },
+        {
+          "id": "SRC-5",
+          "type": "document",
+          "locator": "docs/engineering-specs/ES-rc17-release.engineering-spec.md",
+          "title": "Implemented RC17 release-preparation authority"
+        },
+        {
+          "id": "SRC-6",
+          "type": "other",
+          "locator": "external-adoption-evidence-mode-2026-08-29",
+          "title": "Maintainer direction to freeze feature work and gather external-adopter evidence"
+        }
+      ],
+      "targets": [
+        {
+          "id": "TARGET-PILOT",
+          "component": "public-external-adopter-pilot-kit",
+          "paths": [
+            "benchmarks/README.md",
+            "benchmarks/pilot-guide.md",
+            "benchmarks/pilots/**"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-CONTRACT",
+          "component": "pilot-contract-lifecycle",
+          "paths": [
+            "docs/engineering-specs/ES-external-adopter-pilot-execution.engineering-spec.md"
+          ],
+          "changePolicy": "modify"
+        }
+      ],
+      "constraints": [
+        {
+          "id": "CON-PUBLIC-KIT",
+          "level": "must",
+          "statement": "Repair every participant-facing link from benchmarks/README.md and provide a self-contained public pilot guide and pilot kit usable from a clean checkout and from the exact public @engineeringspec/cli@0.1.0-rc.17 package, without relying on private repository files or maintainer-only context.",
+          "appliesTo": [
+            "TARGET-PILOT"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-EXISTING-COMMANDS",
+          "level": "must",
+          "statement": "The protocol must use the existing engineeringspec benchmark and engineeringspec measure commands, the existing agent-impact schema, and existing RC17 semantics; it may document invocations, inputs, validation, and interpretation but must not add or change benchmark, measurement, routing, lifecycle, or PermissionTicket semantics.",
+          "appliesTo": [
+            "TARGET-PILOT"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-PAIRED-PROTOCOL",
+          "level": "must",
+          "statement": "Each task must run baseline and engineeringspec conditions from the same immutable repository base with the same task-prompt digest, agent and model versions, harness, permissions, trusted checks, time limit, acceptance criteria, and reviewer identity; record condition order, distinct committed heads, environment differences, amendments, and any departure from the protocol.",
+          "appliesTo": [
+            "TARGET-PILOT"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-CONSENT-PRIVACY",
+          "level": "must",
+          "statement": "Participation must be voluntary and consented by the participant and repository owner where distinct; instructions must forbid secrets, credentials, personal data, proprietary source, raw private prompts, and unsanitized private paths from retained or submitted artifacts, require participant review before submission, and document sanitization and any consent withdrawal before evidence is merged.",
+          "appliesTo": [
+            "TARGET-PILOT"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-RETENTION",
+          "level": "must",
+          "statement": "Define a reproducible submission and retention path under benchmarks/pilots for consent-safe protocol metadata, paired run records, measurement receipts, trusted-check outcomes, review outcomes, amendments, limitations, and provenance sufficient for an independent reviewer to rerun the existing summarizer and trace each observation to immutable inputs without retaining private repository content.",
+          "appliesTo": [
+            "TARGET-PILOT"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-ADVERSE-EVIDENCE",
+          "level": "must",
+          "statement": "Retain and count failed, slower, amended, onboarding-blocked, protocol-deviating, excluded, and inconclusive runs; corrections must be append-only or explicitly versioned, exclusions must preserve the original observation and reason, and no outcome may be discarded because it is unfavorable.",
+          "appliesTo": [
+            "TARGET-PILOT"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-RECRUITMENT",
+          "level": "must",
+          "statement": "Recruit two to five consenting external users or repositories and target at least ten paired tasks where practical across the retained sample; record recruitment, refusal, withdrawal, onboarding failure, and sample shortfall without fabricating completion or silently substituting maintainer-only dogfood.",
+          "appliesTo": [
+            "TARGET-PILOT"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-CLAIMS",
+          "level": "must_not",
+          "statement": "Do not make causal, productivity, correctness, safety, adoption, conversion, or general-population claims without retained supporting evidence; all reporting must be descriptive of the retained sample, disclose sample size and missing data, distinguish observed records from examples, and state limitations and inconclusive or negative findings.",
+          "appliesTo": [
+            "TARGET-PILOT"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-NO-PRODUCT-WORK",
+          "level": "must_not",
+          "statement": "This authority must not modify src, tests, conformance, schemas, RFCs, package or lock identity, workflows, Actions, dependencies, integrations, skills, site, release guidance, consumers, or any runtime behavior; it must not add MCP, ACP, Context Plane, hosted services, telemetry, RC18 work, feature work, release work, new benchmark semantics, or unrelated cleanup.",
+          "appliesTo": [
+            "TARGET-PILOT",
+            "TARGET-CONTRACT"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-RUNNER-INERTNESS",
+          "level": "must",
+          "statement": "EngineeringSpec verification runners remain inert declarations; pilot instructions may identify separately trusted commands for humans or harnesses to run but must not introduce automatic command execution during parsing, validation, inspection, coverage, routing, or PermissionTicket generation.",
+          "appliesTo": [
+            "TARGET-PILOT"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-CLOSE",
+          "level": "must",
+          "statement": "Keep this contract approved while recruitment or evidence collection is active; after the public kit, retained observations, separately trusted checks, and post-pilot evidence and privacy review are complete, close it only through the exact approved to implemented monotonic lifecycle transition in a separately reviewed change.",
+          "appliesTo": [
+            "TARGET-CONTRACT"
+          ],
+          "enforcement": "review"
+        }
+      ],
+      "contracts": [],
+      "verification": [
+        {
+          "id": "VER-PROTOCOL",
+          "kind": "test",
+          "proves": [
+            "CON-EXISTING-COMMANDS",
+            "CON-PAIRED-PROTOCOL"
+          ]
+        },
+        {
+          "id": "VER-EVIDENCE",
+          "kind": "test",
+          "proves": [
+            "CON-RETENTION",
+            "CON-ADVERSE-EVIDENCE",
+            "CON-RECRUITMENT",
+            "CON-CLAIMS"
+          ]
+        },
+        {
+          "id": "VER-ROUTING",
+          "kind": "test",
+          "proves": [
+            "CON-NO-PRODUCT-WORK"
+          ]
+        },
+        {
+          "id": "VER-REVIEW",
+          "kind": "human_review",
+          "proves": [
+            "CON-PUBLIC-KIT",
+            "CON-CONSENT-PRIVACY",
+            "CON-ADVERSE-EVIDENCE",
+            "CON-RECRUITMENT",
+            "CON-CLAIMS",
+            "CON-RUNNER-INERTNESS",
+            "CON-CLOSE"
           ]
         }
       ]
@@ -1094,7 +3775,7 @@
     {
       "id": "ES-gate-diff-scope",
       "title": "Fail-closed diff gate against declared targets",
-      "status": "proposed",
+      "status": "superseded",
       "file": "ES-gate-diff-scope.engineering-spec.md",
       "owners": [
         "EngineeringSpec maintainers"
@@ -2205,7 +4886,7 @@
     {
       "id": "ES-precode-brief-evidence-pilot",
       "title": "Pre-code work brief and adoption evidence pilot",
-      "status": "proposed",
+      "status": "superseded",
       "file": "ES-precode-brief-evidence-pilot.engineering-spec.md",
       "owners": [
         "EngineeringSpec maintainers"
@@ -2493,6 +5174,355 @@
             "CON-11",
             "CON-12",
             "CON-13"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ES-public-brand-uplift",
+      "title": "Adopt the mark-first public identity and sharpen change-authority positioning",
+      "status": "approved",
+      "file": "ES-public-brand-uplift.engineering-spec.md",
+      "owners": [
+        "EngineeringSpec maintainers"
+      ],
+      "sourceRefs": [
+        {
+          "id": "SRC-BRAND-KIT",
+          "type": "other",
+          "locator": "engineeringspec-mark-first-brand-kit-2026-08-30",
+          "title": "Reviewed mark-first EngineeringSpec brand kit and deterministic generators"
+        },
+        {
+          "id": "SRC-POSITIONING",
+          "type": "other",
+          "locator": "change-authority-positioning-review-2026-08-30",
+          "title": "Maintainer direction to adopt Change authority for AI coding agents consistently"
+        },
+        {
+          "id": "SRC-TALK",
+          "type": "other",
+          "locator": "scale-2026-beyond-vibe-coding-transcript",
+          "title": "Talk transcript on team-scale AI-assisted development and architectural inconsistency"
+        },
+        {
+          "id": "SRC-HOMEPAGE",
+          "type": "document",
+          "locator": "site/index.html",
+          "title": "Current navy EngineeringSpec homepage"
+        },
+        {
+          "id": "SRC-GUIDANCE",
+          "type": "document",
+          "locator": "README.md",
+          "title": "Current repository positioning, capability boundaries, and quick start"
+        },
+        {
+          "id": "SRC-RC17",
+          "type": "document",
+          "locator": "docs/engineering-specs/ES-rc17-launch-article.engineering-spec.md",
+          "title": "Approved RC17 editorial accuracy and evidence boundaries"
+        }
+      ],
+      "targets": [
+        {
+          "id": "TARGET-BRAND",
+          "component": "public-brand-source-and-exports",
+          "paths": [
+            "brand/**"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-SITE",
+          "component": "static-public-site",
+          "paths": [
+            "site/index.html",
+            "site/blog/**",
+            "site/spec/0.1/index.html",
+            "site/og.png",
+            "site/og.svg",
+            "site/favicon.ico",
+            "site/favicon-32.png",
+            "site/favicon-48.png",
+            "site/apple-touch-icon.png",
+            "site/manifest.webmanifest",
+            "site/assets/**"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-EXPLORER",
+          "component": "generated-contract-explorer-presentation",
+          "paths": [
+            "src/catalogue/catalogue.ts",
+            "test/unit/catalogue.test.ts",
+            "site/explorer.html",
+            "site/catalogue.json"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-REPOSITORY",
+          "component": "github-repository-presentation",
+          "paths": [
+            "README.md",
+            "package.json"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-CONTRACT",
+          "component": "brand-uplift-contract-lifecycle",
+          "paths": [
+            "docs/engineering-specs/ES-public-brand-uplift.engineering-spec.md"
+          ],
+          "changePolicy": "modify"
+        }
+      ],
+      "constraints": [
+        {
+          "id": "CON-IDENTITY",
+          "level": "must",
+          "statement": "Public surfaces must use the reviewed mark-first identity with Forest",
+          "appliesTo": [
+            "TARGET-BRAND",
+            "TARGET-SITE",
+            "TARGET-EXPLORER",
+            "TARGET-REPOSITORY"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-SIGNAL",
+          "level": "must",
+          "statement": "Signal Mint",
+          "appliesTo": [
+            "TARGET-BRAND",
+            "TARGET-SITE",
+            "TARGET-EXPLORER"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-MARK-FIRST",
+          "level": "must",
+          "statement": "The hexagonal mark or horizontal lockup must lead website navigation, README presentation, favicons, Open Graph assets, and repository-ready avatar and social-preview exports; the wombat and any AI lockup must not appear in default public, GitHub, favicon, or link-preview assets.",
+          "appliesTo": [
+            "TARGET-BRAND",
+            "TARGET-SITE",
+            "TARGET-REPOSITORY"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-MASKABLE",
+          "level": "must",
+          "statement": "The maskable 512 icon must be a full-bleed opaque Forest tile with the mark inside the maskable safe region and no baked rounded rectangle; retain transparent 32 and 48 pixel favicons and treat 16 pixels only as a compatibility fallback.",
+          "appliesTo": [
+            "TARGET-BRAND",
+            "TARGET-SITE"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-TYPE",
+          "level": "must",
+          "statement": "Website typography must use locally served, Latin-subset WOFF2 builds of Sora and Inter with explicit system fallbacks, avoid render-blocking third-party font requests, and keep the outlined wordmark independent of font availability.",
+          "appliesTo": [
+            "TARGET-BRAND",
+            "TARGET-SITE",
+            "TARGET-EXPLORER"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-POSITIONING",
+          "level": "must",
+          "statement": "The canonical public line must be Change authority for AI coding agents, supported by Reviewed authority before code. Final-diff verification after.; README, website metadata, hero copy, Open Graph copy, package description, and repository-ready social assets must use compatible language without competing taglines.",
+          "appliesTo": [
+            "TARGET-BRAND",
+            "TARGET-SITE",
+            "TARGET-REPOSITORY"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-PROBLEM",
+          "level": "must",
+          "statement": "Explain the team-scale problem in concrete engineering terms: prompts express intent, context informs implementation, and trusted checks assess results, but none independently records what an agent was allowed to change; reviewable pre-code authority should reduce the cost of discovering scope disagreements only after a large generated diff exists.",
+          "appliesTo": [
+            "TARGET-SITE",
+            "TARGET-REPOSITORY"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-AUTHORITY-ACCURACY",
+          "level": "must",
+          "statement": "Describe authority as an approved EngineeringSpec contract loaded from the trusted Git base, broad reading as distinct from bounded writing, scope amendments as separately reviewed authority, and final verification as complete-working-state routing against that authority; preserve runner inertness and the explore to propose to approve to implement to verify to close lifecycle.",
+          "appliesTo": [
+            "TARGET-SITE",
+            "TARGET-EXPLORER",
+            "TARGET-REPOSITORY"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-NO-ARCHITECTURE-OVERCLAIM",
+          "level": "must_not",
+          "statement": "Do not claim EngineeringSpec currently analyses an entire codebase, creates a living architecture model, detects duplicate services or tables, generates feature designs, implements changes, prevents all architectural drift, verifies semantic conformance inside files, executes declared verifiers, or proves software correctness, security, quality, productivity, or safety.",
+          "appliesTo": [
+            "TARGET-BRAND",
+            "TARGET-SITE",
+            "TARGET-EXPLORER",
+            "TARGET-REPOSITORY"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-EVIDENCE",
+          "level": "must",
+          "statement": "Retain the public draft or release-candidate maturity, zero-observation external evidence status, and non-commercial invitation for criticism and paired external pilots; do not cite the talk's productivity claims as EngineeringSpec evidence or make adoption, conversion, Hacker News, star-growth, enterprise-readiness, or causal impact claims.",
+          "appliesTo": [
+            "TARGET-SITE",
+            "TARGET-REPOSITORY"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-RELEASE-IDENTITY",
+          "level": "must",
+          "statement": "Public installation commands, release links, package metadata, and capability descriptions must match the latest actually published EngineeringSpec release available on the trusted implementation base; no unreleased version may be presented as installable.",
+          "appliesTo": [
+            "TARGET-SITE",
+            "TARGET-REPOSITORY"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-SITE-COHERENCE",
+          "level": "must",
+          "statement": "Homepage, blog index, existing articles, specification shell, and generated Explorer must form one responsive visual system with semantic landmarks, visible keyboard focus, reduced-motion support, readable code, and WCAG AA text and control contrast at desktop and narrow mobile widths; no existing public route or article may be dropped.",
+          "appliesTo": [
+            "TARGET-SITE",
+            "TARGET-EXPLORER"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-EXPLORER-SAFETY",
+          "level": "must",
+          "statement": "Explorer restyling must remain a presentation-only change over the existing deterministic catalogue data and filtering behavior, preserve hostile-content escaping and runner inertness, and state that the view explains contracts but grants no authority.",
+          "appliesTo": [
+            "TARGET-EXPLORER"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-GITHUB-HOME",
+          "level": "must",
+          "statement": "Public repository materials and links must continue to identify github.com/majilesh/engineeringspec as the project home; this increment must not imply an organisation migration, established company, commercial offering, customer base, or traction that does not exist.",
+          "appliesTo": [
+            "TARGET-BRAND",
+            "TARGET-SITE",
+            "TARGET-REPOSITORY"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-NO-PRODUCT-CHANGE",
+          "level": "must_not",
+          "statement": "This increment must not change EngineeringSpec format 0.1, schemas, parsing, validation, routing or governance decisions, PermissionTicket semantics, CLI behavior other than generated Explorer presentation, tests unrelated to that presentation, Action enforcement, workflows, dependencies, benchmark records or semantics, pilot records, release identity, or specification content.",
+          "appliesTo": [
+            "TARGET-BRAND",
+            "TARGET-SITE",
+            "TARGET-EXPLORER",
+            "TARGET-REPOSITORY",
+            "TARGET-CONTRACT"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-DETERMINISTIC-ASSETS",
+          "level": "must",
+          "statement": "Committed public raster and vector assets must be generated from reviewed sources, use stable dimensions and sRGB output where applicable, and reproduce byte-for-byte for non-PDF deliverables when regenerated in the documented environment.",
+          "appliesTo": [
+            "TARGET-BRAND",
+            "TARGET-SITE"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-CLOSE",
+          "level": "must",
+          "statement": "Merge this proposal and review an exact approved contract-only revision before any dependent brand, site, README, package, generated Explorer, or public GitHub-settings change; after implementation, separately trusted checks, brand, editorial, evidence, accessibility, and routing review must pass before the exact approved to implemented close.",
+          "appliesTo": [
+            "TARGET-CONTRACT"
+          ],
+          "enforcement": "review"
+        }
+      ],
+      "contracts": [],
+      "verification": [
+        {
+          "id": "VER-STATIC",
+          "kind": "test",
+          "proves": [
+            "CON-TYPE",
+            "CON-SITE-COHERENCE"
+          ]
+        },
+        {
+          "id": "VER-ASSETS",
+          "kind": "test",
+          "proves": [
+            "CON-MASKABLE",
+            "CON-DETERMINISTIC-ASSETS"
+          ]
+        },
+        {
+          "id": "VER-ACCURACY",
+          "kind": "test",
+          "proves": [
+            "CON-AUTHORITY-ACCURACY",
+            "CON-RELEASE-IDENTITY"
+          ]
+        },
+        {
+          "id": "VER-TESTS",
+          "kind": "test",
+          "proves": [
+            "CON-EXPLORER-SAFETY"
+          ]
+        },
+        {
+          "id": "VER-CONFORMANCE",
+          "kind": "test",
+          "proves": [
+            "CON-NO-PRODUCT-CHANGE"
+          ]
+        },
+        {
+          "id": "VER-ROUTING",
+          "kind": "test",
+          "proves": [
+            "CON-NO-PRODUCT-CHANGE"
+          ]
+        },
+        {
+          "id": "VER-REVIEW",
+          "kind": "human_review",
+          "proves": [
+            "CON-IDENTITY",
+            "CON-SIGNAL",
+            "CON-MARK-FIRST",
+            "CON-POSITIONING",
+            "CON-PROBLEM",
+            "CON-NO-ARCHITECTURE-OVERCLAIM",
+            "CON-EVIDENCE",
+            "CON-GITHUB-HOME",
+            "CON-CLOSE"
           ]
         }
       ]
@@ -4533,9 +7563,842 @@
       ]
     },
     {
+      "id": "ES-rc15-finish-productspec-base-isolation",
+      "title": "Fix finish ProductSpec base isolation for RC15",
+      "status": "implemented",
+      "file": "ES-rc15-finish-productspec-base-isolation.engineering-spec.md",
+      "owners": [
+        "EngineeringSpec maintainers"
+      ],
+      "sourceRefs": [
+        {
+          "id": "SRC-1",
+          "type": "other",
+          "locator": "agent-control-plane-dogfood-finish-productspec-2026-08-19",
+          "title": "RC14 consumer reproduction of ESPR001 during finish closure"
+        },
+        {
+          "id": "SRC-2",
+          "type": "document",
+          "locator": "docs/engineering-specs/ES-rc14-maximum-safety-minimum-ceremony.engineering-spec.md",
+          "title": "Implemented finish and exact monotonic-close semantics"
+        },
+        {
+          "id": "SRC-3",
+          "type": "document",
+          "locator": "docs/engineering-specs/ES-rc13-recovery-release.engineering-spec.md",
+          "title": "Repository-root ProductSpec validation and prior corrective release convention"
+        },
+        {
+          "id": "SRC-4",
+          "type": "document",
+          "locator": "docs/engineering-specs/ES-rc14-release.engineering-spec.md",
+          "title": "Current non-self-referential release preparation and immutable Action pin convention"
+        }
+      ],
+      "targets": [
+        {
+          "id": "TARGET-base-reads",
+          "component": "finish-and-review-trusted-base-validation",
+          "paths": [
+            "src/cli/finish.ts",
+            "src/cli/review.ts"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-regressions",
+          "component": "productspec-finish-and-closure-regressions",
+          "paths": [
+            "test/integration/rc14.test.ts",
+            "test/integration/cli.test.ts",
+            "test/conformance/rc14.test.ts",
+            "test/unit/finish.test.ts"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-package",
+          "component": "rc15-package-identity-and-release-note",
+          "paths": [
+            "package.json",
+            "package-lock.json",
+            "CHANGELOG.md"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-release-tests",
+          "component": "minimal-rc15-version-regressions",
+          "paths": [
+            "test/unit/doctor.test.ts",
+            "test/unit/release-readiness.test.ts",
+            "test/unit/version.test.ts"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-contract",
+          "component": "rc15-correction-lifecycle",
+          "paths": [
+            "docs/engineering-specs/ES-rc15-finish-productspec-base-isolation.engineering-spec.md"
+          ],
+          "changePolicy": "modify"
+        }
+      ],
+      "constraints": [
+        {
+          "id": "CON-BASE-ISOLATION",
+          "level": "must",
+          "statement": "Every EngineeringSpec blob reread from the selected trusted Git base by the finish path for routing, review projection, revision, or semantic digest must use base-authority validation semantics that preserve structural and EngineeringSpec semantic validation while disabling mutable-filesystem ProductSpec resolution unless a future resolver reads the ProductSpec from the exact same trusted Git commit.",
+          "appliesTo": [
+            "TARGET-base-reads",
+            "TARGET-regressions"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-FINISH-SUCCESS",
+          "level": "must",
+          "statement": "With strict trusted configuration, a valid implementation authorized by an approved base contract that declares the productspec profile and a repository-local ProductSpec source must complete finish --write-closure successfully.",
+          "appliesTo": [
+            "TARGET-base-reads",
+            "TARGET-regressions"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-EXACT-CLOSE",
+          "level": "must",
+          "statement": "Successful closure must change only metadata.status from approved to implemented, preserve spec_revision and normalized semantic authority, evaluate the complete implementation working state, and continue to reject unsafe mixed closes and unrelated or uncovered changes.",
+          "appliesTo": [
+            "TARGET-base-reads",
+            "TARGET-regressions"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-FAIL-CLOSED",
+          "level": "must",
+          "statement": "Malformed EngineeringSpecs and missing, invalid, ambiguous, or non-approved trusted-base contracts must continue to fail closed; structural validation, EngineeringSpec semantic validation, lifecycle checks, complete-change routing, and mixed-close validation must remain enabled.",
+          "appliesTo": [
+            "TARGET-base-reads",
+            "TARGET-regressions"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-WORKSPACE-INERT",
+          "level": "must",
+          "statement": "Creating, changing, deleting, corrupting, or redirecting a workspace or head ProductSpec must not influence the trusted-base contract digest, metadata, authority, routing decision, or closure safety, and no trusted-base read may resolve a local ProductSpec against the feature-branch filesystem.",
+          "appliesTo": [
+            "TARGET-base-reads",
+            "TARGET-regressions"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-ORDINARY-PROFILES",
+          "level": "must",
+          "statement": "Ordinary repository validation with an explicit repository root must continue to resolve and validate local ProductSpec references normally, including revision, digest, item, missing-file, and real-path confinement checks; ProductSpec and external-profile errors must not become globally ignorable.",
+          "appliesTo": [
+            "TARGET-regressions"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-RUNNERS-INERT",
+          "level": "must_not",
+          "statement": "Finish, review, transition, validation, and regression tests must not execute or expose specification-declared runner argv, and the correction must not introduce trusted runner execution.",
+          "appliesTo": [
+            "TARGET-base-reads",
+            "TARGET-regressions"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-OTHER-READS",
+          "level": "must",
+          "statement": "Review must report every other readGitBlob-to-validateMarkdown or validateBytes path that lacks either resolveProfiles false or a same-commit profile resolver. Equivalent paths outside the finish dependency must not be changed in this focused correction without separately approved authority.",
+          "appliesTo": [
+            "TARGET-base-reads"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-RC15-IDENTITY",
+          "level": "must",
+          "statement": "package.json, root package-lock metadata, compiled CLI output, minimal version assertions, and the new changelog entry must use exact version 0.1.0-rc.15 without rewriting historical release contracts, prior changelog sections, guidance, Action pins, site output, receipts, benchmark inputs, or retained evidence.",
+          "appliesTo": [
+            "TARGET-package",
+            "TARGET-release-tests"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-RELEASE-NOTE",
+          "level": "must",
+          "statement": "RC15 release notes must state that finish --write-closure now works for base-approved contracts containing local ProductSpec references, trusted-base isolation is preserved, workspace ProductSpec content cannot authorize or alter base authority, and no contract-format or schema change is introduced.",
+          "appliesTo": [
+            "TARGET-package"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-NO-PUBLISH",
+          "level": "must_not",
+          "statement": "This work must not publish npm, move a dist-tag, create or move a Git tag, create a GitHub release, merge the implementation pull request, update the Agent Control Plane repository, alter format 0.1 or schemas, change Action pins, guidance, site output, unrelated command implementations, weaken ProductSpec validation globally, execute specification runners, or trust workspace profile content as base authority.",
+          "appliesTo": [
+            "TARGET-base-reads",
+            "TARGET-regressions",
+            "TARGET-package",
+            "TARGET-release-tests"
+          ],
+          "enforcement": "review"
+        }
+      ],
+      "contracts": [],
+      "verification": [
+        {
+          "id": "VER-REGRESSION",
+          "kind": "test",
+          "proves": [
+            "CON-BASE-ISOLATION",
+            "CON-FINISH-SUCCESS",
+            "CON-EXACT-CLOSE",
+            "CON-FAIL-CLOSED",
+            "CON-WORKSPACE-INERT",
+            "CON-ORDINARY-PROFILES"
+          ]
+        },
+        {
+          "id": "VER-CONFORMANCE",
+          "kind": "test",
+          "proves": [
+            "CON-RUNNERS-INERT"
+          ]
+        },
+        {
+          "id": "VER-RELEASE",
+          "kind": "test",
+          "proves": [
+            "CON-RC15-IDENTITY"
+          ]
+        },
+        {
+          "id": "VER-REVIEW",
+          "kind": "human_review",
+          "proves": [
+            "CON-OTHER-READS",
+            "CON-RELEASE-NOTE",
+            "CON-NO-PUBLISH"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ES-rc17-launch-article",
+      "title": "Publish the RC17 change-authority launch article",
+      "status": "implemented",
+      "file": "ES-rc17-launch-article.engineering-spec.md",
+      "owners": [
+        "EngineeringSpec maintainers"
+      ],
+      "sourceRefs": [
+        {
+          "id": "SRC-BRIEF",
+          "type": "other",
+          "locator": "rc17-launch-article-brief-2026-08-29",
+          "title": "Maintainer brief for an engineering-led RC17 launch article and future Show HN landing page"
+        },
+        {
+          "id": "SRC-EXISTING-ARTICLE",
+          "type": "document",
+          "locator": "site/blog/change-authority-agentic-sdlc/index.html",
+          "title": "Existing change-authority article whose broad thesis must not be duplicated"
+        },
+        {
+          "id": "SRC-BLOG-INDEX",
+          "type": "document",
+          "locator": "site/blog/index.html",
+          "title": "Existing static blog index, metadata, navigation, and visual language"
+        },
+        {
+          "id": "SRC-RFC-0012",
+          "type": "document",
+          "locator": "rfcs/0012-compact-agent-ticket.md",
+          "title": "Compact agent PermissionTicket design and authority invariants"
+        },
+        {
+          "id": "SRC-RC17-NOTES",
+          "type": "document",
+          "locator": "CHANGELOG.md",
+          "title": "RC17 compact-ticket release notes"
+        },
+        {
+          "id": "SRC-RC17-RELEASE",
+          "type": "document",
+          "locator": "https://github.com/majilesh/engineeringspec/releases/tag/v0.1.0-rc.17",
+          "title": "Public EngineeringSpec 0.1.0-rc.17 prerelease"
+        },
+        {
+          "id": "SRC-RC17-NPM",
+          "type": "document",
+          "locator": "https://www.npmjs.com/package/@engineeringspec/cli/v/0.1.0-rc.17",
+          "title": "Public exact RC17 npm package"
+        },
+        {
+          "id": "SRC-GUIDANCE",
+          "type": "document",
+          "locator": "README.md",
+          "title": "Current grant-before-spend workflow and safety boundaries"
+        },
+        {
+          "id": "SRC-BENCHMARK",
+          "type": "document",
+          "locator": "benchmarks/README.md",
+          "title": "Existing paired agent-impact benchmark and evidence limitations"
+        }
+      ],
+      "targets": [
+        {
+          "id": "TARGET-ARTICLE",
+          "component": "rc17-launch-article",
+          "paths": [
+            "site/blog/give-coding-agents-permission-not-just-prompts/index.html"
+          ],
+          "changePolicy": "create"
+        },
+        {
+          "id": "TARGET-BLOG-INDEX",
+          "component": "blog-index-entry",
+          "paths": [
+            "site/blog/index.html"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-CONTRACT",
+          "component": "launch-article-contract-lifecycle",
+          "paths": [
+            "docs/engineering-specs/ES-rc17-launch-article.engineering-spec.md"
+          ],
+          "changePolicy": "modify"
+        }
+      ],
+      "constraints": [
+        {
+          "id": "CON-STATIC-PATTERN",
+          "level": "must",
+          "statement": "Implement the article as dependency-free static HTML and CSS by extending the existing blog pattern; preserve its visual language, navigation, typography, long-form structure, responsive behavior, visible focus, semantic landmarks, heading hierarchy, contrast, and reduced-motion behavior without adding a framework, dependency, analytics, telemetry, persistence, or external runtime requirement.",
+          "appliesTo": [
+            "TARGET-ARTICLE",
+            "TARGET-BLOG-INDEX"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-IDENTITY",
+          "level": "must",
+          "statement": "Publish at /blog/give-coding-agents-permission-not-just-prompts/ with the visible title Give Coding Agents Permission, Not Just Prompts and a subtitle accurately describing reviewed Git history as bounded change authority consumed before coding and verified afterward; the article must remain editorially distinct from the existing broad agentic-SDLC article.",
+          "appliesTo": [
+            "TARGET-ARTICLE",
+            "TARGET-BLOG-INDEX"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-PROBLEM-FIRST",
+          "level": "must",
+          "statement": "Lead with the engineering problem rather than the release announcement and make the distinction central that context answers what the agent knows, validation answers whether the resulting change worked, and authority answers what the agent was allowed to change; explain that technically correct, test-passing code may still exceed approved scope.",
+          "appliesTo": [
+            "TARGET-ARTICLE"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-CONTRACT-MODEL",
+          "level": "must",
+          "statement": "Explain a versioned engineering change contract, immutable reviewed-base authority, broad repository reading for correctness, bounded writing, separately reviewed scope amendments, and the explore to propose to approve to implement to verify to close control loop without implying that prompts, workspace contracts, successful analysis, tests, or classification grant authority.",
+          "appliesTo": [
+            "TARGET-ARTICLE"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-RC17-WORKFLOW",
+          "level": "must",
+          "statement": "Show the concise next, work ES-session-refresh, implementation, and finish workflow; use only fields and semantics confirmed by RC17 for compact next and work PermissionTickets; identify exact trusted base, approved contract and revision, policy-bearing writable and protected paths, constraints, verifier identities, technical contracts, and stop conditions without exposing runner payloads or inventing JSON structure.",
+          "appliesTo": [
+            "TARGET-ARTICLE"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-INDEPENDENT-FACTS",
+          "level": "must",
+          "statement": "State explicitly that permission and currentChangeClassification are independent; before edits, implementation permission may coexist with classification none because permission comes from reviewed trusted-base authority while classification describes the diff that currently exists and never grants or widens authority.",
+          "appliesTo": [
+            "TARGET-ARTICLE"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-SCOPE-EXAMPLE",
+          "level": "must",
+          "statement": "Use a fictional session-refresh example whose approved writable paths are src/auth/session/** and test/auth/session/** and whose middleware, database, and infrastructure paths remain outside authority; if wider writes become necessary, require the agent to stop, explain the blocker, obtain and merge a separately reviewed authority amendment, and continue from the new trusted base.",
+          "appliesTo": [
+            "TARGET-ARTICLE"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-VERIFY-BOUNDARY",
+          "level": "must",
+          "statement": "Explain that finish and repository checks evaluate the complete Git state against approved authority and can identify selected, denied, uncovered, or ambiguous paths, contract-only governance, and implementation with exact monotonic close; do not imply that EngineeringSpec executes declared runners or proves software correctness, security, productivity, or acceptable implementation quality.",
+          "appliesTo": [
+            "TARGET-ARTICLE"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-RC17-DELTA",
+          "level": "must",
+          "statement": "Keep the RC17 section brief and accurate by covering compact next and work defaults, verbose compatibility, executable blocker recovery, separate permission and current-change classification, aligned agent guidance, and unchanged trusted-base authority, routing, finish semantics, and runner inertness; do not reproduce the changelog or imply a new authorization mechanism.",
+          "appliesTo": [
+            "TARGET-ARTICLE"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-NON-GOALS",
+          "level": "must",
+          "statement": "Describe EngineeringSpec as an open, agent-neutral, Git-and-CI-oriented format and CLI/reference implementation that does not require an MCP server, ACP or hosted control plane, specific coding agent, context graph, or telemetry service; possible future integrations must not be presented as prerequisites or current features.",
+          "appliesTo": [
+            "TARGET-ARTICLE"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-EVIDENCE-HONESTY",
+          "level": "must",
+          "statement": "State plainly that there is not yet evidence that EngineeringSpec makes coding agents faster, more productive, safer, or more correct; describe the paired protocol at a high level using the same task, immutable base, agent and model, harness, permissions, and trusted checks, retain successful, failed, slower, amended, onboarding-blocked, scope-violating, and inconclusive runs, target at least ten paired tasks across two to five external users or repositories where practical, and make no causal or adoption claim.",
+          "appliesTo": [
+            "TARGET-ARTICLE"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-CTA",
+          "level": "must",
+          "statement": "End with a non-commercial invitation to repository maintainers for criticism, small external pilots, paired tasks, negative results, and alternative authority models; link to the GitHub repository, exact public RC17 prerelease, exact npm package or supported RC17 quickstart installation, and specification, but include a public pilot-guide link only if the participant guide and kit exist on the trusted implementation base and resolve publicly without error.",
+          "appliesTo": [
+            "TARGET-ARTICLE"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-METADATA",
+          "level": "must",
+          "statement": "Add an accurate route-specific title, description, canonical URL, Open Graph title, description, type and URL, Twitter card metadata, and truthful article publication date using existing site conventions; reuse existing asset conventions and do not create or claim a new social image.",
+          "appliesTo": [
+            "TARGET-ARTICLE"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-INDEX",
+          "level": "must",
+          "statement": "Add the new article to the existing blog index with accurate date, reading time, title, summary, and route while preserving the existing article and making both entries usable on desktop, mobile, keyboard, and reduced-motion settings.",
+          "appliesTo": [
+            "TARGET-BLOG-INDEX"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-NO-HOMEPAGE",
+          "level": "must_not",
+          "statement": "Do not modify site/index.html; its existing Blog navigation already provides article discovery, so this increment does not need a homepage promotion surface.",
+          "appliesTo": [
+            "TARGET-ARTICLE",
+            "TARGET-BLOG-INDEX",
+            "TARGET-CONTRACT"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-NO-OTHER-WORK",
+          "level": "must_not",
+          "statement": "Do not modify runtime, CLI, schemas, specification format, RFCs, workflows, package or lock identity, tests, benchmark semantics or evidence, pilot materials, Action pins, dependencies, guidance, consumers, release identities, deployment configuration, or unrelated files; do not start RC18 or claim production publication without observed deployment evidence.",
+          "appliesTo": [
+            "TARGET-ARTICLE",
+            "TARGET-BLOG-INDEX",
+            "TARGET-CONTRACT"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-CLOSE",
+          "level": "must",
+          "statement": "After separately trusted checks, local route review, editorial and evidence review, and complete-state routing pass, close only this contract through the exact approved to implemented monotonic transition; do not combine proposal and dependent article implementation.",
+          "appliesTo": [
+            "TARGET-CONTRACT"
+          ],
+          "enforcement": "review"
+        }
+      ],
+      "contracts": [],
+      "verification": [
+        {
+          "id": "VER-STATIC",
+          "kind": "test",
+          "proves": [
+            "CON-STATIC-PATTERN",
+            "CON-METADATA",
+            "CON-INDEX"
+          ]
+        },
+        {
+          "id": "VER-ACCURACY",
+          "kind": "test",
+          "proves": [
+            "CON-RC17-WORKFLOW",
+            "CON-INDEPENDENT-FACTS",
+            "CON-VERIFY-BOUNDARY"
+          ]
+        },
+        {
+          "id": "VER-LINKS",
+          "kind": "test",
+          "proves": [
+            "CON-CTA"
+          ]
+        },
+        {
+          "id": "VER-ROUTING",
+          "kind": "test",
+          "proves": [
+            "CON-NO-HOMEPAGE",
+            "CON-NO-OTHER-WORK"
+          ]
+        },
+        {
+          "id": "VER-EDITORIAL",
+          "kind": "human_review",
+          "proves": [
+            "CON-IDENTITY",
+            "CON-PROBLEM-FIRST",
+            "CON-CONTRACT-MODEL",
+            "CON-SCOPE-EXAMPLE",
+            "CON-RC17-DELTA",
+            "CON-NON-GOALS",
+            "CON-EVIDENCE-HONESTY",
+            "CON-CLOSE"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ES-rc17-release",
+      "title": "Prepare the release-only RC17 PermissionTicket increment",
+      "status": "implemented",
+      "file": "ES-rc17-release.engineering-spec.md",
+      "owners": [
+        "EngineeringSpec maintainers"
+      ],
+      "sourceRefs": [
+        {
+          "id": "SRC-COMPACT-MERGE",
+          "type": "other",
+          "locator": "06134ef3a81a0df47504d6a0652d18c2cab1063e",
+          "title": "Trusted main containing merged PR 118 and the exact compact-ticket closure"
+        },
+        {
+          "id": "SRC-COMPACT-AUTHORITY",
+          "type": "document",
+          "locator": "docs/engineering-specs/ES-compact-agent-ticket.engineering-spec.md",
+          "title": "Implemented revision 2 compact PermissionTicket authority"
+        },
+        {
+          "id": "SRC-COMPACT-RFC",
+          "type": "document",
+          "locator": "rfcs/0012-compact-agent-ticket.md",
+          "title": "Already-merged compact projection and compatibility design"
+        },
+        {
+          "id": "SRC-RELEASE-PRECEDENT",
+          "type": "document",
+          "locator": "docs/engineering-specs/ES-rc14-release.engineering-spec.md",
+          "title": "Repository release preparation separated from external publication"
+        },
+        {
+          "id": "SRC-PUBLICATION-PRECEDENT",
+          "type": "document",
+          "locator": "docs/engineering-specs/ES-RC16-PUBLICATION.engineering-spec.md",
+          "title": "Exact-source tag-triggered trusted publication and evidence boundary"
+        },
+        {
+          "id": "SRC-PUBLISH-WORKFLOW",
+          "type": "document",
+          "locator": ".github/workflows/release.yml",
+          "title": "Existing tag-triggered npm next publication with provenance"
+        },
+        {
+          "id": "SRC-CI",
+          "type": "document",
+          "locator": ".github/workflows/ci.yml",
+          "title": "Repository-owned quality, package, example, and governance checks"
+        },
+        {
+          "id": "SRC-PACKAGE",
+          "type": "document",
+          "locator": "package.json",
+          "title": "RC16 identity, existing package manifest and verification commands"
+        },
+        {
+          "id": "SRC-LOCK",
+          "type": "document",
+          "locator": "package-lock.json",
+          "title": "Root version metadata and unchanged dependency graph"
+        },
+        {
+          "id": "SRC-NOTES",
+          "type": "document",
+          "locator": "CHANGELOG.md",
+          "title": "Unreleased compact-ticket notes and immutable historical release notes"
+        },
+        {
+          "id": "SRC-PINS",
+          "type": "document",
+          "locator": "docs/production-gate.md",
+          "title": "Independently versioned CLI and immutable reviewed Action runtime"
+        },
+        {
+          "id": "SRC-READINESS",
+          "type": "document",
+          "locator": "test/unit/release-readiness.test.ts",
+          "title": "Existing hard-coded current package identity and historical-pin regressions"
+        }
+      ],
+      "targets": [
+        {
+          "id": "TARGET-PACKAGE",
+          "component": "rc17-package-version-only",
+          "paths": [
+            "package.json",
+            "package-lock.json"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-NOTES",
+          "component": "rc17-release-notes",
+          "paths": [
+            "CHANGELOG.md"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-GUIDANCE",
+          "component": "exact-current-cli-version-and-publication-wording",
+          "paths": [
+            "README.md",
+            "docs/agent-integration.md",
+            "docs/cli-reference.md",
+            "docs/first-change-tutorial.md",
+            "docs/getting-started.md",
+            "docs/lifecycle.md",
+            "docs/production-gate.md",
+            "docs/troubleshooting.md",
+            "docs/upgrading.md",
+            "skills/engineering-spec/SKILL.md"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-SITE",
+          "component": "existing-quickstart-cli-version-only",
+          "paths": [
+            "site/index.html"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-IDENTITY-TESTS",
+          "component": "existing-current-release-identity-fixtures",
+          "paths": [
+            "test/integration/cli.test.ts",
+            "test/unit/doctor.test.ts",
+            "test/unit/release-readiness.test.ts"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-CONTRACT",
+          "component": "rc17-preparation-lifecycle",
+          "paths": [
+            "docs/engineering-specs/ES-rc17-release.engineering-spec.md"
+          ],
+          "changePolicy": "modify"
+        }
+      ],
+      "constraints": [
+        {
+          "id": "CON-GRANT-BEFORE-SPEND",
+          "level": "must",
+          "statement": "Begin dependent preparation only after this exact contract is approved on trusted main, next grants implementation permission, and work loads that approved base revision and digest; draft or workspace authority cannot authorize its own implementation.",
+          "appliesTo": [],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-VERSION",
+          "level": "must",
+          "statement": "Set package.json version, package-lock.json top-level version, and packages[empty-string].version to exactly 0.1.0-rc.17; preserve the package name, dependencies, resolutions, integrity values, manifest, scripts, engines, and all other package and lock semantics. The eventual external release identity is v0.1.0-rc.17, subject to separate publication approval.",
+          "appliesTo": [
+            "TARGET-PACKAGE"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-EXISTING-IMPLEMENTATION",
+          "level": "must",
+          "statement": "Retain the complete already-reviewed compact default next and work JSON, exact currentChangeClassification vocabulary, executable blocked recovery, full --verbose payload and exit compatibility, stale-governance regression, RFC 0012, and aligned agent guidance; classification remains observed diff information, not authority or a forecast.",
+          "appliesTo": [],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-RELEASE-ONLY",
+          "level": "must_not",
+          "statement": "Do not change src, runtime or CLI behavior, routing, authorization, next/work/finish semantics, Action behavior, schemas, format 0.1, RFCs, conformance fixtures, dependencies, release machinery, or unrelated files. Do not add refactors, cleanup, commands, Context Plane, ContextEnvelope, Context Providers or Graph, architecture/ownership/dependency context, MCP, ACP runtime integration, hosted services, telemetry, or format 0.2. If verification reveals a required change outside this release-only scope, stop for separately reviewed corrective authority.",
+          "appliesTo": [],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-IDENTITY-FIXTURES",
+          "level": "must",
+          "statement": "Limit the three authorized test-file edits to current release identity literals, labels, and exact-version fixture/assertion alignment. Preserve test behavior, negative cases, current Action SHA expectations, and historical identities; do not delete or weaken checks to make a version change pass.",
+          "appliesTo": [
+            "TARGET-IDENTITY-TESTS"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-CURRENT-GUIDANCE",
+          "level": "must",
+          "statement": "Limit current guidance and the site quickstart to RC17 CLI identity, compact-ticket availability and --verbose migration wording, and publication-state distinctions. Before publication describe RC17 as a prepared candidate, not an available registry artifact; keep any runnable published-package fallback explicitly identified as RC16 without implying it has compact tickets. Preserve lifecycle instructions, trust boundaries, layouts, and all historical facts; do not perform a repository-wide version replacement.",
+          "appliesTo": [
+            "TARGET-GUIDANCE",
+            "TARGET-SITE"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-ACTION-PIN",
+          "level": "must",
+          "statement": "Preserve CURRENT_ACTION_SHA and every current Action reference at ddf813e4e69d9b2f9a9eb3f0f241747746021cf3. Do not repin to RC17 merely for package-version symmetry, relabel that SHA as an RC17 CLI runtime, use mutable pins, or change action.yml, adoption generators, CI, or publishing workflows. Verify the existing immutable Action can evaluate the release diff and exact closure; failure requires new reviewed authority, not a workaround.",
+          "appliesTo": [],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-NOTES",
+          "level": "must",
+          "statement": "Prepare an RC17 CHANGELOG section from reviewed Unreleased content, with an accurate preparation date and explicit pre-publication state. Describe the compact agent-facing authority envelope, reduced parsing and ceremony as design changes, executable recovery, verbose compatibility, RFC 0012, aligned guidance, and the stale-governance regression; preserve earlier release sections and make no measured productivity, time, token, correctness, or adoption improvement claims without retained supporting evidence.",
+          "appliesTo": [
+            "TARGET-NOTES"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-TRUSTED-CHECKS",
+          "level": "must",
+          "statement": "Before preparation review, run separately trusted npm ci, npm run lint, npm run typecheck, npm test, npm run test:conformance, npm run build, npm run package:check, git diff --check, strict validation of docs/engineering-specs, and complete-working-state check against the approved trusted base. Retain existing CI Node 20/22 quality, demo, example-validation, audit, and governance requirements. Report actual results without inferring that declared runners executed.",
+          "appliesTo": [],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-PACKAGED-DOGFOOD",
+          "level": "must",
+          "statement": "Pack the candidate using the unchanged package manifest, install that exact tarball in a clean temporary directory outside the evaluated worktree, and invoke its installed bin rather than the source-tree dist CLI. Verify version 0.1.0-rc.17 and strict validation; in a disposable Git fixture with an independently committed approved base contract, verify next permission implementation with classification none and work ready with exact base/revision/digest, paths, constraints, verifier identities and stopWhen. Check compact default JSON against the existing status/prepare projections, --verbose full fields/nesting/values and exit behavior including a blocked case, executable routing recovery, and the authorized all-spec diff retaining contract_only and unchanged governance-only finish behavior. Do not use the closed production compact-ticket contract as artificial current authority. Retain smoke evidence outside the evaluated worktree and repeat this smoke against the exact registry package under later publication authority.",
+          "appliesTo": [],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-PUBLICATION-BOUNDARY",
+          "level": "must_not",
+          "statement": "This preparation contract must not create or push tags, publish npm, move dist-tags, create GitHub Releases, add credentials, change environments or workflow permissions, introduce alternate publishing mechanisms, or mutate consumers. After preparation review and merge, obtain separate approved publication authority naming the exact release-source SHA and v0.1.0-rc.17 before any external release operation.",
+          "appliesTo": [],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-TRUSTED-PUBLISHING-HANDOFF",
+          "level": "must",
+          "statement": "The later publication authority must preserve the existing v-tag-triggered release.yml boundary, tag/package agreement check, npm environment and trusted publishing, public access, next prerelease channel and provenance; prohibit duplicate manual npm publish and stable/latest promotion. Bind the tag to the reviewed exact RC17 source, preserve the pre-publication observed latest value, verify package/tag/release absence before execution, require the GitHub prerelease only after npm succeeds, verify provenance and clean exact-version registry installation, and prohibit moving or recreating immutable tags or artifacts after partial failure. Do not treat this handoff requirement as publication permission.",
+          "appliesTo": [],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-EXACT-CLOSE",
+          "level": "must",
+          "statement": "After preparation checks and review, use finish to close only this spent contract from approved to implemented with every other semantic field, revision, source reference, and prose byte unchanged; require ready and implementation_with_monotonic_close for the complete release-preparation diff. Closure records repository preparation only, not external publication. Leave ES-precode-brief-evidence-pilot proposed and preserve all other historical contracts and retained evidence.",
+          "appliesTo": [
+            "TARGET-CONTRACT"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-RUNNERS-INERT",
+          "level": "must_not",
+          "statement": "Parsing, validation, coverage, inspection, and routing must not execute specification-declared runners or obtain publication credentials; verification references are inert descriptions and evidence states must distinguish separately executed checks from unsupplied receipt evidence.",
+          "appliesTo": [],
+          "enforcement": "review"
+        }
+      ],
+      "contracts": [],
+      "verification": [
+        {
+          "id": "VER-IDENTITY",
+          "kind": "test",
+          "proves": [
+            "CON-VERSION",
+            "CON-IDENTITY-FIXTURES"
+          ]
+        },
+        {
+          "id": "VER-PACKAGED-TICKETS",
+          "kind": "test",
+          "proves": [
+            "CON-EXISTING-IMPLEMENTATION",
+            "CON-PACKAGED-DOGFOOD"
+          ]
+        },
+        {
+          "id": "VER-QUALITY",
+          "kind": "static_analysis",
+          "proves": [
+            "CON-TRUSTED-CHECKS",
+            "CON-RUNNERS-INERT"
+          ]
+        },
+        {
+          "id": "VER-RELEASE-REVIEW",
+          "kind": "human_review",
+          "proves": [
+            "CON-GRANT-BEFORE-SPEND",
+            "CON-RELEASE-ONLY",
+            "CON-CURRENT-GUIDANCE",
+            "CON-ACTION-PIN",
+            "CON-NOTES",
+            "CON-PUBLICATION-BOUNDARY",
+            "CON-TRUSTED-PUBLISHING-HANDOFF",
+            "CON-EXACT-CLOSE"
+          ]
+        }
+      ]
+    },
+    {
       "id": "ES-rc3-release",
       "title": "Publish the agent-first RC3 release",
-      "status": "proposed",
+      "status": "superseded",
       "file": "ES-rc3-release.engineering-spec.md",
       "owners": [
         "EngineeringSpec maintainers"

@@ -1,0 +1,266 @@
+{
+  "$description": "EngineeringSpec design tokens",
+  "color": {
+    "brand": {
+      "forest": {
+        "$value": "#1E3A2F",
+        "$type": "color",
+        "$description": "Forest Green"
+      },
+      "moss": {
+        "$value": "#4F6B5A",
+        "$type": "color",
+        "$description": "Moss"
+      },
+      "sage": {
+        "$value": "#A7B3A9",
+        "$type": "color",
+        "$description": "Sage"
+      },
+      "stone": {
+        "$value": "#D6D8D1",
+        "$type": "color",
+        "$description": "Stone"
+      },
+      "cloud": {
+        "$value": "#F4F6F4",
+        "$type": "color",
+        "$description": "Cloud"
+      },
+      "ink": {
+        "$value": "#12211B",
+        "$type": "color",
+        "$description": "Ink"
+      },
+      "paper": {
+        "$value": "#FFFFFF",
+        "$type": "color",
+        "$description": "Paper"
+      }
+    },
+    "signal": {
+      "mint": {
+        "$value": "#62D6C2",
+        "$type": "color",
+        "$description": "Signal Mint"
+      },
+      "mint-on-light": {
+        "$value": "#1F6F62",
+        "$type": "color",
+        "$description": "Signal Mint Dark"
+      }
+    },
+    "functional": {
+      "success": {
+        "$value": "#2F7D4F",
+        "$type": "color",
+        "$description": "Success"
+      },
+      "info": {
+        "$value": "#3E6076",
+        "$type": "color",
+        "$description": "Info"
+      },
+      "warning": {
+        "$value": "#B0802B",
+        "$type": "color",
+        "$description": "Warning"
+      },
+      "danger": {
+        "$value": "#A6402C",
+        "$type": "color",
+        "$description": "Danger"
+      }
+    },
+    "scale": {
+      "forest": {
+        "50": {
+          "$value": "#EDEFEE",
+          "$type": "color"
+        },
+        "100": {
+          "$value": "#DBDFDE",
+          "$type": "color"
+        },
+        "200": {
+          "$value": "#B2BCB8",
+          "$type": "color"
+        },
+        "300": {
+          "$value": "#86958F",
+          "$type": "color"
+        },
+        "400": {
+          "$value": "#546961",
+          "$type": "color"
+        },
+        "500": {
+          "$value": "#1E3A2F",
+          "$type": "color"
+        },
+        "600": {
+          "$value": "#1A3228",
+          "$type": "color"
+        },
+        "700": {
+          "$value": "#162A22",
+          "$type": "color"
+        },
+        "800": {
+          "$value": "#11221B",
+          "$type": "color"
+        },
+        "900": {
+          "$value": "#0D1A15",
+          "$type": "color"
+        }
+      },
+      "moss": {
+        "50": {
+          "$value": "#F1F3F2",
+          "$type": "color"
+        },
+        "100": {
+          "$value": "#E3E7E5",
+          "$type": "color"
+        },
+        "200": {
+          "$value": "#C3CDC7",
+          "$type": "color"
+        },
+        "300": {
+          "$value": "#A0AFA6",
+          "$type": "color"
+        },
+        "400": {
+          "$value": "#798F82",
+          "$type": "color"
+        },
+        "500": {
+          "$value": "#4F6B5A",
+          "$type": "color"
+        },
+        "600": {
+          "$value": "#445C4D",
+          "$type": "color"
+        },
+        "700": {
+          "$value": "#394D41",
+          "$type": "color"
+        },
+        "800": {
+          "$value": "#2E3E34",
+          "$type": "color"
+        },
+        "900": {
+          "$value": "#232F28",
+          "$type": "color"
+        }
+      },
+      "neutral": {
+        "50": {
+          "$value": "#F6F6F6",
+          "$type": "color"
+        },
+        "100": {
+          "$value": "#ECEEED",
+          "$type": "color"
+        },
+        "200": {
+          "$value": "#D7DAD8",
+          "$type": "color"
+        },
+        "300": {
+          "$value": "#C0C5C1",
+          "$type": "color"
+        },
+        "400": {
+          "$value": "#A6ADA8",
+          "$type": "color"
+        },
+        "500": {
+          "$value": "#8A938C",
+          "$type": "color"
+        },
+        "600": {
+          "$value": "#777E78",
+          "$type": "color"
+        },
+        "700": {
+          "$value": "#636A65",
+          "$type": "color"
+        },
+        "800": {
+          "$value": "#505551",
+          "$type": "color"
+        },
+        "900": {
+          "$value": "#3D413E",
+          "$type": "color"
+        }
+      }
+    },
+    "semantic": {
+      "bg.canvas": {
+        "$value": "{color.brand.cloud}",
+        "$type": "color"
+      },
+      "bg.surface": {
+        "$value": "{color.brand.paper}",
+        "$type": "color"
+      },
+      "bg.inverse": {
+        "$value": "{color.brand.forest}",
+        "$type": "color"
+      },
+      "text.primary": {
+        "$value": "{color.brand.ink}",
+        "$type": "color"
+      },
+      "text.secondary": {
+        "$value": "{color.brand.moss}",
+        "$type": "color"
+      },
+      "text.on-inverse": {
+        "$value": "{color.brand.cloud}",
+        "$type": "color"
+      },
+      "text.link": {
+        "$value": "{color.brand.forest}",
+        "$type": "color"
+      },
+      "border.subtle": {
+        "$value": "{color.brand.stone}",
+        "$type": "color"
+      },
+      "border.strong": {
+        "$value": "{color.brand.sage}",
+        "$type": "color"
+      },
+      "action.primary-bg": {
+        "$value": "{color.brand.forest}",
+        "$type": "color"
+      },
+      "action.primary-text": {
+        "$value": "{color.brand.cloud}",
+        "$type": "color"
+      },
+      "action.secondary-border": {
+        "$value": "{color.brand.forest}",
+        "$type": "color"
+      },
+      "focus.ring": {
+        "$value": "{color.signal.mint-on-light}",
+        "$type": "color"
+      },
+      "verification.on-inverse": {
+        "$value": "{color.signal.mint}",
+        "$type": "color"
+      },
+      "verification.on-light": {
+        "$value": "{color.signal.mint-on-light}",
+        "$type": "color"
+      }
+    }
+  }
+}

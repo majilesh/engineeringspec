@@ -1,11 +1,15 @@
-# EngineeringSpec
+<p align="center">
+  <img src="brand/logo/lockup-horizontal.svg" alt="EngineeringSpec" width="530">
+</p>
+
+<p align="center"><strong>Change authority for AI coding agents.</strong><br>Reviewed authority before code. Final-diff verification after.</p>
 
 [![CI](https://github.com/majilesh/engineeringspec/actions/workflows/ci.yml/badge.svg)](https://github.com/majilesh/engineeringspec/actions/workflows/ci.yml)
-[![Specification](https://img.shields.io/badge/spec-0.1%20draft-3974d8)](https://engineeringspec.org/spec/0.1/)
+[![Specification](https://img.shields.io/badge/spec-0.1%20draft-1E3A2F)](https://engineeringspec.org/spec/0.1/)
 
-**Change authority for AI coding agents.** Review what an agent may change before it writes code. Verify the final Git diff against that authority.
+Prompts express intent. Repository context informs implementation. Trusted checks assess the result. None of those independently records what an agent was allowed to change. When many engineers use coding agents, individually plausible changes can still duplicate capability, conflict with established patterns, or cross boundaries that nobody reviewed.
 
-EngineeringSpec uses a reviewed contract on the trusted Git base to grant bounded repository change authority. The authority is merged before an agent spends it, so a workspace draft cannot widen its own scope and implement against that wider scope in the same change.
+EngineeringSpec uses a reviewed contract on the trusted Git base to grant bounded repository change authority. The authority is merged before an agent spends it, so a workspace draft cannot widen its own scope and implement against that wider scope in the same change. After implementation, EngineeringSpec compares the complete Git state with that base-pinned authority; it does not execute declared verifiers or claim to prove correctness, security, quality, or productivity.
 
 ```text
 adopt -> propose bounded authority -> human review + merge
@@ -13,10 +17,10 @@ adopt -> propose bounded authority -> human review + merge
       -> finish <contract-id> -> implementation PR + exact close
 ```
 
-Preview adoption with the published RC16 CLI:
+Preview adoption with the published RC17 CLI:
 
 ```sh
-npx --yes @engineeringspec/cli@0.1.0-rc.16 adopt . --quickstart \
+npx --yes @engineeringspec/cli@0.1.0-rc.17 adopt . --quickstart \
   --maintainer @YOUR_GITHUB_USER_OR_TEAM --dry-run
 ```
 
@@ -148,4 +152,4 @@ Private repositories are supported: the CLI and Action operate on the checked-ou
 
 ## Status
 
-The repository source is prepared as the unpublished `@engineeringspec/cli@0.1.0-rc.17` candidate with compact PermissionTickets. Runnable package examples remain pinned to the published `@engineeringspec/cli@0.1.0-rc.16` fallback until separately reviewed publication authority completes. The immutable Action runtime remains independently pinned. The repository remains a draft open specification and reference implementation. A read-only MCP adapter remains deliberately deferred until measured adoption friction warrants another transport.
+The published `@engineeringspec/cli@0.1.0-rc.17` package includes compact PermissionTickets. The immutable Action runtime remains independently pinned. The repository remains a draft open specification and reference implementation, and there are no retained external pilot pairs yet. A read-only MCP adapter remains deliberately deferred until measured adoption friction warrants another transport.

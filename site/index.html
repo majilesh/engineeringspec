@@ -3,40 +3,97 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="description" content="EngineeringSpec is change authority for AI coding agents: review scope before code and verify the final Git diff.">
-  <meta property="og:title" content="EngineeringSpec — change authority for AI coding agents">
-  <meta property="og:description" content="Review what an agent may change before it writes code. Verify the final diff against that authority.">
+  <meta name="description" content="EngineeringSpec gives AI coding agents reviewed change authority before code and verifies the final Git diff afterward.">
+  <link rel="canonical" href="https://engineeringspec.org/">
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="stylesheet" href="/assets/site.css">
+  <meta property="og:title" content="EngineeringSpec — Change authority for AI coding agents">
+  <meta property="og:description" content="Reviewed authority before code. Final-diff verification after.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://engineeringspec.org/">
   <meta property="og:image" content="https://engineeringspec.org/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
   <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="EngineeringSpec — Change authority for AI coding agents">
+  <meta name="twitter:description" content="Reviewed authority before code. Final-diff verification after.">
+  <meta name="twitter:image" content="https://engineeringspec.org/og.png">
   <title>EngineeringSpec — Change authority for AI coding agents</title>
-  <style>
-    :root{color-scheme:dark;--bg:#0b1020;--panel:#121a2f;--text:#edf2ff;--muted:#a7b4d3;--accent:#72a7ff;--line:#273554}*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 80% 0,#172b55 0,transparent 34%),var(--bg);color:var(--text);font:16px/1.6 ui-sans-serif,system-ui,sans-serif}main{max-width:1040px;margin:auto;padding:60px 24px 88px}nav{display:flex;justify-content:space-between;align-items:center;margin-bottom:72px}nav a{color:var(--muted);text-decoration:none;margin-left:22px}.brand{font-weight:750;color:var(--text);letter-spacing:-.02em}h1{font-size:clamp(48px,8vw,86px);line-height:.98;letter-spacing:-.055em;margin:0 0 16px}.tagline{font-size:clamp(28px,4vw,46px);line-height:1.08;letter-spacing:-.035em;max-width:850px;margin:0 0 24px}.lead{font-size:21px;color:var(--muted);max-width:700px}.actions{display:flex;gap:12px;flex-wrap:wrap;margin:34px 0 64px}.button{padding:12px 18px;border-radius:9px;background:var(--accent);color:#071126;text-decoration:none;font-weight:700}.secondary{background:transparent;color:var(--text);border:1px solid var(--line)}.flow{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;align-items:center;margin:0 0 54px}.step{background:color-mix(in srgb,var(--panel) 88%,transparent);border:1px solid var(--line);border-radius:12px;padding:18px 14px;text-align:center;font-weight:650}.arrow{display:none;color:var(--accent);text-align:center}.note{color:var(--muted);max-width:760px}pre{margin:32px 0 0;padding:22px;overflow:auto;background:#070b15;border:1px solid var(--line);border-radius:14px;color:#c9dcff}footer{margin-top:62px;color:var(--muted)}@media(max-width:760px){nav{margin-bottom:48px}.flow{grid-template-columns:1fr;gap:8px}.arrow{display:block}.tagline{font-size:34px}nav span:last-child a:first-child{margin-left:0}}
-  </style>
 </head>
 <body>
-<main>
-  <nav><span class="brand">EngineeringSpec</span><span><a href="blog/">Blog</a><a href="explorer.html">Explorer</a><a href="https://github.com/majilesh/engineeringspec">GitHub</a><a href="spec/0.1/">Specification</a></span></nav>
-  <h1>EngineeringSpec</h1>
-  <p class="tagline">Change authority for AI coding agents.</p>
-  <p class="lead">Review what an agent may change before it writes code. Verify the final Git diff against that authority.</p>
-  <div class="actions"><a class="button" href="https://github.com/majilesh/engineeringspec/blob/main/docs/getting-started.md">Get started</a><a class="button secondary" href="https://github.com/majilesh/engineeringspec/tree/main/examples">View examples</a></div>
-  <section class="flow" aria-label="EngineeringSpec workflow">
-    <div class="step">Intent</div><span class="arrow">↓</span>
-    <div class="step">Reviewed authority</div><span class="arrow">↓</span>
-    <div class="step">Agent codes</div><span class="arrow">↓</span>
-    <div class="step">Actual Git diff</div><span class="arrow">↓</span>
-    <div class="step">Independent verification</div>
-  </section>
-  <p class="note">Authority comes from an approved contract on the trusted Git base—not from a workspace draft. Start in advisory mode, then add required checks and maintainer ownership for production enforcement.</p>
-  <p class="note">Repository source is prepared as the unpublished RC17 compact PermissionTicket candidate. The runnable package command remains pinned to published RC16 until separate publication approval.</p>
-  <pre><code>npx --yes @engineeringspec/cli@0.1.0-rc.16 adopt . --quickstart --maintainer @YOUR_GITHUB_USER_OR_TEAM --dry-run
+  <div class="home-shell">
+    <header>
+      <nav class="site-nav" aria-label="Primary">
+        <a class="brand" href="/" aria-label="EngineeringSpec home"><img src="/assets/lockup.svg" alt="EngineeringSpec" width="1052" height="172"></a>
+        <span class="nav-links"><a href="/blog/">Journal</a><a href="/explorer.html">Explorer</a><a href="https://github.com/majilesh/engineeringspec">GitHub</a><a href="/spec/0.1/">Specification</a></span>
+      </nav>
+    </header>
+
+    <main>
+      <section class="hero" aria-labelledby="hero-title">
+        <div>
+          <p class="eyebrow">Open · agent-neutral · Git-native</p>
+          <h1 id="hero-title">Change authority for <span class="accent">AI coding agents.</span></h1>
+          <p class="tagline">Reviewed authority before code.<br>Final-diff verification after.</p>
+          <p class="lead">Give coding agents an explicit, reviewable boundary for what they may change—then compare the complete Git state with that authority before merge.</p>
+          <div class="actions"><a class="button" href="https://github.com/majilesh/engineeringspec/blob/main/docs/getting-started.md">Get started</a><a class="button secondary" href="https://github.com/majilesh/engineeringspec">View on GitHub</a></div>
+        </div>
+        <aside class="authority-card" aria-label="Authority model">
+          <span class="label">The missing control</span>
+          <h2>Permission should be reviewed data, not an inference.</h2>
+          <p>An approved contract on the trusted Git base grants bounded writes. A workspace draft, a plausible prompt, or a passing test does not widen them.</p>
+          <code>approved base → agent work → final diff</code>
+        </aside>
+      </section>
+
+      <section class="problem" aria-labelledby="problem-title">
+        <div class="problem-grid">
+          <div><p class="eyebrow">Why it exists</p><h2 id="problem-title">Fast local changes can create expensive team-level disagreement.</h2></div>
+          <div class="problem-copy">
+            <p>When many engineers use coding agents, each generated change can look reasonable in isolation while the combined system accumulates duplicated capability, conflicting patterns, or unreviewed cross-boundary edits. Discovering that only after a large diff is costly.</p>
+            <p><strong>EngineeringSpec does not replace context or testing.</strong> It makes the authorization question explicit and independently reviewable.</p>
+            <div class="triad" aria-label="Context, validation, and authority">
+              <div><strong>Context</strong><p>What does the agent know?</p></div>
+              <div><strong>Validation</strong><p>Did the resulting change work?</p></div>
+              <div><strong>Authority</strong><p>What was it allowed to change?</p></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="workflow" aria-labelledby="workflow-title">
+        <div class="workflow-head"><div><p class="eyebrow">One control loop</p><h2 id="workflow-title">Review the boundary while change is still cheap.</h2></div><p>Humans review authority before dependent implementation. Agents read broadly for correctness but write only within approved surfaces.</p></div>
+        <ol class="flow">
+          <li><span>01</span>Explore</li><li><span>02</span>Propose</li><li><span>03</span>Approve</li><li><span>04</span>Implement</li><li><span>05</span>Verify</li><li><span>06</span>Close</li>
+        </ol>
+      </section>
+
+      <section class="proof" aria-label="What EngineeringSpec establishes">
+        <article class="card signal"><h3>Before code</h3><p>Load one exact approved contract from immutable reviewed history: writable paths, protected paths, constraints, verifier identities, and stop conditions.</p></article>
+        <article class="card"><h3>After code</h3><p>Route committed, staged, unstaged, renamed, deleted, and untracked paths against base-pinned authority. Uncovered, denied, or ambiguous paths fail closed.</p></article>
+        <article class="card"><h3>Agent-neutral</h3><p>The same on-disk contract can guide Codex, Claude Code, Cursor, GitHub Copilot, CI, and human review without making one vendor part of the format.</p></article>
+        <article class="card"><h3>Deliberately bounded</h3><p>EngineeringSpec does not execute declared verifiers or prove correctness, security, quality, or productivity. Those checks remain separate evidence.</p></article>
+      </section>
+
+      <section class="quickstart" aria-labelledby="quickstart-title">
+        <p class="eyebrow" style="color:var(--mint)">Current release candidate</p>
+        <h2 id="quickstart-title">Start with one repository and one real change.</h2>
+        <p>The public package is <strong>0.1.0-rc.17</strong>. Begin in dry-run or advisory mode, then add protected contract ownership and required checks when the workflow fits.</p>
+        <pre><code>npx --yes @engineeringspec/cli@0.1.0-rc.17 adopt . --quickstart \
+  --maintainer @YOUR_GITHUB_USER_OR_TEAM --dry-run
 
 engineeringspec next
 engineeringspec work ES-change
-engineeringspec finish ES-change --format markdown</code></pre>
-  <footer>Draft open specification and reference implementation · MIT licensed</footer>
-</main>
+engineeringspec finish ES-change</code></pre>
+        <div class="actions"><a class="button" style="background:var(--mint);border-color:var(--mint);color:var(--forest-800)" href="https://github.com/majilesh/engineeringspec/blob/main/benchmarks/pilot-guide.md">Try a paired pilot</a><a class="button secondary" style="border-color:var(--cloud);color:var(--cloud)" href="/blog/give-coding-agents-permission-not-just-prompts/">Read the argument</a></div>
+      </section>
+    </main>
+
+    <footer class="site-footer"><span>Draft open specification and reference implementation · MIT licensed</span><span>No retained external pilot pairs yet. <a href="https://github.com/majilesh/engineeringspec">Criticism welcome.</a></span></footer>
+  </div>
 </body>
 </html>

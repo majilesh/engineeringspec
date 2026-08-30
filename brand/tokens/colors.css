@@ -1,0 +1,73 @@
+:root {
+  /* brand */
+  --es-forest: #1E3A2F;            /* Forest Green */
+  --es-moss: #4F6B5A;            /* Moss */
+  --es-sage: #A7B3A9;            /* Sage */
+  --es-stone: #D6D8D1;            /* Stone */
+  --es-cloud: #F4F6F4;            /* Cloud */
+  --es-ink: #12211B;            /* Ink */
+  --es-paper: #FFFFFF;            /* Paper */
+
+  /* verification signal */
+  --es-signal-mint: #62D6C2;     /* Signal Mint */
+  --es-signal-mint-on-light: #1F6F62;     /* Signal Mint Dark */
+
+  /* functional (status only) */
+  --es-success: #2F7D4F;
+  --es-info: #3E6076;
+  --es-warning: #B0802B;
+  --es-danger: #A6402C;
+
+  /* forest ramp */
+  --es-forest-50: #EDEFEE;
+  --es-forest-100: #DBDFDE;
+  --es-forest-200: #B2BCB8;
+  --es-forest-300: #86958F;
+  --es-forest-400: #546961;
+  --es-forest-500: #1E3A2F;
+  --es-forest-600: #1A3228;
+  --es-forest-700: #162A22;
+  --es-forest-800: #11221B;
+  --es-forest-900: #0D1A15;
+
+  /* moss ramp */
+  --es-moss-50: #F1F3F2;
+  --es-moss-100: #E3E7E5;
+  --es-moss-200: #C3CDC7;
+  --es-moss-300: #A0AFA6;
+  --es-moss-400: #798F82;
+  --es-moss-500: #4F6B5A;
+  --es-moss-600: #445C4D;
+  --es-moss-700: #394D41;
+  --es-moss-800: #2E3E34;
+  --es-moss-900: #232F28;
+
+  /* neutral ramp */
+  --es-neutral-50: #F6F6F6;
+  --es-neutral-100: #ECEEED;
+  --es-neutral-200: #D7DAD8;
+  --es-neutral-300: #C0C5C1;
+  --es-neutral-400: #A6ADA8;
+  --es-neutral-500: #8A938C;
+  --es-neutral-600: #777E78;
+  --es-neutral-700: #636A65;
+  --es-neutral-800: #505551;
+  --es-neutral-900: #3D413E;
+
+  /* semantic */
+  --es-bg-canvas: var(--es-cloud);
+  --es-bg-surface: var(--es-paper);
+  --es-bg-inverse: var(--es-forest);
+  --es-text-primary: var(--es-ink);
+  --es-text-secondary: var(--es-moss);
+  --es-text-on-inverse: var(--es-cloud);
+  --es-text-link: var(--es-forest);
+  --es-border-subtle: var(--es-stone);
+  --es-border-strong: var(--es-sage);
+  --es-action-primary-bg: var(--es-forest);
+  --es-action-primary-text: var(--es-cloud);
+  --es-action-secondary-border: var(--es-forest);
+  --es-focus-ring: var(--es-signal-mint-on-light);
+  --es-verification-on-inverse: var(--es-signal-mint);
+  --es-verification-on-light: var(--es-signal-mint-on-light);
+}
