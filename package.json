@@ -1,7 +1,7 @@
 {
   "name": "@engineeringspec/cli",
   "version": "0.1.0-rc.17",
-  "description": "EngineeringSpec is an open, agent-neutral format for versioned engineering change contracts.",
+  "description": "Change authority for AI coding agents: reviewed authority before code, final-diff verification after.",
   "license": "MIT",
   "homepage": "https://engineeringspec.org",
   "repository": {
