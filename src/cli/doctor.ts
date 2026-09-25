@@ -1,3 +1,5 @@
+import { minimatch } from "minimatch";
+import { parseRepositoryConfig } from "../config/repositoryConfig.js";
 import { readFile, readdir, stat } from "node:fs/promises";
 import path from "node:path";
 import type { Diagnostic } from "../diagnostics/Diagnostic.js";
@@ -15,7 +17,7 @@ const MAX_WORKFLOW_FILES = 1_000;
 export type DoctorCheckStatus = "pass" | "warning" | "fail";
 
 export interface DoctorCheck {
-  id: "git-worktree" | "base-ref" | "spec-directory" | "spec-validation" | "base-contracts" | "agent-guidance" | "enforcing-ci" | "integration-versions";
+  id: "git-worktree" | "base-ref" | "spec-directory" | "spec-validation" | "base-contracts" | "agent-guidance" | "enforcing-ci" | "integration-versions" | "protected-ownership" | "enforcement-mode";
   status: DoctorCheckStatus;
   message: string;
   remediation?: string;
@@ -102,6 +104,57 @@ async function integrationVersionCheck(root: string): Promise<DoctorCheck> {
   return { id: "integration-versions", status: "pass", message: `Managed integrations match CLI ${expectedCli} and the current immutable Action pin.` };
 }
 
+const CODEOWNERS_LOCATIONS = [".github/CODEOWNERS", "CODEOWNERS", "docs/CODEOWNERS"];
+
+/** Approximates GitHub CODEOWNERS matching: the last matching pattern decides ownership. */
+export function codeOwnersFor(file: string, codeowners: string): string[] {
+  let owners: string[] = [];
+  for (const raw of codeowners.split(/\r?\n/u)) {
+    const line = raw.replace(/\s+#.*$/u, "").trim();
+    if (!line || line.startsWith("#")) continue;
+    const [pattern, ...rest] = line.split(/\s+/u);
+    if (!pattern) continue;
+    const anchored = pattern.startsWith("/");
+    let glob = anchored ? pattern.slice(1) : pattern;
+    if (glob.endsWith("/")) glob = `${glob}**`;
+    const matches = glob === "*" || glob === "**"
+      || minimatch(file, glob, { dot: true })
+      || minimatch(file, `${glob}/**`, { dot: true })
+      || (!anchored && !glob.includes("/") && minimatch(path.posix.basename(file), glob, { dot: true }))
+      || (!anchored && glob.includes("/") && !glob.startsWith("**") && minimatch(file, `**/${glob}`, { dot: true }));
+    if (matches) owners = rest.filter((owner) => owner.startsWith("@") || owner.includes("@"));
+  }
+  return owners;
+}
+
+async function protectedOwnershipCheck(root: string, specDirectory: string): Promise<DoctorCheck> {
+  let codeowners: string | undefined;
+  for (const location of CODEOWNERS_LOCATIONS) {
+    codeowners = await boundedText(path.join(root, location));
+    if (codeowners !== undefined) break;
+  }
+  const remediation = "Assign owners to the specification directory, .github/workflows/, the CODEOWNERS file and engineering-spec.json, then require review from Code Owners in the branch ruleset.";
+  if (codeowners === undefined) return { id: "protected-ownership", status: "warning", message: "No CODEOWNERS file protects the EngineeringSpec trust boundary.", remediation };
+  const samples = [`${specDirectory}/example.engineering-spec.md`, ".github/workflows/engineering-spec.yml", ".github/CODEOWNERS", "engineering-spec.json"];
+  const missing = samples.filter((file) => codeOwnersFor(file, codeowners!).length === 0);
+  return missing.length === 0
+    ? { id: "protected-ownership", status: "pass", message: "CODEOWNERS assigns owners to contracts, workflows, CODEOWNERS and the policy file." }
+    : { id: "protected-ownership", status: "warning", message: `CODEOWNERS leaves unowned: ${missing.join(", ")}. A pull request could weaken the gate that reviews it.`, remediation };
+}
+
+/** Advisory mode reports but never blocks; doctor says so plainly (RFC 0014 security considerations). */
+async function enforcementModeCheck(root: string): Promise<DoctorCheck | undefined> {
+  const text = await boundedText(path.join(root, "engineering-spec.json"));
+  if (text === undefined) return undefined;
+  try {
+    const mode = parseRepositoryConfig(text).mode;
+    if (mode === "advisory") return { id: "enforcement-mode", status: "warning", message: "engineering-spec.json sets mode advisory: findings are reported but nothing is enforced.", remediation: "Set mode to standard or controlled in a reviewed change when ready to enforce." };
+    return mode ? { id: "enforcement-mode", status: "pass", message: `engineering-spec.json enforces mode ${mode}.` } : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 export async function diagnoseRepository(options: DoctorOptions = {}): Promise<DoctorReport> {
   const requestedRoot = path.resolve(options.root ?? ".");
   const specDirectory = options.specDirectory ?? "docs/engineering-specs";
@@ -178,6 +231,9 @@ export async function diagnoseRepository(options: DoctorOptions = {}): Promise<D
     ? { id: "enforcing-ci", status: "pass", message: "Approved-only directory gating is configured in GitHub Actions." }
     : { id: "enforcing-ci", status: "warning", message: "Approved-only directory gating was not detected in GitHub Actions.", remediation: "Install and protect the generated EngineeringSpec workflow before relying on merge enforcement." });
   checks.push(await integrationVersionCheck(root));
+  checks.push(await protectedOwnershipCheck(root, relativeDirectory ?? specDirectory));
+  const mode = await enforcementModeCheck(root);
+  if (mode) checks.push(mode);
 
   const invalid = checks.some((check) => check.status === "fail")
     || Boolean(options.strict && checks.some((check) => check.status === "warning"));

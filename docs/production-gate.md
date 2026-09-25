@@ -40,28 +40,41 @@ engineering-spec:
 
 Use the compatible single-spec `gate-spec` input when an unsigned `gate-receipt` is required; directory routing does not currently emit a combined receipt.
 
-If you use GitHub merge queues, include a `merge_group` trigger on the workflow that runs this Action (or the check will never run for queued merges).
-
 ## Make the check merge-blocking
 
-A failing Action does **not** block merges by itself. In GitHub:
+A failing Action does **not** block merges by itself. In **Settings → Rules → Rulesets** (or branch protection) for the default branch, enable all of the following:
 
-1. Open **Settings → Rules → Rulesets** (or branch protection for `main`).
-2. Require the status check that corresponds to your job (for example `engineering-spec` or `CI / engineering-spec`).
-3. Require the check to pass before merge.
+| Setting | Why |
+|---|---|
+| **Require status checks to pass**, listing the job that runs this Action (for example `engineering-spec` or `CI / engineering-spec`) | Without it, the gate is advisory only. |
+| **Require a pull request before merging** with **Require review from Code Owners** | CODEOWNERS entries block nothing unless this rule is on. |
+| **Dismiss stale pull request approvals when new commits are pushed** | Stops an approval being reused after the change is widened. |
+| **Require approval of the most recent reviewable push** | Stops the last pusher from approving their own final change. |
 
-Without this, the gate is advisory only.
+If you use merge queues, include a `merge_group` trigger on the workflow that runs this Action, or the check never runs for queued merges.
 
-## Protect the contract with CODEOWNERS
+## Protect the gate's own files with CODEOWNERS
 
-1. Approve the EngineeringSpec in a **separate PR** before implementation work.
-2. Add CODEOWNERS so contract changes need maintainer review (see [examples/adopters/CODEOWNERS.example](../examples/adopters/CODEOWNERS.example) and this repo’s [`.github/CODEOWNERS`](../.github/CODEOWNERS)).
-3. Protect `CODEOWNERS` itself with the same owners.
-4. Keep implementation PRs on base-pinned directory routing so they are evaluated against already-merged approved contracts.
+The check is only as strong as the files that configure it. `adopt --quickstart` generates these entries. For an existing repository, see [examples/adopters/CODEOWNERS.example](../examples/adopters/CODEOWNERS.example):
 
-Do not switch enforcing CI to `workspace` when a PR changes its own targets. That makes authorization self-widening. Land the reviewed contract-only PR first, then rebase or open the dependent implementation PR against that approved base.
+```text
+/docs/engineering-specs/ @your-org/maintainers   # contracts and closure receipts
+/.github/workflows/      @your-org/maintainers   # the workflow that runs the check
+/.github/CODEOWNERS      @your-org/maintainers   # the ownership map itself
+/engineering-spec.json   @your-org/maintainers   # mode, policy, and selection
+```
 
-When `gate-allow-contract-only` is enabled, protect both the specification directory and workflow with required maintainer review. The option is valid only with `gate-spec-dir`. It classifies a non-empty, strictly valid specification-directory-only diff; a mixed change or cross-boundary rename returns to normal approved-base routing.
+`engineeringspec doctor` warns when any of these paths has no owner.
+
+Keep implementation PRs on base-pinned directory routing, so that they are evaluated against already-merged approved contracts. Do not switch enforcing CI to `workspace` when a PR changes its own targets. That makes authorization self-widening. Land the reviewed contract-only PR first, then rebase or open the dependent implementation PR against that approved base.
+
+When `gate-allow-contract-only` is enabled, the option is valid only with `gate-spec-dir`. It classifies a non-empty, strictly valid specification-directory-only diff. A mixed change or a cross-boundary rename returns to normal approved-base routing.
+
+### Residual risk: the workflow runs from the pull request
+
+For `pull_request` events, GitHub runs the workflow definition from the pull request's own branch. A pull request can therefore edit the workflow to skip or weaken the EngineeringSpec step while keeping the same job name, and the required check can still report success. (Deleting the workflow instead tends to leave the required check pending, not passing.) Code-owner review of `.github/workflows/` is the main mitigation, so treat workflow edits as sensitive.
+
+Where that is not enough, and your GitHub plan supports it, run the check outside the pull request's control. One option is an organization-level ruleset that requires a centrally owned workflow; another is a check run by an externally hosted service. The exact options depend on your GitHub plan, so confirm them in GitHub's current rulesets documentation.
 
 ## What the gate does not prove
 

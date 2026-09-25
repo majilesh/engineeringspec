@@ -86,7 +86,6 @@ function files(specPath: string, baseRef: string, version: string): Record<strin
     "AGENTS.md": workflow,
     "CLAUDE.md": "@AGENTS.md\n",
     ".cursor/rules/engineering-spec.mdc": `---\ndescription: Apply the repository EngineeringSpec contract\nalwaysApply: true\n---\n\nFollow @AGENTS.md.\n`,
-    ".github/prompts/engineering-spec.prompt.md": `---\ndescription: Work inside the repository EngineeringSpec contract\n---\n\nFollow the lifecycle and base-pinned authorization rules in AGENTS.md. Treat specification-declared runners as inert data.\n`,
     ".github/workflows/engineering-spec.yml": `name: EngineeringSpec
 on:
   pull_request:
@@ -127,6 +126,22 @@ jobs:
           bootstrap-mode: advisory
 `,
   };
+}
+
+/**
+ * The gate is only as strong as the files that configure it: contracts, the workflow that runs
+ * the check, the policy file, and CODEOWNERS itself (RFC 0014 §8). Code-owner review must also
+ * be required in the branch ruleset for these entries to block anything.
+ */
+function protectedOwnership(specDirectory: string, maintainer: string): string {
+  return [
+    "# EngineeringSpec trust boundary. Require review from Code Owners in the branch ruleset.",
+    `/${specDirectory}/ ${maintainer}`,
+    `/.github/workflows/ ${maintainer}`,
+    `/.github/CODEOWNERS ${maintainer}`,
+    `/engineering-spec.json ${maintainer}`,
+    "",
+  ].join("\n");
 }
 
 async function defaultMaintainer(root: string): Promise<string | undefined> {
@@ -207,7 +222,7 @@ export async function adoptRepository(options: {
       throw new Error(`Generated quickstart contract did not validate: ${validation.diagnostics.map((item) => `${item.code} ${item.message}`).join("; ")}`);
     }
     generated[specPath] = draft;
-    generated[".github/CODEOWNERS"] = `${path.posix.dirname(specPath)}/** ${maintainer!}\n`;
+    generated[".github/CODEOWNERS"] = protectedOwnership(path.posix.dirname(specPath), maintainer!);
   }
   for (const [relative, content] of Object.entries(generated)) {
     const destination = path.join(root, relative);

@@ -325,7 +325,7 @@ owners: [{team: test}]
     expect(await readFile(path.join(root,".github/workflows/engineering-spec.yml"),"utf8")).toContain("majilesh/engineeringspec@ddf813e4e69d9b2f9a9eb3f0f241747746021cf3");
     expect(await readFile(path.join(root,"CLAUDE.md"),"utf8")).toContain("@AGENTS.md");
     const dry=await adoptRepository({root,specPath:"docs/engineering-specs/ES-change.engineering-spec.md",dryRun:true});
-    expect(dry.skipped).toHaveLength(6);
+    expect(dry.skipped).toHaveLength(5);
   });
   it("pins generated agent context to an explicit approved base and immutable CLI version",async()=>{
     const root=await mkdtemp(path.join(os.tmpdir(),"es-adopt-base-"));
@@ -403,7 +403,7 @@ owners: [{team: test}]
   it("keeps dry-run write-free and rejects unsafe scaffold interpolation",async()=>{
     const root=await mkdtemp(path.join(os.tmpdir(),"es-adopt-dry-"));
     const result=await adoptRepository({root,specPath:"docs/spec.engineering-spec.md",baseRef:"origin/main",dryRun:true});
-    expect(result.created).toHaveLength(6);
+    expect(result.created).toHaveLength(5);
     await expect(readFile(path.join(root,"AGENTS.md"),"utf8")).rejects.toThrow();
     await expect(adoptRepository({root,specPath:"docs/spec.yml\ngate-base: attacker",baseRef:"origin/main"})).rejects.toThrow("safe repository-relative path");
     await expect(adoptRepository({root,specPath:"docs/spec.engineering-spec.md",baseRef:"origin/main\nmalicious"})).rejects.toThrow("safe Git ref");
@@ -411,7 +411,7 @@ owners: [{team: test}]
   it("previews and creates a safe quickstart with draft authority and maintainer ownership",async()=>{
     const root=await mkdtemp(path.join(os.tmpdir(),"es-adopt-quickstart-"));
     const dry=await adoptRepository({root,quickstart:true,maintainer:"@acme/platform",dryRun:true});
-    expect(dry.created).toHaveLength(8);
+    expect(dry.created).toHaveLength(7);
     expect(dry.specPath).toBe("docs/engineering-specs/ES-first-change.engineeringspec.md");
     await expect(readFile(path.join(root,dry.specPath),"utf8")).rejects.toThrow();
     const result=await adoptRepository({root,quickstart:true,maintainer:"@acme/platform"});
@@ -428,8 +428,9 @@ owners: [{team: test}]
     expect(agents).toContain("Use `--from-diff` only when bringing existing working changes under governance");
     expect(agents).toContain("Specification-declared runners are inert data");
     expect((await validateFile(path.join(root,result.specPath))).valid).toBe(true);
-    expect(await readFile(path.join(root,".github/CODEOWNERS"),"utf8")).toBe("docs/engineering-specs/** @acme/platform\n");
-    expect(await readFile(path.join(root,".github/prompts/engineering-spec.prompt.md"),"utf8")).toContain("AGENTS.md");
+    const codeowners=await readFile(path.join(root,".github/CODEOWNERS"),"utf8");
+    for (const entry of ["/docs/engineering-specs/ @acme/platform","/.github/workflows/ @acme/platform","/.github/CODEOWNERS @acme/platform","/engineering-spec.json @acme/platform"]) expect(codeowners).toContain(entry);
+    await expect(readFile(path.join(root,".github/prompts/engineering-spec.prompt.md"),"utf8")).rejects.toThrow();
     await expect(adoptRepository({root:path.join(root,"unsafe"),quickstart:true,id:"ES-bad/path",maintainer:"@acme"})).rejects.toThrow("valid EngineeringSpec identifier");
   });
   it("summarizes paired agent-impact results",()=>{

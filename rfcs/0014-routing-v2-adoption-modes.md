@@ -423,4 +423,5 @@ Runtimes older than this change reject unknown keys in `engineering-spec.json`, 
   - **Invalid receipts.** An invalid receipt already on the trusted base spends nothing, so it fails safe. `ESRT013` is an error only for changes that touch its contract, and info otherwise.
   - **Spent contracts.** A spent contract keeps its denies (C16). `next`/`status` count it as closed, marked `spent` in candidate summaries. `work` and `finish` are blocked for it. A selector naming it fails with `ESRT009`.
   - **This repository's CI.** Only `*.engineering-spec.md` documents and RFCs count as contract-only. Receipt paths are always routed.
+- **C24. Checking trust-boundary ownership.** `doctor` checks ownership the way GitHub does, where the last matching CODEOWNERS pattern decides. It uses sample paths for the specification directory, `.github/workflows/`, `.github/CODEOWNERS` and `engineering-spec.json`, so a catch-all `* @owners` counts as coverage. It warns on any unowned path, and when `mode` is `advisory`. Both are warnings, which fail `doctor --strict`. `adopt --quickstart` writes anchored entries for all four paths and no longer generates the Copilot prompt file.
 
