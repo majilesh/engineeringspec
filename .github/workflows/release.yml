@@ -26,6 +26,19 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN || 'oidc-trusted-publishing' }}
         run: npm publish --access public --tag next --provenance
+      # Pre-1.0, every release is a candidate: keep `latest` on the newest one so a plain
+      # `npx @engineeringspec/cli` is current. Trusted publishing can set only one tag per
+      # publish, so this uses the repository NPM_TOKEN and fails loudly without it.
+      - name: Promote latest to this release candidate
+        if: contains(github.ref_name, '-')
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          test -n "$NODE_AUTH_TOKEN" || { echo "NPM_TOKEN is required to move the latest dist-tag" >&2; exit 1; }
+          version="${RELEASE_TAG#v}"
+          npm dist-tag add "@engineeringspec/cli@${version}" latest
+          test "$(npm view @engineeringspec/cli dist-tags.latest)" = "$version"
       - name: Publish stable release
         if: ${{ !contains(github.ref_name, '-') }}
         env:

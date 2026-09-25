@@ -1,6 +1,6 @@
-// This pre-existing immutable commit contains the reviewed RC16 Action runtime,
-// including trusted maintenance sequencing. Pin alignment occurs afterward.
-export const CURRENT_ACTION_SHA = "ddf813e4e69d9b2f9a9eb3f0f241747746021cf3";
+// The reviewed RFC 0014 runtime anchor: the trusted main commit that merged the bundled
+// Action (action/cli.mjs). It already existed when this pin was written.
+export const CURRENT_ACTION_SHA = "9dc9ef0fd1861f35781610921cacb416849e3e5f";
 
 export interface IntegrationVersions {
   cliVersions: string[];

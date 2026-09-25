@@ -4,7 +4,7 @@ The generated `.cursor/rules/engineering-spec.mdc` is always applied and delegat
 
 Use the shared `next -> work <contract-id> -> separately trusted repository checks -> finish <contract-id>` journey from `AGENTS.md`. `review --format markdown` remains available when a lower-level human-readable report is useful.
 
-## Edit guard hook (RFC 0014, unreleased)
+## Edit guard hook (RFC 0014)
 
 [`hooks/engineeringspec-guard.mjs`](hooks/engineeringspec-guard.mjs) handles `preToolUse` for `Write` and `Delete`. It answers `{"permission":"allow"|"deny"}` with a message for both the user and the agent, and it always prints valid JSON, because Cursor treats invalid JSON as a denial. Cursor's `stop` hook cannot block, so run `engineeringspec check` before finishing, and rely on CI.
 

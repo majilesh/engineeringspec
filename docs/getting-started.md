@@ -9,7 +9,7 @@ EngineeringSpec gives humans, coding agents, and CI one reviewed answer to what 
 From the root of a Git repository, preview the quickstart scaffold:
 
 ```sh
-npx --yes @engineeringspec/cli@0.1.0-rc.17 adopt . --quickstart \
+npx --yes @engineeringspec/cli@0.1.0-rc.18 adopt . --quickstart \
   --maintainer @YOUR_GITHUB_USER_OR_TEAM --dry-run
 ```
 
@@ -20,7 +20,7 @@ The preview lists the files it would create: repository defaults, a draft first 
 Review the preview, replace the maintainer placeholder, and rerun without `--dry-run`:
 
 ```sh
-npx --yes @engineeringspec/cli@0.1.0-rc.17 adopt . --quickstart \
+npx --yes @engineeringspec/cli@0.1.0-rc.18 adopt . --quickstart \
   --maintainer @YOUR_GITHUB_USER_OR_TEAM
 ```
 
@@ -31,7 +31,7 @@ Choose the operating level deliberately:
 
 TRY does not have the same merge-enforcement strength as PRODUCTION. You can complete this walkthrough before making the generated check required.
 
-**Adoption modes (RFC 0014, unreleased).** A source build of `adopt` writes `mode: advisory` into `engineering-spec.json`, and the generated workflow passes `bootstrap-mode: advisory`, so the adoption PR itself passes. Advisory reports findings without blocking, and it never grants permission.
+**Adoption modes (RFC 0014).** `adopt` writes `mode: advisory` into `engineering-spec.json`, and the generated workflow passes `bootstrap-mode: advisory`, so the adoption PR itself passes. Advisory reports findings without blocking, and it never grants permission.
 
 When you're ready, a reviewed change to `engineering-spec.json` moves the repository to `standard`. There you can:
 - exempt paths such as `docs/**`;
@@ -45,7 +45,7 @@ When you're ready, a reviewed change to `engineering-spec.json` moves the reposi
 Create a bounded prospective proposal before implementation exists:
 
 ```sh
-npx --yes @engineeringspec/cli@0.1.0-rc.17 propose \
+npx --yes @engineeringspec/cli@0.1.0-rc.18 propose \
   --id ES-first \
   --title "First governed change" \
   --path 'src/example/**' \

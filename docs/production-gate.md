@@ -4,13 +4,13 @@ EngineeringSpec’s `gate` is a **diff-scope gate** (path + change-type allowlis
 
 ## Recommended pin (immutable Action)
 
-Prefer a full commit SHA. This is the reviewed RC16 runtime anchor:
+Prefer a full commit SHA. This is the reviewed RFC 0014 runtime anchor (RC18):
 
 ```text
-majilesh/engineeringspec@ddf813e4e69d9b2f9a9eb3f0f241747746021cf3
+majilesh/engineeringspec@9dc9ef0fd1861f35781610921cacb416849e3e5f
 ```
 
-Re-pin only to a separately reviewed immutable runtime anchor after changes to `action.yml` or Action-exercised gate semantics. The published `v0.1.0-rc.16` release-candidate tag is available, while the full reviewed SHA remains the stronger supply-chain default for production ([GitHub guidance](https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#using-third-party-actions)).
+Re-pin only to a separately reviewed immutable runtime anchor after changes to `action.yml` or Action-exercised gate semantics. The published `v0.1.0-rc.18` release-candidate tag is available, while the full reviewed SHA remains the stronger supply-chain default for production ([GitHub guidance](https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#using-third-party-actions)).
 
 ## Enforcing CI job
 
@@ -21,7 +21,7 @@ engineering-spec:
     - uses: actions/checkout@v4
       with:
         fetch-depth: 0
-    - uses: majilesh/engineeringspec@ddf813e4e69d9b2f9a9eb3f0f241747746021cf3
+    - uses: majilesh/engineeringspec@9dc9ef0fd1861f35781610921cacb416849e3e5f
       with:
         path: docs/engineering-specs
         strict: true
@@ -83,9 +83,9 @@ Continue running your repository’s normal tests, schema diffs, security scans,
 ## CLI equivalent
 
 ```sh
-npx --yes @engineeringspec/cli@0.1.0-rc.17 select docs/engineering-specs \
+npx --yes @engineeringspec/cli@0.1.0-rc.18 select docs/engineering-specs \
   --base origin/main --worktree --allow-contract-only --strict
-npx --yes @engineeringspec/cli@0.1.0-rc.17 check --spec-dir docs/engineering-specs \
+npx --yes @engineeringspec/cli@0.1.0-rc.18 check --spec-dir docs/engineering-specs \
   --base origin/main --allow-contract-only --strict
 ```
 
@@ -93,6 +93,5 @@ Both commands resolve immutable SHAs before candidate discovery. Candidate speci
 
 ## Release / npm
 
-- `@engineeringspec/cli@0.1.0-rc.17` is published. npm dist-tag `next` identifies it, and `latest` still identifies `0.1.0-rc.15`. Enforcing commands above pin the exact version rather than either mutable dist-tag.
-- The Action pin above is the reviewed RC16 runtime anchor. It predates RFC 0014, so it ignores `mode`, policy, selectors and receipts until a later release re-pins it.
-- RFC 0014 features are on `main` and not yet in a published release.
+- `@engineeringspec/cli@0.1.0-rc.18` is published, and both npm dist-tags, `next` and `latest`, identify it. Enforcing commands above pin the exact version rather than either mutable dist-tag.
+- The Action pin above is the reviewed RFC 0014 runtime anchor. It runs the committed `action/cli.mjs` bundle without installing dependencies.

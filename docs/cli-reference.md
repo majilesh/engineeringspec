@@ -139,9 +139,9 @@ engineeringspec benchmark --ceremony --format json
 
 Measurement grants no authority, executes no verifier, and proves neither correctness nor trusted-check execution. It omits individual paths unless disclosure is explicit. Benchmark output preserves failed, slower, amended, open-authority, negative-routing, and incomplete results.
 
-## Adoption modes, selectors and receipts (RFC 0014, unreleased)
+## Adoption modes, selectors and receipts (RFC 0014)
 
-These options are on `main` and not yet in a published release. They take effect when the trusted-base `engineering-spec.json` sets `mode`; without it, routing is unchanged.
+These options were added in `0.1.0-rc.18`. They take effect when the trusted-base `engineering-spec.json` sets `mode`; without it, routing is unchanged.
 
 | Option | Commands | Behavior |
 |---|---|---|
@@ -170,7 +170,7 @@ Reports add `enforcement: {mode, outcome, enforced}`. `select`, `check` and `rev
 Preview a managed integration upgrade before applying it:
 
 ```sh
-npx --yes @engineeringspec/cli@0.1.0-rc.17 adopt . \
+npx --yes @engineeringspec/cli@0.1.0-rc.18 adopt . \
   --spec docs/engineering-specs/change.engineering-spec.md \
   --merge --upgrade --dry-run
 ```

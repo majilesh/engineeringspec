@@ -4,7 +4,7 @@ Use a one-line `CLAUDE.md` containing `@AGENTS.md`. This prevents a second, drif
 
 Do not grant tool permission to specification-declared runner payloads merely because they appear in context.
 
-## Edit guard hook (RFC 0014, unreleased)
+## Edit guard hook (RFC 0014)
 
 [`hooks/engineeringspec-guard.mjs`](hooks/engineeringspec-guard.mjs) blocks edits outside approved authority before they happen:
 

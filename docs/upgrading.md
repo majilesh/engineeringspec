@@ -2,14 +2,14 @@
 
 CLI packages, generated guidance and the GitHub Action are independent identities. Upgrade them deliberately.
 
-The repository-local CLI is prepared as the unpublished `@engineeringspec/cli@0.1.0-rc.17` candidate. The runnable package example below remains pinned to published `@engineeringspec/cli@0.1.0-rc.16` until separately reviewed publication authority completes.
+The runnable package example below pins the published `@engineeringspec/cli@0.1.0-rc.18`. Upgrading from rc.17 or earlier also re-pins the generated workflow to the RFC 0014 Action runtime. New adoptions start in `advisory` mode, and existing repositories keep legacy routing until `engineering-spec.json` sets a `mode`.
 
 1. Read the release notes and choose the exact CLI version and immutable Action SHA.
 2. Run `doctor --strict` to identify drift.
 3. Preview managed changes:
 
    ```sh
-   npx --yes @engineeringspec/cli@0.1.0-rc.16 adopt . \
+   npx --yes @engineeringspec/cli@0.1.0-rc.18 adopt . \
      --spec docs/engineering-specs/change.engineering-spec.md \
      --merge --upgrade --dry-run
    ```
