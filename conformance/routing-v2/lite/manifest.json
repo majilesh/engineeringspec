@@ -6,9 +6,6 @@
   "vectors": [
     {
       "name": "lite-minimal-valid",
-      "pending": {
-        "phase": 4
-      },
       "file": "lite-minimal-valid.engineering-spec.md",
       "expected": {
         "valid": true,
@@ -17,9 +14,6 @@
     },
     {
       "name": "lite-optional-blocks-validated",
-      "pending": {
-        "phase": 4
-      },
       "file": "lite-optional-blocks-validated.engineering-spec.md",
       "expected": {
         "valid": false,
@@ -30,9 +24,6 @@
     },
     {
       "name": "lite-unsupported-profile-rejected",
-      "pending": {
-        "phase": 4
-      },
       "file": "lite-unsupported-profile-rejected.engineering-spec.md",
       "expected": {
         "valid": false,

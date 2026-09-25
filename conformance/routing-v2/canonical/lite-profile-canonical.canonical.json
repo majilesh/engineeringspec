@@ -1,0 +1,37 @@
+{
+  "metadata": {
+    "id": "ES-canon-lite",
+    "owners": [
+      {
+        "team": "platform"
+      }
+    ],
+    "profiles": [
+      {
+        "name": "lite",
+        "version": "0.1"
+      }
+    ],
+    "specFormat": "engineering-spec",
+    "specFormatVersion": "0.1",
+    "specRevision": 1,
+    "status": "approved",
+    "title": "Lite canonical"
+  },
+  "prose": [
+    {
+      "markdown": "# Lite canonical"
+    }
+  ],
+  "sourceRefs": [],
+  "targets": [
+    {
+      "changePolicy": "modify",
+      "id": "TARGET-1",
+      "paths": [
+        "docs/**"
+      ]
+    }
+  ],
+  "verification": []
+}

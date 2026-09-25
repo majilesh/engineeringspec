@@ -72,6 +72,11 @@ function camelizeWithDiagnostics(
   });
 }
 
+function isLiteProfile(metadata: unknown): boolean {
+  const profiles = metadata && typeof metadata === "object" ? (metadata as { profiles?: unknown }).profiles : undefined;
+  return Array.isArray(profiles) && profiles.some((profile) => profile && typeof profile === "object" && (profile as { name?: unknown }).name === "lite");
+}
+
 export function parseMarkdown(source: string, file = "<input>"): ParseResult {
   const diagnostics: Diagnostic[] = [];
   const locations = new Map<string, SourceLocation>();
@@ -90,11 +95,14 @@ export function parseMarkdown(source: string, file = "<input>"): ParseResult {
   const metaLoc = yaml ? location(file, yaml.position?.start, yaml.position?.end) : undefined;
   const metadataRaw = yaml ? parseFrontmatter(yaml.value, file, metaLoc, diagnostics) : undefined;
   const blocks = extractBlocks(tree, file, diagnostics);
-  const required = ["engineering-source-refs", "engineering-targets", "engineering-verification"];
+  // The lite profile (RFC 0014 §6) requires only frontmatter and targets. It keys on the profile
+  // name so an unsupported lite version fails only on its version, not on missing blocks.
+  const lite = isLiteProfile(metadataRaw);
+  const required = lite ? ["engineering-targets"] : ["engineering-source-refs", "engineering-targets", "engineering-verification"];
   for (const name of required) {
     if (!blocks.has(name)) diagnostics.push({ code: Codes.missingBlock, severity: "error", message: `Missing required ${name} block`, file });
   }
-  if (!blocks.has("engineering-contracts") && !blocks.has("engineering-constraints")) {
+  if (!lite && !blocks.has("engineering-contracts") && !blocks.has("engineering-constraints")) {
     diagnostics.push({ code: Codes.missingBlock, severity: "error", message: "At least one contracts or constraints block is required", file });
   }
   const raw: Record<string, unknown> = {};
@@ -137,5 +145,9 @@ export function parseMarkdown(source: string, file = "<input>"): ParseResult {
       return { markdown: source.slice(start, end).replace(/\r\n?/g, "\n"), ...(loc ? { location: loc } : {}) };
     });
   raw.prose = prose;
+  if (lite) {
+    raw.sourceRefs ??= [];
+    raw.verification ??= [];
+  }
   return { spec: raw as unknown as EngineeringSpec, diagnostics, locations, raw };
 }

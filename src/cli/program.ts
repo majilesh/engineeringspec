@@ -625,6 +625,7 @@ export function createProgram(setCode: (code: number) => void): Command {
     .option("--base <ref>", "base ref used by --from-diff")
     .option("--path <path>", "explicit target path (repeatable)", (value, previous: string[] = []) => previous.concat(value), [])
     .option("--from-diff", "infer exact paths from the complete Git working state")
+    .option("--lite", "generate a lite-profile contract: frontmatter and targets only (RFC 0014)")
     .option("--dry-run", "print the draft without writing it")
     .addOption(new Option("--format <format>", "output format").choices(["text", "json", "markdown"]))
     .action(async (options, command) => {
@@ -643,6 +644,7 @@ export function createProgram(setCode: (code: number) => void): Command {
           output: destination,
           ...(options.issue ? { issue: options.issue } : {}),
           ...(options.base ? { base: options.base } : {}),
+          ...(options.lite ? { lite: true } : {}),
           paths: options.path,
           fromDiff: Boolean(options.fromDiff),
           dryRun: Boolean(options.dryRun),

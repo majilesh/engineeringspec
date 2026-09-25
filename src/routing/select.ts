@@ -139,6 +139,9 @@ export async function selectSpecs(options: SelectSpecsOptions): Promise<RoutingR
   const classification = options.allowContractOnly
     ? contractOnlyClassification
     : changed.length === 0 ? "none" : "implementation";
+  const eligibleCount = candidates.filter((candidate) => requiredStatuses.includes(candidate.spec.metadata.status)).length;
+  const trusted = await loadTrustedPolicy(baseSha, eligibleCount, options);
+  const baseTimestamp = await resolveCommitTimestamp(baseSha, options.cwd);
   const { specChanges, implementationChanges, mixed } = partitionSpecificationChanges(directory, changed);
   const governanceInspection = classification === "contract_only" || mixed
     ? await inspectWorkspaceGovernance({
@@ -147,6 +150,8 @@ export async function selectSpecs(options: SelectSpecsOptions): Promise<RoutingR
       baseCandidates: candidates,
       strict: Boolean(options.strict),
       ...(options.cwd ? { cwd: options.cwd } : {}),
+      baseTimestamp,
+      ...(trusted.config?.policy?.maxStandingDays ? { maxStandingDays: trusted.config.policy.maxStandingDays } : {}),
     })
     : undefined;
   let safeMixedClose = Boolean(mixed && governanceInspection?.report.implementationCloseOnly);
@@ -157,8 +162,6 @@ export async function selectSpecs(options: SelectSpecsOptions): Promise<RoutingR
     governanceInspection.diagnostics.push(unsafeMixedClosureDiagnostic());
   }
   const routeableChanges = safeMixedClose ? implementationChanges : changed;
-  const eligibleCount = candidates.filter((candidate) => requiredStatuses.includes(candidate.spec.metadata.status)).length;
-  const trusted = await loadTrustedPolicy(baseSha, eligibleCount, options);
   const policyEvaluation = trusted.mode && !trusted.error && !loadFailed && classification !== "contract_only"
     ? evaluatePolicyRouting({
         mode: trusted.mode,
@@ -168,7 +171,7 @@ export async function selectSpecs(options: SelectSpecsOptions): Promise<RoutingR
         changed: routeableChanges,
         requiredStatuses,
         baseSha,
-        baseTimestamp: await resolveCommitTimestamp(baseSha, options.cwd),
+        baseTimestamp,
         selector: selectorSources({ ...options.selector, trailers: await contractTrailers(baseSha, headSha, options.cwd) }, trusted.config?.selection),
         ...(options.changed || !budgetsConfigured(trusted.config, candidates) ? {} : {
           changedLines: await collectChangedLineCount({
@@ -216,7 +219,7 @@ export async function selectSpecs(options: SelectSpecsOptions): Promise<RoutingR
     .filter((candidate) => requiredStatuses.includes(candidate.spec.metadata.status))
     .map((candidate) => ({
       specId: candidate.spec.metadata.id,
-      status: coverage(candidate.spec, { unknownExternal: Boolean(candidate.spec.metadata.profiles?.length) }).status,
+      status: coverage(candidate.spec, { unknownExternal: Boolean(candidate.spec.metadata.profiles?.some((profile) => profile.name === "productspec")) }).status,
     }));
   const coverageStatus: CoverageLevel = specCoverage.length === 0
     ? "not_applicable"
