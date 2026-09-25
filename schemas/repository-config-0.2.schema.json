@@ -18,7 +18,16 @@
         "governedPaths": { "$ref": "#/$defs/globs" },
         "exemptPaths": { "$ref": "#/$defs/globs" },
         "protectedPaths": { "$ref": "#/$defs/globs" },
-        "grantBeforeSpendPaths": { "$ref": "#/$defs/globs" }
+        "grantBeforeSpendPaths": { "$ref": "#/$defs/globs" },
+        "budgets": {
+          "type": "object",
+          "additionalProperties": false,
+          "minProperties": 1,
+          "properties": {
+            "maxFiles": { "type": "integer", "minimum": 0 },
+            "maxChangedLines": { "type": "integer", "minimum": 0 }
+          }
+        }
       }
     },
     "selection": {

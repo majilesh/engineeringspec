@@ -1,4 +1,4 @@
-import { assertSafeRepoPath, collectGitDiff, collectGitStagedDiff, collectGitWorktreeDiff } from "../gate/collectDiff.js";
+import { assertSafeRepoPath, collectChangedLineCount, collectGitDiff, collectGitStagedDiff, collectGitWorktreeDiff } from "../gate/collectDiff.js";
 import { resolveCommitSha, tryReadGitBlob } from "../gate/loadSpec.js";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
@@ -11,7 +11,7 @@ import { isEngineeringSpecFilename } from "../discovery/discover.js";
 import { digestRoutedChanges, routeChanges } from "./route.js";
 import type { RoutingReport } from "./types.js";
 import { classifyGovernanceChanges, inspectWorkspaceGovernance } from "./governance.js";
-import { loadRoutingCandidates } from "./loadCandidates.js";
+import { loadRoutingCandidates, type LoadedCandidateSet } from "./loadCandidates.js";
 import { closureSemanticDigest } from "../normalizer/digest.js";
 import { parseRepositoryConfig, REPOSITORY_CONFIG_PATH, RepositoryConfigError, type RepositoryConfig } from "../config/repositoryConfig.js";
 import { CONTRACT_TRAILER, DEFAULT_POLICY, enforcementFor, evaluatePolicyRouting, isPassingDecision, selectorSources, type PolicyMode } from "../policy/evaluate.js";
@@ -35,6 +35,11 @@ export interface SelectSpecsOptions {
   bootstrapMode?: "advisory";
   /** Untrusted selector requests (RFC 0014 §3). Commit trailers in base..head are read automatically. */
   selector?: { contract?: string; labels?: string[]; branch?: string };
+}
+
+/** Line counts cost extra git work, so they are collected only when some budget could apply. */
+function budgetsConfigured(config: RepositoryConfig | undefined, candidates: LoadedCandidateSet["candidates"]): boolean {
+  return Boolean(config?.policy?.budgets) || candidates.some((candidate) => candidate.spec.metadata.changeBudget);
 }
 
 /** Contract IDs named by `EngineeringSpec-Contract:` trailers on commits in base..head. */
@@ -165,6 +170,14 @@ export async function selectSpecs(options: SelectSpecsOptions): Promise<RoutingR
         baseSha,
         baseTimestamp: await resolveCommitTimestamp(baseSha, options.cwd),
         selector: selectorSources({ ...options.selector, trailers: await contractTrailers(baseSha, headSha, options.cwd) }, trusted.config?.selection),
+        ...(options.changed || !budgetsConfigured(trusted.config, candidates) ? {} : {
+          changedLines: await collectChangedLineCount({
+            base: baseSha,
+            head: headSha,
+            mode: options.staged ? "staged" : options.worktree !== false ? "worktree" : "range",
+            ...(options.cwd ? { cwd: options.cwd } : {}),
+          }),
+        }),
       })
     : undefined;
   const routed = policyEvaluation
@@ -232,6 +245,7 @@ export async function selectSpecs(options: SelectSpecsOptions): Promise<RoutingR
     candidates: routed.candidates,
     coverage: { status: coverageStatus, specs: specCoverage },
     routes: loadFailed ? [] : routed.routes,
+    ...(policyEvaluation?.changeDecisions ? { changeDecisions: policyEvaluation.changeDecisions } : {}),
     diagnostics,
     sequencing: routed.sequencing,
     enforcement: {
