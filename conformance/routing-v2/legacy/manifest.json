@@ -6,36 +6,24 @@
   "vectors": [
     {
       "name": "existing-routing-unchanged",
-      "pending": {
-        "phase": 2
-      },
       "references": [
         "conformance/routing/manifest.json"
       ]
     },
     {
       "name": "existing-governance-unchanged",
-      "pending": {
-        "phase": 2
-      },
       "references": [
         "conformance/governance/manifest.json"
       ]
     },
     {
       "name": "existing-authority-diff-unchanged",
-      "pending": {
-        "phase": 2
-      },
       "references": [
         "conformance/authority-diff/monotonic-close.json"
       ]
     },
     {
       "name": "existing-sequencing-unchanged",
-      "pending": {
-        "phase": 2
-      },
       "references": [
         "conformance/authority-sequencing/valid-maintenance.engineering-spec.md",
         "conformance/authority-sequencing/invalid-glob.engineering-spec.md"

@@ -373,4 +373,15 @@ Writing the conformance fixtures (`conformance/routing-v2/**`) forced these answ
 - **C11. An invalid receipt is reported as `ESRT013` at error severity.** The contract stays eligible, so it fails safe. `standard` and `controlled` fail until the receipt is corrected or removed.
 - **C12. Conformance compares diagnostic codes as sets.** Emission order is an implementation detail. Canonical byte fixtures are generated and reviewed in the phase that implements each field.
 - **C13. A rename counts as one file and zero lines toward budgets.** It is still routed as delete plus add, as today.
+- **C14. Bootstrap advisory for first adoption.** On an adoption PR, the trusted base has no `engineering-spec.json`, so it cannot supply `mode: advisory`.
+  - `select`, `check` and `review` accept `--bootstrap-mode advisory` (Action input `bootstrap-mode`).
+  - The flag is honored only when the trusted base has **no** `engineering-spec.json` **and no** approved contracts. That way it can never weaken a repository that already has configuration or authority.
+  - In every other case it is ignored and reported (`bootstrap: "ignored"`).
+  - A missing configuration is **not** treated as advisory; legacy behavior is preserved (`CON-LEGACY-COMPAT`).
+  - The flag lives in the workflow file, which a PR can already edit (see the residual risk in §8), so it adds no new bypass.
+- **C15. Enforcement is separate from authorization.** Reports keep `valid` meaning "every path authorized", and add `enforcement: {mode, outcome, enforced}`. Only the exit codes of `select`, `check` and `review` (and so the Action) follow `outcome`. `next` permission, `work`, `finish` closure and receipts still require `valid`, so an advisory pass never produces authority.
+
+### Compatibility note for configured modes
+
+Runtimes older than this change reject unknown keys in `engineering-spec.json`, so a configuration with `mode` or `policy` fails closed under them. Until a release re-pins the Action, the Action SHA that `adopt` generates is still the pre-RFC-0014 runtime. That runtime warns on the unknown `bootstrap-mode` input, and it still fails the adoption PR.
 

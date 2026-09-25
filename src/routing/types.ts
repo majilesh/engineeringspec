@@ -39,16 +39,37 @@ export interface SequencingAuditRecord {
   denyClaims:RoutingClaim[];
 }
 
+export type LegacyRouteDecision = "selected" | "uncovered" | "ambiguous" | "denied";
+
+/** Legacy decisions plus RFC 0014 policy decisions, which appear only when a mode is configured. */
+export type RouteDecision = LegacyRouteDecision | "exempt" | "ungoverned" | "protected_unauthorized";
+
+/** Decisions that authorize a path; everything else is a violation. */
+export const PASSING_DECISIONS: ReadonlySet<RouteDecision> = new Set(["selected", "exempt", "ungoverned"]);
+
+export interface EnforcementResult {
+  /** `legacy` when the trusted base configures no mode; `bootstrap_advisory` only for first adoption. */
+  mode: "legacy" | "advisory" | "standard" | "controlled" | "bootstrap_advisory";
+  /** Drives exit codes only. Authorization (`valid`, receipts, closure) never follows an advisory pass. */
+  outcome: "pass" | "fail" | "error";
+  enforced: boolean;
+  /** Present only when a bootstrap mode was requested: whether the trusted base allowed it. */
+  bootstrap?: "honored" | "ignored";
+}
+
 export interface PathRoute {
   path: string;
   kind: ChangeKind;
-  decision: "selected" | "uncovered" | "ambiguous" | "denied";
+  decision: LegacyRouteDecision;
   selected?: RoutingClaim;
   allows: RoutingClaim[];
   denies: RoutingClaim[];
   claims: RoutingClaim[];
   sequencing?: SequencingAuditRecord[];
 }
+
+/** A routed path as reported: legacy routing output, or a policy decision when a mode is configured. */
+export type ReportedRoute = Omit<PathRoute, "decision"> & { decision: RouteDecision };
 
 export interface RoutingReport {
   valid: boolean;
@@ -66,7 +87,8 @@ export interface RoutingReport {
     status: CoverageLevel;
     specs: Array<{ specId: string; status: CoverageLevel }>;
   };
-  routes: PathRoute[];
+  routes: ReportedRoute[];
   diagnostics: Diagnostic[];
   sequencing: SequencingAuditRecord[];
+  enforcement: EnforcementResult;
 }

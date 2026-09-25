@@ -2,6 +2,8 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { gitShowToplevel, readGitConfig, resolveCommitSha, resolveOriginHead, tryReadGitBlob } from "../gate/loadSpec.js";
 import { canonicalJson } from "../normalizer/canonicalize.js";
+import { validateTargetGlob } from "../path/targetGlob.js";
+import { Codes } from "../diagnostics/codes.js";
 
 export const REPOSITORY_CONFIG_PATH = "engineering-spec.json";
 const MAX_CONFIG_BYTES = 1024 * 1024;
@@ -20,11 +22,24 @@ export interface TrustedVerifierMapping {
   network?: "deny" | "allow";
 }
 
+export type AdoptionMode = "advisory" | "standard" | "controlled";
+export const ADOPTION_MODES: readonly AdoptionMode[] = ["advisory", "standard", "controlled"];
+
+/** RFC 0014 repository policy. Globs use the restricted EngineeringSpec dialect. */
+export interface RepositoryPolicy {
+  governedPaths: string[];
+  exemptPaths: string[];
+  protectedPaths: string[];
+}
+
 export interface RepositoryConfig {
   $schema?: string;
   specDirectory: string;
   strict: boolean;
   trustedBase?: string;
+  /** Absent means legacy exactly-one-claimant routing (RFC 0014 §1). */
+  mode?: AdoptionMode;
+  policy?: RepositoryPolicy;
   trustedVerifiers: Record<string, TrustedVerifierMapping>;
 }
 
@@ -76,7 +91,7 @@ export function parseRepositoryConfig(text: string, label = REPOSITORY_CONFIG_PA
     throw new Error(`${label} is not valid JSON: ${error instanceof Error ? error.message : String(error)}`);
   }
   const value = object(parsed, label);
-  const allowed = new Set(["$schema", "specDirectory", "strict", "trustedBase", "trustedVerifiers"]);
+  const allowed = new Set(["$schema", "specDirectory", "strict", "trustedBase", "mode", "policy", "trustedVerifiers"]);
   for (const key of Object.keys(value)) if (!allowed.has(key)) throw new Error(`${label} contains unknown property ${JSON.stringify(key)}`);
   const specDirectory = safeRelative(value.specDirectory ?? DEFAULT_CONFIG.specDirectory, `${label}.specDirectory`);
   if (typeof value.strict !== "undefined" && typeof value.strict !== "boolean") throw new Error(`${label}.strict must be a boolean`);
@@ -84,6 +99,10 @@ export function parseRepositoryConfig(text: string, label = REPOSITORY_CONFIG_PA
     throw new Error(`${label}.trustedBase must be a non-empty ref`);
   }
   if (typeof value.$schema !== "undefined" && typeof value.$schema !== "string") throw new Error(`${label}.$schema must be a string`);
+  if (value.mode !== undefined && !(ADOPTION_MODES as readonly unknown[]).includes(value.mode)) {
+    throw new Error(`${label}.mode must be one of ${ADOPTION_MODES.join(", ")}`);
+  }
+  const policy = value.policy === undefined ? undefined : parseRepositoryPolicy(value.policy, `${label}.policy`);
   const verifierObject = object(value.trustedVerifiers ?? {}, `${label}.trustedVerifiers`);
   const trustedVerifiers: Record<string, TrustedVerifierMapping> = {};
   for (const [id, raw] of Object.entries(verifierObject)) {
@@ -110,8 +129,34 @@ export function parseRepositoryConfig(text: string, label = REPOSITORY_CONFIG_PA
     specDirectory,
     strict: value.strict === undefined ? true : value.strict,
     ...(typeof value.trustedBase === "string" ? { trustedBase: value.trustedBase } : {}),
+    ...(value.mode === undefined ? {} : { mode: value.mode as AdoptionMode }),
+    ...(policy ? { policy } : {}),
     trustedVerifiers,
   };
+}
+
+/** Thrown for trusted configuration that cannot be evaluated; carries a stable diagnostic code. */
+export class RepositoryConfigError extends Error {
+  constructor(message: string, readonly code: string) {
+    super(message);
+    this.name = "RepositoryConfigError";
+  }
+}
+
+export function parseRepositoryPolicy(raw: unknown, label = "policy"): RepositoryPolicy {
+  const value = object(raw, label);
+  const allowed = new Set(["governedPaths", "exemptPaths", "protectedPaths"]);
+  for (const key of Object.keys(value)) if (!allowed.has(key)) throw new Error(`${label} contains unknown property ${JSON.stringify(key)}`);
+  const globs = (key: keyof RepositoryPolicy, fallback: string[]): string[] => {
+    const list = value[key] ?? fallback;
+    if (!Array.isArray(list) || list.some((item) => typeof item !== "string")) throw new Error(`${label}.${key} must be an array of glob strings`);
+    for (const glob of list as string[]) {
+      const problem = validateTargetGlob(glob);
+      if (problem) throw new RepositoryConfigError(`${label}.${key} glob ${JSON.stringify(glob)}: ${problem}`, Codes.glob);
+    }
+    return [...list as string[]];
+  };
+  return { governedPaths: globs("governedPaths", ["**"]), exemptPaths: globs("exemptPaths", []), protectedPaths: globs("protectedPaths", []) };
 }
 
 export async function resolveRepositoryConfig(options: { base?: string; cwd?: string; enforcing?: boolean } = {}): Promise<ResolvedRepositoryConfig> {

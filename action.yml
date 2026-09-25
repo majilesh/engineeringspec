@@ -49,6 +49,10 @@ inputs:
     description: Optional path (relative to consumer workspace) to write unsigned gate-receipt.json
     required: false
     default: ""
+  bootstrap-mode:
+    description: "First-adoption advisory mode for gate-spec-dir. Honored only when the trusted base has no engineering-spec.json and no approved contracts; otherwise ignored."
+    required: false
+    default: ""
 runs:
   using: composite
   steps:
@@ -85,6 +89,7 @@ runs:
         INPUT_GATE_REQUIRE_STATUS: ${{ inputs.gate-require-status }}
         INPUT_GATE_RECEIPT: ${{ inputs.gate-receipt }}
         INPUT_STRICT: ${{ inputs.strict }}
+        INPUT_BOOTSTRAP_MODE: ${{ inputs.bootstrap-mode }}
       run: |
         set -euo pipefail
         if [[ -n "$INPUT_GATE_SPEC" && -n "$INPUT_GATE_SPEC_DIR" ]]; then
@@ -97,6 +102,10 @@ runs:
         fi
         if [[ "$INPUT_GATE_ALLOW_CONTRACT_ONLY" == "true" && -z "$INPUT_GATE_SPEC_DIR" ]]; then
           echo "gate-allow-contract-only requires gate-spec-dir and is incompatible with gate-spec" >&2
+          exit 2
+        fi
+        if [[ -n "$INPUT_BOOTSTRAP_MODE" && "$INPUT_BOOTSTRAP_MODE" != "advisory" ]]; then
+          echo "bootstrap-mode must be empty or advisory" >&2
           exit 2
         fi
         if [[ -z "$INPUT_GATE_BASE" ]]; then
@@ -125,12 +134,14 @@ runs:
           fi
           cd "$GITHUB_WORKSPACE"
           if [[ "$INPUT_GATE_ALLOW_CONTRACT_ONLY" == "true" ]]; then args+=(--allow-contract-only); fi
+          if [[ -n "$INPUT_BOOTSTRAP_MODE" ]]; then args+=(--bootstrap-mode "$INPUT_BOOTSTRAP_MODE"); fi
           node "$GITHUB_ACTION_PATH/dist/cli.js" select "$INPUT_GATE_SPEC_DIR" "${args[@]}"
           normalized_status="$(echo "$INPUT_GATE_REQUIRE_STATUS" | tr -d '[:space:]')"
           if [[ -z "$normalized_status" || "$normalized_status" == "approved" ]]; then
             review_args=(--spec-dir "$INPUT_GATE_SPEC_DIR" --base "$INPUT_GATE_BASE" --head "$INPUT_GATE_HEAD" --no-worktree --format github)
             if [[ "$INPUT_STRICT" == "true" ]]; then review_args+=(--strict); fi
             if [[ "$INPUT_GATE_ALLOW_CONTRACT_ONLY" == "true" ]]; then review_args+=(--allow-contract-only); fi
+            if [[ -n "$INPUT_BOOTSTRAP_MODE" ]]; then review_args+=(--bootstrap-mode "$INPUT_BOOTSTRAP_MODE"); fi
             node "$GITHUB_ACTION_PATH/dist/cli.js" review "${review_args[@]}"
           else
             echo "::notice title=EngineeringSpec review::Detailed summary is available for the default approved-only policy; enforcement still completed for the requested statuses."

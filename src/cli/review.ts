@@ -19,6 +19,7 @@ export interface ReviewOptions {
   changed?: ChangedFile[];
   cwd?: string;
   allowContractOnly?: boolean;
+  bootstrapMode?: "advisory";
 }
 
 export interface ReviewContract {
@@ -46,6 +47,7 @@ export interface ReviewReport {
   contracts: ReviewContract[];
   authorityDiffs: AuthorityDiff[];
   diagnostics: Diagnostic[];
+  enforcement: WorkflowStatusReport["routing"]["enforcement"];
 }
 
 function selectedTargets(status: WorkflowStatusReport): Map<string, Set<string>> {
@@ -70,6 +72,7 @@ export async function buildReview(options: ReviewOptions): Promise<ReviewReport>
     ...(options.changed ? { changed: options.changed } : {}),
     ...(options.cwd ? { cwd: options.cwd } : {}),
     allowContractOnly: Boolean(options.allowContractOnly),
+    ...(options.bootstrapMode ? { bootstrapMode: options.bootstrapMode } : {}),
   });
   const selected = selectedTargets(status);
   const contracts: ReviewContract[] = [];
@@ -109,6 +112,7 @@ export async function buildReview(options: ReviewOptions): Promise<ReviewReport>
   }
   return {
     valid: status.valid,
+    enforcement: status.routing.enforcement,
     authority: "base_pinned",
     baseSha: status.baseSha,
     headSha: status.routing.headSha,

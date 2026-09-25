@@ -75,10 +75,12 @@ function files(specPath: string, baseRef: string, version: string): Record<strin
   const specDirectory = path.posix.dirname(specPath);
   return {
     "engineering-spec.json": `${JSON.stringify({
-      $schema: "https://engineeringspec.org/schemas/repository-config-0.1.schema.json",
+      $schema: "https://engineeringspec.org/schemas/repository-config-0.2.schema.json",
       specDirectory,
       strict: true,
       trustedBase: baseRef,
+      // New installations report without blocking until a reviewed change sets standard or controlled (RFC 0014).
+      mode: "advisory",
       trustedVerifiers: {},
     }, null, 2)}\n`,
     "AGENTS.md": workflow,
@@ -121,6 +123,8 @@ jobs:
           gate-allow-contract-only: true
           gate-base: \${{ steps.approved-base.outputs.ref }}
           gate-require-status: approved
+          # Lets the adoption PR itself pass; ignored once the trusted base has engineering-spec.json.
+          bootstrap-mode: advisory
 `,
   };
 }

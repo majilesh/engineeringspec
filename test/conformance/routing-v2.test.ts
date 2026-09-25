@@ -1,10 +1,23 @@
+import { execFileSync } from "node:child_process";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { mkdir, mkdtemp, readFile, writeFile } from "node:fs/promises";
+import os from "node:os";
 import path from "node:path";
 import { parse } from "yaml";
 import { describe, expect, it } from "vitest";
+import { adoptRepository } from "../../src/cli/adopt.js";
+import { parseRepositoryPolicy, RepositoryConfigError, type AdoptionMode } from "../../src/config/repositoryConfig.js";
 import { Codes } from "../../src/diagnostics/codes.js";
+import type { ChangedFile } from "../../src/gate/types.js";
 import { isEngineeringSpecId } from "../../src/model/ids.js";
+import type { EngineeringSpec, TargetSurface } from "../../src/model/types.js";
 import { validateTargetGlob } from "../../src/path/targetGlob.js";
+import { enforcementFor, evaluatePolicyRouting } from "../../src/policy/evaluate.js";
+import { classifyGovernanceChanges } from "../../src/routing/governance.js";
+import { partitionSpecificationChanges, selectSpecs, unsafeMixedClosureDiagnostic } from "../../src/routing/select.js";
+import type { LoadedRoutingCandidate } from "../../src/routing/types.js";
+import { validateFile } from "../../src/validator/validateFile.js";
+import { runCli } from "../support/runCli.js";
 
 // RFC 0014 fixtures land before the semantics they test (CON-PHASE-ORDER).
 // Parity and structure are enforced now; each behavioural vector stays a
@@ -125,10 +138,183 @@ describe("routing v2 conformance inventory", () => {
 
   for (const group of groups) {
     describe(group.group, () => {
-      const items = [...manifest(group).vectors, ...scenarios(group)];
-      for (const item of items) {
+      const data = manifest(group);
+      for (const item of [...data.vectors, ...scenarios(group)]) {
         if (item.pending) it.todo(`${item.name} (phase ${item.pending.phase})`);
+        else if (SCENARIOS[item.name]) it(item.name, SCENARIOS[item.name]!);
+        else if (data.kind === "routing") it(item.name, () => assertRoutingVector(item as RoutingVector));
+        else if (data.kind === "meta" && LEGACY[item.name]) it(item.name, LEGACY[item.name]!);
+        else it(item.name, () => { throw new Error(`No active runner for ${group.group}/${item.name}`); });
       }
     });
   }
 });
+
+// ---- Active runners. They call production functions only; no routing logic is re-implemented here.
+
+const SPEC_DIRECTORY = "docs/engineering-specs";
+
+function loadedCandidate(candidate: Candidate, index: number): LoadedRoutingCandidate {
+  const spec: EngineeringSpec = {
+    metadata: {
+      specFormat: "engineering-spec", specFormatVersion: "0.1", specRevision: candidate.specRevision ?? 1,
+      id: candidate.id, title: candidate.id, status: candidate.status as EngineeringSpec["metadata"]["status"], owners: [{ team: "test" }],
+      ...(candidate.profile ? { profiles: [{ name: candidate.profile, version: "0.1" }] } : {}),
+    },
+    sourceRefs: [],
+    targets: candidate.targets.map((target) => ({ id: target.id, paths: [target.path], changePolicy: target.policy as TargetSurface["changePolicy"] })),
+    verification: [],
+    prose: [],
+  };
+  return { path: `${SPEC_DIRECTORY}/${index}-${candidate.id}.engineering-spec.md`, digest: `sha256:${candidate.id}`, spec };
+}
+
+function evaluateVector(vector: RoutingVector, mode: AdoptionMode) {
+  let policy;
+  try {
+    policy = parseRepositoryPolicy(vector.policy ?? {});
+  } catch (error) {
+    if (!(error instanceof RepositoryConfigError)) throw error;
+    return { decisions: [] as string[], codes: [error.code], attribution: [] as Array<string | null>, outcome: enforcementFor(mode, false, true).outcome };
+  }
+  const changed = vector.changed as ChangedFile[];
+  expect(classifyGovernanceChanges(SPEC_DIRECTORY, changed)).not.toBe("contract_only");
+  // Vectors never carry workspace contract bodies, so a mixed change is never an exact monotonic close.
+  const mixed = partitionSpecificationChanges(SPEC_DIRECTORY, changed).mixed ? [unsafeMixedClosureDiagnostic()] : [];
+  const evaluation = evaluatePolicyRouting({ mode, policy, specDirectory: SPEC_DIRECTORY, candidates: vector.candidates.map(loadedCandidate), changed });
+  const diagnostics = [...evaluation.diagnostics, ...mixed].filter((item) => item.severity !== "info");
+  return {
+    decisions: evaluation.routes.map((route) => route.decision),
+    codes: [...new Set(diagnostics.map((item) => item.code))].sort(),
+    attribution: evaluation.routes.map((route) => route.selected?.specId ?? null),
+    outcome: enforcementFor(mode, evaluation.authorized && mixed.length === 0).outcome,
+  };
+}
+
+function assertRoutingVector(vector: RoutingVector): void {
+  const results = MODES.map((mode) => evaluateVector(vector, mode));
+  for (const [index, mode] of MODES.entries()) {
+    const result = results[index]!;
+    expect(result.decisions, `${mode} decisions`).toEqual(results[0]!.decisions);
+    expect(result.decisions, `${mode} decisions`).toEqual(vector.expected.decisions);
+    expect(result.codes, `${mode} codes`).toEqual(vector.expected.codes);
+    expect(result.outcome, `${mode} outcome`).toBe(vector.expected.outcome[mode]);
+    if (vector.expected.attribution) expect(result.attribution, `${mode} attribution`).toEqual(vector.expected.attribution);
+  }
+}
+
+function git(root: string, args: string[]): string {
+  return execFileSync("git", ["-C", root, ...args], { encoding: "utf8" }).trim();
+}
+
+async function commitAll(root: string, message: string): Promise<string> {
+  git(root, ["add", "."]);
+  git(root, ["-c", "user.name=Test", "-c", "user.email=test@example.com", "commit", "-qm", message]);
+  return git(root, ["rev-parse", "HEAD"]);
+}
+
+function contractMarkdown(id: string, status: string, targets: Array<{ id: string; path: string; policy: string }>): string {
+  return `---
+spec_format: engineering-spec
+spec_format_version: "0.1"
+spec_revision: 1
+id: ${id}
+title: ${id}
+status: ${status}
+owners: [{team: test}]
+---
+
+\`\`\`engineering-source-refs
+- {id: SRC-1, type: other, ref: fixture}
+\`\`\`
+
+\`\`\`engineering-targets
+${targets.map((target) => `- {id: ${target.id}, paths: ["${target.path}"], change_policy: ${target.policy}}`).join("\n")}
+\`\`\`
+
+\`\`\`engineering-constraints
+- {id: CON-1, level: should, statement: Fixture., enforcement: {kind: test, verifier_ref: VER-1}}
+\`\`\`
+
+\`\`\`engineering-verification
+- {id: VER-1, proves: [CON-1], kind: test}
+\`\`\`
+`;
+}
+
+/** A repository whose trusted base has engineering-spec.json without `mode`: legacy routing must apply. */
+async function legacyRepository(candidates: Array<{ id: string; status: string; targets: Array<{ id: string; path: string; policy: string }> }>): Promise<{ root: string; base: string }> {
+  const root = await mkdtemp(path.join(os.tmpdir(), "es-routing-v2-legacy-"));
+  await mkdir(path.join(root, "specs"));
+  await writeFile(path.join(root, "engineering-spec.json"), JSON.stringify({ specDirectory: "specs", strict: false, trustedVerifiers: {} }));
+  for (const [index, candidate] of candidates.entries()) {
+    await writeFile(path.join(root, "specs", `${index}-${candidate.id}.engineering-spec.md`), contractMarkdown(candidate.id, candidate.status, candidate.targets));
+  }
+  git(root, ["init", "-q"]);
+  return { root, base: await commitAll(root, "base") };
+}
+
+const routingCodes = (codes: string[]): string[] => codes.filter((code) => code.startsWith("ESRT") || code.startsWith("ESG"));
+
+interface LegacyRoutingVector { name: string; candidates: Array<{ id: string; status: string; targets: Target[] }>; changed: ChangedFile[]; expected: { decisions: string[]; codes: string[]; changedDigest: string } }
+
+const LEGACY: Record<string, () => Promise<void>> = {
+  "existing-routing-unchanged": async () => {
+    const vectors = JSON.parse(readFileSync("conformance/routing/manifest.json", "utf8")) as LegacyRoutingVector[];
+    for (const vector of vectors) {
+      const { root, base } = await legacyRepository(vector.candidates);
+      const report = await selectSpecs({ directory: "specs", base, changed: vector.changed, cwd: root });
+      expect(report.enforcement, vector.name).toMatchObject({ mode: "legacy", enforced: true });
+      expect(report.routes.map((route) => route.decision), vector.name).toEqual(vector.expected.decisions);
+      expect(routingCodes(report.diagnostics.map((item) => item.code)), vector.name).toEqual(routingCodes(vector.expected.codes));
+      expect(report.changedDigest, vector.name).toBe(vector.expected.changedDigest);
+    }
+  },
+  "existing-governance-unchanged": async () => {
+    const vectors = JSON.parse(readFileSync("conformance/governance/manifest.json", "utf8")) as Array<{ directory: string; changed: ChangedFile[]; expected: string }>;
+    for (const vector of vectors) expect(classifyGovernanceChanges(vector.directory, vector.changed)).toBe(vector.expected);
+    const { root, base } = await legacyRepository([{ id: "ES-a", status: "approved", targets: [{ id: "TARGET-1", path: "src/**", policy: "modify" }] }]);
+    const report = await selectSpecs({ directory: "specs", base, cwd: root, allowContractOnly: true, changed: [{ path: "specs/0-ES-a.engineering-spec.md", kind: "modified" }] });
+    expect(report.governance.classification).toBe("contract_only");
+    expect(report.enforcement).toMatchObject({ mode: "legacy", outcome: "pass" });
+  },
+  "existing-authority-diff-unchanged": async () => {
+    const { root, base } = await legacyRepository([{ id: "ES-a", status: "approved", targets: [{ id: "TARGET-1", path: "src/**", policy: "modify" }] }]);
+    const spec = path.join(root, "specs", "0-ES-a.engineering-spec.md");
+    await writeFile(spec, (await readFile(spec, "utf8")).replace("status: approved", "status: implemented"));
+    await mkdir(path.join(root, "src"));
+    await writeFile(path.join(root, "src", "a.ts"), "export const a = 1;\n");
+    const report = await selectSpecs({ directory: "specs", base, cwd: root, allowContractOnly: true });
+    expect(report.governance.classification).toBe("implementation_with_monotonic_close");
+    expect(report.valid).toBe(true);
+    expect(report.enforcement).toMatchObject({ mode: "legacy", outcome: "pass" });
+  },
+  "existing-sequencing-unchanged": async () => {
+    const expected = (JSON.parse(readFileSync("conformance/expected-results/manifest.json", "utf8")) as { fixtures: Array<{ file: string; valid: boolean; codes: string[] }> })
+      .fixtures.filter((fixture) => fixture.file.startsWith("authority-sequencing/"));
+    expect(expected).toHaveLength(2);
+    for (const fixture of expected) {
+      const result = await validateFile(path.join("conformance", fixture.file), { resolveProfiles: false });
+      expect(result.valid).toBe(fixture.valid);
+      expect(result.diagnostics.map((item) => item.code)).toEqual(expect.arrayContaining(fixture.codes));
+    }
+  },
+};
+
+const SCENARIOS: Record<string, () => Promise<void>> = {
+  "adoption-pr-advisory-passes": async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), "es-routing-v2-adopt-"));
+    await writeFile(path.join(root, "README.md"), "# fixture\n");
+    git(root, ["init", "-q"]);
+    const base = await commitAll(root, "base");
+    await adoptRepository({ root, quickstart: true, maintainer: "@acme/platform" });
+    await commitAll(root, "adopt");
+    const config = JSON.parse(await readFile(path.join(root, "engineering-spec.json"), "utf8")) as { mode?: string };
+    expect(config.mode).toBe("advisory");
+    const workflow = await readFile(path.join(root, ".github", "workflows", "engineering-spec.yml"), "utf8");
+    expect(workflow).toContain("bootstrap-mode: advisory");
+    const result = runCli(root, ["select", "docs/engineering-specs", "--base", base, "--allow-contract-only", "--strict", "--bootstrap-mode", "advisory", "--format", "json"]);
+    expect(result.code).toBe(0);
+    expect(JSON.parse(result.out)).toMatchObject({ valid: false, enforcement: { mode: "bootstrap_advisory", outcome: "pass", enforced: false, bootstrap: "honored" } });
+  },
+};

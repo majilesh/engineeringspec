@@ -1,5 +1,5 @@
 import { assertSafeRepoPath, collectGitDiff, collectGitStagedDiff, collectGitWorktreeDiff } from "../gate/collectDiff.js";
-import { resolveCommitSha } from "../gate/loadSpec.js";
+import { resolveCommitSha, tryReadGitBlob } from "../gate/loadSpec.js";
 import type { ChangedFile } from "../gate/types.js";
 import type { Status } from "../model/types.js";
 import { compareCodePoints } from "../normalizer/canonicalize.js";
@@ -11,6 +11,10 @@ import type { RoutingReport } from "./types.js";
 import { classifyGovernanceChanges, inspectWorkspaceGovernance } from "./governance.js";
 import { loadRoutingCandidates } from "./loadCandidates.js";
 import { closureSemanticDigest } from "../normalizer/digest.js";
+import { parseRepositoryConfig, REPOSITORY_CONFIG_PATH, RepositoryConfigError, type RepositoryConfig } from "../config/repositoryConfig.js";
+import { DEFAULT_POLICY, enforcementFor, evaluatePolicyRouting, type PolicyMode } from "../policy/evaluate.js";
+import type { Diagnostic } from "../diagnostics/Diagnostic.js";
+import { PASSING_DECISIONS } from "./types.js";
 
 export interface SelectSpecsOptions {
   directory: string;
@@ -23,6 +27,67 @@ export interface SelectSpecsOptions {
   worktree?: boolean;
   cwd?: string;
   allowContractOnly?: boolean;
+  /**
+   * First-adoption escape hatch (RFC 0014 C14). Honored only when the trusted base has
+   * no engineering-spec.json and no approved contracts, so it can never weaken existing authority.
+   */
+  bootstrapMode?: "advisory";
+}
+
+interface TrustedPolicy {
+  mode?: PolicyMode;
+  config?: RepositoryConfig;
+  error?: Diagnostic;
+  bootstrap?: "honored" | "ignored";
+}
+
+async function loadTrustedPolicy(baseSha: string, eligibleCount: number, options: SelectSpecsOptions): Promise<TrustedPolicy> {
+  const text = await tryReadGitBlob(baseSha, REPOSITORY_CONFIG_PATH, options.cwd);
+  if (text === undefined) {
+    if (options.bootstrapMode === "advisory" && eligibleCount === 0) return { mode: "bootstrap_advisory", bootstrap: "honored" };
+    return options.bootstrapMode ? { bootstrap: "ignored" } : {};
+  }
+  const bootstrap = options.bootstrapMode ? { bootstrap: "ignored" as const } : {};
+  let config: RepositoryConfig;
+  try {
+    config = parseRepositoryConfig(text, `${baseSha}:${REPOSITORY_CONFIG_PATH}`);
+  } catch (error) {
+    // Legacy runtimes ignored this file here; only configurations that opt into policy fail closed.
+    if (!/"(mode|policy)"\s*:/u.test(text)) return { ...bootstrap };
+    return {
+      ...bootstrap,
+      mode: "standard",
+      error: {
+        code: error instanceof RepositoryConfigError ? error.code : Codes.schema,
+        severity: "error",
+        file: REPOSITORY_CONFIG_PATH,
+        message: error instanceof Error ? error.message : String(error),
+        hint: "Fix the trusted-base engineering-spec.json in a reviewed change; routing cannot be evaluated until it is valid.",
+      },
+    };
+  }
+  return config.mode ? { ...bootstrap, mode: config.mode, config } : { ...bootstrap, config };
+}
+
+/** Splits a change into specification-directory documents and everything else. */
+export function partitionSpecificationChanges(directory: string, changed: ChangedFile[]): { specChanges: ChangedFile[]; implementationChanges: ChangedFile[]; mixed: boolean } {
+  const isSpecChange = (change: ChangedFile): boolean => directory !== "."
+    && change.path.startsWith(`${directory}/`)
+    && isEngineeringSpecFilename(change.path)
+    && (!change.fromPath || (change.fromPath.startsWith(`${directory}/`) && isEngineeringSpecFilename(change.fromPath)));
+  const specChanges = changed.filter(isSpecChange);
+  const implementationChanges = changed.filter((change) => !isSpecChange(change));
+  return { specChanges, implementationChanges, mixed: specChanges.length > 0 && implementationChanges.length > 0 };
+}
+
+/** A mixed change whose specification edits are not all exact monotonic closes. */
+export function unsafeMixedClosureDiagnostic(): Diagnostic {
+  return {
+    code: Codes.routingUnsafeClosure,
+    severity: "error",
+    message: "Implementation and specification changes may share a PR only when every specification change is an exact approved-to-implemented monotonic close.",
+    hint: "Remove semantic specification edits, or merge authority changes in a contract-only PR before implementation.",
+  };
 }
 
 export async function selectSpecs(options: SelectSpecsOptions): Promise<RoutingReport> {
@@ -54,13 +119,7 @@ export async function selectSpecs(options: SelectSpecsOptions): Promise<RoutingR
   const classification = options.allowContractOnly
     ? contractOnlyClassification
     : changed.length === 0 ? "none" : "implementation";
-  const isSpecChange = (change: ChangedFile): boolean => directory !== "."
-    && change.path.startsWith(`${directory}/`)
-    && isEngineeringSpecFilename(change.path)
-    && (!change.fromPath || (change.fromPath.startsWith(`${directory}/`) && isEngineeringSpecFilename(change.fromPath)));
-  const specChanges = changed.filter(isSpecChange);
-  const implementationChanges = changed.filter((change) => !isSpecChange(change));
-  const mixed = specChanges.length > 0 && implementationChanges.length > 0;
+  const { specChanges, implementationChanges, mixed } = partitionSpecificationChanges(directory, changed);
   const governanceInspection = classification === "contract_only" || mixed
     ? await inspectWorkspaceGovernance({
       directory,
@@ -75,15 +134,25 @@ export async function selectSpecs(options: SelectSpecsOptions): Promise<RoutingR
     governanceInspection.report.classification = "implementation_with_monotonic_close";
   }
   if (mixed && !safeMixedClose && governanceInspection) {
-    governanceInspection.diagnostics.push({
-      code: Codes.routingUnsafeClosure,
-      severity: "error",
-      message: "Implementation and specification changes may share a PR only when every specification change is an exact approved-to-implemented monotonic close.",
-      hint: "Remove semantic specification edits, or merge authority changes in a contract-only PR before implementation.",
-    });
+    governanceInspection.diagnostics.push(unsafeMixedClosureDiagnostic());
   }
   const routeableChanges = safeMixedClose ? implementationChanges : changed;
-  const routed = loadFailed
+  const eligibleCount = candidates.filter((candidate) => requiredStatuses.includes(candidate.spec.metadata.status)).length;
+  const trusted = await loadTrustedPolicy(baseSha, eligibleCount, options);
+  const policyEvaluation = trusted.mode && !trusted.error && !loadFailed && classification !== "contract_only"
+    ? evaluatePolicyRouting({
+        mode: trusted.mode,
+        policy: trusted.config?.policy ?? DEFAULT_POLICY,
+        specDirectory: directory,
+        candidates,
+        changed: routeableChanges,
+        requiredStatuses,
+        baseSha,
+      })
+    : undefined;
+  const routed = policyEvaluation
+    ? { ...routeChanges(candidates, [], requiredStatuses, { baseSha }), routes: policyEvaluation.routes, diagnostics: policyEvaluation.diagnostics, sequencing: policyEvaluation.sequencing, changedDigest: digestRoutedChanges(changed) }
+    : loadFailed
     ? { candidates: candidates.map((candidate) => ({ path: candidate.path, digest: candidate.digest, specId: candidate.spec.metadata.id, status: candidate.spec.metadata.status, eligible: requiredStatuses.includes(candidate.spec.metadata.status),specRevision:candidate.spec.metadata.specRevision,semanticDigest:closureSemanticDigest(candidate.spec) })), routes: [], diagnostics: [], changedDigest: digestRoutedChanges(changed), sequencing: [] }
     : classification === "contract_only"
       ? { ...routeChanges(candidates, [], requiredStatuses, { baseSha }), changedDigest: digestRoutedChanges(changed) }
@@ -112,7 +181,7 @@ export async function selectSpecs(options: SelectSpecsOptions): Promise<RoutingR
         hint: "Specification lifecycle or scope changes are not implementation paths; use --allow-contract-only instead of adding this file to its own targets.",
       }
     : diagnostic);
-  const diagnostics = [...loadDiagnostics, ...routeDiagnostics, ...(governanceInspection?.diagnostics ?? [])];
+  const diagnostics = [...(trusted.error ? [trusted.error] : []), ...loadDiagnostics, ...routeDiagnostics, ...(governanceInspection?.diagnostics ?? [])];
   const specCoverage = candidates
     .filter((candidate) => requiredStatuses.includes(candidate.spec.metadata.status))
     .map((candidate) => ({
@@ -128,9 +197,12 @@ export async function selectSpecs(options: SelectSpecsOptions): Promise<RoutingR
         : specCoverage.every((item) => item.status === "not_applicable")
           ? "not_applicable"
           : "complete";
+  const valid = !loadFailed && !diagnostics.some((item) => item.severity === "error")
+    && !(options.strict && diagnostics.some((item) => item.severity === "warning"))
+    && routed.routes.every((route) => PASSING_DECISIONS.has(route.decision));
+  const enforcement = enforcementFor(trusted.mode ?? "legacy", valid, Boolean(trusted.error || (trusted.mode && loadFailed)));
   return {
-    valid: !loadFailed && !diagnostics.some((item) => item.severity === "error")
-      && !(options.strict && diagnostics.some((item) => item.severity === "warning")),
+    valid,
     base: options.base,
     baseSha,
     head,
@@ -145,5 +217,6 @@ export async function selectSpecs(options: SelectSpecsOptions): Promise<RoutingR
     routes: loadFailed ? [] : routed.routes,
     diagnostics,
     sequencing: routed.sequencing,
+    enforcement: trusted.bootstrap ? { ...enforcement, bootstrap: trusted.bootstrap } : enforcement,
   };
 }

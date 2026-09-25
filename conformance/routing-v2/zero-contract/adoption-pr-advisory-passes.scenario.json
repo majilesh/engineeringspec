@@ -1,18 +1,20 @@
 {
   "name": "adoption-pr-advisory-passes",
-  "pending": {
-    "phase": 2
-  },
   "kind": "scenario",
   "verifier": "VER-ADOPTION",
   "steps": [
     "Create a temporary Git repository with one README.md commit (the base).",
-    "Run adopt with default options and commit the generated files (the head).",
-    "Run the generated workflow's check command against the base."
+    "Run adopt --quickstart with a maintainer and commit the generated files (the head).",
+    "Run the generated workflow's routing command (select --allow-contract-only --strict with the generated bootstrap-mode) against the base."
   ],
   "expected": {
-    "mode": "advisory",
-    "exitCode": 0,
+    "configMode": "advisory",
+    "enforcementMode": "bootstrap_advisory",
+    "bootstrap": "honored",
+    "exitCode": 0
+  },
+  "pendingExpected": {
+    "phase": 5,
     "codeownersEntries": [
       "docs/engineering-specs/",
       ".github/workflows/",

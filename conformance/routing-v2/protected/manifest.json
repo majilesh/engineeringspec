@@ -110,9 +110,6 @@
     },
     {
       "name": "protected-sole-change-contract",
-      "pending": {
-        "phase": 2
-      },
       "policy": {
         "protectedPaths": [
           "migrations/**"
