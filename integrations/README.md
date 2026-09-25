@@ -7,7 +7,7 @@ EngineeringSpec integrations are deliberately thin. Every agent reads the same c
 | Codex | `AGENTS.md` | `skills/engineering-spec/` |
 | Claude Code | `CLAUDE.md` importing `AGENTS.md` | same workflow commands |
 | Cursor | `.cursor/rules/engineering-spec.mdc` | same workflow commands |
-| GitHub Copilot | `.github/prompts/engineering-spec.prompt.md` | same workflow commands |
+| GitHub Copilot | `AGENTS.md` (optionally `.github/copilot-instructions.md`) | same workflow commands |
 | Any coding agent | `AGENTS.md` or an explicit prompt | CLI JSON/Markdown output |
 
 Generate the handoffs with `adopt --quickstart --dry-run`, review them, then rerun without `--dry-run`.

@@ -3,7 +3,7 @@ import { mkdir, mkdtemp, readFile, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { diagnoseRepository } from "../../src/cli/doctor.js";
+import { codeOwnersFor, diagnoseRepository } from "../../src/cli/doctor.js";
 
 function contract(status = "approved", extraTarget = ""): string {
   return `---
@@ -47,6 +47,7 @@ async function repository(source = contract()): Promise<string> {
   await writeFile(path.join(root, "docs", "engineering-specs", "change.engineering-spec.md"), source);
   await writeFile(path.join(root, "AGENTS.md"), "# EngineeringSpec\nRun npx --yes @engineeringspec/cli@0.1.0-rc.17 check before completion.\n");
   await writeFile(path.join(root, ".github", "workflows", "engineering-spec.yml"), "gate-spec-dir: docs/engineering-specs\ngate-base: origin/main\ngate-require-status: approved\nuses: majilesh/engineeringspec@ddf813e4e69d9b2f9a9eb3f0f241747746021cf3\n");
+  await writeFile(path.join(root, ".github", "CODEOWNERS"), "/docs/engineering-specs/ @acme/platform\n/.github/workflows/ @acme/platform\n/.github/CODEOWNERS @acme/platform\n/engineering-spec.json @acme/platform\n");
   execFileSync("git", ["init", "-q", root]);
   execFileSync("git", ["-C", root, "add", "."]);
   execFileSync("git", ["-C", root, "-c", "user.name=Test", "-c", "user.email=test@example.com", "commit", "-qm", "fixture"]);
@@ -105,3 +106,28 @@ describe("repository doctor", () => {
     expect((await diagnoseRepository({ root, base: "HEAD", strict: true })).valid).toBe(false);
   });
 });
+
+describe("CODEOWNERS trust boundary", () => {
+  it("applies last-match-wins ownership like GitHub", () => {
+    const owners = "* @everyone\n/docs/engineering-specs/ @specs\n/.github/workflows/ @platform\n*.md @docs\n/docs/engineering-specs/*.md\n";
+    expect(codeOwnersFor("src/a.ts", owners)).toEqual(["@everyone"]);
+    expect(codeOwnersFor(".github/workflows/ci.yml", owners)).toEqual(["@platform"]);
+    expect(codeOwnersFor("README.md", owners)).toEqual(["@docs"]);
+    // A later pattern without owners removes ownership, as on GitHub.
+    expect(codeOwnersFor("docs/engineering-specs/ES-a.engineering-spec.md", owners)).toEqual([]);
+    expect(codeOwnersFor("engineering-spec.json", "/engineering-spec.json @owners # policy\n")).toEqual(["@owners"]);
+  });
+});
+
+describe("doctor trust-boundary warnings", () => {
+  it("warns when CODEOWNERS leaves the gate's own files unowned, and when mode is advisory", async () => {
+    const root = await repository();
+    await writeFile(path.join(root, ".github", "CODEOWNERS"), "/docs/engineering-specs/ @acme/platform\n");
+    await writeFile(path.join(root, "engineering-spec.json"), JSON.stringify({ specDirectory: "docs/engineering-specs", mode: "advisory" }));
+    const report = await diagnoseRepository({ root, specDirectory: "docs/engineering-specs", base: "HEAD" });
+    expect(report.checks.find((check) => check.id === "protected-ownership")).toMatchObject({ status: "warning", message: expect.stringMatching(/\.github\/workflows.*engineering-spec\.json/u) });
+    expect(report.checks.find((check) => check.id === "enforcement-mode")).toMatchObject({ status: "warning" });
+    expect((await diagnoseRepository({ root, specDirectory: "docs/engineering-specs", base: "HEAD", strict: true })).valid).toBe(false);
+  });
+});
+

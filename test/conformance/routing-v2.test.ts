@@ -354,6 +354,10 @@ const SCENARIOS: Record<string, () => Promise<void>> = {
     expect(config.mode).toBe("advisory");
     const workflow = await readFile(path.join(root, ".github", "workflows", "engineering-spec.yml"), "utf8");
     expect(workflow).toContain("bootstrap-mode: advisory");
+    const scenario = JSON.parse(readFileSync("conformance/routing-v2/zero-contract/adoption-pr-advisory-passes.scenario.json", "utf8")) as { expected: { codeownersEntries: string[]; generatesCopilotPromptFile: boolean } };
+    const codeowners = await readFile(path.join(root, ".github", "CODEOWNERS"), "utf8");
+    for (const entry of scenario.expected.codeownersEntries) expect(codeowners).toContain(`${entry} @acme/platform`);
+    expect(existsSync(path.join(root, ".github", "prompts", "engineering-spec.prompt.md"))).toBe(scenario.expected.generatesCopilotPromptFile);
     const result = runCli(root, ["select", "docs/engineering-specs", "--base", base, "--allow-contract-only", "--strict", "--bootstrap-mode", "advisory", "--format", "json"]);
     expect(result.code).toBe(0);
     expect(JSON.parse(result.out)).toMatchObject({ valid: false, enforcement: { mode: "bootstrap_advisory", outcome: "pass", enforced: false, bootstrap: "honored" } });

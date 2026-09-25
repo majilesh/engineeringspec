@@ -11,15 +11,12 @@
     "configMode": "advisory",
     "enforcementMode": "bootstrap_advisory",
     "bootstrap": "honored",
-    "exitCode": 0
-  },
-  "pendingExpected": {
-    "phase": 5,
+    "exitCode": 0,
     "codeownersEntries": [
-      "docs/engineering-specs/",
-      ".github/workflows/",
-      ".github/CODEOWNERS",
-      "engineering-spec.json"
+      "/docs/engineering-specs/",
+      "/.github/workflows/",
+      "/.github/CODEOWNERS",
+      "/engineering-spec.json"
     ],
     "generatesCopilotPromptFile": false
   }

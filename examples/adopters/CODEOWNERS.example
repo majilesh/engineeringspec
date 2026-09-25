@@ -1,13 +1,16 @@
 # Example CODEOWNERS for EngineeringSpec adopters.
 # Copy to .github/CODEOWNERS and replace @your-team with real owners.
-# Enable "Require review from Code Owners" on the protected branch / ruleset.
-# Also protect this file so it cannot be silently rewritten in the same PR.
+# Enable "Require review from Code Owners" in the branch ruleset, or these entries block nothing.
+# `engineeringspec doctor` warns when any of these paths has no owner.
 
-# Contracts that authorize file scope
+# Contracts that authorize file scope, and their closure receipts
 /docs/engineering-specs/ @your-team
 
-# Keep the ownership map itself trusted
+# CI wiring that runs the gate; a pull request runs its own copy of this workflow
+/.github/workflows/ @your-team
+
+# The ownership map itself
 /.github/CODEOWNERS @your-team
 
-# Optional: CI wiring that runs the gate
-/.github/workflows/ @your-team
+# Adoption mode, repository policy, and selector configuration
+/engineering-spec.json @your-team
