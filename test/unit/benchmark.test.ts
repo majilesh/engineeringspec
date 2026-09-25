@@ -1,7 +1,8 @@
 import { readFile } from "node:fs/promises";
 import { Ajv2020 } from "ajv/dist/2020.js";
 import { describe, expect, it } from "vitest";
-import { evaluateCeremonyBenchmark, summarizeAgentBenchmark, type AgentBenchmarkRecord } from "../../src/cli/benchmark.js";
+import { parseCeremonyFixture, runCeremonyBenchmark, summarizeAgentBenchmark, type AgentBenchmarkRecord } from "../../src/cli/benchmark.js";
+import { fileURLToPath } from "node:url";
 
 function complete(condition: AgentBenchmarkRecord["condition"], overrides: Partial<AgentBenchmarkRecord> = {}): AgentBenchmarkRecord {
   return {
@@ -104,15 +105,23 @@ function completeV2(condition: AgentBenchmarkRecord["condition"], negative = fal
 }
 
 describe("agent-impact benchmark", () => {
-  it("keeps ceremony scenarios A-G deterministic and security binding",async()=>{
+  it("executes ceremony scenarios A-G with the real CLI and measures their results",async()=>{
     const fixture:unknown=JSON.parse(await readFile("benchmarks/ceremony-scenarios.json","utf8"));
-    const result=evaluateCeremonyBenchmark(fixture);
+    const result=await runCeremonyBenchmark(fixture,{cli:fileURLToPath(new URL("../../dist/cli.js",import.meta.url))});
+    expect(result.scenarios.filter(item=>!item.passed).map(item=>`${item.id}: ${item.failures.join("; ")}`)).toEqual([]);
     expect(result.valid).toBe(true);
     expect(result.scenarios.map(item=>item.id)).toEqual(["A","B","C","D","E","F","G"]);
-    expect(result.scenarios.find(item=>item.id==="D")).toMatchObject({mutations:0,currentAuthorityGranted:false,runnerExecutions:0});
-    expect(result.scenarios.find(item=>item.id==="E")).toMatchObject({actualOutcome:"fail_closed",diagnostics:["ESRT003"]});
-    expect(result.scenarios.find(item=>item.id==="F")).toMatchObject({actualOutcome:"fail_closed",currentAuthorityGranted:false});
+    expect(result.scenarios.find(item=>item.id==="D")!.measured).toMatchObject({mutations:0,currentAuthorityGranted:false,runnerExecutions:0});
+    expect(result.scenarios.find(item=>item.id==="E")!.measured).toMatchObject({outcome:"fail_closed",diagnostics:expect.arrayContaining(["ESRT003"])});
+    expect(result.scenarios.find(item=>item.id==="A")!.measured.commands).toBeGreaterThan(0);
     expect(result.summary.runnerExecutions).toBe(0);
+  },240_000);
+  it("rejects fixtures that author measured results",async()=>{
+    const fixture=JSON.parse(await readFile("benchmarks/ceremony-scenarios.json","utf8")) as {scenarios:Array<Record<string,unknown>>};
+    fixture.scenarios[0]!.actualOutcome="selected";
+    expect(()=>parseCeremonyFixture(fixture)).toThrow(/authors measured fields \(actualOutcome\)/u);
+    const legacy={format:"engineering-spec-ceremony-scenarios",formatVersion:"0.1",scenarios:[]};
+    expect(()=>parseCeremonyFixture(legacy)).toThrow(/0\.2/u);
   });
   it("publishes complete v2 pairs while retaining negative outcomes without numeric precision", async () => {
     const records = [completeV2("baseline"), completeV2("engineeringspec")];

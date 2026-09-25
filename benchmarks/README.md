@@ -50,3 +50,7 @@ The summary reports provenance, evidence quality, publishability, sample size, m
 `--require-publishable` fails incomplete, example, mixed, or inconsistent evidence. Under the risk-stratified pilot protocol, missing `taskRiskTier` is incomplete but remains readable without publication enforcement. Passing the policy means only that the declared evidence fields are complete; results remain descriptive and never establish causality. The bundled [example](example-results.json) is synthetic and must not be presented as observed impact.
 
 Before recruiting external participants, follow the [pilot guide](pilot-guide.md) and use the [participant pilot kit](pilots/README.md). The [public call for participants](https://github.com/majilesh/engineeringspec/issues/136) is the canonical place to express interest, and the kit includes [consent-based outreach copy](pilots/recruitment.md) that can be adapted for relevant communities. These paths are written for either a clean checkout or the exact public `@engineeringspec/cli@0.1.0-rc.17` package.
+
+## Ceremony benchmark (executable)
+
+`engineeringspec benchmark --ceremony` executes canonical scenarios A–G with the running CLI, in temporary Git repositories. [`ceremony-scenarios.json`](ceremony-scenarios.json), format 0.2, declares only the expected outcome, required diagnostics, whether current authority is granted, and the pull-request count. The harness measures commands, pull requests, lifecycle edits, hand edits, mutations, diagnostics and runner executions, and it rejects fixtures that author those values.

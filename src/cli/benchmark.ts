@@ -1,41 +1,302 @@
+import { execFileSync, spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
+import { existsSync, readFileSync } from "node:fs";
+import { mkdir, mkdtemp, readFile, writeFile } from "node:fs/promises";
+import os from "node:os";
+import path from "node:path";
 import type { ScopeMeasurementReceipt } from "../measurement/measure.js";
 import { compareCodePoints } from "../normalizer/canonicalize.js";
-import { Codes } from "../diagnostics/codes.js";
 
 export type BenchmarkCondition = "baseline" | "engineeringspec";
 export type BenchmarkEvidenceClass = "observed" | "example";
 export type BenchmarkTaskRiskTier = "low" | "medium" | "high";
 export type AuthorityBreadth = "finite" | "open_create_namespace" | "repository_wide";
 
-export interface CeremonyScenario {
-  id:"A"|"B"|"C"|"D"|"E"|"F"|"G";name:string;commands:number;pullRequests:number;lifecycleEdits:number;
-  handEditedFiles:number;concepts:string[];mutations:number;expectedOutcome:string;actualOutcome:string;diagnostics:string[];
-  remediation:"work"|"request-approval"|"resolve-authority-conflict"|"historical-replay"|"finish";currentAuthorityGranted:boolean;runnerExecutions:0;
-}
-export interface CeremonyBenchmarkResult {format:"engineering-spec-ceremony-result";formatVersion:"0.1";fixtureDigest:string;valid:boolean;scenarios:CeremonyScenario[];summary:{commands:number;pullRequests:number;lifecycleEdits:number;handEditedFiles:number;mutations:number;securityOutcomesBinding:true;runnerExecutions:0}}
+export type CeremonyOutcome = "selected" | "fail_closed" | "historical_read_only" | "trusted_result_unchanged";
 
-export function evaluateCeremonyBenchmark(value:unknown):CeremonyBenchmarkResult{
-  if(!value||typeof value!=="object"||Array.isArray(value)) throw new Error("ceremony benchmark must be an object");
-  const record=value as {format?:unknown;formatVersion?:unknown;scenarios?:unknown};
-  if(record.format!=="engineering-spec-ceremony-scenarios"||record.formatVersion!=="0.1"||!Array.isArray(record.scenarios)||record.scenarios.length!==7) throw new Error("ceremony benchmark requires canonical scenarios A-G");
-  const scenarios=record.scenarios as CeremonyScenario[];
-  const ids=scenarios.map(item=>item.id);
-  if(ids.join("")!=="ABCDEFG"||new Set(ids).size!==7) throw new Error("ceremony benchmark scenarios must be ordered uniquely from A through G");
-  for(const item of scenarios){
-    if(item.expectedOutcome!==item.actualOutcome) throw new Error(`ceremony scenario ${item.id} did not meet its security outcome`);
-    if(item.runnerExecutions!==0) throw new Error(`ceremony scenario ${item.id} executed a runner`);
-    for(const field of ["commands","pullRequests","lifecycleEdits","handEditedFiles","mutations"] as const) if(!Number.isInteger(item[field])||item[field]<0) throw new Error(`ceremony scenario ${item.id} has invalid ${field}`);
+/** What a scenario must achieve. Fixtures declare expectations only; everything else is measured. */
+export interface CeremonyScenarioSpec {
+  id: "A" | "B" | "C" | "D" | "E" | "F" | "G";
+  name: string;
+  concepts: string[];
+  expected: { outcome: CeremonyOutcome; diagnostics: string[]; currentAuthorityGranted: boolean; pullRequests: number };
+}
+
+/** Observed by executing the real CLI in a temporary Git repository (RFC 0014 §10, CON-BENCHMARK-EXECUTABLE). */
+export interface CeremonyMeasurement {
+  outcome: CeremonyOutcome | "unexpected";
+  diagnostics: string[];
+  currentAuthorityGranted: boolean;
+  commands: number;
+  pullRequests: number;
+  lifecycleEdits: number;
+  handEditedFiles: number;
+  mutations: number;
+  runnerExecutions: number;
+}
+
+export interface CeremonyScenarioResult extends CeremonyScenarioSpec { measured: CeremonyMeasurement; passed: boolean; failures: string[] }
+
+export interface CeremonyBenchmarkResult {
+  format: "engineering-spec-ceremony-result";
+  formatVersion: "0.2";
+  fixtureDigest: string;
+  valid: boolean;
+  scenarios: CeremonyScenarioResult[];
+  summary: Omit<CeremonyMeasurement, "outcome" | "diagnostics" | "currentAuthorityGranted">;
+}
+
+const MEASURED_FIELDS = ["actualOutcome", "commands", "pullRequests", "lifecycleEdits", "handEditedFiles", "mutations", "runnerExecutions", "diagnostics", "measured"];
+const OUTCOMES = new Set<string>(["selected", "fail_closed", "historical_read_only", "trusted_result_unchanged"]);
+
+/** Parses a 0.2 ceremony fixture. Authored results (for example `actualOutcome`) are rejected. */
+export function parseCeremonyFixture(value: unknown): CeremonyScenarioSpec[] {
+  if (!value || typeof value !== "object" || Array.isArray(value)) throw new Error("ceremony benchmark must be an object");
+  const record = value as { format?: unknown; formatVersion?: unknown; scenarios?: unknown };
+  if (record.format !== "engineering-spec-ceremony-scenarios" || record.formatVersion !== "0.2" || !Array.isArray(record.scenarios)) {
+    throw new Error("ceremony benchmark requires format engineering-spec-ceremony-scenarios 0.2");
   }
-  const byId=new Map(scenarios.map(item=>[item.id,item]));
-  const valid=byId.get("A")!.pullRequests===1&&byId.get("B")!.pullRequests===2&&byId.get("C")!.pullRequests<=2
-    &&byId.get("D")!.mutations===0&&byId.get("D")!.currentAuthorityGranted===false
-    &&byId.get("E")!.actualOutcome==="fail_closed"&&byId.get("E")!.diagnostics.includes(Codes.routingAmbiguous)
-    &&byId.get("F")!.actualOutcome==="fail_closed"&&byId.get("F")!.currentAuthorityGranted===false
-    &&byId.get("G")!.actualOutcome==="trusted_result_unchanged";
-  const fixtureDigest=`sha256:${createHash("sha256").update(JSON.stringify(value)).digest("hex")}`;
-  const sum=(field:"commands"|"pullRequests"|"lifecycleEdits"|"handEditedFiles"|"mutations")=>scenarios.reduce((total,item)=>total+item[field],0);
-  return {format:"engineering-spec-ceremony-result",formatVersion:"0.1",fixtureDigest,valid,scenarios,summary:{commands:sum("commands"),pullRequests:sum("pullRequests"),lifecycleEdits:sum("lifecycleEdits"),handEditedFiles:sum("handEditedFiles"),mutations:sum("mutations"),securityOutcomesBinding:true,runnerExecutions:0}};
+  const scenarios = record.scenarios as Array<Record<string, unknown>>;
+  if (scenarios.map((item) => item.id).join("") !== "ABCDEFG") throw new Error("ceremony benchmark scenarios must be ordered uniquely from A through G");
+  for (const item of scenarios) {
+    const authored = MEASURED_FIELDS.filter((field) => field in item);
+    if (authored.length > 0) throw new Error(`ceremony scenario ${String(item.id)} authors measured fields (${authored.join(", ")}); outcomes must come from execution`);
+    const expected = item.expected as Record<string, unknown> | undefined;
+    if (!expected || !OUTCOMES.has(String(expected.outcome)) || !Array.isArray(expected.diagnostics) || typeof expected.currentAuthorityGranted !== "boolean" || !Number.isInteger(expected.pullRequests)) {
+      throw new Error(`ceremony scenario ${String(item.id)} must declare expected outcome, diagnostics, currentAuthorityGranted and pullRequests`);
+    }
+  }
+  return scenarios as unknown as CeremonyScenarioSpec[];
+}
+
+const CONTRACT = (id: string, status: string, target: string, extra = ""): string => `---
+spec_format: engineering-spec
+spec_format_version: "0.1"
+spec_revision: 1
+id: ${id}
+title: ${id}
+status: ${status}
+owners: [{team: benchmark}]
+---
+
+\`\`\`engineering-source-refs
+- {id: SRC-1, type: other, ref: ceremony-benchmark}
+\`\`\`
+
+\`\`\`engineering-targets
+- {id: TARGET-1, paths: ["${target}"], change_policy: modify}
+\`\`\`
+
+\`\`\`engineering-constraints
+- {id: CON-1, level: must, statement: Preserve behaviour., enforcement: {kind: test, verifier_ref: VER-1}}
+\`\`\`
+
+\`\`\`engineering-verification
+- {id: VER-1, proves: [CON-1], kind: test, runner: {type: command, argv: [touch, RUNNER-EXECUTED]}}
+\`\`\`
+${extra}`;
+
+/** A temporary repository whose HEAD is the trusted base; a "pull request" is a reviewed merge into it. */
+class CeremonySandbox {
+  commands = 0;
+  pullRequests = 0;
+  lifecycleEdits = 0;
+  handEditedFiles = 0;
+  mutations = 0;
+
+  private constructor(readonly root: string, private readonly cli: string) {}
+
+  static async create(cli: string, contracts: Array<[string, string, string]>): Promise<CeremonySandbox> {
+    const root = await mkdtemp(path.join(os.tmpdir(), "es-ceremony-"));
+    await mkdir(path.join(root, "specs"));
+    await writeFile(path.join(root, "engineering-spec.json"), `${JSON.stringify({ specDirectory: "specs", strict: false, trustedBase: "HEAD", trustedVerifiers: {} })}\n`);
+    for (const [id, status, target] of contracts) await writeFile(path.join(root, "specs", `${id}.engineering-spec.md`), CONTRACT(id, status, target));
+    const sandbox = new CeremonySandbox(root, cli);
+    sandbox.git(["init", "-q", "-b", "main"]);
+    sandbox.git(["config", "user.name", "Ceremony"]);
+    sandbox.git(["config", "user.email", "ceremony@example.invalid"]);
+    sandbox.git(["config", "engineeringspec.trustedBase", "HEAD"]);
+    sandbox.git(["add", "."]);
+    sandbox.git(["commit", "-qm", "trusted base"]);
+    return sandbox;
+  }
+
+  git(args: string[]): string {
+    return execFileSync("git", ["-C", this.root, ...args], { encoding: "utf8" }).trim();
+  }
+
+  private state(): string {
+    return `${this.git(["rev-parse", "HEAD"])}\n${this.git(["status", "--porcelain", "--untracked-files=all"])}\n${this.statuses()}`;
+  }
+
+  private statuses(): string {
+    return this.git(["ls-files", "-co", "--exclude-standard", "--", "specs"]).split("\n").filter(Boolean)
+      .map((file) => { try { return `${file}:${/^status: (\w+)$/mu.exec(readFileSync(path.join(this.root, file), "utf8"))?.[1] ?? ""}`; } catch { return `${file}:`; } })
+      .join("\n");
+  }
+
+  /** Runs the real CLI; any change it makes to the repository counts as a mutation. */
+  run(args: string[]): { code: number; json: Record<string, unknown> } {
+    this.commands += 1;
+    const before = this.state();
+    const result = spawnSync(process.execPath, [this.cli, ...args], { cwd: this.root, encoding: "utf8" });
+    const beforeStatuses = before.split("\n").slice(2).join("\n");
+    const after = this.state();
+    if (after !== before) this.mutations += 1;
+    if (after.split("\n").slice(2).join("\n") !== beforeStatuses) this.lifecycleEdits += 1;
+    let json: Record<string, unknown> = {};
+    try { json = JSON.parse(result.stdout) as Record<string, unknown>; } catch { json = {}; }
+    return { code: result.status ?? 1, json };
+  }
+
+  /** A human or agent edit. Status-only contract edits also count as lifecycle edits. */
+  async edit(file: string, content: string): Promise<void> {
+    this.handEditedFiles += 1;
+    const destination = path.join(this.root, file);
+    let previous = "";
+    try { previous = await readFile(destination, "utf8"); } catch { previous = ""; }
+    const status = (text: string) => /^status: (\w+)$/mu.exec(text)?.[1];
+    if (file.startsWith("specs/") && previous && status(previous) !== status(content)) this.lifecycleEdits += 1;
+    await mkdir(path.dirname(destination), { recursive: true });
+    await writeFile(destination, content);
+  }
+
+  async read(file: string): Promise<string> {
+    return readFile(path.join(this.root, file), "utf8");
+  }
+
+  /** Merges the working state into the trusted base, as a reviewed pull request would. */
+  merge(message: string): void {
+    this.git(["add", "-A"]);
+    this.git(["commit", "-qm", message]);
+    this.pullRequests += 1;
+  }
+
+  runnerExecutions(): number {
+    return existsSync(path.join(this.root, "RUNNER-EXECUTED")) ? 1 : 0;
+  }
+}
+
+type Observation = Pick<CeremonyMeasurement, "outcome" | "diagnostics" | "currentAuthorityGranted">;
+const codes = (report: Record<string, unknown>): string[] =>
+  [...new Set(((report.diagnostics as Array<{ code: string; severity: string }> | undefined) ?? []).filter((item) => item.severity !== "info").map((item) => item.code))].sort(compareCodePoints);
+const decisions = (report: Record<string, unknown>): string[] => ((report.routes as Array<{ decision: string }> | undefined) ?? []).map((item) => item.decision);
+const permitted = (sandbox: CeremonySandbox): boolean => sandbox.run(["next", "--format", "json"]).json.permission === "implementation";
+
+/** The canonical A-G journeys, executed step by step with the real CLI. */
+const SCENARIOS: Record<CeremonyScenarioSpec["id"], (cli: string) => Promise<{ sandbox: CeremonySandbox; observed: Observation }>> = {
+  A: async (cli) => {
+    const sandbox = await CeremonySandbox.create(cli, [["ES-a", "approved", "src/**"]]);
+    const granted = permitted(sandbox);
+    sandbox.run(["work", "ES-a", "--format", "json"]);
+    await sandbox.edit("src/a.ts", "export const a = 1;\n");
+    const check = sandbox.run(["check", "--allow-contract-only", "--format", "json"]);
+    sandbox.run(["finish", "ES-a", "--write-closure", "--format", "json"]);
+    sandbox.merge("implement ES-a with exact close");
+    return { sandbox, observed: { outcome: check.code === 0 && decisions(check.json).join() === "selected" ? "selected" : "unexpected", diagnostics: codes(check.json), currentAuthorityGranted: granted } };
+  },
+  B: async (cli) => {
+    const sandbox = await CeremonySandbox.create(cli, []);
+    sandbox.run(["propose", "--id", "ES-b", "--title", "New authority", "--path", "src/**", "--output", "specs/ES-b.engineering-spec.md"]);
+    await sandbox.edit("specs/ES-b.engineering-spec.md", (await sandbox.read("specs/ES-b.engineering-spec.md")).replace("status: draft", "status: approved"));
+    sandbox.run(["check", "--allow-contract-only", "--format", "json"]);
+    sandbox.merge("approve ES-b");
+    const granted = permitted(sandbox);
+    sandbox.run(["work", "ES-b", "--format", "json"]);
+    await sandbox.edit("src/b.ts", "export const b = 1;\n");
+    const check = sandbox.run(["check", "--allow-contract-only", "--format", "json"]);
+    sandbox.run(["finish", "ES-b", "--write-closure", "--format", "json"]);
+    sandbox.merge("implement ES-b with exact close");
+    return { sandbox, observed: { outcome: check.code === 0 && decisions(check.json).join() === "selected" ? "selected" : "unexpected", diagnostics: codes(check.json), currentAuthorityGranted: granted } };
+  },
+  C: async (cli) => {
+    const sandbox = await CeremonySandbox.create(cli, [["ES-feature", "approved", "src/a.ts"], ["ES-maint", "approved", "src/a.ts"]]);
+    const overlap = sandbox.run(["select", "specs", "--base", "HEAD", "--changed", "src/a.ts", "--format", "json"]);
+    const claim = ((overlap.json.routes as Array<{ allows: Array<{ specId: string; specRevision: number; semanticDigest: string }> }> | undefined)?.[0]?.allows ?? []).find((item) => item.specId === "ES-feature");
+    if (!claim) return { sandbox, observed: { outcome: "unexpected", diagnostics: codes(overlap.json), currentAuthorityGranted: false } };
+    const controller = `\n\`\`\`engineering-authority-controls\nmode: maintenance\nsuspensions:\n  - contract_id: ES-feature\n    spec_revision: ${claim.specRevision}\n    semantic_digest: ${claim.semanticDigest}\n    paths: [src/a.ts]\n\`\`\`\n`;
+    await sandbox.edit("specs/ES-maint.engineering-spec.md", `${await sandbox.read("specs/ES-maint.engineering-spec.md")}${controller}`);
+    sandbox.run(["check", "--allow-contract-only", "--format", "json"]);
+    sandbox.merge("approve maintenance sequencing");
+    await sandbox.edit("src/a.ts", "export const a = 2;\n");
+    const check = sandbox.run(["check", "--allow-contract-only", "--format", "json"]);
+    sandbox.run(["finish", "ES-maint", "--write-closure", "--format", "json"]);
+    sandbox.merge("implement through the maintenance controller");
+    return { sandbox, observed: { outcome: check.code === 0 && decisions(check.json).join() === "selected" ? "selected" : "unexpected", diagnostics: codes(check.json), currentAuthorityGranted: check.code === 0 } };
+  },
+  D: async (cli) => {
+    const sandbox = await CeremonySandbox.create(cli, [["ES-a", "approved", "src/**"]]);
+    const historical = sandbox.git(["rev-parse", "HEAD"]);
+    const fixture = path.join(await mkdtemp(path.join(os.tmpdir(), "es-ceremony-fixture-")), "changes.json");
+    await writeFile(fixture, JSON.stringify({ changes: [{ path: "src/a.ts", kind: "modified" }] }));
+    const replay = sandbox.run(["replay", "ES-a", "--at", historical, "--changes-file", fixture, "--operation", "review", "--format", "json"]);
+    const readOnly = replay.json.authorityMode === "historical_read_only";
+    return { sandbox, observed: { outcome: readOnly ? "historical_read_only" : "unexpected", diagnostics: codes(replay.json), currentAuthorityGranted: replay.json.currentAuthorityGranted === true } };
+  },
+  E: async (cli) => {
+    const sandbox = await CeremonySandbox.create(cli, [["ES-a", "approved", "src/a.ts"], ["ES-b", "approved", "src/a.ts"]]);
+    const granted = permitted(sandbox);
+    await sandbox.edit("src/a.ts", "export const a = 1;\n");
+    const check = sandbox.run(["check", "--allow-contract-only", "--format", "json"]);
+    return { sandbox, observed: { outcome: check.code !== 0 ? "fail_closed" : "unexpected", diagnostics: codes(check.json), currentAuthorityGranted: granted } };
+  },
+  F: async (cli) => {
+    const sandbox = await CeremonySandbox.create(cli, [["ES-a", "approved", "src/a.ts"], ["ES-b", "approved", "src/a.ts"]]);
+    await sandbox.edit("src/a.ts", "export const a = 1;\n");
+    // The agent tries to resolve the conflict itself with an unmerged controller in its workspace.
+    const forged = `\n\`\`\`engineering-authority-controls\nmode: maintenance\nsuspensions:\n  - contract_id: ES-a\n    spec_revision: 1\n    semantic_digest: sha256:${"0".repeat(64)}\n    paths: [src/a.ts]\n\`\`\`\n`;
+    await sandbox.edit("specs/ES-b.engineering-spec.md", `${await sandbox.read("specs/ES-b.engineering-spec.md")}${forged}`);
+    const check = sandbox.run(["check", "--allow-contract-only", "--format", "json"]);
+    const granted = permitted(sandbox);
+    return { sandbox, observed: { outcome: check.code !== 0 ? "fail_closed" : "unexpected", diagnostics: codes(check.json), currentAuthorityGranted: granted } };
+  },
+  G: async (cli) => {
+    const sandbox = await CeremonySandbox.create(cli, [["ES-a", "approved", "src/**"]]);
+    await sandbox.edit("lib/x.ts", "export const x = 1;\n");
+    const before = sandbox.run(["select", "specs", "--base", "HEAD", "--changed", "lib/x.ts", "--format", "json"]);
+    // A workspace-only configuration edit must not change the trusted result.
+    await sandbox.edit("engineering-spec.json", `${JSON.stringify({ specDirectory: "specs", strict: false, trustedBase: "HEAD", mode: "advisory", policy: { exemptPaths: ["**"] }, trustedVerifiers: {} })}\n`);
+    const after = sandbox.run(["select", "specs", "--base", "HEAD", "--changed", "lib/x.ts", "--format", "json"]);
+    const unchanged = before.code === after.code && JSON.stringify(decisions(before.json)) === JSON.stringify(decisions(after.json)) && before.json.valid === after.json.valid;
+    return { sandbox, observed: { outcome: unchanged ? "trusted_result_unchanged" : "unexpected", diagnostics: [], currentAuthorityGranted: after.json.valid === true } };
+  },
+};
+
+/**
+ * Runs every canonical scenario against the real CLI and compares measured results with the
+ * fixture's declared expectations. Nothing about the result is taken from the fixture.
+ */
+export async function runCeremonyBenchmark(value: unknown, options: { cli: string }): Promise<CeremonyBenchmarkResult> {
+  const specs = parseCeremonyFixture(value);
+  const scenarios: CeremonyScenarioResult[] = [];
+  for (const spec of specs) {
+    const { sandbox, observed } = await SCENARIOS[spec.id](options.cli);
+    const measured: CeremonyMeasurement = {
+      ...observed,
+      commands: sandbox.commands,
+      pullRequests: sandbox.pullRequests,
+      lifecycleEdits: sandbox.lifecycleEdits,
+      handEditedFiles: sandbox.handEditedFiles,
+      mutations: sandbox.mutations,
+      runnerExecutions: sandbox.runnerExecutions(),
+    };
+    const failures: string[] = [];
+    if (measured.outcome !== spec.expected.outcome) failures.push(`outcome ${measured.outcome}, expected ${spec.expected.outcome}`);
+    for (const code of spec.expected.diagnostics) if (!measured.diagnostics.includes(code)) failures.push(`missing diagnostic ${code}`);
+    if (measured.currentAuthorityGranted !== spec.expected.currentAuthorityGranted) failures.push(`currentAuthorityGranted ${measured.currentAuthorityGranted}, expected ${spec.expected.currentAuthorityGranted}`);
+    if (measured.pullRequests !== spec.expected.pullRequests) failures.push(`pullRequests ${measured.pullRequests}, expected ${spec.expected.pullRequests}`);
+    if (measured.runnerExecutions !== 0) failures.push("a declared runner executed");
+    scenarios.push({ ...spec, measured, passed: failures.length === 0, failures });
+  }
+  const sum = (field: "commands" | "pullRequests" | "lifecycleEdits" | "handEditedFiles" | "mutations" | "runnerExecutions") => scenarios.reduce((total, item) => total + item.measured[field], 0);
+  return {
+    format: "engineering-spec-ceremony-result",
+    formatVersion: "0.2",
+    fixtureDigest: `sha256:${createHash("sha256").update(JSON.stringify(value)).digest("hex")}`,
+    valid: scenarios.every((item) => item.passed),
+    scenarios,
+    summary: { commands: sum("commands"), pullRequests: sum("pullRequests"), lifecycleEdits: sum("lifecycleEdits"), handEditedFiles: sum("handEditedFiles"), mutations: sum("mutations"), runnerExecutions: sum("runnerExecutions") },
+  };
 }
 
 export interface BenchmarkScopeMeasurement {

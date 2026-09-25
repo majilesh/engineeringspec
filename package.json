@@ -61,7 +61,9 @@
     "demo": "npm run build && node scripts/demo.mjs",
     "site:generate": "npm run build && node scripts/generate-site.mjs",
     "package:check": "node scripts/check-package-contents.mjs",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "build:action": "node scripts/build-action.mjs",
+    "check:action": "node scripts/build-action.mjs --check"
   },
   "dependencies": {
     "ajv": "^8.17.1",
@@ -79,6 +81,7 @@
     "@types/mdast": "^4.0.4",
     "@types/node": "^24.1.0",
     "@vitest/coverage-v8": "^3.2.4",
+    "esbuild": "0.28.1",
     "eslint": "^9.32.0",
     "prettier": "^3.6.2",
     "typescript": "^5.9.2",
