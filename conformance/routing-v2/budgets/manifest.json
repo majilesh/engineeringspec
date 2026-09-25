@@ -6,9 +6,6 @@
   "vectors": [
     {
       "name": "budget-under",
-      "pending": {
-        "phase": 3
-      },
       "baseTimestamp": "2026-09-25T00:00:00Z",
       "candidates": [
         {
@@ -53,9 +50,6 @@
     },
     {
       "name": "budget-files-over",
-      "pending": {
-        "phase": 3
-      },
       "baseTimestamp": "2026-09-25T00:00:00Z",
       "candidates": [
         {
@@ -120,9 +114,6 @@
     },
     {
       "name": "budget-lines-over",
-      "pending": {
-        "phase": 3
-      },
       "baseTimestamp": "2026-09-25T00:00:00Z",
       "candidates": [
         {
@@ -171,9 +162,6 @@
     },
     {
       "name": "budget-binary-files-only",
-      "pending": {
-        "phase": 3
-      },
       "baseTimestamp": "2026-09-25T00:00:00Z",
       "candidates": [
         {
@@ -224,9 +212,6 @@
     },
     {
       "name": "budget-rename-only",
-      "pending": {
-        "phase": 3
-      },
       "baseTimestamp": "2026-09-25T00:00:00Z",
       "candidates": [
         {

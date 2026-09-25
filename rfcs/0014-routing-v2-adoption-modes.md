@@ -394,4 +394,9 @@ Runtimes older than this change reject unknown keys in `engineering-spec.json`, 
   - Label and branch sources are opt-in through trusted-base `selection` prefixes, so an unrelated branch such as `es/fix-typo` never becomes an `ESRT009` failure. Explicit `--contract` values and trailers are always read.
   - Selectors are ignored in legacy repositories (no `mode`).
   - **Known limitation:** a batched queue run that combines PRs naming *different* contracts reports `ESRT009` (conflicting sources), because one change can have only one selector. Repositories that rely on selectors should use merge-queue batch size 1, or avoid overlap for concurrently queued work.
+- **C21. Budget scope.** Budgets count every routed implementation file, exempt and ungoverned files included, because they measure the size of the change and not its authority.
+  - A rename is one file (C13). The exact monotonic close that accompanies an implementation is not counted.
+  - A budget from exactly one attributed change contract (or the selected change contract) overrides the repository default. With several attributed contracts, only the repository default applies.
+  - Line counts come from `git diff --numstat` over the same range and mode as the path diff. In working-state mode, untracked files are counted in full, even when rename promotion treats them as renames.
+  - When paths are listed explicitly (`--changed`), line counts are unavailable. The line budget is then reported as not evaluated (`ESRT010`, info) rather than passing silently. The file budget still applies.
 

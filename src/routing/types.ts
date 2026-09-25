@@ -90,6 +90,8 @@ export interface RoutingReport {
     specs: Array<{ specId: string; status: CoverageLevel }>;
   };
   routes: ReportedRoute[];
+  /** Whole-change decisions such as `over_budget`; present only when a change budget applied. */
+  changeDecisions?: Array<"over_budget">;
   diagnostics: Diagnostic[];
   sequencing: SequencingAuditRecord[];
   enforcement: EnforcementResult;

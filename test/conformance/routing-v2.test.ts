@@ -165,6 +165,7 @@ function loadedCandidate(candidate: Candidate, index: number): LoadedRoutingCand
       ...(candidate.profile ? { profiles: [{ name: candidate.profile, version: "0.1" }] } : {}),
       ...(candidate.authorityKind ? { authorityKind: candidate.authorityKind } : {}),
       ...(candidate.expiresAt ? { expiresAt: candidate.expiresAt } : {}),
+      ...(candidate.changeBudget ? { changeBudget: candidate.changeBudget } : {}),
     },
     sourceRefs: [],
     targets: candidate.targets.map((target) => ({ id: target.id, paths: [target.path], changePolicy: target.policy as TargetSurface["changePolicy"] })),
@@ -180,7 +181,7 @@ function evaluateVector(vector: RoutingVector, mode: AdoptionMode) {
     policy = parseRepositoryPolicy(vector.policy ?? {});
   } catch (error) {
     if (!(error instanceof RepositoryConfigError)) throw error;
-    return { decisions: [] as string[], codes: [error.code], attribution: [] as Array<string | null>, outcome: enforcementFor(mode, false, true).outcome };
+    return { decisions: [] as string[], codes: [error.code], attribution: [] as Array<string | null>, changeDecisions: [] as string[], outcome: enforcementFor(mode, false, true).outcome };
   }
   const changed = vector.changed as ChangedFile[];
   expect(classifyGovernanceChanges(SPEC_DIRECTORY, changed)).not.toBe("contract_only");
@@ -190,12 +191,19 @@ function evaluateVector(vector: RoutingVector, mode: AdoptionMode) {
   const selector = vector.selector
     ? selectorSources({ ...(vector.selector.cli ? { contract: vector.selector.cli } : {}), labels: vector.selector.label ? [vector.selector.label] : [], ...(vector.selector.branch ? { branch: vector.selector.branch } : {}) }, { label: "engineeringspec:", branch: "es/" })
     : undefined;
-  const evaluation = evaluatePolicyRouting({ mode, policy, specDirectory: SPEC_DIRECTORY, candidates: vector.candidates.map(loadedCandidate), changed, baseTimestamp: vector.baseTimestamp, ...(selector ? { selector } : {}) });
+  const counted = vector.changed.some((change) => change.additions !== undefined || change.binary);
+  const changedLines = vector.changed.reduce((sum, change) => sum + (change.binary ? 0 : (change.additions ?? 0) + (change.deletions ?? 0)), 0);
+  const evaluation = evaluatePolicyRouting({
+    mode, policy, specDirectory: SPEC_DIRECTORY, candidates: vector.candidates.map(loadedCandidate), changed, baseTimestamp: vector.baseTimestamp,
+    ...(selector ? { selector } : {}),
+    ...(counted ? { changedLines } : {}),
+  });
   const diagnostics = [...evaluation.diagnostics, ...mixed].filter((item) => item.severity !== "info");
   return {
     decisions: evaluation.routes.map((route) => route.decision),
     codes: [...new Set(diagnostics.map((item) => item.code))].sort(),
     attribution: evaluation.routes.map((route) => route.selected?.specId ?? null),
+    changeDecisions: evaluation.changeDecisions ?? [],
     outcome: enforcementFor(mode, evaluation.authorized && mixed.length === 0).outcome,
   };
 }
@@ -209,6 +217,7 @@ function assertRoutingVector(vector: RoutingVector): void {
     expect(result.codes, `${mode} codes`).toEqual(vector.expected.codes);
     expect(result.outcome, `${mode} outcome`).toBe(vector.expected.outcome[mode]);
     if (vector.expected.attribution) expect(result.attribution, `${mode} attribution`).toEqual(vector.expected.attribution);
+    if (vector.expected.changeDecisions) expect(result.changeDecisions, `${mode} change decisions`).toEqual(vector.expected.changeDecisions);
   }
 }
 

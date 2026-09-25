@@ -8,6 +8,7 @@ import { nextAction } from "../../src/cli/next.js";
 import { parseRepositoryConfig, RepositoryConfigError } from "../../src/config/repositoryConfig.js";
 import { enforcementFor } from "../../src/policy/evaluate.js";
 import { selectSpecs } from "../../src/routing/select.js";
+import { parseNumstatZ } from "../../src/gate/collectDiff.js";
 import { runCli } from "../support/runCli.js";
 
 const CONTRACT = (id: string, status: string, target: string, extra = "") => `---
@@ -256,6 +257,50 @@ describe("contract selectors end to end", () => {
     const report = await selectSpecs({ directory: "specs", base, changed: [{ path: "src/api/a.ts", kind: "added" }], cwd: root, selector: { contract: "ES-b" } });
     expect(report.routes.map((route) => route.decision)).toEqual(["ambiguous"]);
     expect(report.enforcement).toEqual({ mode: "legacy", outcome: "fail", enforced: true });
+  });
+});
+
+describe("change budgets end to end", () => {
+  it("parses numstat totals with renames and binary files", () => {
+    expect(parseNumstatZ("3\t2\tsrc/a.ts\0-\t-\timg.png\0" + "0\t0\t\0src/old.ts\0src/new.ts\0" + "1\t1\tsrc/b.ts\0")).toBe(7);
+    expect(parseNumstatZ("")).toBe(0);
+    expect(() => parseNumstatZ("x\ty\tz\0")).toThrow(/numstat/u);
+  });
+
+  it("counts lines from git for committed and working-state changes", async () => {
+    const { root, base } = await repository({
+      config: { mode: "standard", policy: { budgets: { maxFiles: 10, maxChangedLines: 3 } } },
+      contracts: [["ES-a", "approved", "src/**"]],
+    });
+    await mkdir(path.join(root, "src"));
+    await writeFile(path.join(root, "src", "a.ts"), "one\ntwo\n");
+    commit(root, "two lines");
+    const committed = await selectSpecs({ directory: "specs", base, head: "HEAD", worktree: false, cwd: root });
+    expect(committed).toMatchObject({ valid: true, changeDecisions: [] });
+
+    await writeFile(path.join(root, "src", "b.ts"), "three\nfour\n");
+    await writeFile(path.join(root, "src", "logo.bin"), Buffer.from([0, 1, 2, 0]));
+    const working = await selectSpecs({ directory: "specs", base, cwd: root });
+    expect(working.changeDecisions).toEqual(["over_budget"]);
+    expect(working.diagnostics.map((item) => item.code)).toContain("ESRT010");
+    expect(working.enforcement.outcome).toBe("fail");
+  });
+
+  it("lets a single attributed contract budget override the repository default", async () => {
+    const { root, base } = await repository({
+      config: { mode: "standard", policy: { budgets: { maxFiles: 1 } } },
+      contracts: [["ES-a", "approved", "src/**", "change_budget:\n  max_files: 5\n"]],
+    });
+    const report = await selectSpecs({ directory: "specs", base, cwd: root, changed: [{ path: "src/a.ts", kind: "added" }, { path: "src/b.ts", kind: "added" }] });
+    expect(report).toMatchObject({ valid: true, changeDecisions: [] });
+  });
+
+  it("reports that line budgets were not evaluated for explicitly listed paths", async () => {
+    const { root, base } = await repository({ config: { mode: "standard", policy: { budgets: { maxChangedLines: 1 } } }, contracts: [["ES-a", "approved", "src/**"]] });
+    const report = await selectSpecs({ directory: "specs", base, cwd: root, changed: [{ path: "src/a.ts", kind: "added" }] });
+    expect(report.changeDecisions).toEqual([]);
+    expect(report.diagnostics).toContainEqual(expect.objectContaining({ code: "ESRT010", severity: "info" }));
+    expect(report.valid).toBe(true);
   });
 });
 

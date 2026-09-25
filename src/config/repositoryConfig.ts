@@ -38,6 +38,13 @@ export interface RepositoryPolicy {
   protectedPaths: string[];
   /** Paths that need a change contract in every mode; standing authority never satisfies them. */
   grantBeforeSpendPaths: string[];
+  /** Repository default change budget; a single attributed change contract's budget overrides it. */
+  budgets?: ChangeBudgetLimits;
+}
+
+export interface ChangeBudgetLimits {
+  maxFiles?: number;
+  maxChangedLines?: number;
 }
 
 export interface RepositoryConfig {
@@ -168,7 +175,7 @@ export class RepositoryConfigError extends Error {
 
 export function parseRepositoryPolicy(raw: unknown, label = "policy"): RepositoryPolicy {
   const value = object(raw, label);
-  const allowed = new Set(["governedPaths", "exemptPaths", "protectedPaths", "grantBeforeSpendPaths"]);
+  const allowed = new Set(["governedPaths", "exemptPaths", "protectedPaths", "grantBeforeSpendPaths", "budgets"]);
   for (const key of Object.keys(value)) if (!allowed.has(key)) throw new Error(`${label} contains unknown property ${JSON.stringify(key)}`);
   const globs = (key: keyof RepositoryPolicy, fallback: string[]): string[] => {
     const list = value[key] ?? fallback;
@@ -184,7 +191,20 @@ export function parseRepositoryPolicy(raw: unknown, label = "policy"): Repositor
     exemptPaths: globs("exemptPaths", []),
     protectedPaths: globs("protectedPaths", []),
     grantBeforeSpendPaths: globs("grantBeforeSpendPaths", []),
+    ...(value.budgets === undefined ? {} : { budgets: parseBudgets(value.budgets, `${label}.budgets`) }),
   };
+}
+
+function parseBudgets(raw: unknown, label: string): ChangeBudgetLimits {
+  const value = object(raw, label);
+  const result: ChangeBudgetLimits = {};
+  for (const [key, limit] of Object.entries(value)) {
+    if (key !== "maxFiles" && key !== "maxChangedLines") throw new Error(`${label} contains unknown property ${JSON.stringify(key)}`);
+    if (!Number.isInteger(limit) || (limit as number) < 0) throw new Error(`${label}.${key} must be a non-negative integer`);
+    result[key] = limit as number;
+  }
+  if (Object.keys(result).length === 0) throw new Error(`${label} must set maxFiles or maxChangedLines`);
+  return result;
 }
 
 export async function resolveRepositoryConfig(options: { base?: string; cwd?: string; enforcing?: boolean } = {}): Promise<ResolvedRepositoryConfig> {

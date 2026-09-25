@@ -37,6 +37,8 @@ export interface PolicyEvaluationInput {
   baseTimestamp?: string;
   /** Untrusted requests naming one contract; they can only narrow the positive claims considered. */
   selector?: SelectorSource[];
+  /** Added plus deleted lines for the same range as `changed`; absent when counts are unavailable. */
+  changedLines?: number;
 }
 
 export interface SelectorSource {
@@ -99,6 +101,8 @@ export interface PolicyEvaluation {
   authorized: boolean;
   /** The contract a valid selector narrowed routing to. */
   selectedContract?: string;
+  /** Whole-change decisions; present only when a change budget applied (RFC 0014 §7, C3). */
+  changeDecisions?: Array<"over_budget">;
 }
 
 /** Decisions that authorize a path. `standing` does not in controlled mode (RFC 0014 C7). */
@@ -222,17 +226,54 @@ export function evaluatePolicyRouting(input: PolicyEvaluationInput): PolicyEvalu
     return uncovered();
   });
 
+  const budget = evaluateBudget(input, routes, selector.selected, candidateOf);
   // Keep whole-change and sequencing findings; per-path routing findings are re-derived above.
   const rederived = new Set<string>([Codes.routingUncovered, Codes.routingAmbiguous, Codes.routingDenied]);
-  const all = [...base.diagnostics.filter((item) => !(item.file && rederived.has(item.code))), ...diagnostics];
+  const all = [...base.diagnostics.filter((item) => !(item.file && rederived.has(item.code))), ...diagnostics, ...budget.diagnostics];
   return {
     ...(selector.selected ? { selectedContract: selector.selected.spec.metadata.id } : {}),
+    ...(budget.changeDecisions ? { changeDecisions: budget.changeDecisions } : {}),
     routes,
     diagnostics: all,
     sequencing: base.sequencing,
     authorized: routes.every((route) => isPassingDecision(route.decision, input.mode))
       && !all.some((item) => item.severity === "error"),
   };
+}
+
+/**
+ * A single attributed change contract's budget overrides the repository default. Every
+ * routed file counts, including exempt ones; a rename is one file (RFC 0014 C13, C21).
+ */
+function evaluateBudget(
+  input: PolicyEvaluationInput,
+  routes: ReportedRoute[],
+  selected: LoadedRoutingCandidate | undefined,
+  candidateOf: (claim: RoutingClaim) => LoadedRoutingCandidate | undefined,
+): { changeDecisions?: Array<"over_budget">; diagnostics: Diagnostic[] } {
+  const attributed = new Map<string, LoadedRoutingCandidate>();
+  for (const route of routes) {
+    if (route.decision !== "selected" || !route.selected) continue;
+    const candidate = candidateOf(route.selected);
+    if (candidate) attributed.set(`${candidate.spec.metadata.id}\0${candidate.path}`, candidate);
+  }
+  const owner = selected && !isStanding(selected) ? selected : attributed.size === 1 ? [...attributed.values()][0] : undefined;
+  const limits = owner?.spec.metadata.changeBudget ?? input.policy.budgets;
+  if (!limits) return { diagnostics: [] };
+  const source = owner?.spec.metadata.changeBudget ? `contract ${owner.spec.metadata.id}` : "the repository policy";
+  const files = input.changed.length;
+  const lines = input.changedLines;
+  const over: string[] = [];
+  if (limits.maxFiles !== undefined && files > limits.maxFiles) over.push(`${files} files exceeds ${limits.maxFiles}`);
+  if (limits.maxChangedLines !== undefined && lines !== undefined && lines > limits.maxChangedLines) over.push(`${lines} changed lines exceeds ${limits.maxChangedLines}`);
+  const diagnostics: Diagnostic[] = [];
+  if (limits.maxChangedLines !== undefined && lines === undefined) {
+    diagnostics.push({ code: Codes.routingBudget, severity: "info", message: `Changed-line budget from ${source} was not evaluated because line counts are unavailable for explicitly listed paths` });
+  }
+  if (over.length > 0) {
+    diagnostics.push({ code: Codes.routingBudget, severity: "error", message: `Change budget from ${source} exceeded: ${over.join("; ")}`, hint: "Split the change, or raise the budget in a reviewed contract-only change." });
+  }
+  return { changeDecisions: over.length > 0 ? ["over_budget"] : [], diagnostics };
 }
 
 /** Maps authorization to an exit-code outcome. Advisory never blocks, but never authorizes either. */

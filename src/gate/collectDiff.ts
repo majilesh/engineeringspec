@@ -1,4 +1,6 @@
 import { execFile } from "node:child_process";
+import { readFile } from "node:fs/promises";
+import path from "node:path";
 import { promisify } from "node:util";
 import type { ChangedFile, ChangeKind } from "./types.js";
 
@@ -281,3 +283,45 @@ export function changedFromPathList(paths: string[], kind: ChangeKind = "modifie
     return { path: normalizeRepoPath(filePath), kind };
   });
 }
+
+/**
+ * Parse `git diff -z --numstat` output into the total of added plus deleted lines.
+ * Binary files (`-\t-`) contribute no lines; renames use the `\0from\0to` form.
+ */
+export function parseNumstatZ(output: string): number {
+  const parts = output.split("\0");
+  let lines = 0;
+  for (let index = 0; index < parts.length; index += 1) {
+    const record = parts[index];
+    if (!record) continue;
+    const match = /^(-|\d+)\t(-|\d+)\t(.*)$/su.exec(record);
+    if (!match) throw new DiffParseError(`Malformed numstat record ${JSON.stringify(record)}`);
+    if (match[3] === "") index += 2;
+    if (match[1] !== "-" && match[2] !== "-") lines += Number(match[1]) + Number(match[2]);
+  }
+  return lines;
+}
+
+async function untrackedLineCount(paths: string[], cwd?: string): Promise<number> {
+  let lines = 0;
+  for (const file of paths) {
+    const bytes = await readFile(path.resolve(cwd ?? process.cwd(), file));
+    if (bytes.includes(0)) continue;
+    const text = bytes.toString("utf8");
+    lines += text.length === 0 ? 0 : text.split("\n").length - (text.endsWith("\n") ? 1 : 0);
+  }
+  return lines;
+}
+
+/** Total changed lines for the same range and mode as the corresponding path collector. */
+export async function collectChangedLineCount(options: { base: string; head?: string; cwd?: string; mode: "range" | "staged" | "worktree" }): Promise<number> {
+  const head = options.head ?? "HEAD";
+  const run = async (args: string[]): Promise<string> => (await execFileAsync("git", args, { cwd: options.cwd, maxBuffer: MAX_GIT_OUTPUT, encoding: "utf8" })).stdout;
+  if (options.mode === "range") return parseNumstatZ(await run(["diff", "-z", "--numstat", "--find-renames", `${options.base}...${head}`]));
+  const tree = await mergeBase(options.base, head, options.cwd);
+  if (options.mode === "staged") return parseNumstatZ(await run(["diff", "-z", "--numstat", "--find-renames", "--cached", tree]));
+  const tracked = parseNumstatZ(await run(["diff", "-z", "--numstat", "--find-renames", tree]));
+  const untracked = (await untrackedFiles(options.cwd)).map((change) => change.path);
+  return tracked + await untrackedLineCount(untracked, options.cwd);
+}
+
