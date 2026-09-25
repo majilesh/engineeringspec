@@ -10,7 +10,7 @@ Processors MUST use a CommonMark-compatible AST, preserve prose, retain diagnost
 
 ## Authoring document
 
-Recognized names are `ENGINEERING_SPEC.md`, `*.engineering-spec.md`, and `*.engineeringspec.md`. Frontmatter fields and normalized model members are defined by the JSON Schema. Version 0.1 requires source refs, targets, verification, and at least one contracts or constraints block. Every recognized block occurs at most once.
+Recognized names are `ENGINEERING_SPEC.md`, `*.engineering-spec.md`, and `*.engineeringspec.md`. Frontmatter fields and normalized model members are defined by the JSON Schema. Version 0.1 requires source refs, targets, verification, and at least one contracts or constraints block, except under the draft lite profile (see below). Every recognized block occurs at most once.
 
 The document MUST begin with YAML frontmatter containing:
 
@@ -96,6 +96,69 @@ Before 1.0, patches fix implementations, minors add compatible fields or behavio
 Object keys are ordered lexicographically by Unicode code point (ascending; not locale collation) in canonical JSON. Array order is preserved. Undefined implementation data and internal source locations are excluded unless source locations are explicitly requested. The canonical byte sequence ends with one newline. Digests are lowercase SHA-256 over those canonical JSON bytes, never the original Markdown.
 
 While EngineeringSpec 0.1 is a prerelease draft, release candidates MAY add backward-compatible draft fields to the 0.1 schema at the existing draft identifier; each published package retains its packaged schema bytes. The first stable 0.1 release freezes every versioned schema under `/schemas/0.1/`: after that release those URLs and bytes are immutable, and further additive changes require a new schema version plus a documented compatibility note.
+
+## Adoption modes, authority kinds and closure (draft, RFC 0014)
+
+These additions are draft 0.1 fields and reference-tooling behavior from [RFC 0014](rfcs/0014-routing-v2-adoption-modes.md). They are on `main` and not yet in a published release. Documents that do not use them keep their canonical JSON and digests.
+
+**Frontmatter.** The following fields are optional:
+- `authority_kind`: `change` (the default when absent) or `standing`. Standing authority MUST declare `expires_at`.
+- `expires_at`: an RFC 3339 date-time.
+- `change_budget`: `max_files` and/or `max_changed_lines`, both non-negative integers.
+
+Processors MUST NOT write defaults for absent fields into canonical JSON.
+
+**Lite profile.** `profiles: [{name: lite, version: "0.1"}]` requires only frontmatter and `engineering-targets`. The relaxation keys on the profile name, so an unsupported lite version still fails with `ESV002`.
+- Absent source-reference and verification blocks normalize to empty arrays.
+- Blocks that are present are validated as usual.
+- A lite contract never satisfies a protected path.
+
+**Repository configuration 0.2.** `engineering-spec.json` MAY set:
+- `mode`: `advisory`, `standard` or `controlled`;
+- `policy`: `governedPaths` (default `["**"]`), `exemptPaths`, `protectedPaths`, `grantBeforeSpendPaths`, `budgets` and `maxStandingDays` (default 180);
+- `selection`: `label` and `branch` prefixes.
+
+The configuration is read only from the trusted base. All globs use the restricted dialect. Without `mode`, routing is exactly the legacy behavior described in the diff-gate section below.
+
+**Decision order.** With a mode set, each changed path is decided in a fixed order, and decisions are the same in every mode:
+1. Deny: a `read_only`/`observe` target or a forbidden change kind in any eligible contract gives `denied`.
+2. Protected: `protectedPaths` plus the specification directory, `engineering-spec.json` and CODEOWNERS locations. These need exactly one allowing, full-profile change contract; otherwise `protected_unauthorized` (`ESRT008`).
+3. Exempt gives `exempt`.
+4. Outside `governedPaths` gives `ungoverned`.
+5. Grant-before-spend paths need change authority.
+6. Otherwise a single change contract gives `selected`, and a single standing contract gives `standing`. Several allowing contracts give `ambiguous`; none gives `uncovered`.
+
+Only the outcome depends on the mode:
+
+| Mode | Outcome |
+|---|---|
+| `advisory` | Never blocks, and never authorizes. |
+| `standard` | Fails on any unauthorized decision. |
+| `controlled` | Also fails on `standing`. |
+
+Reports keep `valid` meaning "every path authorized", and add `enforcement: {mode, outcome, enforced}`. `next`, `work`, `finish` closure and receipts MUST require `valid`.
+
+**Selectors.** A selector names one contract. It MAY come from:
+- `--contract` or the Action input `contract`;
+- an `EngineeringSpec-Contract: <ID>` commit trailer in base..head;
+- the configured label or branch prefix, on pull requests only.
+
+A selector MUST resolve to exactly one approved, unexpired, unspent trusted-base contract. It narrows positive claims to that contract and MUST NOT suppress any contract's denies. An invalid, conflicting or ineligible selector fails with `ESRT009` and MUST NOT fall back to unselected routing.
+
+**Standing authority.** Expiry is judged against the trusted base commit timestamp. An expired or spent contract loses its allows but keeps its denies. `ESRT011` is reported for affected paths.
+- Standing authority never satisfies protected or grant-before-spend paths (`ESRT012`).
+- The contract-only lane rejects approval of standing authority whose expiry is at or before the base commit, or more than `maxStandingDays` after it.
+
+**Change budgets.** A budget counts every routed file (a rename is one file) and the added plus deleted lines over the same range and mode as the diff. A single attributed change contract's budget overrides the repository default. Exceeding it adds the change-level decision `over_budget` (`ESRT010`).
+
+**Closure receipts.** In configured modes, a change contract is closed by `<specDirectory>/receipts/<ID>.receipt.json`, defined by [`schemas/closure-receipt-0.1.schema.json`](schemas/closure-receipt-0.1.schema.json).
+
+- **Spending.** A receipt spends its contract only when it names an approved change contract whose revision and closure semantic digest match, and when its `baseSha` is the trusted base or an ancestor of it. `changeDigest` and `cliVersion` are audit fields.
+- **Failing safe.** Receipts MUST only remove eligibility. An invalid receipt spends nothing, and `ESRT013` is an error only for changes touching its contract.
+- **Adding.** A receipt added in the implementation lane MUST close a contract that the change's implementation paths spend.
+- **Editing or removing.** Editing, renaming or deleting a receipt in the implementation lane MUST fail. The contract-only lane MAY delete one only in the change that revises, supersedes or rejects its contract.
+
+Legacy repositories keep the exact `approved -> implemented` close.
 
 ## Diagnostics and conformance
 

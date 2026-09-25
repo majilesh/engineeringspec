@@ -4,9 +4,28 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+### Added (RFC 0014, `ES-routing-v2-adoption-modes`)
+
+- **Adoption modes and policy.** Adoption modes (`advisory`, `standard`, `controlled`) and trusted-base repository policy (`governedPaths`, `exemptPaths`, `protectedPaths`, `grantBeforeSpendPaths`, `budgets`, `maxStandingDays`, `selection`) in repository configuration 0.2. Without `mode`, routing is unchanged.
+- **Enforcement kept separate from authorization.** Reports add an `enforcement` outcome that drives `select`/`check`/`review` exit codes. `valid` still means authorized, so an advisory pass never grants permission, closure or receipts.
+- **Bootstrap.** `--bootstrap-mode advisory` and the Action `bootstrap-mode` input let an adoption PR pass. They are ignored once the trusted base has configuration or approved contracts.
+- **Selectors.** `--contract`, the Action `contract` input, `EngineeringSpec-Contract:` commit trailers, and opt-in label and branch prefixes. A selector can only narrow authority.
+- **Standing authority.** `authority_kind: standing` with `expires_at`, judged against the trusted base commit. Expiry and spending remove allows but keep denies.
+- **Change budgets.** Optional `change_budget` and `policy.budgets`, counted with `git diff --numstat`.
+- **Receipt closure.** Receipt-based closure (`schemas/closure-receipt-0.1.schema.json`) in configured modes.
+- **Lite profile.** The lite contract profile and `propose --lite`.
+- **Diagnostics.** New codes `ESRT008`–`ESRT013`.
+- **Adoption.** `adopt` writes CODEOWNERS for the spec directory, workflows, CODEOWNERS and `engineering-spec.json`, and no longer generates the Copilot prompt file. `doctor` warns on unowned trust-boundary files and on advisory mode.
+
+### Changed
+
+- CI routes pull requests with a CLI built from the trusted base, not the PR head.
+- Tests no longer change the process working directory.
+- Coverage thresholds include routing, authority and configuration code.
+
 ## [0.1.0-rc.17] - 2026-08-29
 
-Prepared release candidate; it is not published until separate publication authority is reviewed and approved for the exact release-source SHA.
+Published to npm under the `next` dist-tag.
 
 ### Changed
 

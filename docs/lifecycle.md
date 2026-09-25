@@ -6,7 +6,7 @@ For new authority, the default review boundary is two pull requests: merge one r
 
 With trusted repository configuration on the base, use `engineeringspec next`, `engineeringspec work <contract-id>`, and `engineeringspec finish <contract-id>`. Explicit lower-level commands and flags remain supported for debugging and CI. `next` is informational: successful analysis is not implementation authority. Start implementation only when it reports `permission: implementation` and `work` successfully loads the exact approved trusted-base contract.
 
-Repository source is prepared as the unpublished `@engineeringspec/cli@0.1.0-rc.17` candidate. Runnable package examples remain pinned to published RC16 until separate publication approval.
+Runnable package examples pin the published `@engineeringspec/cli@0.1.0-rc.17`.
 
 | Workflow stage | Typical contract state | Authority and outcome |
 |---|---|---|
@@ -42,8 +42,8 @@ Use `superseded` when a reviewed replacement contract owns the change. Use `reje
 After repository-owned checks pass, the implementation PR may change only the exact authorizing contract lifecycle to `implemented`:
 
 ```sh
-npx --yes @engineeringspec/cli@0.1.0-rc.16 finish ES-change --format markdown
-npx --yes @engineeringspec/cli@0.1.0-rc.16 finish ES-change --write-closure
+npx --yes @engineeringspec/cli@0.1.0-rc.17 finish ES-change --format markdown
+npx --yes @engineeringspec/cli@0.1.0-rc.17 finish ES-change --write-closure
 ```
 
 With code in the same diff, the result must say `change classification: implementation_with_monotonic_close`; a standalone closure remains `contract_only`. Any semantic edit, authority widening, or unrelated contract close fails. Require normal repository checks and maintainer review before merging. Approved-base routing still applies to every implementation path.
@@ -56,3 +56,24 @@ engineeringspec transition docs/engineering-specs/change.engineering-spec.md --t
 ```
 
 The command validates before and after, preserves every non-status byte, and performs no Git operation. Human review and merge remain required.
+
+### Closing with a receipt (configured modes, RFC 0014, unreleased)
+
+When the trusted-base `engineering-spec.json` sets `mode`, `finish --write-closure` does not edit the contract. It writes `<specDirectory>/receipts/<ID>.receipt.json`, which binds the contract ID, revision, closure semantic digest and trusted base. The implementation PR then reports `change classification: implementation_with_receipt`.
+
+After merge, the contract is spent:
+- `next` no longer counts it;
+- `work` and `finish` are blocked;
+- its paths are no longer authorized by it;
+- its denies still apply.
+
+Receipts cannot be edited or deleted in implementation PRs. To reuse the scope, revise the contract (a new `spec_revision`) in a contract-only change, and delete the stale receipt in that same change. The pinned pre-RFC-0014 Action and older CLIs do not read receipts.
+
+## Standing authority (RFC 0014, unreleased)
+
+`authority_kind: standing` with `expires_at` grants long-lived authority, for example to a team over `docs/**`. It is never closed by `finish` or a receipt; it ends through supersession, rejection or expiry.
+- Expiry is measured from the trusted base commit.
+- Approval is limited to `policy.maxStandingDays` (default 180).
+- Change contracts take precedence for attribution.
+- Standing authority never satisfies protected or grant-before-spend paths, and `controlled` mode does not accept it.
+- `next` lists standing contracts separately, so they never remove implementation permission for the single approved change contract.
