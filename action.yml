@@ -57,12 +57,23 @@ inputs:
     description: "Optional approved contract ID that narrows gate-spec-dir routing (never widens). On pull_request events, PR labels and the head branch are also passed and honored only when the trusted base configures selection prefixes; EngineeringSpec-Contract commit trailers are always read."
     required: false
     default: ""
+outputs:
+  result:
+    description: "pass, fail, or error: the enforcement outcome of directory routing (gate-spec-dir only)"
+    value: ${{ steps.gate.outputs.result }}
+  mode:
+    description: "legacy, advisory, standard, controlled, or bootstrap_advisory"
+    value: ${{ steps.gate.outputs.mode }}
+  classification:
+    description: "none, contract_only, implementation, implementation_with_monotonic_close, or implementation_with_receipt"
+    value: ${{ steps.gate.outputs.classification }}
+  selected-contract:
+    description: "The contract a selector narrowed routing to, if any"
+    value: ${{ steps.gate.outputs.selected-contract }}
 runs:
   using: composite
   steps:
-    - name: Prepare EngineeringSpec CLI
-      shell: bash
-      run: npm ci --ignore-scripts --prefix "$GITHUB_ACTION_PATH" && npm run build --prefix "$GITHUB_ACTION_PATH"
+    # The committed action/cli.mjs bundle is reviewed with the source; nothing is installed or compiled here.
     - name: Validate EngineeringSpec documents
       shell: bash
       env:
@@ -79,8 +90,9 @@ runs:
         else
           target="$GITHUB_WORKSPACE/$INPUT_PATH"
         fi
-        node "$GITHUB_ACTION_PATH/dist/cli.js" validate "$target" --format github "${args[@]}"
+        node "$GITHUB_ACTION_PATH/action/cli.mjs" validate "$target" --format github "${args[@]}"
     - name: Gate diff against EngineeringSpec targets
+      id: gate
       if: ${{ inputs.gate-spec != '' || inputs.gate-spec-dir != '' || inputs.gate-allow-contract-only != 'false' }}
       shell: bash
       env:
@@ -117,7 +129,7 @@ runs:
           echo "gate-base is required when gate-spec or gate-spec-dir is set (example: origin/main)" >&2
           exit 2
         fi
-        args=(--base "$INPUT_GATE_BASE" --head "$INPUT_GATE_HEAD" --format github)
+        args=(--base "$INPUT_GATE_BASE" --head "$INPUT_GATE_HEAD")
         if [[ "$INPUT_STRICT" == "true" ]]; then args+=(--strict); fi
         if [[ -n "$INPUT_GATE_REQUIRE_STATUS" ]]; then
           IFS=',' read -r -a statuses <<< "$INPUT_GATE_REQUIRE_STATUS"
@@ -150,7 +162,14 @@ runs:
             done < <(node -e 'const e=JSON.parse(require("fs").readFileSync(process.env.GITHUB_EVENT_PATH,"utf8"));for(const l of e.pull_request?.labels??[])if(typeof l.name==="string")process.stdout.write(l.name+"\0")')
           fi
           if (( ${#selector_args[@]} )); then args+=("${selector_args[@]}"); fi
-          node "$GITHUB_ACTION_PATH/dist/cli.js" select "$INPUT_GATE_SPEC_DIR" "${args[@]}"
+          set +e
+          node "$GITHUB_ACTION_PATH/action/cli.mjs" select "$INPUT_GATE_SPEC_DIR" "${args[@]}" --format github
+          select_status=$?
+          set -e
+          # Expose the outcome as step outputs; the JSON run repeats the same read-only decision.
+          node "$GITHUB_ACTION_PATH/action/cli.mjs" select "$INPUT_GATE_SPEC_DIR" "${args[@]}" --format json 2>/dev/null \
+            | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{try{const r=JSON.parse(s);const e=r.enforcement??{};const out=[`result=${e.outcome??"error"}`,`mode=${e.mode??""}`,`classification=${r.governance?.classification??""}`,`selected-contract=${e.selectedContract??""}`].join("\n");require("fs").appendFileSync(process.env.GITHUB_OUTPUT,out+"\n");}catch{}})' || true
+          if [[ "$select_status" -ne 0 ]]; then exit "$select_status"; fi
           normalized_status="$(echo "$INPUT_GATE_REQUIRE_STATUS" | tr -d '[:space:]')"
           if [[ -z "$normalized_status" || "$normalized_status" == "approved" ]]; then
             review_args=(--spec-dir "$INPUT_GATE_SPEC_DIR" --base "$INPUT_GATE_BASE" --head "$INPUT_GATE_HEAD" --no-worktree --format github)
@@ -158,7 +177,7 @@ runs:
             if [[ "$INPUT_GATE_ALLOW_CONTRACT_ONLY" == "true" ]]; then review_args+=(--allow-contract-only); fi
             if [[ -n "$INPUT_BOOTSTRAP_MODE" ]]; then review_args+=(--bootstrap-mode "$INPUT_BOOTSTRAP_MODE"); fi
             if (( ${#selector_args[@]} )); then review_args+=("${selector_args[@]}"); fi
-            node "$GITHUB_ACTION_PATH/dist/cli.js" review "${review_args[@]}"
+            node "$GITHUB_ACTION_PATH/action/cli.mjs" review "${review_args[@]}"
           else
             echo "::notice title=EngineeringSpec review::Detailed summary is available for the default approved-only policy; enforcement still completed for the requested statuses."
           fi
@@ -181,4 +200,4 @@ runs:
         fi
         # Run from the consumer workspace so git diff sees their checkout.
         cd "$GITHUB_WORKSPACE"
-        node "$GITHUB_ACTION_PATH/dist/cli.js" gate "$spec" "${args[@]}"
+        node "$GITHUB_ACTION_PATH/action/cli.mjs" gate "$spec" "${args[@]}" --format github

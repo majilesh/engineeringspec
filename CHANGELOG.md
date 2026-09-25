@@ -20,6 +20,8 @@ All notable changes to this project are documented here.
 
 ### Changed
 
+- **Ceremony benchmark.** `benchmark --ceremony` now executes scenarios A–G with the real CLI in temporary Git repositories and measures the results (fixture format 0.2). It no longer compares authored `actualOutcome` values.
+- **GitHub Action.** The Action runs a committed esbuild bundle (`action/cli.mjs`) instead of running `npm ci` and a TypeScript build on every job. It adds `result`, `mode`, `classification` and `selected-contract` outputs.
 - CI routes pull requests with a CLI built from the trusted base, not the PR head.
 - Tests no longer change the process working directory.
 - Coverage thresholds include routing, authority and configuration code.

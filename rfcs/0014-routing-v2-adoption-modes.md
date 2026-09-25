@@ -433,4 +433,7 @@ Runtimes older than this change reject unknown keys in `engineering-spec.json`, 
     - Codex blocks `apply_patch` in `PreToolUse` (`permissionDecision: "deny"`). Its `Stop` hook only reports.
     - Cursor blocks `Write`/`Delete` in `preToolUse` (`permission: "deny"`). Its `stop` hook cannot block.
   - **Parity.** The guard-parity fixture checks that, for every routing vector and mode, the guard's per-path verdicts equal routing decisions, and that advisory never denies.
+- **C26. Executable ceremony benchmark and Action runtime.**
+  - **Benchmark.** Ceremony fixture 0.2 declares only expectations: outcome, required diagnostics, `currentAuthorityGranted` and pull-request count. `benchmark --ceremony` executes scenarios A–G with the running CLI in temporary Git repositories, where a "pull request" is a reviewed merge into the trusted base. It measures commands, pull requests, lifecycle edits, hand edits, mutations, diagnostics and runner executions; every contract declares a `touch` runner, and none may run. Fixtures that author measured fields (for example `actualOutcome`) are rejected.
+  - **Action.** The Action runs the committed `action/cli.mjs`, an esbuild bundle of `src/`. The bundle pins the package version it was built from, so it does not search parent directories for a `package.json` at runtime. CI fails when the bundle differs from the source (`npm run check:action`). The Action installs nothing and compiles nothing at runtime, and it exposes `result`, `mode`, `classification` and `selected-contract` outputs.
 

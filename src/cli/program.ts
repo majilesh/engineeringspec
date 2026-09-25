@@ -1,3 +1,4 @@
+import { fileURLToPath } from "node:url";
 import { access, appendFile, readFile, writeFile } from "node:fs/promises";
 import { constants } from "node:fs";
 import path from "node:path";
@@ -25,7 +26,7 @@ import { packageVersion } from "./version.js";
 import { agentCheck } from "./agentCheck.js";
 import { buildAgentContext, explainPath } from "../query/agentContext.js";
 import { adoptRepository } from "./adopt.js";
-import { evaluateCeremonyBenchmark, summarizeAgentBenchmark } from "./benchmark.js";
+import { runCeremonyBenchmark, summarizeAgentBenchmark } from "./benchmark.js";
 import { selectSpecs } from "../routing/select.js";
 import { guardChange } from "./guard.js";
 import { displaySafe } from "./render.js";
@@ -327,14 +328,15 @@ export function createProgram(setCode: (code: number) => void): Command {
     .argument("[files...]", "JSON files containing one record or an array of records")
     .addOption(new Option("--format <format>", "output format").choices(["text", "json"]))
     .option("--require-publishable", "fail unless retained evidence is complete, observed, and publishable")
-    .option("--ceremony", "evaluate the canonical RC16 ceremony scenarios")
+    .option("--ceremony", "execute the canonical ceremony scenarios with this CLI in temporary Git repositories")
     .action(async (files, options, command) => {
       try {
         const global = command.optsWithGlobals() as GlobalOptions;
         if(options.ceremony){
           if((files as string[]).length>0) throw new Error("--ceremony does not accept benchmark record files");
           const scenarios:unknown=JSON.parse(await readFile("benchmarks/ceremony-scenarios.json","utf8"));
-          const report=evaluateCeremonyBenchmark(scenarios);
+          // Executes every scenario with this same CLI build in temporary repositories.
+          const report=await runCeremonyBenchmark(scenarios,{cli:fileURLToPath(new URL("../cli.js",import.meta.url))});
           const text=`ceremony: ${report.valid?"pass":"fail"}; scenarios A-G; ${report.summary.commands} commands; ${report.summary.pullRequests} pull requests; ${report.summary.mutations} mutations; runners ${report.summary.runnerExecutions}`;
           if(!global.quiet) output(global.format==="json"?report:text,global.format);
           setCode(report.valid?ExitCode.success:ExitCode.validation);return;

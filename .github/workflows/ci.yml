@@ -25,6 +25,8 @@ jobs:
       - run: npm run build
       - run: node scripts/demo.mjs
       - run: npm run package:check
+      # The Action runs the committed action/cli.mjs bundle; it must match the reviewed source.
+      - run: npm run check:action
       - name: Validate examples
         run: |
           node dist/cli.js validate examples/standalone/bug-fix.engineering-spec.md
