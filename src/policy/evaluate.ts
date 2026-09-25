@@ -1,6 +1,7 @@
 import type { Diagnostic } from "../diagnostics/Diagnostic.js";
 import { Codes } from "../diagnostics/codes.js";
-import type { AdoptionMode, RepositoryPolicy } from "../config/repositoryConfig.js";
+import type { AdoptionMode, RepositoryPolicy, SelectionConfig } from "../config/repositoryConfig.js";
+import { isEngineeringSpecId } from "../model/ids.js";
 import type { ChangedFile } from "../gate/types.js";
 import type { Status } from "../model/types.js";
 import { compareCodePoints } from "../normalizer/canonicalize.js";
@@ -34,6 +35,60 @@ export interface PolicyEvaluationInput {
   baseSha?: string;
   /** Trusted base commit time (ISO 8601). Standing expiry is judged against it, never wall-clock time. */
   baseTimestamp?: string;
+  /** Untrusted requests naming one contract; they can only narrow the positive claims considered. */
+  selector?: SelectorSource[];
+}
+
+export interface SelectorSource {
+  source: "cli" | "label" | "branch" | "trailer";
+  value: string;
+}
+
+export const CONTRACT_TRAILER = "EngineeringSpec-Contract";
+
+/**
+ * Collects selector requests. Labels and branch names count only when the trusted-base
+ * configuration opts in with a prefix; explicit --contract values and commit trailers
+ * (which survive into merge-queue commits) are always read (RFC 0014 §3, C20).
+ */
+export function selectorSources(
+  request: { contract?: string; labels?: string[]; branch?: string; trailers?: string[] },
+  selection: SelectionConfig | undefined,
+): SelectorSource[] {
+  const sources: SelectorSource[] = [];
+  if (request.contract) sources.push({ source: "cli", value: request.contract });
+  for (const trailer of request.trailers ?? []) if (trailer.trim()) sources.push({ source: "trailer", value: trailer.trim() });
+  if (selection?.label) {
+    for (const label of request.labels ?? []) if (label.startsWith(selection.label)) sources.push({ source: "label", value: label.slice(selection.label.length) });
+  }
+  if (selection?.branch && request.branch?.startsWith(selection.branch)) {
+    sources.push({ source: "branch", value: request.branch.slice(selection.branch.length).split("/")[0] ?? "" });
+  }
+  return sources;
+}
+
+function resolveSelector(input: PolicyEvaluationInput, required: Status[]): { selected?: LoadedRoutingCandidate; diagnostics: Diagnostic[] } {
+  const sources = input.selector ?? [];
+  if (sources.length === 0) return { diagnostics: [] };
+  const invalid = (message: string): Diagnostic => ({ code: Codes.routingSelector, severity: "error", message, hint: "Name exactly one approved, unexpired contract from the trusted base with --contract, a commit trailer, or the configured label or branch prefix." });
+  const describe = sources.map((item) => `${item.source}=${JSON.stringify(item.value)}`).join(", ");
+  const malformed = sources.filter((item) => !isEngineeringSpecId(item.value));
+  if (malformed.length > 0) return { diagnostics: [invalid(`Selector ${malformed.map((item) => `${item.source}=${JSON.stringify(item.value)}`).join(", ")} is not a valid EngineeringSpec ID`)] };
+  const ids = [...new Set(sources.map((item) => item.value))];
+  if (ids.length > 1) return { diagnostics: [invalid(`Selector sources name different contracts (${describe})`)] };
+  const matches = input.candidates.filter((candidate) => candidate.spec.metadata.id === ids[0]);
+  if (matches.length !== 1) return { diagnostics: [invalid(`Selector ${ids[0]} matches ${matches.length} trusted-base contracts; exactly one is required`)] };
+  const selected = matches[0]!;
+  if (!required.includes(selected.spec.metadata.status)) return { diagnostics: [invalid(`Selector ${ids[0]} names a ${selected.spec.metadata.status} contract, which grants no authority`)] };
+  if (isExpired(selected, input.baseTimestamp)) {
+    return {
+      diagnostics: [
+        invalid(`Selector ${ids[0]} names expired standing authority`),
+        { code: Codes.routingStandingExpired, severity: "error", message: `Standing authority ${ids[0]} has expired at the trusted base`, hint: "Approve a renewed standing contract or a change contract." },
+      ],
+    };
+  }
+  return { selected, diagnostics: [] };
 }
 
 export interface PolicyEvaluation {
@@ -42,6 +97,8 @@ export interface PolicyEvaluation {
   sequencing: SequencingAuditRecord[];
   /** True only when every path is authorized for this mode and no error was reported. */
   authorized: boolean;
+  /** The contract a valid selector narrowed routing to. */
+  selectedContract?: string;
 }
 
 /** Decisions that authorize a path. `standing` does not in controlled mode (RFC 0014 C7). */
@@ -85,6 +142,9 @@ const describeClaims = (claims: RoutingClaim[]): string =>
  */
 export function evaluatePolicyRouting(input: PolicyEvaluationInput): PolicyEvaluation {
   const required = input.requiredStatuses ?? ["approved"];
+  const selector = resolveSelector(input, required);
+  // An invalid selector never falls back to unselected routing (RFC 0014 §3).
+  if (selector.diagnostics.length > 0) return { routes: [], diagnostics: selector.diagnostics, sequencing: [], authorized: false };
   const eligible = input.candidates.filter((candidate) => required.includes(candidate.spec.metadata.status));
   const base = eligible.length > 0
     ? routeChanges(input.candidates, input.changed, required, input.baseSha ? { baseSha: input.baseSha } : {})
@@ -111,8 +171,12 @@ export function evaluatePolicyRouting(input: PolicyEvaluationInput): PolicyEvalu
       diagnostics.push({ code: Codes.routingDenied, severity: "error", file: route.path, message: `${at} is denied by ${route.denies.map((item) => item.specId).join(", ")}; deny overrides allow` });
       return decide("denied");
     }
-    const expired = route.allows.filter((claim) => { const candidate = candidateOf(claim); return candidate ? isExpired(candidate, input.baseTimestamp) : false; });
-    const live = route.allows.filter((claim) => !expired.includes(claim));
+    // A selector narrows positive claims to one contract; every contract's denies were applied above.
+    const scoped = selector.selected
+      ? route.allows.filter((claim) => claim.specId === selector.selected!.spec.metadata.id && claim.specPath === selector.selected!.path)
+      : route.allows;
+    const expired = scoped.filter((claim) => { const candidate = candidateOf(claim); return candidate ? isExpired(candidate, input.baseTimestamp) : false; });
+    const live = scoped.filter((claim) => !expired.includes(claim));
     const change = live.filter((claim) => { const candidate = candidateOf(claim); return !candidate || !isStanding(candidate); });
     const standing = live.filter((claim) => { const candidate = candidateOf(claim); return Boolean(candidate && isStanding(candidate)); });
     const reportExpired = (severity: Diagnostic["severity"]): void => {
@@ -162,6 +226,7 @@ export function evaluatePolicyRouting(input: PolicyEvaluationInput): PolicyEvalu
   const rederived = new Set<string>([Codes.routingUncovered, Codes.routingAmbiguous, Codes.routingDenied]);
   const all = [...base.diagnostics.filter((item) => !(item.file && rederived.has(item.code))), ...diagnostics];
   return {
+    ...(selector.selected ? { selectedContract: selector.selected.spec.metadata.id } : {}),
     routes,
     diagnostics: all,
     sequencing: base.sequencing,

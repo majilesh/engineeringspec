@@ -53,6 +53,10 @@ inputs:
     description: "First-adoption advisory mode for gate-spec-dir. Honored only when the trusted base has no engineering-spec.json and no approved contracts; otherwise ignored."
     required: false
     default: ""
+  contract:
+    description: "Optional approved contract ID that narrows gate-spec-dir routing (never widens). On pull_request events, PR labels and the head branch are also passed and honored only when the trusted base configures selection prefixes; EngineeringSpec-Contract commit trailers are always read."
+    required: false
+    default: ""
 runs:
   using: composite
   steps:
@@ -90,6 +94,7 @@ runs:
         INPUT_GATE_RECEIPT: ${{ inputs.gate-receipt }}
         INPUT_STRICT: ${{ inputs.strict }}
         INPUT_BOOTSTRAP_MODE: ${{ inputs.bootstrap-mode }}
+        INPUT_CONTRACT: ${{ inputs.contract }}
       run: |
         set -euo pipefail
         if [[ -n "$INPUT_GATE_SPEC" && -n "$INPUT_GATE_SPEC_DIR" ]]; then
@@ -135,6 +140,16 @@ runs:
           cd "$GITHUB_WORKSPACE"
           if [[ "$INPUT_GATE_ALLOW_CONTRACT_ONLY" == "true" ]]; then args+=(--allow-contract-only); fi
           if [[ -n "$INPUT_BOOTSTRAP_MODE" ]]; then args+=(--bootstrap-mode "$INPUT_BOOTSTRAP_MODE"); fi
+          selector_args=()
+          if [[ -n "$INPUT_CONTRACT" ]]; then selector_args+=(--contract "$INPUT_CONTRACT"); fi
+          # Labels and the head branch exist only on pull_request events; merge queues rely on commit trailers.
+          if [[ "${GITHUB_EVENT_NAME:-}" == pull_request* && -n "${GITHUB_EVENT_PATH:-}" ]]; then
+            if [[ -n "${GITHUB_HEAD_REF:-}" ]]; then selector_args+=(--selector-branch "$GITHUB_HEAD_REF"); fi
+            while IFS= read -r -d '' label; do
+              selector_args+=(--selector-label "$label")
+            done < <(node -e 'const e=JSON.parse(require("fs").readFileSync(process.env.GITHUB_EVENT_PATH,"utf8"));for(const l of e.pull_request?.labels??[])if(typeof l.name==="string")process.stdout.write(l.name+"\0")')
+          fi
+          if (( ${#selector_args[@]} )); then args+=("${selector_args[@]}"); fi
           node "$GITHUB_ACTION_PATH/dist/cli.js" select "$INPUT_GATE_SPEC_DIR" "${args[@]}"
           normalized_status="$(echo "$INPUT_GATE_REQUIRE_STATUS" | tr -d '[:space:]')"
           if [[ -z "$normalized_status" || "$normalized_status" == "approved" ]]; then
@@ -142,6 +157,7 @@ runs:
             if [[ "$INPUT_STRICT" == "true" ]]; then review_args+=(--strict); fi
             if [[ "$INPUT_GATE_ALLOW_CONTRACT_ONLY" == "true" ]]; then review_args+=(--allow-contract-only); fi
             if [[ -n "$INPUT_BOOTSTRAP_MODE" ]]; then review_args+=(--bootstrap-mode "$INPUT_BOOTSTRAP_MODE"); fi
+            if (( ${#selector_args[@]} )); then review_args+=("${selector_args[@]}"); fi
             node "$GITHUB_ACTION_PATH/dist/cli.js" review "${review_args[@]}"
           else
             echo "::notice title=EngineeringSpec review::Detailed summary is available for the default approved-only policy; enforcement still completed for the requested statuses."

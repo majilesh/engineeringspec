@@ -101,6 +101,16 @@ function enforcementLines(enforcement: EnforcementResult): string[] {
   return [`enforcement: ${enforcement.mode}${enforcement.enforced ? "" : " (not enforced)"}; outcome ${enforcement.outcome}${bootstrap}`];
 }
 
+/** Untrusted selector requests from CLI flags; they can only narrow authority (RFC 0014 §3). */
+function selectorRequest(options: { contract?: string; selectorLabel?: string[]; selectorBranch?: string }): { selector?: { contract?: string; labels?: string[]; branch?: string } } {
+  const selector = {
+    ...(options.contract ? { contract: options.contract } : {}),
+    ...(options.selectorLabel?.length ? { labels: options.selectorLabel } : {}),
+    ...(options.selectorBranch ? { branch: options.selectorBranch } : {}),
+  };
+  return Object.keys(selector).length ? { selector } : {};
+}
+
 const bootstrapModeOption = () => new Option("--bootstrap-mode <mode>", "first-adoption advisory mode; ignored when the trusted base has engineering-spec.json or approved contracts").choices(["advisory"]);
 
 export function createProgram(setCode: (code: number) => void): Command {
@@ -666,6 +676,9 @@ export function createProgram(setCode: (code: number) => void): Command {
     .option("--no-worktree", "exclude working-tree changes")
     .option("--allow-contract-only", "allow strictly validated specification-directory-only governance changes")
     .addOption(bootstrapModeOption())
+    .option("--contract <id>", "narrow routing to one approved trusted-base contract (never widens authority)")
+    .option("--selector-label <label>", "PR label naming a contract; honored only with a trusted selection.label prefix (repeatable)", (value, previous: string[] = []) => previous.concat(value), [])
+    .option("--selector-branch <name>", "PR branch naming a contract; honored only with a trusted selection.branch prefix")
     .addOption(new Option("--change-kind <kind>").choices(["added", "modified", "deleted", "renamed"]).default("modified"))
     .addOption(new Option("--format <format>", "output format").choices(["text", "json", "github", "markdown"]))
     .action(async (options, command) => {
@@ -687,6 +700,7 @@ export function createProgram(setCode: (code: number) => void): Command {
           ...(options.changed.length ? { changed: changedFromPathList(options.changed, options.changeKind as ChangeKind) } : {}),
           allowContractOnly: Boolean(options.allowContractOnly),
           ...(options.bootstrapMode ? { bootstrapMode: options.bootstrapMode as "advisory" } : {}),
+          ...selectorRequest(options),
         });
         const markdown = reviewMarkdown(report);
         if (!global.quiet) {
@@ -765,6 +779,9 @@ export function createProgram(setCode: (code: number) => void): Command {
     .option("--no-worktree", "exclude working-tree changes and check committed changes only")
     .option("--allow-contract-only", "allow strictly validated specification-directory-only governance changes")
     .addOption(bootstrapModeOption())
+    .option("--contract <id>", "narrow routing to one approved trusted-base contract (never widens authority)")
+    .option("--selector-label <label>", "PR label naming a contract; honored only with a trusted selection.label prefix (repeatable)", (value, previous: string[] = []) => previous.concat(value), [])
+    .option("--selector-branch <name>", "PR branch naming a contract; honored only with a trusted selection.branch prefix")
     .addOption(new Option("--format <format>", "output format").choices(["text", "json", "markdown"]))
     .action(async (file, options, command) => {
       try {
@@ -790,6 +807,7 @@ export function createProgram(setCode: (code: number) => void): Command {
             worktree: options.staged ? false : options.worktree !== false,
             allowContractOnly: Boolean(options.allowContractOnly),
             ...(options.bootstrapMode ? { bootstrapMode: options.bootstrapMode as "advisory" } : {}),
+            ...selectorRequest(options),
           });
           const text = [
             `check: ${routed.valid ? "pass" : "fail"}`,
@@ -860,6 +878,9 @@ export function createProgram(setCode: (code: number) => void): Command {
     .option("--staged", "route committed and staged changes")
     .option("--allow-contract-only", "allow strictly validated specification-directory-only governance changes")
     .addOption(bootstrapModeOption())
+    .option("--contract <id>", "narrow routing to one approved trusted-base contract (never widens authority)")
+    .option("--selector-label <label>", "PR label naming a contract; honored only with a trusted selection.label prefix (repeatable)", (value, previous: string[] = []) => previous.concat(value), [])
+    .option("--selector-branch <name>", "PR branch naming a contract; honored only with a trusted selection.branch prefix")
     .addOption(new Option("--change-kind <kind>").choices(["added", "modified", "deleted", "renamed"]).default("modified"))
     .addOption(new Option("--format <format>", "output format").choices(["text", "json", "github", "markdown"]))
     .action(async (directory, options, command) => {
@@ -890,6 +911,7 @@ export function createProgram(setCode: (code: number) => void): Command {
           worktree: Boolean(options.worktree),
           allowContractOnly: Boolean(options.allowContractOnly),
           ...(options.bootstrapMode ? { bootstrapMode: options.bootstrapMode as "advisory" } : {}),
+          ...selectorRequest(options),
         });
         const text = [
           `select: ${report.valid ? "pass" : "fail"}`,

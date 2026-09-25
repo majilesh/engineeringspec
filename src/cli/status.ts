@@ -44,6 +44,7 @@ export interface WorkflowStatusOptions {
   cwd?: string;
   allowContractOnly?: boolean;
   bootstrapMode?: "advisory";
+  selector?: { contract?: string; labels?: string[]; branch?: string };
 }
 
 function standingAuthority(report: RoutingReport): { standingAuthority?: string[] } {
@@ -91,6 +92,7 @@ export async function workflowStatus(options: WorkflowStatusOptions): Promise<Wo
     ...(options.cwd ? { cwd: options.cwd } : {}),
     allowContractOnly: Boolean(options.allowContractOnly),
     ...(options.bootstrapMode ? { bootstrapMode: options.bootstrapMode } : {}),
+    ...(options.selector ? { selector: options.selector } : {}),
   });
   const selectedRoutes = routing.routes.filter((route) => route.decision === "selected" && route.selected);
   const selectedContracts = [...new Set(selectedRoutes.map((route) => route.selected!.specId))].sort(compareCodePoints);

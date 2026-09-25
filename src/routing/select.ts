@@ -14,7 +14,7 @@ import { classifyGovernanceChanges, inspectWorkspaceGovernance } from "./governa
 import { loadRoutingCandidates } from "./loadCandidates.js";
 import { closureSemanticDigest } from "../normalizer/digest.js";
 import { parseRepositoryConfig, REPOSITORY_CONFIG_PATH, RepositoryConfigError, type RepositoryConfig } from "../config/repositoryConfig.js";
-import { DEFAULT_POLICY, enforcementFor, evaluatePolicyRouting, isPassingDecision, type PolicyMode } from "../policy/evaluate.js";
+import { CONTRACT_TRAILER, DEFAULT_POLICY, enforcementFor, evaluatePolicyRouting, isPassingDecision, selectorSources, type PolicyMode } from "../policy/evaluate.js";
 import type { Diagnostic } from "../diagnostics/Diagnostic.js";
 
 export interface SelectSpecsOptions {
@@ -33,6 +33,14 @@ export interface SelectSpecsOptions {
    * no engineering-spec.json and no approved contracts, so it can never weaken existing authority.
    */
   bootstrapMode?: "advisory";
+  /** Untrusted selector requests (RFC 0014 §3). Commit trailers in base..head are read automatically. */
+  selector?: { contract?: string; labels?: string[]; branch?: string };
+}
+
+/** Contract IDs named by `EngineeringSpec-Contract:` trailers on commits in base..head. */
+async function contractTrailers(baseSha: string, headSha: string, cwd?: string): Promise<string[]> {
+  const { stdout } = await promisify(execFile)("git", ["log", `--format=%(trailers:key=${CONTRACT_TRAILER},valueonly)`, `${baseSha}..${headSha}`], { cwd, encoding: "utf8", maxBuffer: 16 * 1024 * 1024 });
+  return stdout.split(/\r?\n/u).map((line) => line.trim()).filter(Boolean);
 }
 
 /** Committer timestamp (ISO 8601) of an immutable commit; used for deterministic standing expiry. */
@@ -156,6 +164,7 @@ export async function selectSpecs(options: SelectSpecsOptions): Promise<RoutingR
         requiredStatuses,
         baseSha,
         baseTimestamp: await resolveCommitTimestamp(baseSha, options.cwd),
+        selector: selectorSources({ ...options.selector, trailers: await contractTrailers(baseSha, headSha, options.cwd) }, trusted.config?.selection),
       })
     : undefined;
   const routed = policyEvaluation
@@ -225,6 +234,10 @@ export async function selectSpecs(options: SelectSpecsOptions): Promise<RoutingR
     routes: loadFailed ? [] : routed.routes,
     diagnostics,
     sequencing: routed.sequencing,
-    enforcement: trusted.bootstrap ? { ...enforcement, bootstrap: trusted.bootstrap } : enforcement,
+    enforcement: {
+      ...enforcement,
+      ...(trusted.bootstrap ? { bootstrap: trusted.bootstrap } : {}),
+      ...(policyEvaluation?.selectedContract ? { selectedContract: policyEvaluation.selectedContract } : {}),
+    },
   };
 }

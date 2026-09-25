@@ -6,9 +6,6 @@
   "vectors": [
     {
       "name": "protected-selected-full",
-      "pending": {
-        "phase": 3
-      },
       "policy": {
         "protectedPaths": [
           "migrations/**"

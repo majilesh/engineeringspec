@@ -20,6 +20,7 @@ export interface ReviewOptions {
   cwd?: string;
   allowContractOnly?: boolean;
   bootstrapMode?: "advisory";
+  selector?: { contract?: string; labels?: string[]; branch?: string };
 }
 
 export interface ReviewContract {
@@ -73,6 +74,7 @@ export async function buildReview(options: ReviewOptions): Promise<ReviewReport>
     ...(options.cwd ? { cwd: options.cwd } : {}),
     allowContractOnly: Boolean(options.allowContractOnly),
     ...(options.bootstrapMode ? { bootstrapMode: options.bootstrapMode } : {}),
+    ...(options.selector ? { selector: options.selector } : {}),
   });
   const selected = selectedTargets(status);
   const contracts: ReviewContract[] = [];
