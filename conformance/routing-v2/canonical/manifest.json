@@ -44,9 +44,6 @@
     },
     {
       "name": "lite-profile-canonical",
-      "pending": {
-        "phase": 4
-      },
       "file": "lite-profile-canonical.engineering-spec.md",
       "expected": {
         "valid": true,
@@ -58,7 +55,7 @@
             }
           ]
         },
-        "canonicalBytes": "lite-profile-canonical.canonical.json (generated and reviewed in phase 4)"
+        "canonicalBytes": "lite-profile-canonical.canonical.json"
       }
     }
   ]

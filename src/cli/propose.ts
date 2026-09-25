@@ -18,6 +18,7 @@ export interface ProposalOptions {
   fromDiff?: boolean;
   cwd?: string;
   dryRun?: boolean;
+  lite?: boolean;
 }
 
 export interface ProposalResult {
@@ -41,6 +42,28 @@ function proposalPaths(changes: ChangedFile[], explicit: string[]): string[] {
   ];
   for (const value of values) assertSafeRepoPath(value);
   return [...new Set(values)].sort(compareCodePoints);
+}
+
+/** A lite-profile draft (RFC 0014 §6): frontmatter and targets, plus the source only when given. */
+export function liteProposalMarkdown(options: { id: string; title: string; owner: string; issue?: string; paths: string[] }): string {
+  const source = options.issue
+    ? `\n\`\`\`engineering-source-refs\n- {id: SRC-1, type: github_issue, ref: ${quote(options.issue)}}\n\`\`\`\n`
+    : "";
+  return `---
+spec_format: engineering-spec
+spec_format_version: "0.1"
+spec_revision: 1
+id: ${options.id}
+title: ${quote(options.title)}
+status: draft
+owners: [{team: ${quote(options.owner)}}]
+profiles: [{name: lite, version: "0.1"}]
+---
+${source}
+\`\`\`engineering-targets
+- {id: TARGET-1, paths: [${options.paths.map(quote).join(", ")}], change_policy: modify}
+\`\`\`
+`;
 }
 
 export function proposalMarkdown(options: {
@@ -131,7 +154,13 @@ export async function proposeDraft(options: ProposalOptions): Promise<{ result: 
     : [];
   const paths = proposalPaths(changes, explicit);
   if (paths.length === 0) throw new Error("propose requires --path <path> or a non-empty --from-diff working state");
-  const markdown = proposalMarkdown({
+  const markdown = options.lite ? liteProposalMarkdown({
+    id: options.id,
+    title,
+    owner,
+    ...(options.issue ? { issue: options.issue } : {}),
+    paths,
+  }) : proposalMarkdown({
     id: options.id,
     title,
     owner,

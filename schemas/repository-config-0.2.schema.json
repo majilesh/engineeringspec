@@ -19,6 +19,7 @@
         "exemptPaths": { "$ref": "#/$defs/globs" },
         "protectedPaths": { "$ref": "#/$defs/globs" },
         "grantBeforeSpendPaths": { "$ref": "#/$defs/globs" },
+        "maxStandingDays": { "type": "integer", "minimum": 1, "maximum": 3650 },
         "budgets": {
           "type": "object",
           "additionalProperties": false,

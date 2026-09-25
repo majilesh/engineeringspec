@@ -304,3 +304,54 @@ describe("change budgets end to end", () => {
   });
 });
 
+describe("lite profile end to end", () => {
+  it("runs next, work and finish for an approved lite contract without changing coverage", async () => {
+    const { root } = await repository({ config: { mode: "standard" } });
+    const draft = runCli(root, ["propose", "--id", "ES-lite", "--title", "Lite change", "--path", "src/**", "--lite", "--output", "specs/ES-lite.engineering-spec.md"]);
+    expect(draft.code).toBe(0);
+    const spec = path.join(root, "specs", "ES-lite.engineering-spec.md");
+    expect((await readFile(spec, "utf8")).split("\n").length).toBeLessThanOrEqual(16);
+    await writeFile(spec, (await readFile(spec, "utf8")).replace("status: draft", "status: approved"));
+    commit(root, "approve lite");
+    const next = await nextAction({ cwd: root });
+    expect(next).toMatchObject({ permission: "implementation", command: "engineeringspec work ES-lite" });
+    expect(runCli(root, ["work", "ES-lite", "--format", "json"]).code).toBe(0);
+    await mkdir(path.join(root, "src"));
+    await writeFile(path.join(root, "src", "a.ts"), "export const a = 1;\n");
+    const report = await selectSpecs({ directory: "specs", base: "HEAD", cwd: root });
+    expect(report).toMatchObject({ valid: true, coverage: { status: expect.not.stringMatching(/unknown/u) } });
+    const finished = await finishContract({ contractId: "ES-lite", cwd: root, writeClosure: true });
+    expect(finished).toMatchObject({ result: "ready", closureWritten: true });
+  });
+});
+
+describe("standing lifetime cap", () => {
+  const standingChange = async (root: string, expiresAt: string): Promise<void> => {
+    await writeFile(path.join(root, "specs", "ES-docs.engineering-spec.md"), CONTRACT("ES-docs", "approved", "docs/**", STANDING(expiresAt)));
+  };
+
+  it("measures the cap from the trusted base commit, not the proposing commit", async () => {
+    const { root, base } = await repository({ config: { mode: "standard" }, committedAt: "2027-01-01T00:00:00Z" });
+    await standingChange(root, "2027-06-01T00:00:00Z");
+    const within = await selectSpecs({ directory: "specs", base, cwd: root, allowContractOnly: true });
+    expect(within).toMatchObject({ valid: true, governance: { classification: "contract_only" } });
+
+    await standingChange(root, "2027-12-01T00:00:00Z");
+    // A PR-controlled committer date cannot move the measurement point.
+    git(root, ["add", "."]);
+    execFileSync("git", ["-C", root, "-c", "user.name=Test", "-c", "user.email=test@example.com", "commit", "-qm", "far future"], { env: { ...process.env, GIT_COMMITTER_DATE: "2027-11-30T00:00:00Z" } });
+    const beyond = await selectSpecs({ directory: "specs", base, head: "HEAD", worktree: false, cwd: root, allowContractOnly: true });
+    expect(beyond.valid).toBe(false);
+    expect(beyond.diagnostics).toContainEqual(expect.objectContaining({ code: "ESRT011", message: expect.stringMatching(/maximum is 180/u) }));
+  });
+
+  it("honors a trusted maxStandingDays and rejects approval of already expired standing authority", async () => {
+    const { root, base } = await repository({ config: { mode: "standard", policy: { maxStandingDays: 400 } }, committedAt: "2027-01-01T00:00:00Z" });
+    await standingChange(root, "2027-12-01T00:00:00Z");
+    expect((await selectSpecs({ directory: "specs", base, cwd: root, allowContractOnly: true })).valid).toBe(true);
+    await standingChange(root, "2026-12-01T00:00:00Z");
+    const expired = await selectSpecs({ directory: "specs", base, cwd: root, allowContractOnly: true });
+    expect(expired.diagnostics).toContainEqual(expect.objectContaining({ code: "ESRT011", message: expect.stringMatching(/at or before the trusted base/u) }));
+  });
+});
+

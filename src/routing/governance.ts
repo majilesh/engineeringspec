@@ -53,12 +53,45 @@ function statusOnly(candidate: LoadedRoutingCandidate["spec"], status: Status): 
   return canonicalJson({ ...candidate, metadata: { ...candidate.metadata, status } });
 }
 
+export const DEFAULT_MAX_STANDING_DAYS = 180;
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+/**
+ * RFC 0014 C19: when a changed standing contract is (or becomes) approved, or its expiry changes,
+ * its expiry must lie after the trusted base commit and within the maximum lifetime.
+ */
+function standingLifetimeDiagnostics(
+  options: { changed: ChangedFile[]; baseTimestamp?: string; maxStandingDays?: number },
+  workspace: Map<string, LoadedRoutingCandidate["spec"]>,
+  base: Map<string, LoadedRoutingCandidate["spec"]>,
+): Diagnostic[] {
+  const out: Diagnostic[] = [];
+  const baseTime = Date.parse(options.baseTimestamp ?? "");
+  const maxDays = options.maxStandingDays ?? DEFAULT_MAX_STANDING_DAYS;
+  for (const change of options.changed) {
+    const after = workspace.get(change.path);
+    if (!after || after.metadata.authorityKind !== "standing" || after.metadata.status !== "approved") continue;
+    const before = base.get(change.path);
+    if (before?.metadata.status === "approved" && before.metadata.authorityKind === "standing" && before.metadata.expiresAt === after.metadata.expiresAt) continue;
+    const expires = Date.parse(after.metadata.expiresAt ?? "");
+    if (Number.isNaN(baseTime) || Number.isNaN(expires) || expires <= baseTime) {
+      out.push({ code: Codes.routingStandingExpired, severity: "error", file: change.path, message: `Standing authority ${after.metadata.id} cannot be approved with expiry ${after.metadata.expiresAt ?? "(none)"} at or before the trusted base commit` });
+    } else if (expires - baseTime > maxDays * DAY_MS) {
+      out.push({ code: Codes.routingStandingExpired, severity: "error", file: change.path, message: `Standing authority ${after.metadata.id} expires ${Math.ceil((expires - baseTime) / DAY_MS)} days after the trusted base commit; the maximum is ${maxDays}`, hint: "Shorten expires_at, or raise policy.maxStandingDays in a reviewed change to engineering-spec.json." });
+    }
+  }
+  return out;
+}
+
 export async function inspectWorkspaceGovernance(options: {
   directory: string;
   changed: ChangedFile[];
   baseCandidates: LoadedRoutingCandidate[];
   strict?: boolean;
   cwd?: string;
+  /** Trusted base commit time; standing lifetimes are measured from it, never from PR commit dates. */
+  baseTimestamp?: string;
+  maxStandingDays?: number;
 }): Promise<{ report: GovernanceReport; diagnostics: Diagnostic[] }> {
   const root = await gitShowToplevel(options.cwd);
   const absoluteDirectory = path.join(root, ...options.directory.split("/"));
@@ -117,6 +150,8 @@ export async function inspectWorkspaceGovernance(options: {
   }
 
   const base = new Map(options.baseCandidates.map((candidate) => [candidate.path, candidate.spec]));
+  diagnostics.push(...standingLifetimeDiagnostics(options, workspace, base));
+  errors += diagnostics.filter((item) => item.code === Codes.routingStandingExpired).length;
   const transitions: GovernanceTransition[] = [];
   const authorityDiffs: AuthorityDiff[] = [];
   let lifecycleOnly = options.changed.length > 0;

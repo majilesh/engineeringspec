@@ -388,7 +388,11 @@ Runtimes older than this change reject unknown keys in `engineering-spec.json`, 
   - `ESRT011` is reported only for a changed path the expired contract would have allowed. It is `error` when the path ends `uncovered`, and `info` when other authority still covers the path. A stale standing contract therefore never fails unrelated changes.
 - **C17. Routing runs once, then claims are partitioned.** The policy layer calls legacy routing a single time over every eligible contract, so denies and maintenance sequencing see the full trusted-base set. It then splits each path's remaining allows into change and standing claims. Per-path `ESRT002`/`ESRT003`/`ESRT004` findings are re-derived from the v2 decision; sequencing (`ESRT007`), duplicate-identity (`ESRT005`) and `ESG006` findings are kept.
 - **C18. Standing authority and the change lifecycle.** Standing contracts are not counted as approved change contracts by `status` and `next`; they are listed separately (`standingAuthority`). So adding one never removes `permission: implementation` for the single approved change contract. `finish --write-closure` refuses standing contracts.
-- **C19. Maximum standing lifetime (deferred).** The 180-day cap is a governance-lane check: when a standing contract becomes `approved`, `expires_at` minus the approval commit time must be at most 180 days. It is not evaluated at routing time against a moving base timestamp. Phase 3 enforces `expires_at` presence (schema) and expiry. The cap check lands with the contract-only lane changes in phase 4.
+- **C19. Maximum standing lifetime.** The cap is checked in the contract-only lane, not at routing time.
+  - It applies when a changed standing contract is added as approved, becomes approved, or changes `expires_at`.
+  - `expires_at` must be after the trusted base commit, and at most `policy.maxStandingDays` (default 180, range 1–3650) after it.
+  - The measurement point is the trusted base commit timestamp, never a PR commit date, which the PR author controls.
+  - A violation is reported as `ESRT011`.
 - **C20. Selector sources and merge queues.** Beyond the RFC's CLI, Action, label and branch sources, an `EngineeringSpec-Contract: <ID>` commit trailer on any commit in base..head is also a selector source.
   - Labels and branch names exist only on `pull_request` events, so GitHub merge-queue (`merge_group`) runs never see them. Trailers survive into queue commits, so the queue sees the same selector the PR did.
   - Label and branch sources are opt-in through trusted-base `selection` prefixes, so an unrelated branch such as `es/fix-typo` never becomes an `ESRT009` failure. Explicit `--contract` values and trailers are always read.
@@ -399,4 +403,9 @@ Runtimes older than this change reject unknown keys in `engineering-spec.json`, 
   - A budget from exactly one attributed change contract (or the selected change contract) overrides the repository default. With several attributed contracts, only the repository default applies.
   - Line counts come from `git diff --numstat` over the same range and mode as the path diff. In working-state mode, untracked files are counted in full, even when rename promotion treats them as renames.
   - When paths are listed explicitly (`--changed`), line counts are unavailable. The line budget is then reported as not evaluated (`ESRT010`, info) rather than passing silently. The file budget still applies.
+- **C22. Lite profile processing.**
+  - The relaxed block requirements key on the profile *name* `lite`, so an unsupported lite version fails only with `ESV002`.
+  - For lite documents, absent `engineering-source-refs` and `engineering-verification` blocks normalize to empty arrays, and the schema's minimum-one rule applies only to non-lite documents. Non-lite documents and their digests are unchanged.
+  - Declared coverage treats only the ProductSpec profile as external (`unknown`), so a lite contract does not make coverage unknown.
+  - `propose --lite` writes a 15-line draft.
 

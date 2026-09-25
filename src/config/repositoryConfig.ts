@@ -40,6 +40,8 @@ export interface RepositoryPolicy {
   grantBeforeSpendPaths: string[];
   /** Repository default change budget; a single attributed change contract's budget overrides it. */
   budgets?: ChangeBudgetLimits;
+  /** Longest allowed standing lifetime at approval, measured from the trusted base commit (default 180). */
+  maxStandingDays?: number;
 }
 
 export interface ChangeBudgetLimits {
@@ -175,7 +177,7 @@ export class RepositoryConfigError extends Error {
 
 export function parseRepositoryPolicy(raw: unknown, label = "policy"): RepositoryPolicy {
   const value = object(raw, label);
-  const allowed = new Set(["governedPaths", "exemptPaths", "protectedPaths", "grantBeforeSpendPaths", "budgets"]);
+  const allowed = new Set(["governedPaths", "exemptPaths", "protectedPaths", "grantBeforeSpendPaths", "budgets", "maxStandingDays"]);
   for (const key of Object.keys(value)) if (!allowed.has(key)) throw new Error(`${label} contains unknown property ${JSON.stringify(key)}`);
   const globs = (key: keyof RepositoryPolicy, fallback: string[]): string[] => {
     const list = value[key] ?? fallback;
@@ -192,7 +194,13 @@ export function parseRepositoryPolicy(raw: unknown, label = "policy"): Repositor
     protectedPaths: globs("protectedPaths", []),
     grantBeforeSpendPaths: globs("grantBeforeSpendPaths", []),
     ...(value.budgets === undefined ? {} : { budgets: parseBudgets(value.budgets, `${label}.budgets`) }),
+    ...(value.maxStandingDays === undefined ? {} : { maxStandingDays: parseStandingDays(value.maxStandingDays, `${label}.maxStandingDays`) }),
   };
+}
+
+function parseStandingDays(raw: unknown, label: string): number {
+  if (!Number.isInteger(raw) || (raw as number) < 1 || (raw as number) > 3650) throw new Error(`${label} must be an integer from 1 to 3650`);
+  return raw as number;
 }
 
 function parseBudgets(raw: unknown, label: string): ChangeBudgetLimits {
