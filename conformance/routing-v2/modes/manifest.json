@@ -1,0 +1,205 @@
+{
+  "format": "engineering-spec-routing-v2-conformance",
+  "formatVersion": "0.1",
+  "group": "modes",
+  "kind": "routing",
+  "vectors": [
+    {
+      "name": "advisory-reports-uncovered",
+      "pending": {
+        "phase": 2
+      },
+      "baseTimestamp": "2026-09-25T00:00:00Z",
+      "candidates": [
+        {
+          "id": "ES-a",
+          "status": "approved",
+          "targets": [
+            {
+              "id": "TARGET-1",
+              "path": "src/**",
+              "policy": "modify"
+            }
+          ]
+        }
+      ],
+      "changed": [
+        {
+          "path": "lib/x.ts",
+          "kind": "modified"
+        }
+      ],
+      "expected": {
+        "decisions": [
+          "uncovered"
+        ],
+        "codes": [
+          "ESRT002"
+        ],
+        "outcome": {
+          "advisory": "pass",
+          "standard": "fail",
+          "controlled": "fail"
+        }
+      }
+    },
+    {
+      "name": "standard-fails-uncovered",
+      "pending": {
+        "phase": 2
+      },
+      "baseTimestamp": "2026-09-25T00:00:00Z",
+      "candidates": [
+        {
+          "id": "ES-a",
+          "status": "approved",
+          "targets": [
+            {
+              "id": "TARGET-1",
+              "path": "src/**",
+              "policy": "modify"
+            }
+          ]
+        }
+      ],
+      "changed": [
+        {
+          "path": "lib/x.ts",
+          "kind": "modified"
+        },
+        {
+          "path": "src/a.ts",
+          "kind": "modified"
+        }
+      ],
+      "expected": {
+        "decisions": [
+          "uncovered",
+          "selected"
+        ],
+        "codes": [
+          "ESRT002"
+        ],
+        "outcome": {
+          "advisory": "pass",
+          "standard": "fail",
+          "controlled": "fail"
+        },
+        "attribution": [
+          null,
+          "ES-a"
+        ]
+      }
+    },
+    {
+      "name": "controlled-fails-uncovered",
+      "pending": {
+        "phase": 2
+      },
+      "policy": {
+        "exemptPaths": [
+          "docs/**"
+        ]
+      },
+      "baseTimestamp": "2026-09-25T00:00:00Z",
+      "candidates": [
+        {
+          "id": "ES-a",
+          "status": "approved",
+          "targets": [
+            {
+              "id": "TARGET-1",
+              "path": "src/**",
+              "policy": "modify"
+            }
+          ]
+        }
+      ],
+      "changed": [
+        {
+          "path": "docs/a.md",
+          "kind": "modified"
+        },
+        {
+          "path": "lib/x.ts",
+          "kind": "modified"
+        }
+      ],
+      "expected": {
+        "decisions": [
+          "exempt",
+          "uncovered"
+        ],
+        "codes": [
+          "ESRT002"
+        ],
+        "outcome": {
+          "advisory": "pass",
+          "standard": "fail",
+          "controlled": "fail"
+        }
+      }
+    },
+    {
+      "name": "decisions-identical-across-modes",
+      "pending": {
+        "phase": 2
+      },
+      "policy": {
+        "governedPaths": [
+          "src/**",
+          "docs/**"
+        ],
+        "exemptPaths": [
+          "docs/**"
+        ]
+      },
+      "baseTimestamp": "2026-09-25T00:00:00Z",
+      "candidates": [
+        {
+          "id": "ES-a",
+          "status": "approved",
+          "targets": [
+            {
+              "id": "TARGET-1",
+              "path": "src/**",
+              "policy": "modify"
+            }
+          ]
+        }
+      ],
+      "changed": [
+        {
+          "path": "docs/a.md",
+          "kind": "modified"
+        },
+        {
+          "path": "src/a.ts",
+          "kind": "modified"
+        },
+        {
+          "path": "vendor/x.js",
+          "kind": "modified"
+        }
+      ],
+      "expected": {
+        "decisions": [
+          "exempt",
+          "selected",
+          "ungoverned"
+        ],
+        "codes": [],
+        "outcome": {
+          "advisory": "pass",
+          "standard": "pass",
+          "controlled": "pass"
+        },
+        "attribution": [
+          null,
+          "ES-a",
+          null
+        ]
+      }
+    }
+  ]
+}

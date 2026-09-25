@@ -1,0 +1,287 @@
+{
+  "format": "engineering-spec-routing-v2-conformance",
+  "formatVersion": "0.1",
+  "group": "budgets",
+  "kind": "routing",
+  "vectors": [
+    {
+      "name": "budget-under",
+      "pending": {
+        "phase": 3
+      },
+      "baseTimestamp": "2026-09-25T00:00:00Z",
+      "candidates": [
+        {
+          "id": "ES-a",
+          "status": "approved",
+          "targets": [
+            {
+              "id": "TARGET-1",
+              "path": "src/**",
+              "policy": "modify"
+            }
+          ],
+          "changeBudget": {
+            "maxFiles": 2,
+            "maxChangedLines": 10
+          }
+        }
+      ],
+      "changed": [
+        {
+          "path": "src/a.ts",
+          "kind": "modified",
+          "additions": 3,
+          "deletions": 2
+        }
+      ],
+      "expected": {
+        "decisions": [
+          "selected"
+        ],
+        "codes": [],
+        "outcome": {
+          "advisory": "pass",
+          "standard": "pass",
+          "controlled": "pass"
+        },
+        "attribution": [
+          "ES-a"
+        ],
+        "changeDecisions": []
+      }
+    },
+    {
+      "name": "budget-files-over",
+      "pending": {
+        "phase": 3
+      },
+      "baseTimestamp": "2026-09-25T00:00:00Z",
+      "candidates": [
+        {
+          "id": "ES-a",
+          "status": "approved",
+          "targets": [
+            {
+              "id": "TARGET-1",
+              "path": "src/**",
+              "policy": "modify"
+            }
+          ],
+          "changeBudget": {
+            "maxFiles": 2,
+            "maxChangedLines": 100
+          }
+        }
+      ],
+      "changed": [
+        {
+          "path": "src/a.ts",
+          "kind": "modified",
+          "additions": 1,
+          "deletions": 0
+        },
+        {
+          "path": "src/b.ts",
+          "kind": "modified",
+          "additions": 1,
+          "deletions": 0
+        },
+        {
+          "path": "src/c.ts",
+          "kind": "modified",
+          "additions": 1,
+          "deletions": 0
+        }
+      ],
+      "expected": {
+        "decisions": [
+          "selected",
+          "selected",
+          "selected"
+        ],
+        "codes": [
+          "ESRT010"
+        ],
+        "outcome": {
+          "advisory": "pass",
+          "standard": "fail",
+          "controlled": "fail"
+        },
+        "attribution": [
+          "ES-a",
+          "ES-a",
+          "ES-a"
+        ],
+        "changeDecisions": [
+          "over_budget"
+        ]
+      }
+    },
+    {
+      "name": "budget-lines-over",
+      "pending": {
+        "phase": 3
+      },
+      "baseTimestamp": "2026-09-25T00:00:00Z",
+      "candidates": [
+        {
+          "id": "ES-a",
+          "status": "approved",
+          "targets": [
+            {
+              "id": "TARGET-1",
+              "path": "src/**",
+              "policy": "modify"
+            }
+          ],
+          "changeBudget": {
+            "maxFiles": 10,
+            "maxChangedLines": 10
+          }
+        }
+      ],
+      "changed": [
+        {
+          "path": "src/a.ts",
+          "kind": "modified",
+          "additions": 8,
+          "deletions": 5
+        }
+      ],
+      "expected": {
+        "decisions": [
+          "selected"
+        ],
+        "codes": [
+          "ESRT010"
+        ],
+        "outcome": {
+          "advisory": "pass",
+          "standard": "fail",
+          "controlled": "fail"
+        },
+        "attribution": [
+          "ES-a"
+        ],
+        "changeDecisions": [
+          "over_budget"
+        ]
+      }
+    },
+    {
+      "name": "budget-binary-files-only",
+      "pending": {
+        "phase": 3
+      },
+      "baseTimestamp": "2026-09-25T00:00:00Z",
+      "candidates": [
+        {
+          "id": "ES-a",
+          "status": "approved",
+          "targets": [
+            {
+              "id": "TARGET-1",
+              "path": "src/**",
+              "policy": "modify"
+            }
+          ],
+          "changeBudget": {
+            "maxFiles": 2,
+            "maxChangedLines": 1
+          }
+        }
+      ],
+      "changed": [
+        {
+          "path": "src/logo.png",
+          "kind": "modified",
+          "binary": true
+        },
+        {
+          "path": "src/icon.png",
+          "kind": "modified",
+          "binary": true
+        }
+      ],
+      "expected": {
+        "decisions": [
+          "selected",
+          "selected"
+        ],
+        "codes": [],
+        "outcome": {
+          "advisory": "pass",
+          "standard": "pass",
+          "controlled": "pass"
+        },
+        "attribution": [
+          "ES-a",
+          "ES-a"
+        ],
+        "changeDecisions": []
+      }
+    },
+    {
+      "name": "budget-rename-only",
+      "pending": {
+        "phase": 3
+      },
+      "baseTimestamp": "2026-09-25T00:00:00Z",
+      "candidates": [
+        {
+          "id": "ES-a",
+          "status": "approved",
+          "targets": [
+            {
+              "id": "TARGET-1",
+              "path": "src/**",
+              "policy": "modify"
+            }
+          ],
+          "changeBudget": {
+            "maxFiles": 2,
+            "maxChangedLines": 0
+          }
+        }
+      ],
+      "changed": [
+        {
+          "path": "src/new-a.ts",
+          "kind": "renamed",
+          "fromPath": "src/a.ts",
+          "additions": 0,
+          "deletions": 0
+        },
+        {
+          "path": "src/new-b.ts",
+          "kind": "renamed",
+          "fromPath": "src/b.ts",
+          "additions": 0,
+          "deletions": 0
+        }
+      ],
+      "expected": {
+        "decisions": [
+          "selected",
+          "selected",
+          "selected",
+          "selected"
+        ],
+        "codes": [],
+        "outcome": {
+          "advisory": "pass",
+          "standard": "pass",
+          "controlled": "pass"
+        },
+        "attribution": [
+          "ES-a",
+          "ES-a",
+          "ES-a",
+          "ES-a"
+        ],
+        "changeDecisions": []
+      }
+    }
+  ]
+}

@@ -1,0 +1,265 @@
+{
+  "format": "engineering-spec-routing-v2-conformance",
+  "formatVersion": "0.1",
+  "group": "policy",
+  "kind": "routing",
+  "vectors": [
+    {
+      "name": "exempt-path-passes",
+      "pending": {
+        "phase": 2
+      },
+      "policy": {
+        "exemptPaths": [
+          "docs/**"
+        ]
+      },
+      "baseTimestamp": "2026-09-25T00:00:00Z",
+      "candidates": [],
+      "changed": [
+        {
+          "path": "docs/guide.md",
+          "kind": "modified"
+        }
+      ],
+      "expected": {
+        "decisions": [
+          "exempt"
+        ],
+        "codes": [],
+        "outcome": {
+          "advisory": "pass",
+          "standard": "pass",
+          "controlled": "pass"
+        }
+      }
+    },
+    {
+      "name": "ungoverned-path-passes",
+      "pending": {
+        "phase": 2
+      },
+      "policy": {
+        "governedPaths": [
+          "src/**"
+        ]
+      },
+      "baseTimestamp": "2026-09-25T00:00:00Z",
+      "candidates": [],
+      "changed": [
+        {
+          "path": "scripts/x.sh",
+          "kind": "modified"
+        }
+      ],
+      "expected": {
+        "decisions": [
+          "ungoverned"
+        ],
+        "codes": [],
+        "outcome": {
+          "advisory": "pass",
+          "standard": "pass",
+          "controlled": "pass"
+        }
+      }
+    },
+    {
+      "name": "protected-overrides-exempt",
+      "pending": {
+        "phase": 2
+      },
+      "policy": {
+        "exemptPaths": [
+          "docs/**"
+        ],
+        "protectedPaths": [
+          "docs/security/**"
+        ]
+      },
+      "baseTimestamp": "2026-09-25T00:00:00Z",
+      "candidates": [],
+      "changed": [
+        {
+          "path": "docs/security/policy.md",
+          "kind": "modified"
+        }
+      ],
+      "expected": {
+        "decisions": [
+          "protected_unauthorized"
+        ],
+        "codes": [
+          "ESRT008"
+        ],
+        "outcome": {
+          "advisory": "pass",
+          "standard": "fail",
+          "controlled": "fail"
+        }
+      }
+    },
+    {
+      "name": "implicit-protection-spec-directory",
+      "pending": {
+        "phase": 2
+      },
+      "baseTimestamp": "2026-09-25T00:00:00Z",
+      "candidates": [
+        {
+          "id": "ES-a",
+          "status": "approved",
+          "targets": [
+            {
+              "id": "TARGET-1",
+              "path": "src/**",
+              "policy": "modify"
+            }
+          ]
+        }
+      ],
+      "changed": [
+        {
+          "path": "docs/engineering-specs/ES-x.engineering-spec.md",
+          "kind": "added"
+        },
+        {
+          "path": "src/a.ts",
+          "kind": "modified"
+        }
+      ],
+      "expected": {
+        "decisions": [
+          "protected_unauthorized",
+          "selected"
+        ],
+        "codes": [
+          "ESRT006",
+          "ESRT008"
+        ],
+        "outcome": {
+          "advisory": "pass",
+          "standard": "fail",
+          "controlled": "fail"
+        },
+        "attribution": [
+          null,
+          "ES-a"
+        ]
+      }
+    },
+    {
+      "name": "implicit-protection-config",
+      "pending": {
+        "phase": 2
+      },
+      "baseTimestamp": "2026-09-25T00:00:00Z",
+      "candidates": [
+        {
+          "id": "ES-a",
+          "status": "approved",
+          "targets": [
+            {
+              "id": "TARGET-1",
+              "path": "src/**",
+              "policy": "modify"
+            }
+          ]
+        }
+      ],
+      "changed": [
+        {
+          "path": "engineering-spec.json",
+          "kind": "modified"
+        }
+      ],
+      "expected": {
+        "decisions": [
+          "protected_unauthorized"
+        ],
+        "codes": [
+          "ESRT008"
+        ],
+        "outcome": {
+          "advisory": "pass",
+          "standard": "fail",
+          "controlled": "fail"
+        }
+      }
+    },
+    {
+      "name": "implicit-protection-codeowners",
+      "pending": {
+        "phase": 2
+      },
+      "policy": {
+        "exemptPaths": [
+          ".github/**"
+        ]
+      },
+      "baseTimestamp": "2026-09-25T00:00:00Z",
+      "candidates": [],
+      "changed": [
+        {
+          "path": ".github/CODEOWNERS",
+          "kind": "modified"
+        }
+      ],
+      "expected": {
+        "decisions": [
+          "protected_unauthorized"
+        ],
+        "codes": [
+          "ESRT008"
+        ],
+        "outcome": {
+          "advisory": "pass",
+          "standard": "fail",
+          "controlled": "fail"
+        }
+      }
+    },
+    {
+      "name": "invalid-policy-glob",
+      "pending": {
+        "phase": 2
+      },
+      "policy": {
+        "exemptPaths": [
+          "docs/{a,b}/**"
+        ]
+      },
+      "baseTimestamp": "2026-09-25T00:00:00Z",
+      "candidates": [
+        {
+          "id": "ES-a",
+          "status": "approved",
+          "targets": [
+            {
+              "id": "TARGET-1",
+              "path": "src/**",
+              "policy": "modify"
+            }
+          ]
+        }
+      ],
+      "changed": [
+        {
+          "path": "src/a.ts",
+          "kind": "modified"
+        }
+      ],
+      "expected": {
+        "decisions": [],
+        "codes": [
+          "ESPTH002"
+        ],
+        "outcome": {
+          "advisory": "error",
+          "standard": "error",
+          "controlled": "error"
+        }
+      }
+    }
+  ]
+}

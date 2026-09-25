@@ -1,0 +1,265 @@
+{
+  "format": "engineering-spec-routing-v2-conformance",
+  "formatVersion": "0.1",
+  "group": "receipts",
+  "kind": "routing",
+  "vectors": [
+    {
+      "name": "receipt-spends-change-contract",
+      "pending": {
+        "phase": 4
+      },
+      "baseTimestamp": "2026-09-25T00:00:00Z",
+      "candidates": [
+        {
+          "id": "ES-a",
+          "status": "approved",
+          "targets": [
+            {
+              "id": "TARGET-1",
+              "path": "src/**",
+              "policy": "modify"
+            }
+          ]
+        }
+      ],
+      "changed": [
+        {
+          "path": "src/a.ts",
+          "kind": "modified"
+        }
+      ],
+      "receipts": [
+        {
+          "contractId": "ES-a",
+          "specRevision": 1,
+          "semanticDigest": "@digest(ES-a)",
+          "baseSha": "@base",
+          "changeDigest": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+          "cliVersion": "0.1.0"
+        }
+      ],
+      "expected": {
+        "decisions": [
+          "uncovered"
+        ],
+        "codes": [
+          "ESRT002"
+        ],
+        "outcome": {
+          "advisory": "pass",
+          "standard": "fail",
+          "controlled": "fail"
+        }
+      }
+    },
+    {
+      "name": "receipt-mismatched-digest",
+      "pending": {
+        "phase": 4
+      },
+      "baseTimestamp": "2026-09-25T00:00:00Z",
+      "candidates": [
+        {
+          "id": "ES-a",
+          "status": "approved",
+          "targets": [
+            {
+              "id": "TARGET-1",
+              "path": "src/**",
+              "policy": "modify"
+            }
+          ]
+        }
+      ],
+      "changed": [
+        {
+          "path": "src/a.ts",
+          "kind": "modified"
+        }
+      ],
+      "receipts": [
+        {
+          "contractId": "ES-a",
+          "specRevision": 1,
+          "semanticDigest": "sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+          "baseSha": "@base",
+          "changeDigest": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+          "cliVersion": "0.1.0"
+        }
+      ],
+      "expected": {
+        "decisions": [
+          "selected"
+        ],
+        "codes": [
+          "ESRT013"
+        ],
+        "outcome": {
+          "advisory": "pass",
+          "standard": "fail",
+          "controlled": "fail"
+        },
+        "attribution": [
+          "ES-a"
+        ]
+      }
+    },
+    {
+      "name": "receipt-stale-revision",
+      "pending": {
+        "phase": 4
+      },
+      "baseTimestamp": "2026-09-25T00:00:00Z",
+      "candidates": [
+        {
+          "id": "ES-a",
+          "status": "approved",
+          "targets": [
+            {
+              "id": "TARGET-1",
+              "path": "src/**",
+              "policy": "modify"
+            }
+          ],
+          "specRevision": 2
+        }
+      ],
+      "changed": [
+        {
+          "path": "src/a.ts",
+          "kind": "modified"
+        }
+      ],
+      "receipts": [
+        {
+          "contractId": "ES-a",
+          "specRevision": 1,
+          "semanticDigest": "@digest(ES-a)",
+          "baseSha": "@base",
+          "changeDigest": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+          "cliVersion": "0.1.0"
+        }
+      ],
+      "expected": {
+        "decisions": [
+          "selected"
+        ],
+        "codes": [
+          "ESRT013"
+        ],
+        "outcome": {
+          "advisory": "pass",
+          "standard": "fail",
+          "controlled": "fail"
+        },
+        "attribution": [
+          "ES-a"
+        ]
+      }
+    },
+    {
+      "name": "receipt-for-standing-rejected",
+      "pending": {
+        "phase": 4
+      },
+      "baseTimestamp": "2026-09-25T00:00:00Z",
+      "candidates": [
+        {
+          "id": "ES-s",
+          "status": "approved",
+          "targets": [
+            {
+              "id": "TARGET-1",
+              "path": "docs/**",
+              "policy": "modify"
+            }
+          ],
+          "authorityKind": "standing",
+          "expiresAt": "2026-12-01T00:00:00Z"
+        }
+      ],
+      "changed": [
+        {
+          "path": "docs/a.md",
+          "kind": "modified"
+        }
+      ],
+      "receipts": [
+        {
+          "contractId": "ES-s",
+          "specRevision": 1,
+          "semanticDigest": "@digest(ES-s)",
+          "baseSha": "@base",
+          "changeDigest": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+          "cliVersion": "0.1.0"
+        }
+      ],
+      "expected": {
+        "decisions": [
+          "standing"
+        ],
+        "codes": [
+          "ESRT013"
+        ],
+        "outcome": {
+          "advisory": "pass",
+          "standard": "fail",
+          "controlled": "fail"
+        },
+        "attribution": [
+          "ES-s"
+        ]
+      }
+    },
+    {
+      "name": "receipt-forged-fails-safe",
+      "pending": {
+        "phase": 4
+      },
+      "baseTimestamp": "2026-09-25T00:00:00Z",
+      "candidates": [
+        {
+          "id": "ES-a",
+          "status": "approved",
+          "targets": [
+            {
+              "id": "TARGET-1",
+              "path": "src/**",
+              "policy": "modify"
+            }
+          ]
+        }
+      ],
+      "changed": [
+        {
+          "path": "src/a.ts",
+          "kind": "modified"
+        }
+      ],
+      "receipts": [
+        {
+          "contractId": "ES-a",
+          "specRevision": 1,
+          "semanticDigest": "@digest(ES-a)",
+          "baseSha": "@base",
+          "changeDigest": "sha256:9999999999999999999999999999999999999999999999999999999999999999",
+          "cliVersion": "0.0.0-forged"
+        }
+      ],
+      "expected": {
+        "decisions": [
+          "uncovered"
+        ],
+        "codes": [
+          "ESRT002"
+        ],
+        "outcome": {
+          "advisory": "pass",
+          "standard": "fail",
+          "controlled": "fail"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,100 @@
+{
+  "format": "engineering-spec-routing-v2-conformance",
+  "formatVersion": "0.1",
+  "group": "grant-before-spend",
+  "kind": "routing",
+  "vectors": [
+    {
+      "name": "controlled-standing-only-uncovered",
+      "pending": {
+        "phase": 3
+      },
+      "policy": {
+        "grantBeforeSpendPaths": [
+          "src/billing/**"
+        ]
+      },
+      "baseTimestamp": "2026-09-25T00:00:00Z",
+      "candidates": [
+        {
+          "id": "ES-s",
+          "status": "approved",
+          "targets": [
+            {
+              "id": "TARGET-1",
+              "path": "src/**",
+              "policy": "modify"
+            }
+          ],
+          "authorityKind": "standing",
+          "expiresAt": "2026-12-01T00:00:00Z"
+        }
+      ],
+      "changed": [
+        {
+          "path": "src/billing/x.ts",
+          "kind": "modified"
+        }
+      ],
+      "expected": {
+        "decisions": [
+          "uncovered"
+        ],
+        "codes": [
+          "ESRT002",
+          "ESRT012"
+        ],
+        "outcome": {
+          "advisory": "pass",
+          "standard": "fail",
+          "controlled": "fail"
+        }
+      }
+    },
+    {
+      "name": "controlled-change-contract-selected",
+      "pending": {
+        "phase": 3
+      },
+      "policy": {
+        "grantBeforeSpendPaths": [
+          "src/billing/**"
+        ]
+      },
+      "baseTimestamp": "2026-09-25T00:00:00Z",
+      "candidates": [
+        {
+          "id": "ES-billing",
+          "status": "approved",
+          "targets": [
+            {
+              "id": "TARGET-1",
+              "path": "src/billing/**",
+              "policy": "modify"
+            }
+          ]
+        }
+      ],
+      "changed": [
+        {
+          "path": "src/billing/x.ts",
+          "kind": "modified"
+        }
+      ],
+      "expected": {
+        "decisions": [
+          "selected"
+        ],
+        "codes": [],
+        "outcome": {
+          "advisory": "pass",
+          "standard": "pass",
+          "controlled": "pass"
+        },
+        "attribution": [
+          "ES-billing"
+        ]
+      }
+    }
+  ]
+}

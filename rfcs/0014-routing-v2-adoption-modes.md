@@ -117,7 +117,7 @@ Given the resolved immutable base SHA, eligible candidates loaded from the base 
    - Standing authority never satisfies a protected path.
 3. **Exempt.** If the path matches `exemptPaths`, the decision is `exempt`.
 4. **Ungoverned.** If the path matches no `governedPaths`, the decision is `ungoverned`.
-5. **Grant-before-spend** (`controlled` mode only). If the path matches `grantBeforeSpendPaths`, it requires a change-contract allow, with the same rules as step 6. Standing authority is ignored.
+5. **Grant-before-spend** (every mode; see clarification C7). If the path matches `grantBeforeSpendPaths`, it requires a change-contract allow, with the same rules as step 6. Standing authority is ignored.
 6. **Governed, with a selector.**
    - Only the selected contract's positive claims are considered. Allowed means `selected`; otherwise `uncovered`.
    - Other contracts' allows are ignored, so no ambiguity arises. Their denies were already applied in step 1.
@@ -135,7 +135,8 @@ Tiering of change authority over standing authority (step 7) is **not** glob-spe
 
 | Decision | advisory | standard | controlled | legacy (no `mode`) |
 |---|---|---|---|---|
-| `selected`, `standing`, `exempt`, `ungoverned` | pass | pass | pass (`standing` not on grant-before-spend paths) | `selected` only |
+| `selected`, `exempt`, `ungoverned` | pass | pass | pass | `selected` only |
+| `standing` | pass | pass | fail (C7) | n/a |
 | `uncovered` (governed) | report | fail | fail | fail |
 | `ambiguous` | report | fail | fail | fail |
 | `denied` | report | fail | fail | fail |
@@ -351,3 +352,25 @@ These were recorded on acceptance and are binding for the implementation phases.
 4. **Lite profile and protected paths (§6):** a `lite` contract never satisfies a protected path.
 5. **One contract or per-phase contracts:** one authorizing contract, `ES-routing-v2-adoption-modes`, with mandatory phase order (`CON-PHASE-ORDER`).
 6. **Standing lifetime (§4):** a default maximum of 180 days, configurable per repository. Expiry is evaluated against the trusted base commit's committer timestamp.
+
+## Clarifications recorded in phase 1
+
+Writing the conformance fixtures (`conformance/routing-v2/**`) forced these answers where the text above left room. The fixtures encode them, and they are subject to maintainer review in the phase 1 pull request.
+
+- **C1. Governance classification runs first.** The contract-only lane and today's `ESRT006` mixed-change handling are unchanged. In a mixed change, a specification-directory path is `protected_unauthorized` (`ESRT008`) alongside `ESRT006`.
+- **C2. Protection comes before governance scope.** A protected path is protected even outside `governedPaths`, and even with no candidates. Step 2 precedes step 4.
+- **C3. `over_budget` is a change-level result.** It is reported in `changeDecisions` with `ESRT010` and leaves per-path decisions unchanged.
+- **C4. An expired standing contract is ineligible.** When it is the only claimant, the path is `uncovered`, with `ESRT011` and `ESRT002`.
+- **C5. `ESRT009` covers every invalid selector:** malformed, conflicting across sources, unresolved, or naming ineligible authority (draft, proposed, spent, expired). No per-path routing is reported for an invalid selector.
+- **C6. Denies are evaluated first**, including denies from unselected and standing contracts and on exempt paths.
+- **C7. Decisions are identical in every mode (`CON-MODES`); only outcomes differ.**
+  - Grant-before-spend applies in every mode, which is consistent with `CON-STANDING`.
+  - `controlled` differs from `standard` in outcome only: a `standing` decision fails, so every governed, non-exempt path needs change authority. This is today's model plus policy and selection.
+  - This replaces the earlier "`controlled` mode only" wording in step 5 and the outcome table.
+- **C8. Standing authority on protected or grant-before-spend paths is handled per path.** A standing allow on such a changed path is ignored for that path and reported with `ESRT012`. The standing contract stays eligible for its other paths.
+- **C9. With a `mode` set, `ESRT001` is not emitted.** Each path gets a decision instead. Legacy (no `mode`) keeps `ESRT001`.
+- **C10. Advisory never blocks.** Its outcome is `pass` for every routing decision and selector error. Only an invalid trusted configuration (for example `ESPTH002` in a policy glob) is an `error`, in every mode.
+- **C11. An invalid receipt is reported as `ESRT013` at error severity.** The contract stays eligible, so it fails safe. `standard` and `controlled` fail until the receipt is corrected or removed.
+- **C12. Conformance compares diagnostic codes as sets.** Emission order is an implementation detail. Canonical byte fixtures are generated and reviewed in the phase that implements each field.
+- **C13. A rename counts as one file and zero lines toward budgets.** It is still routed as delete plus add, as today.
+

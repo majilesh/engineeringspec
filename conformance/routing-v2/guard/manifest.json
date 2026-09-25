@@ -1,0 +1,18 @@
+{
+  "format": "engineering-spec-routing-v2-conformance",
+  "formatVersion": "0.1",
+  "group": "guard",
+  "kind": "meta",
+  "vectors": [
+    {
+      "name": "guard-equals-routing-all-fixtures",
+      "pending": {
+        "phase": 6
+      },
+      "references": [
+        "conformance/routing-v2"
+      ],
+      "assertion": "For every routing vector, engineeringspec guard returns allow exactly when the routing decision is selected, standing, exempt or ungoverned, and deny otherwise, with the same codes."
+    }
+  ]
+}

@@ -1,0 +1,444 @@
+{
+  "format": "engineering-spec-routing-v2-conformance",
+  "formatVersion": "0.1",
+  "group": "selector",
+  "kind": "routing",
+  "vectors": [
+    {
+      "name": "selector-narrows-overlap",
+      "pending": {
+        "phase": 3
+      },
+      "selector": {
+        "cli": "ES-b"
+      },
+      "baseTimestamp": "2026-09-25T00:00:00Z",
+      "candidates": [
+        {
+          "id": "ES-a",
+          "status": "approved",
+          "targets": [
+            {
+              "id": "TARGET-1",
+              "path": "src/**",
+              "policy": "modify"
+            }
+          ]
+        },
+        {
+          "id": "ES-b",
+          "status": "approved",
+          "targets": [
+            {
+              "id": "TARGET-1",
+              "path": "src/api/**",
+              "policy": "modify"
+            }
+          ]
+        }
+      ],
+      "changed": [
+        {
+          "path": "src/api/a.ts",
+          "kind": "modified"
+        }
+      ],
+      "expected": {
+        "decisions": [
+          "selected"
+        ],
+        "codes": [],
+        "outcome": {
+          "advisory": "pass",
+          "standard": "pass",
+          "controlled": "pass"
+        },
+        "attribution": [
+          "ES-b"
+        ]
+      }
+    },
+    {
+      "name": "selector-cannot-widen",
+      "pending": {
+        "phase": 3
+      },
+      "selector": {
+        "cli": "ES-b"
+      },
+      "baseTimestamp": "2026-09-25T00:00:00Z",
+      "candidates": [
+        {
+          "id": "ES-a",
+          "status": "approved",
+          "targets": [
+            {
+              "id": "TARGET-1",
+              "path": "src/**",
+              "policy": "modify"
+            }
+          ]
+        },
+        {
+          "id": "ES-b",
+          "status": "approved",
+          "targets": [
+            {
+              "id": "TARGET-1",
+              "path": "src/api/**",
+              "policy": "modify"
+            }
+          ]
+        }
+      ],
+      "changed": [
+        {
+          "path": "src/web/a.ts",
+          "kind": "modified"
+        }
+      ],
+      "expected": {
+        "decisions": [
+          "uncovered"
+        ],
+        "codes": [
+          "ESRT002"
+        ],
+        "outcome": {
+          "advisory": "pass",
+          "standard": "fail",
+          "controlled": "fail"
+        }
+      }
+    },
+    {
+      "name": "selector-conflicting-sources",
+      "pending": {
+        "phase": 3
+      },
+      "selector": {
+        "cli": "ES-a",
+        "label": "engineeringspec:ES-b"
+      },
+      "baseTimestamp": "2026-09-25T00:00:00Z",
+      "candidates": [
+        {
+          "id": "ES-a",
+          "status": "approved",
+          "targets": [
+            {
+              "id": "TARGET-1",
+              "path": "src/**",
+              "policy": "modify"
+            }
+          ]
+        },
+        {
+          "id": "ES-b",
+          "status": "approved",
+          "targets": [
+            {
+              "id": "TARGET-1",
+              "path": "src/api/**",
+              "policy": "modify"
+            }
+          ]
+        }
+      ],
+      "changed": [
+        {
+          "path": "src/api/a.ts",
+          "kind": "modified"
+        }
+      ],
+      "expected": {
+        "decisions": [],
+        "codes": [
+          "ESRT009"
+        ],
+        "outcome": {
+          "advisory": "pass",
+          "standard": "fail",
+          "controlled": "fail"
+        }
+      }
+    },
+    {
+      "name": "selector-unresolved-id",
+      "pending": {
+        "phase": 3
+      },
+      "selector": {
+        "cli": "ES-missing"
+      },
+      "baseTimestamp": "2026-09-25T00:00:00Z",
+      "candidates": [
+        {
+          "id": "ES-a",
+          "status": "approved",
+          "targets": [
+            {
+              "id": "TARGET-1",
+              "path": "src/**",
+              "policy": "modify"
+            }
+          ]
+        }
+      ],
+      "changed": [
+        {
+          "path": "src/a.ts",
+          "kind": "modified"
+        }
+      ],
+      "expected": {
+        "decisions": [],
+        "codes": [
+          "ESRT009"
+        ],
+        "outcome": {
+          "advisory": "pass",
+          "standard": "fail",
+          "controlled": "fail"
+        }
+      }
+    },
+    {
+      "name": "selector-rejects-draft",
+      "pending": {
+        "phase": 3
+      },
+      "selector": {
+        "cli": "ES-d"
+      },
+      "baseTimestamp": "2026-09-25T00:00:00Z",
+      "candidates": [
+        {
+          "id": "ES-a",
+          "status": "approved",
+          "targets": [
+            {
+              "id": "TARGET-1",
+              "path": "src/**",
+              "policy": "modify"
+            }
+          ]
+        },
+        {
+          "id": "ES-d",
+          "status": "draft",
+          "targets": [
+            {
+              "id": "TARGET-1",
+              "path": "src/**",
+              "policy": "modify"
+            }
+          ]
+        }
+      ],
+      "changed": [
+        {
+          "path": "src/a.ts",
+          "kind": "modified"
+        }
+      ],
+      "expected": {
+        "decisions": [],
+        "codes": [
+          "ESRT009"
+        ],
+        "outcome": {
+          "advisory": "pass",
+          "standard": "fail",
+          "controlled": "fail"
+        }
+      }
+    },
+    {
+      "name": "selector-rejects-spent",
+      "pending": {
+        "phase": 4
+      },
+      "selector": {
+        "cli": "ES-a"
+      },
+      "baseTimestamp": "2026-09-25T00:00:00Z",
+      "candidates": [
+        {
+          "id": "ES-a",
+          "status": "approved",
+          "targets": [
+            {
+              "id": "TARGET-1",
+              "path": "src/**",
+              "policy": "modify"
+            }
+          ]
+        }
+      ],
+      "changed": [
+        {
+          "path": "src/a.ts",
+          "kind": "modified"
+        }
+      ],
+      "receipts": [
+        {
+          "contractId": "ES-a",
+          "specRevision": 1,
+          "semanticDigest": "@digest(ES-a)",
+          "baseSha": "@base",
+          "changeDigest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+          "cliVersion": "0.1.0"
+        }
+      ],
+      "expected": {
+        "decisions": [],
+        "codes": [
+          "ESRT009"
+        ],
+        "outcome": {
+          "advisory": "pass",
+          "standard": "fail",
+          "controlled": "fail"
+        }
+      }
+    },
+    {
+      "name": "selector-rejects-expired",
+      "pending": {
+        "phase": 3
+      },
+      "selector": {
+        "cli": "ES-s"
+      },
+      "baseTimestamp": "2026-09-25T00:00:00Z",
+      "candidates": [
+        {
+          "id": "ES-s",
+          "status": "approved",
+          "targets": [
+            {
+              "id": "TARGET-1",
+              "path": "docs/**",
+              "policy": "modify"
+            }
+          ],
+          "authorityKind": "standing",
+          "expiresAt": "2026-09-01T00:00:00Z"
+        }
+      ],
+      "changed": [
+        {
+          "path": "docs/a.md",
+          "kind": "modified"
+        }
+      ],
+      "expected": {
+        "decisions": [],
+        "codes": [
+          "ESRT009",
+          "ESRT011"
+        ],
+        "outcome": {
+          "advisory": "pass",
+          "standard": "fail",
+          "controlled": "fail"
+        }
+      }
+    },
+    {
+      "name": "selector-invalid-id-syntax",
+      "pending": {
+        "phase": 3
+      },
+      "selector": {
+        "branch": "es/not-an-id/work"
+      },
+      "baseTimestamp": "2026-09-25T00:00:00Z",
+      "candidates": [
+        {
+          "id": "ES-a",
+          "status": "approved",
+          "targets": [
+            {
+              "id": "TARGET-1",
+              "path": "src/**",
+              "policy": "modify"
+            }
+          ]
+        }
+      ],
+      "changed": [
+        {
+          "path": "src/a.ts",
+          "kind": "modified"
+        }
+      ],
+      "expected": {
+        "decisions": [],
+        "codes": [
+          "ESRT009"
+        ],
+        "outcome": {
+          "advisory": "pass",
+          "standard": "fail",
+          "controlled": "fail"
+        }
+      }
+    },
+    {
+      "name": "selector-cannot-suppress-deny",
+      "pending": {
+        "phase": 3
+      },
+      "selector": {
+        "cli": "ES-a"
+      },
+      "baseTimestamp": "2026-09-25T00:00:00Z",
+      "candidates": [
+        {
+          "id": "ES-a",
+          "status": "approved",
+          "targets": [
+            {
+              "id": "TARGET-1",
+              "path": "src/**",
+              "policy": "modify"
+            }
+          ]
+        },
+        {
+          "id": "ES-lock",
+          "status": "approved",
+          "targets": [
+            {
+              "id": "TARGET-1",
+              "path": "src/api/secret.ts",
+              "policy": "read_only"
+            }
+          ]
+        }
+      ],
+      "changed": [
+        {
+          "path": "src/api/secret.ts",
+          "kind": "modified"
+        }
+      ],
+      "expected": {
+        "decisions": [
+          "denied"
+        ],
+        "codes": [
+          "ESRT004"
+        ],
+        "outcome": {
+          "advisory": "pass",
+          "standard": "fail",
+          "controlled": "fail"
+        }
+      }
+    }
+  ]
+}

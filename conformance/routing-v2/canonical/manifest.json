@@ -1,0 +1,74 @@
+{
+  "format": "engineering-spec-routing-v2-conformance",
+  "formatVersion": "0.1",
+  "group": "canonical",
+  "kind": "document",
+  "vectors": [
+    {
+      "name": "authority-kind-canonical",
+      "pending": {
+        "phase": 3
+      },
+      "file": "authority-kind-canonical.engineering-spec.md",
+      "expected": {
+        "valid": true,
+        "metadata": {
+          "authorityKind": "standing",
+          "expiresAt": "2026-12-01T00:00:00Z"
+        },
+        "canonicalBytes": "authority-kind-canonical.canonical.json (generated and reviewed in phase 3)"
+      }
+    },
+    {
+      "name": "expires-at-canonical",
+      "pending": {
+        "phase": 3
+      },
+      "file": "expires-at-canonical.engineering-spec.md",
+      "expected": {
+        "valid": true,
+        "metadata": {
+          "authorityKind": "standing",
+          "expiresAt": "2027-03-01T00:00:00Z"
+        },
+        "canonicalBytes": "expires-at-canonical.canonical.json (generated and reviewed in phase 3)"
+      }
+    },
+    {
+      "name": "change-budget-canonical",
+      "pending": {
+        "phase": 3
+      },
+      "file": "change-budget-canonical.engineering-spec.md",
+      "expected": {
+        "valid": true,
+        "metadata": {
+          "changeBudget": {
+            "maxChangedLines": 400,
+            "maxFiles": 20
+          }
+        },
+        "canonicalBytes": "change-budget-canonical.canonical.json (generated and reviewed in phase 3)"
+      }
+    },
+    {
+      "name": "lite-profile-canonical",
+      "pending": {
+        "phase": 4
+      },
+      "file": "lite-profile-canonical.engineering-spec.md",
+      "expected": {
+        "valid": true,
+        "metadata": {
+          "profiles": [
+            {
+              "name": "lite",
+              "version": "0.1"
+            }
+          ]
+        },
+        "canonicalBytes": "lite-profile-canonical.canonical.json (generated and reviewed in phase 4)"
+      }
+    }
+  ]
+}
