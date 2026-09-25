@@ -27,7 +27,8 @@ import { buildAgentContext, explainPath } from "../query/agentContext.js";
 import { adoptRepository } from "./adopt.js";
 import { evaluateCeremonyBenchmark, summarizeAgentBenchmark } from "./benchmark.js";
 import { selectSpecs } from "../routing/select.js";
-import { PASSING_DECISIONS, type EnforcementResult } from "../routing/types.js";
+import type { EnforcementResult } from "../routing/types.js";
+import { isPassingDecision } from "../policy/evaluate.js";
 import type { Diagnostic } from "../diagnostics/Diagnostic.js";
 import { diagnoseRepository } from "./doctor.js";
 import { workflowStatus } from "./status.js";
@@ -794,7 +795,7 @@ export function createProgram(setCode: (code: number) => void): Command {
             `check: ${routed.valid ? "pass" : "fail"}`,
             ...enforcementLines(routed.enforcement),
             `contracts: base ${routed.baseSha} (${routed.candidates.filter((item) => item.eligible).length} eligible)`,
-            `working state: ${routed.changed.length} changed, ${routed.routes.filter((item) => !PASSING_DECISIONS.has(item.decision)).length} violations`,
+            `working state: ${routed.changed.length} changed, ${routed.routes.filter((item) => !isPassingDecision(item.decision, routed.enforcement.mode)).length} violations`,
             `declared coverage: ${routed.coverage.status}`,
             `change classification: ${routed.governance.classification}`,
             ...routed.diagnostics.map((diagnostic) => `${diagnostic.severity}: ${diagnostic.code} ${diagnostic.message}`),

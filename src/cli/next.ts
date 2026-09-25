@@ -50,7 +50,7 @@ export async function nextAction(options: { base?: string; cwd?: string } = {}):
     allowContractOnly: true,
     ...(options.cwd ? { cwd: options.cwd } : {}),
   });
-  const approvedIds = status.routing.candidates.filter((item) => item.eligible).map((item) => item.specId);
+  const approvedIds = status.routing.candidates.filter((item) => item.eligible && item.authorityKind !== "standing").map((item) => item.specId);
   const analysisValid = status.routing.diagnostics.every((item) => item.code.startsWith("ESRT"));
   const command=nextCommand(status,approvedIds);
   const ambiguous=status.routing.diagnostics.some(item=>item.code===Codes.routingAmbiguous);
@@ -108,7 +108,7 @@ export function nextTicket(report: NextReport): NextTicket {
     workflowState: report.workflowState,
     currentChangeClassification: routing.governance.classification,
     command,
-    approvedIds: [...new Set(routing.candidates.filter((item) => item.eligible).map((item) => item.specId))].sort(compareCodePoints),
+    approvedIds: [...new Set(routing.candidates.filter((item) => item.eligible && item.authorityKind !== "standing").map((item) => item.specId))].sort(compareCodePoints),
     proposedIds: [...new Set(routing.candidates.filter((item) => item.status === "proposed" || item.status === "draft").map((item) => item.specId))].sort(compareCodePoints),
     blockers: routing.diagnostics
       .filter((item) => item.severity === "error" || (item.severity === "warning" && !report.status.valid))

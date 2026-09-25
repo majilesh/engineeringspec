@@ -1,0 +1,63 @@
+{
+  "constraints": [
+    {
+      "enforcement": {
+        "kind": "test",
+        "verifierRef": "VER-1"
+      },
+      "id": "CON-1",
+      "level": "must",
+      "severity": "error",
+      "statement": "Preserve behaviour."
+    }
+  ],
+  "metadata": {
+    "authorityKind": "standing",
+    "expiresAt": "2027-03-01T00:00:00Z",
+    "id": "ES-canon-expiry",
+    "owners": [
+      {
+        "team": "platform"
+      }
+    ],
+    "specFormat": "engineering-spec",
+    "specFormatVersion": "0.1",
+    "specRevision": 1,
+    "status": "approved",
+    "title": "Expiry"
+  },
+  "prose": [
+    {
+      "markdown": "# Expiry"
+    }
+  ],
+  "sourceRefs": [
+    {
+      "id": "SRC-1",
+      "ref": "fixture",
+      "type": "other"
+    }
+  ],
+  "targets": [
+    {
+      "changePolicy": "modify",
+      "id": "TARGET-1",
+      "paths": [
+        "docs/**"
+      ]
+    }
+  ],
+  "verification": [
+    {
+      "id": "VER-1",
+      "kind": "test",
+      "proves": [
+        "CON-1"
+      ],
+      "runner": {
+        "reference": "suite",
+        "type": "reference"
+      }
+    }
+  ]
+}

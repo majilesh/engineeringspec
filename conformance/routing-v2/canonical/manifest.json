@@ -6,9 +6,6 @@
   "vectors": [
     {
       "name": "authority-kind-canonical",
-      "pending": {
-        "phase": 3
-      },
       "file": "authority-kind-canonical.engineering-spec.md",
       "expected": {
         "valid": true,
@@ -16,14 +13,11 @@
           "authorityKind": "standing",
           "expiresAt": "2026-12-01T00:00:00Z"
         },
-        "canonicalBytes": "authority-kind-canonical.canonical.json (generated and reviewed in phase 3)"
+        "canonicalBytes": "authority-kind-canonical.canonical.json"
       }
     },
     {
       "name": "expires-at-canonical",
-      "pending": {
-        "phase": 3
-      },
       "file": "expires-at-canonical.engineering-spec.md",
       "expected": {
         "valid": true,
@@ -31,14 +25,11 @@
           "authorityKind": "standing",
           "expiresAt": "2027-03-01T00:00:00Z"
         },
-        "canonicalBytes": "expires-at-canonical.canonical.json (generated and reviewed in phase 3)"
+        "canonicalBytes": "expires-at-canonical.canonical.json"
       }
     },
     {
       "name": "change-budget-canonical",
-      "pending": {
-        "phase": 3
-      },
       "file": "change-budget-canonical.engineering-spec.md",
       "expected": {
         "valid": true,
@@ -48,7 +39,7 @@
             "maxFiles": 20
           }
         },
-        "canonicalBytes": "change-budget-canonical.canonical.json (generated and reviewed in phase 3)"
+        "canonicalBytes": "change-budget-canonical.canonical.json"
       }
     },
     {

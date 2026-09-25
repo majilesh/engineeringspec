@@ -39,6 +39,12 @@ export async function finishContract(options: { contractId: string; base?: strin
   const brief = await prepareChange({ contractId: options.contractId, specDirectory: config.config.specDirectory, base: config.baseSha, strict: config.config.strict, ...(options.cwd ? { cwd: options.cwd } : {}) });
   let review = await buildReview({ specDirectory: config.config.specDirectory, base: config.baseSha, strict: config.config.strict, staged: Boolean(options.staged), worktree: !options.staged, allowContractOnly: true, ...(options.cwd ? { cwd: options.cwd } : {}) });
   if (brief.result === "blocked" || !review.valid) return { result: "blocked", review, closureWritten: false };
+  if (options.writeClosure) {
+    const authority = await validateMarkdown(await readGitBlob(config.baseSha, brief.authority.specPath, options.cwd), `${config.baseSha}:${brief.authority.specPath}`, { resolveProfiles: false });
+    if (authority.spec?.metadata.authorityKind === "standing") {
+      throw new Error(`${options.contractId} is standing authority; it ends through supersession, rejection, or expiry and is never closed by finish`);
+    }
+  }
   let closureWritten = false;
   if (options.writeClosure) {
     await transitionStatus(path.join(root, brief.authority.specPath), "implemented", true);

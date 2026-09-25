@@ -30,6 +30,8 @@ export interface RepositoryPolicy {
   governedPaths: string[];
   exemptPaths: string[];
   protectedPaths: string[];
+  /** Paths that need a change contract in every mode; standing authority never satisfies them. */
+  grantBeforeSpendPaths: string[];
 }
 
 export interface RepositoryConfig {
@@ -145,7 +147,7 @@ export class RepositoryConfigError extends Error {
 
 export function parseRepositoryPolicy(raw: unknown, label = "policy"): RepositoryPolicy {
   const value = object(raw, label);
-  const allowed = new Set(["governedPaths", "exemptPaths", "protectedPaths"]);
+  const allowed = new Set(["governedPaths", "exemptPaths", "protectedPaths", "grantBeforeSpendPaths"]);
   for (const key of Object.keys(value)) if (!allowed.has(key)) throw new Error(`${label} contains unknown property ${JSON.stringify(key)}`);
   const globs = (key: keyof RepositoryPolicy, fallback: string[]): string[] => {
     const list = value[key] ?? fallback;
@@ -156,7 +158,12 @@ export function parseRepositoryPolicy(raw: unknown, label = "policy"): Repositor
     }
     return [...list as string[]];
   };
-  return { governedPaths: globs("governedPaths", ["**"]), exemptPaths: globs("exemptPaths", []), protectedPaths: globs("protectedPaths", []) };
+  return {
+    governedPaths: globs("governedPaths", ["**"]),
+    exemptPaths: globs("exemptPaths", []),
+    protectedPaths: globs("protectedPaths", []),
+    grantBeforeSpendPaths: globs("grantBeforeSpendPaths", []),
+  };
 }
 
 export async function resolveRepositoryConfig(options: { base?: string; cwd?: string; enforcing?: boolean } = {}): Promise<ResolvedRepositoryConfig> {

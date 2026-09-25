@@ -1,4 +1,4 @@
-import { PASSING_DECISIONS } from "../routing/types.js";
+import { isPassingDecision } from "../policy/evaluate.js";
 import type { ChangedFile } from "../gate/types.js";
 import type { Status } from "../model/types.js";
 import { compareCodePoints } from "../normalizer/canonicalize.js";
@@ -19,6 +19,8 @@ export interface WorkflowStatusReport {
   candidateDirectory: string;
   candidates: number;
   lifecycle: Record<Status, number>;
+  /** Approved standing contracts; never a change lifecycle stage. */
+  standingAuthority?: string[];
   workingState: {
     changed: number;
     selected: number;
@@ -44,9 +46,15 @@ export interface WorkflowStatusOptions {
   bootstrapMode?: "advisory";
 }
 
+function standingAuthority(report: RoutingReport): { standingAuthority?: string[] } {
+  const ids = report.candidates.filter((item) => item.authorityKind === "standing" && item.eligible).map((item) => item.specId);
+  return ids.length ? { standingAuthority: [...new Set(ids)].sort(compareCodePoints) } : {};
+}
+
 function lifecycleCounts(report: RoutingReport): Record<Status, number> {
   const counts: Record<Status, number> = { draft: 0, proposed: 0, approved: 0, implemented: 0, superseded: 0, rejected: 0 };
-  for (const candidate of report.candidates) counts[candidate.status] += 1;
+  // Standing authority stays approved until it expires, so it is counted separately (RFC 0014 §4).
+  for (const candidate of report.candidates) if (candidate.authorityKind !== "standing") counts[candidate.status] += 1;
   return counts;
 }
 
@@ -94,10 +102,11 @@ export async function workflowStatus(options: WorkflowStatusOptions): Promise<Wo
     candidateDirectory: routing.candidateDirectory,
     candidates: routing.candidates.length,
     lifecycle: lifecycleCounts(routing),
+    ...standingAuthority(routing),
     workingState: {
       changed: routing.changed.length,
       selected: selectedRoutes.length,
-      violations: routing.routes.filter((route) => !PASSING_DECISIONS.has(route.decision)).length,
+      violations: routing.routes.filter((route) => !isPassingDecision(route.decision, routing.enforcement.mode)).length,
     },
     selectedContracts,
     routedTargets,

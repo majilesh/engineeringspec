@@ -6,9 +6,6 @@
   "vectors": [
     {
       "name": "controlled-standing-only-uncovered",
-      "pending": {
-        "phase": 3
-      },
       "policy": {
         "grantBeforeSpendPaths": [
           "src/billing/**"
@@ -53,9 +50,6 @@
     },
     {
       "name": "controlled-change-contract-selected",
-      "pending": {
-        "phase": 3
-      },
       "policy": {
         "grantBeforeSpendPaths": [
           "src/billing/**"

@@ -365,7 +365,7 @@ Writing the conformance fixtures (`conformance/routing-v2/**`) forced these answ
 - **C6. Denies are evaluated first**, including denies from unselected and standing contracts and on exempt paths.
 - **C7. Decisions are identical in every mode (`CON-MODES`); only outcomes differ.**
   - Grant-before-spend applies in every mode, which is consistent with `CON-STANDING`.
-  - `controlled` differs from `standard` in outcome only: a `standing` decision fails, so every governed, non-exempt path needs change authority. This is today's model plus policy and selection.
+  - In `controlled`, a `standing` decision is not an authorized path. `valid` is false and the outcome fails, so every governed, non-exempt path needs change authority. This is today's model plus policy and selection. Keeping `valid` false (not just the outcome) keeps C15 consistent: `valid` means authorized.
   - This replaces the earlier "`controlled` mode only" wording in step 5 and the outcome table.
 - **C8. Standing authority on protected or grant-before-spend paths is handled per path.** A standing allow on such a changed path is ignored for that path and reported with `ESRT012`. The standing contract stays eligible for its other paths.
 - **C9. With a `mode` set, `ESRT001` is not emitted.** Each path gets a decision instead. Legacy (no `mode`) keeps `ESRT001`.
@@ -384,4 +384,9 @@ Writing the conformance fixtures (`conformance/routing-v2/**`) forced these answ
 ### Compatibility note for configured modes
 
 Runtimes older than this change reject unknown keys in `engineering-spec.json`, so a configuration with `mode` or `policy` fails closed under them. Until a release re-pins the Action, the Action SHA that `adopt` generates is still the pre-RFC-0014 runtime. That runtime warns on the unknown `bootstrap-mode` input, and it still fails the adoption PR.
+- **C16. Expiry only removes authority.** An expired standing contract (judged against the trusted base committer timestamp) loses its allows but keeps its `read_only`/`observe` denies, so expiry can never widen authority. Phase 4 applies the same rule to spent change contracts.
+  - `ESRT011` is reported only for a changed path the expired contract would have allowed. It is `error` when the path ends `uncovered`, and `info` when other authority still covers the path. A stale standing contract therefore never fails unrelated changes.
+- **C17. Routing runs once, then claims are partitioned.** The policy layer calls legacy routing a single time over every eligible contract, so denies and maintenance sequencing see the full trusted-base set. It then splits each path's remaining allows into change and standing claims. Per-path `ESRT002`/`ESRT003`/`ESRT004` findings are re-derived from the v2 decision; sequencing (`ESRT007`), duplicate-identity (`ESRT005`) and `ESG006` findings are kept.
+- **C18. Standing authority and the change lifecycle.** Standing contracts are not counted as approved change contracts by `status` and `next`; they are listed separately (`standingAuthority`). So adding one never removes `permission: implementation` for the single approved change contract. `finish --write-closure` refuses standing contracts.
+- **C19. Maximum standing lifetime (deferred).** The 180-day cap is a governance-lane check: when a standing contract becomes `approved`, `expires_at` minus the approval commit time must be at most 180 days. It is not evaluated at routing time against a moving base timestamp. Phase 3 enforces `expires_at` presence (schema) and expiry. The cap check lands with the contract-only lane changes in phase 4.
 

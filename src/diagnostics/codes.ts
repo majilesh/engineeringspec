@@ -12,5 +12,5 @@ export const Codes = {
   routingNoEligible:"ESRT001", routingUncovered:"ESRT002", routingAmbiguous:"ESRT003",
   routingDenied:"ESRT004", routingDuplicateId:"ESRT005",
   routingUnsafeClosure:"ESRT006",
-  routingInvalidSequencing:"ESRT007", routingProtected:"ESRT008",
+  routingInvalidSequencing:"ESRT007", routingProtected:"ESRT008", routingStandingExpired:"ESRT011", routingStandingProtected:"ESRT012",
 } as const;

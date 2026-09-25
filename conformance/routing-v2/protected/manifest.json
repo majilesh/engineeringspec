@@ -152,9 +152,6 @@
     },
     {
       "name": "protected-standing-only-rejected",
-      "pending": {
-        "phase": 3
-      },
       "policy": {
         "protectedPaths": [
           "migrations/**"
