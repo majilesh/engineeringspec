@@ -55,6 +55,8 @@ export interface EnforcementResult {
   enforced: boolean;
   /** Present only when a bootstrap mode was requested: whether the trusted base allowed it. */
   bootstrap?: "honored" | "ignored";
+  /** Present only when a valid selector narrowed routing to one contract. */
+  selectedContract?: string;
 }
 
 export interface PathRoute {

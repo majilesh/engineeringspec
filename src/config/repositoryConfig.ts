@@ -25,7 +25,13 @@ export interface TrustedVerifierMapping {
 export type AdoptionMode = "advisory" | "standard" | "controlled";
 export const ADOPTION_MODES: readonly AdoptionMode[] = ["advisory", "standard", "controlled"];
 
-/** RFC 0014 repository policy. Globs use the restricted EngineeringSpec dialect. */
+/** PR label and branch-name prefixes that name a contract, e.g. `engineeringspec:ES-x` or `es/ES-x/...`. */
+export interface SelectionConfig {
+  label?: string;
+  branch?: string;
+}
+
+/** RFC 0014 repository policy. Globs use the restricted EngineeringSpec glob dialect. */
 export interface RepositoryPolicy {
   governedPaths: string[];
   exemptPaths: string[];
@@ -42,6 +48,8 @@ export interface RepositoryConfig {
   /** Absent means legacy exactly-one-claimant routing (RFC 0014 §1). */
   mode?: AdoptionMode;
   policy?: RepositoryPolicy;
+  /** Opt-in selector sources; commit trailers and explicit --contract are always available. */
+  selection?: SelectionConfig;
   trustedVerifiers: Record<string, TrustedVerifierMapping>;
 }
 
@@ -93,7 +101,7 @@ export function parseRepositoryConfig(text: string, label = REPOSITORY_CONFIG_PA
     throw new Error(`${label} is not valid JSON: ${error instanceof Error ? error.message : String(error)}`);
   }
   const value = object(parsed, label);
-  const allowed = new Set(["$schema", "specDirectory", "strict", "trustedBase", "mode", "policy", "trustedVerifiers"]);
+  const allowed = new Set(["$schema", "specDirectory", "strict", "trustedBase", "mode", "policy", "selection", "trustedVerifiers"]);
   for (const key of Object.keys(value)) if (!allowed.has(key)) throw new Error(`${label} contains unknown property ${JSON.stringify(key)}`);
   const specDirectory = safeRelative(value.specDirectory ?? DEFAULT_CONFIG.specDirectory, `${label}.specDirectory`);
   if (typeof value.strict !== "undefined" && typeof value.strict !== "boolean") throw new Error(`${label}.strict must be a boolean`);
@@ -105,6 +113,7 @@ export function parseRepositoryConfig(text: string, label = REPOSITORY_CONFIG_PA
     throw new Error(`${label}.mode must be one of ${ADOPTION_MODES.join(", ")}`);
   }
   const policy = value.policy === undefined ? undefined : parseRepositoryPolicy(value.policy, `${label}.policy`);
+  const selection = value.selection === undefined ? undefined : parseSelection(value.selection, `${label}.selection`);
   const verifierObject = object(value.trustedVerifiers ?? {}, `${label}.trustedVerifiers`);
   const trustedVerifiers: Record<string, TrustedVerifierMapping> = {};
   for (const [id, raw] of Object.entries(verifierObject)) {
@@ -133,8 +142,20 @@ export function parseRepositoryConfig(text: string, label = REPOSITORY_CONFIG_PA
     ...(typeof value.trustedBase === "string" ? { trustedBase: value.trustedBase } : {}),
     ...(value.mode === undefined ? {} : { mode: value.mode as AdoptionMode }),
     ...(policy ? { policy } : {}),
+    ...(selection ? { selection } : {}),
     trustedVerifiers,
   };
+}
+
+function parseSelection(raw: unknown, label: string): SelectionConfig {
+  const value = object(raw, label);
+  const result: SelectionConfig = {};
+  for (const [key, prefix] of Object.entries(value)) {
+    if (key !== "label" && key !== "branch") throw new Error(`${label} contains unknown property ${JSON.stringify(key)}`);
+    if (typeof prefix !== "string" || !prefix || /[\0\r\n\s]/u.test(prefix)) throw new Error(`${label}.${key} must be a non-empty prefix without whitespace`);
+    result[key] = prefix;
+  }
+  return result;
 }
 
 /** Thrown for trusted configuration that cannot be evaluated; carries a stable diagnostic code. */

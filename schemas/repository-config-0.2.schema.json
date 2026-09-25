@@ -21,6 +21,15 @@
         "grantBeforeSpendPaths": { "$ref": "#/$defs/globs" }
       }
     },
+    "selection": {
+      "description": "Opt-in PR label and branch-name prefixes that name one approved contract (RFC 0014 §3).",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "label": { "type": "string", "minLength": 1, "pattern": "^\\S+$" },
+        "branch": { "type": "string", "minLength": 1, "pattern": "^\\S+$" }
+      }
+    },
     "trustedVerifiers": {
       "type": "object",
       "propertyNames": { "pattern": "^[A-Za-z][A-Za-z0-9_-]*#[A-Z][A-Z0-9_-]*$" },

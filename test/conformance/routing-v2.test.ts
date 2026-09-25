@@ -12,7 +12,7 @@ import type { ChangedFile } from "../../src/gate/types.js";
 import { isEngineeringSpecId } from "../../src/model/ids.js";
 import type { EngineeringSpec, TargetSurface } from "../../src/model/types.js";
 import { validateTargetGlob } from "../../src/path/targetGlob.js";
-import { enforcementFor, evaluatePolicyRouting } from "../../src/policy/evaluate.js";
+import { enforcementFor, evaluatePolicyRouting, selectorSources } from "../../src/policy/evaluate.js";
 import { classifyGovernanceChanges } from "../../src/routing/governance.js";
 import { partitionSpecificationChanges, selectSpecs, unsafeMixedClosureDiagnostic } from "../../src/routing/select.js";
 import type { LoadedRoutingCandidate } from "../../src/routing/types.js";
@@ -186,7 +186,11 @@ function evaluateVector(vector: RoutingVector, mode: AdoptionMode) {
   expect(classifyGovernanceChanges(SPEC_DIRECTORY, changed)).not.toBe("contract_only");
   // Vectors never carry workspace contract bodies, so a mixed change is never an exact monotonic close.
   const mixed = partitionSpecificationChanges(SPEC_DIRECTORY, changed).mixed ? [unsafeMixedClosureDiagnostic()] : [];
-  const evaluation = evaluatePolicyRouting({ mode, policy, specDirectory: SPEC_DIRECTORY, candidates: vector.candidates.map(loadedCandidate), changed, baseTimestamp: vector.baseTimestamp });
+  // Vectors use the conventional opt-in prefixes; label and branch selectors are off without them.
+  const selector = vector.selector
+    ? selectorSources({ ...(vector.selector.cli ? { contract: vector.selector.cli } : {}), labels: vector.selector.label ? [vector.selector.label] : [], ...(vector.selector.branch ? { branch: vector.selector.branch } : {}) }, { label: "engineeringspec:", branch: "es/" })
+    : undefined;
+  const evaluation = evaluatePolicyRouting({ mode, policy, specDirectory: SPEC_DIRECTORY, candidates: vector.candidates.map(loadedCandidate), changed, baseTimestamp: vector.baseTimestamp, ...(selector ? { selector } : {}) });
   const diagnostics = [...evaluation.diagnostics, ...mixed].filter((item) => item.severity !== "info");
   return {
     decisions: evaluation.routes.map((route) => route.decision),

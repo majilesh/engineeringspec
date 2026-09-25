@@ -6,9 +6,6 @@
   "vectors": [
     {
       "name": "selector-narrows-overlap",
-      "pending": {
-        "phase": 3
-      },
       "selector": {
         "cli": "ES-b"
       },
@@ -60,9 +57,6 @@
     },
     {
       "name": "selector-cannot-widen",
-      "pending": {
-        "phase": 3
-      },
       "selector": {
         "cli": "ES-b"
       },
@@ -113,9 +107,6 @@
     },
     {
       "name": "selector-conflicting-sources",
-      "pending": {
-        "phase": 3
-      },
       "selector": {
         "cli": "ES-a",
         "label": "engineeringspec:ES-b"
@@ -165,9 +156,6 @@
     },
     {
       "name": "selector-unresolved-id",
-      "pending": {
-        "phase": 3
-      },
       "selector": {
         "cli": "ES-missing"
       },
@@ -205,9 +193,6 @@
     },
     {
       "name": "selector-rejects-draft",
-      "pending": {
-        "phase": 3
-      },
       "selector": {
         "cli": "ES-d"
       },
@@ -306,9 +291,6 @@
     },
     {
       "name": "selector-rejects-expired",
-      "pending": {
-        "phase": 3
-      },
       "selector": {
         "cli": "ES-s"
       },
@@ -349,9 +331,6 @@
     },
     {
       "name": "selector-invalid-id-syntax",
-      "pending": {
-        "phase": 3
-      },
       "selector": {
         "branch": "es/not-an-id/work"
       },
@@ -389,9 +368,6 @@
     },
     {
       "name": "selector-cannot-suppress-deny",
-      "pending": {
-        "phase": 3
-      },
       "selector": {
         "cli": "ES-a"
       },

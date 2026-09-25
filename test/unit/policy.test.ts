@@ -195,3 +195,67 @@ describe("standing authority end to end", () => {
   });
 });
 
+function commit(root: string, message: string): string {
+  git(root, ["add", "."]);
+  execFileSync("git", ["-C", root, "-c", "user.name=Test", "-c", "user.email=test@example.com", "commit", "-qm", message]);
+  return git(root, ["rev-parse", "HEAD"]);
+}
+
+describe("contract selectors end to end", () => {
+  const overlap = { config: { mode: "standard" }, contracts: [["ES-a", "approved", "src/**"], ["ES-b", "approved", "src/api/**"]] as Array<[string, string, string]> };
+
+  it("resolves overlap from a commit trailer, including through a merge-queue style merge commit", async () => {
+    const { root, base } = await repository(overlap);
+    await mkdir(path.join(root, "src", "api"), { recursive: true });
+    const unselected = await selectSpecs({ directory: "specs", base, changed: [{ path: "src/api/a.ts", kind: "added" }], cwd: root });
+    expect(unselected.routes.map((route) => route.decision)).toEqual(["ambiguous"]);
+
+    git(root, ["switch", "-q", "-c", "feature"]);
+    await writeFile(path.join(root, "src", "api", "a.ts"), "export const a = 1;\n");
+    commit(root, "Add api\n\nEngineeringSpec-Contract: ES-b");
+    const head = git(root, ["rev-parse", "HEAD"]);
+    const selected = await selectSpecs({ directory: "specs", base, head, worktree: false, cwd: root });
+    expect(selected.routes.map((route) => route.decision)).toEqual(["selected"]);
+    expect(selected).toMatchObject({ valid: true, enforcement: { outcome: "pass", selectedContract: "ES-b" } });
+
+    git(root, ["switch", "-q", "--detach", base]);
+    execFileSync("git", ["-C", root, "-c", "user.name=Queue", "-c", "user.email=queue@example.com", "merge", "-q", "--no-ff", "-m", "Merge queue batch", "feature"]);
+    const queued = await selectSpecs({ directory: "specs", base, head: git(root, ["rev-parse", "HEAD"]), worktree: false, cwd: root });
+    expect(queued).toMatchObject({ valid: true, enforcement: { selectedContract: "ES-b" } });
+  });
+
+  it("fails closed when commit trailers name different contracts", async () => {
+    const { root, base } = await repository(overlap);
+    await mkdir(path.join(root, "src", "api"), { recursive: true });
+    await writeFile(path.join(root, "src", "api", "a.ts"), "export const a = 1;\n");
+    commit(root, "One\n\nEngineeringSpec-Contract: ES-b");
+    await writeFile(path.join(root, "src", "api", "b.ts"), "export const b = 1;\n");
+    commit(root, "Two\n\nEngineeringSpec-Contract: ES-a");
+    const report = await selectSpecs({ directory: "specs", base, head: "HEAD", worktree: false, cwd: root });
+    expect(report.diagnostics.map((item) => item.code)).toEqual(["ESRT009"]);
+    expect(report).toMatchObject({ valid: false, routes: [], enforcement: { outcome: "fail" } });
+  });
+
+  it("honors labels and branches only with a trusted selection prefix", async () => {
+    const off = await repository(overlap);
+    const ignored = await selectSpecs({ directory: "specs", base: off.base, changed: [{ path: "src/api/a.ts", kind: "added" }], cwd: off.root, selector: { labels: ["engineeringspec:ES-b"], branch: "es/not-an-id/x" } });
+    expect(ignored.routes.map((route) => route.decision)).toEqual(["ambiguous"]);
+
+    const on = await repository({ ...overlap, config: { mode: "standard", selection: { label: "engineeringspec:", branch: "es/" } } });
+    const label = await selectSpecs({ directory: "specs", base: on.base, changed: [{ path: "src/api/a.ts", kind: "added" }], cwd: on.root, selector: { labels: ["bug", "engineeringspec:ES-b"] } });
+    expect(label).toMatchObject({ valid: true, enforcement: { selectedContract: "ES-b" } });
+    const badBranch = await selectSpecs({ directory: "specs", base: on.base, changed: [{ path: "src/api/a.ts", kind: "added" }], cwd: on.root, selector: { branch: "es/not-an-id/x" } });
+    expect(badBranch.diagnostics.map((item) => item.code)).toEqual(["ESRT009"]);
+    const cli = runCli(on.root, ["select", "specs", "--base", on.base, "--changed", "src/api/a.ts", "--change-kind", "added", "--contract", "ES-b", "--format", "json"]);
+    expect(cli.code).toBe(0);
+    expect(JSON.parse(cli.out)).toMatchObject({ enforcement: { selectedContract: "ES-b" } });
+  });
+
+  it("ignores selectors in legacy repositories", async () => {
+    const { root, base } = await repository({ contracts: overlap.contracts });
+    const report = await selectSpecs({ directory: "specs", base, changed: [{ path: "src/api/a.ts", kind: "added" }], cwd: root, selector: { contract: "ES-b" } });
+    expect(report.routes.map((route) => route.decision)).toEqual(["ambiguous"]);
+    expect(report.enforcement).toEqual({ mode: "legacy", outcome: "fail", enforced: true });
+  });
+});
+

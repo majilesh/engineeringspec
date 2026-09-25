@@ -6,9 +6,6 @@
   "vectors": [
     {
       "name": "deny-from-unselected-contract",
-      "pending": {
-        "phase": 3
-      },
       "selector": {
         "cli": "ES-a"
       },
