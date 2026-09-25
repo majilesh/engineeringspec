@@ -1,7 +1,7 @@
 ---
 spec_format: engineering-spec
 spec_format_version: "0.1"
-spec_revision: 1
+spec_revision: 2
 id: ES-routing-v2-adoption-modes
 title: Routing v2, adoption modes, and adoption safety
 status: approved
@@ -34,6 +34,8 @@ Design and, only after separate approval, implement RFC 0014. The work covers:
 - base-built self-gating for this repository.
 
 This contract preserves base-pinned authority, deny-overrides-allow, inert runners, canonicalization, the restricted glob dialect, and agent neutrality.
+
+Revision 2 amends the four new-file targets from `create` to `modify`. A `create` target cannot authorize later edits to a file that an earlier phase already created. `modify` still permits adding files, and no path was added.
 
 This contract is `proposed`. It grants no implementation authority. Approval must be reviewed and merged as a separate contract-only governance change. That same approval change must move `ES-external-adopter-pilot-execution` from `approved` to `superseded`; otherwise the shared `benchmarks/README.md` claim becomes ambiguous (`ESRT003`).
 
@@ -101,7 +103,7 @@ This contract is `proposed`. It grants no implementation authority. Approval mus
     - src/policy/**
     - src/receipts/**
     - src/profiles/lite/**
-  change_policy: create
+  change_policy: modify
 - id: TARGET-CONFIG
   component: trusted-base-repository-config
   paths:
@@ -114,7 +116,7 @@ This contract is `proposed`. It grants no implementation authority. Approval mus
     - schemas/repository-config-0.2.schema.json
     - schemas/closure-receipt-0.1.schema.json
     - schemas/profiles/lite-0.1.schema.json
-  change_policy: create
+  change_policy: modify
 - id: TARGET-FORMAT
   component: additive-draft-format-fields
   paths:
@@ -165,7 +167,7 @@ This contract is `proposed`. It grants no implementation authority. Approval mus
     - integrations/claude/hooks/**
     - integrations/codex/hooks/**
     - integrations/cursor/hooks/**
-  change_policy: create
+  change_policy: modify
 - id: TARGET-INTEGRATION-DOCS
   component: agent-integration-guidance
   paths:
@@ -207,7 +209,7 @@ This contract is `proposed`. It grants no implementation authority. Approval mus
   paths:
     - action/**
     - scripts/build-action.mjs
-  change_policy: create
+  change_policy: modify
 - id: TARGET-DOCS
   component: normative-and-user-documentation
   paths:
