@@ -4,7 +4,7 @@ spec_format_version: "0.1"
 spec_revision: 2
 id: ES-routing-v2-adoption-modes
 title: Routing v2, adoption modes, and adoption safety
-status: approved
+status: implemented
 owners:
   - team: EngineeringSpec maintainers
 repository:
