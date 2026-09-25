@@ -12,7 +12,8 @@ import type { ChangedFile } from "../../src/gate/types.js";
 import { isEngineeringSpecId } from "../../src/model/ids.js";
 import type { EngineeringSpec, TargetSurface } from "../../src/model/types.js";
 import { validateTargetGlob } from "../../src/path/targetGlob.js";
-import { enforcementFor, evaluatePolicyRouting, selectorSources } from "../../src/policy/evaluate.js";
+import { enforcementFor, evaluatePolicyRouting, isPassingDecision, selectorSources } from "../../src/policy/evaluate.js";
+import { guardVerdict } from "../../src/guard/guard.js";
 import { classifyGovernanceChanges } from "../../src/routing/governance.js";
 import { partitionSpecificationChanges, selectSpecs, unsafeMixedClosureDiagnostic } from "../../src/routing/select.js";
 import type { LoadedRoutingCandidate } from "../../src/routing/types.js";
@@ -177,7 +178,7 @@ function loadedCandidate(candidate: Candidate, index: number): LoadedRoutingCand
   return { path: `${SPEC_DIRECTORY}/${index}-${candidate.id}.engineering-spec.md`, digest: `sha256:${candidate.id}`, spec };
 }
 
-function evaluateVector(vector: RoutingVector, mode: AdoptionMode) {
+function evaluateVector(vector: RoutingVector, mode: AdoptionMode, onEvaluation?: (evaluation: ReturnType<typeof evaluatePolicyRouting>) => void) {
   let policy;
   try {
     policy = parseRepositoryPolicy(vector.policy ?? {});
@@ -209,6 +210,7 @@ function evaluateVector(vector: RoutingVector, mode: AdoptionMode) {
     ...(selector ? { selector } : {}),
     ...(counted ? { changedLines } : {}),
   });
+  onEvaluation?.(evaluation);
   const diagnostics = [...evaluation.diagnostics, ...mixed].filter((item) => item.severity !== "info");
   return {
     decisions: evaluation.routes.map((route) => route.decision),
@@ -288,6 +290,30 @@ const routingCodes = (codes: string[]): string[] => codes.filter((code) => code.
 interface LegacyRoutingVector { name: string; candidates: Array<{ id: string; status: string; targets: Target[] }>; changed: ChangedFile[]; expected: { decisions: string[]; codes: string[]; changedDigest: string } }
 
 const LEGACY: Record<string, () => Promise<void>> = {
+  // Guard parity: for every active routing vector and mode, the guard projects the same decision (CON-GUARD).
+  "guard-equals-routing-all-fixtures": async () => {
+    let checked = 0;
+    for (const group of inventory()) {
+      const data = manifest(group);
+      if (data.kind !== "routing") continue;
+      for (const vector of data.vectors) {
+        if (vector.pending || vector.expected.outcome.standard === "error") continue;
+        for (const mode of MODES) {
+          const changed = vector.changed as ChangedFile[];
+          const mixed = partitionSpecificationChanges(SPEC_DIRECTORY, changed).mixed ? [unsafeMixedClosureDiagnostic()] : [];
+          evaluateVector(vector, mode, (evaluation) => {
+            const authorized = evaluation.authorized && mixed.length === 0;
+            const guard = guardVerdict({ valid: authorized, routes: evaluation.routes, diagnostics: [...evaluation.diagnostics, ...mixed], enforcement: enforcementFor(mode, authorized) });
+            expect(guard.paths.map((item) => item.allow), `${vector.name} ${mode}`).toEqual(evaluation.routes.map((route) => isPassingDecision(route.decision, mode)));
+            if (mode === "advisory") expect(guard.verdict, `${vector.name} advisory`).not.toBe("deny");
+            else expect(guard.verdict === "allow", `${vector.name} ${mode}`).toBe(vector.expected.outcome[mode] === "pass");
+          });
+          checked += 1;
+        }
+      }
+    }
+    expect(checked).toBeGreaterThan(100);
+  },
   "existing-routing-unchanged": async () => {
     const vectors = JSON.parse(readFileSync("conformance/routing/manifest.json", "utf8")) as LegacyRoutingVector[];
     for (const vector of vectors) {

@@ -14,6 +14,7 @@ All notable changes to this project are documented here.
 - **Change budgets.** Optional `change_budget` and `policy.budgets`, counted with `git diff --numstat`.
 - **Receipt closure.** Receipt-based closure (`schemas/closure-receipt-0.1.schema.json`) in configured modes.
 - **Lite profile.** The lite contract profile and `propose --lite`.
+- **Edit guard.** `engineeringspec guard`, a read-only edit guard, with Claude Code, Codex and Cursor hook adapters in `integrations/*/hooks/`.
 - **Diagnostics.** New codes `ESRT008`–`ESRT013`.
 - **Adoption.** `adopt` writes CODEOWNERS for the spec directory, workflows, CODEOWNERS and `engineering-spec.json`, and no longer generates the Copilot prompt file. `doctor` warns on unowned trust-boundary files and on advisory mode.
 
