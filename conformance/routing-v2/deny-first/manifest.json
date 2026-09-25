@@ -1,0 +1,157 @@
+{
+  "format": "engineering-spec-routing-v2-conformance",
+  "formatVersion": "0.1",
+  "group": "deny-first",
+  "kind": "routing",
+  "vectors": [
+    {
+      "name": "deny-from-unselected-contract",
+      "pending": {
+        "phase": 3
+      },
+      "selector": {
+        "cli": "ES-a"
+      },
+      "baseTimestamp": "2026-09-25T00:00:00Z",
+      "candidates": [
+        {
+          "id": "ES-a",
+          "status": "approved",
+          "targets": [
+            {
+              "id": "TARGET-1",
+              "path": "src/**",
+              "policy": "modify"
+            }
+          ]
+        },
+        {
+          "id": "ES-gen",
+          "status": "approved",
+          "targets": [
+            {
+              "id": "TARGET-1",
+              "path": "src/generated/**",
+              "policy": "read_only"
+            }
+          ]
+        }
+      ],
+      "changed": [
+        {
+          "path": "src/generated/x.ts",
+          "kind": "modified"
+        }
+      ],
+      "expected": {
+        "decisions": [
+          "denied"
+        ],
+        "codes": [
+          "ESRT004"
+        ],
+        "outcome": {
+          "advisory": "pass",
+          "standard": "fail",
+          "controlled": "fail"
+        }
+      }
+    },
+    {
+      "name": "deny-from-standing-contract",
+      "pending": {
+        "phase": 3
+      },
+      "baseTimestamp": "2026-09-25T00:00:00Z",
+      "candidates": [
+        {
+          "id": "ES-all",
+          "status": "approved",
+          "targets": [
+            {
+              "id": "TARGET-1",
+              "path": "**",
+              "policy": "modify"
+            }
+          ]
+        },
+        {
+          "id": "ES-vendor",
+          "status": "approved",
+          "targets": [
+            {
+              "id": "TARGET-1",
+              "path": "vendor/**",
+              "policy": "read_only"
+            }
+          ],
+          "authorityKind": "standing",
+          "expiresAt": "2026-12-01T00:00:00Z"
+        }
+      ],
+      "changed": [
+        {
+          "path": "vendor/lib.js",
+          "kind": "modified"
+        }
+      ],
+      "expected": {
+        "decisions": [
+          "denied"
+        ],
+        "codes": [
+          "ESRT004"
+        ],
+        "outcome": {
+          "advisory": "pass",
+          "standard": "fail",
+          "controlled": "fail"
+        }
+      }
+    },
+    {
+      "name": "deny-on-exempt-path",
+      "pending": {
+        "phase": 3
+      },
+      "policy": {
+        "exemptPaths": [
+          "docs/**"
+        ]
+      },
+      "baseTimestamp": "2026-09-25T00:00:00Z",
+      "candidates": [
+        {
+          "id": "ES-legal",
+          "status": "approved",
+          "targets": [
+            {
+              "id": "TARGET-1",
+              "path": "docs/legal/**",
+              "policy": "read_only"
+            }
+          ]
+        }
+      ],
+      "changed": [
+        {
+          "path": "docs/legal/terms.md",
+          "kind": "modified"
+        }
+      ],
+      "expected": {
+        "decisions": [
+          "denied"
+        ],
+        "codes": [
+          "ESRT004"
+        ],
+        "outcome": {
+          "advisory": "pass",
+          "standard": "fail",
+          "controlled": "fail"
+        }
+      }
+    }
+  ]
+}

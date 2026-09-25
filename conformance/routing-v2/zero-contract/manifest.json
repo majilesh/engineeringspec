@@ -1,0 +1,102 @@
+{
+  "format": "engineering-spec-routing-v2-conformance",
+  "formatVersion": "0.1",
+  "group": "zero-contract",
+  "kind": "routing",
+  "vectors": [
+    {
+      "name": "advisory-no-candidates-passes",
+      "pending": {
+        "phase": 2
+      },
+      "baseTimestamp": "2026-09-25T00:00:00Z",
+      "candidates": [],
+      "changed": [
+        {
+          "path": "src/a.ts",
+          "kind": "modified"
+        }
+      ],
+      "expected": {
+        "decisions": [
+          "uncovered"
+        ],
+        "codes": [
+          "ESRT002"
+        ],
+        "outcome": {
+          "advisory": "pass",
+          "standard": "fail",
+          "controlled": "fail"
+        }
+      }
+    },
+    {
+      "name": "standard-no-candidates-exempt-passes",
+      "pending": {
+        "phase": 2
+      },
+      "policy": {
+        "exemptPaths": [
+          "docs/**"
+        ]
+      },
+      "baseTimestamp": "2026-09-25T00:00:00Z",
+      "candidates": [],
+      "changed": [
+        {
+          "path": "docs/guide.md",
+          "kind": "modified"
+        }
+      ],
+      "expected": {
+        "decisions": [
+          "exempt"
+        ],
+        "codes": [],
+        "outcome": {
+          "advisory": "pass",
+          "standard": "pass",
+          "controlled": "pass"
+        }
+      }
+    },
+    {
+      "name": "standard-no-candidates-governed-fails",
+      "pending": {
+        "phase": 2
+      },
+      "policy": {
+        "governedPaths": [
+          "src/**"
+        ]
+      },
+      "baseTimestamp": "2026-09-25T00:00:00Z",
+      "candidates": [],
+      "changed": [
+        {
+          "path": "scripts/build.sh",
+          "kind": "modified"
+        },
+        {
+          "path": "src/a.ts",
+          "kind": "modified"
+        }
+      ],
+      "expected": {
+        "decisions": [
+          "ungoverned",
+          "uncovered"
+        ],
+        "codes": [
+          "ESRT002"
+        ],
+        "outcome": {
+          "advisory": "pass",
+          "standard": "fail",
+          "controlled": "fail"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,246 @@
+{
+  "format": "engineering-spec-routing-v2-conformance",
+  "formatVersion": "0.1",
+  "group": "standing",
+  "kind": "routing",
+  "vectors": [
+    {
+      "name": "standing-single-allow",
+      "pending": {
+        "phase": 3
+      },
+      "baseTimestamp": "2026-09-25T00:00:00Z",
+      "candidates": [
+        {
+          "id": "ES-s",
+          "status": "approved",
+          "targets": [
+            {
+              "id": "TARGET-1",
+              "path": "docs/**",
+              "policy": "modify"
+            }
+          ],
+          "authorityKind": "standing",
+          "expiresAt": "2026-12-01T00:00:00Z"
+        }
+      ],
+      "changed": [
+        {
+          "path": "docs/a.md",
+          "kind": "modified"
+        }
+      ],
+      "expected": {
+        "decisions": [
+          "standing"
+        ],
+        "codes": [],
+        "outcome": {
+          "advisory": "pass",
+          "standard": "pass",
+          "controlled": "fail"
+        },
+        "attribution": [
+          "ES-s"
+        ]
+      }
+    },
+    {
+      "name": "change-over-standing-attribution",
+      "pending": {
+        "phase": 3
+      },
+      "baseTimestamp": "2026-09-25T00:00:00Z",
+      "candidates": [
+        {
+          "id": "ES-s",
+          "status": "approved",
+          "targets": [
+            {
+              "id": "TARGET-1",
+              "path": "src/**",
+              "policy": "modify"
+            }
+          ],
+          "authorityKind": "standing",
+          "expiresAt": "2026-12-01T00:00:00Z"
+        },
+        {
+          "id": "ES-b",
+          "status": "approved",
+          "targets": [
+            {
+              "id": "TARGET-1",
+              "path": "src/api/**",
+              "policy": "modify"
+            }
+          ]
+        }
+      ],
+      "changed": [
+        {
+          "path": "src/api/x.ts",
+          "kind": "modified"
+        }
+      ],
+      "expected": {
+        "decisions": [
+          "selected"
+        ],
+        "codes": [],
+        "outcome": {
+          "advisory": "pass",
+          "standard": "pass",
+          "controlled": "pass"
+        },
+        "attribution": [
+          "ES-b"
+        ]
+      }
+    },
+    {
+      "name": "standing-overlap-ambiguous",
+      "pending": {
+        "phase": 3
+      },
+      "baseTimestamp": "2026-09-25T00:00:00Z",
+      "candidates": [
+        {
+          "id": "ES-s1",
+          "status": "approved",
+          "targets": [
+            {
+              "id": "TARGET-1",
+              "path": "docs/**",
+              "policy": "modify"
+            }
+          ],
+          "authorityKind": "standing",
+          "expiresAt": "2026-12-01T00:00:00Z"
+        },
+        {
+          "id": "ES-s2",
+          "status": "approved",
+          "targets": [
+            {
+              "id": "TARGET-1",
+              "path": "docs/**",
+              "policy": "modify"
+            }
+          ],
+          "authorityKind": "standing",
+          "expiresAt": "2026-12-01T00:00:00Z"
+        }
+      ],
+      "changed": [
+        {
+          "path": "docs/a.md",
+          "kind": "modified"
+        }
+      ],
+      "expected": {
+        "decisions": [
+          "ambiguous"
+        ],
+        "codes": [
+          "ESRT003"
+        ],
+        "outcome": {
+          "advisory": "pass",
+          "standard": "fail",
+          "controlled": "fail"
+        }
+      }
+    },
+    {
+      "name": "standing-expired-by-base-timestamp",
+      "pending": {
+        "phase": 3
+      },
+      "baseTimestamp": "2026-09-25T00:00:00Z",
+      "candidates": [
+        {
+          "id": "ES-s",
+          "status": "approved",
+          "targets": [
+            {
+              "id": "TARGET-1",
+              "path": "docs/**",
+              "policy": "modify"
+            }
+          ],
+          "authorityKind": "standing",
+          "expiresAt": "2026-09-01T00:00:00Z"
+        }
+      ],
+      "changed": [
+        {
+          "path": "docs/a.md",
+          "kind": "modified"
+        }
+      ],
+      "expected": {
+        "decisions": [
+          "uncovered"
+        ],
+        "codes": [
+          "ESRT002",
+          "ESRT011"
+        ],
+        "outcome": {
+          "advisory": "pass",
+          "standard": "fail",
+          "controlled": "fail"
+        }
+      }
+    },
+    {
+      "name": "standing-claims-protected-invalid",
+      "pending": {
+        "phase": 3
+      },
+      "policy": {
+        "protectedPaths": [
+          "infra/**"
+        ]
+      },
+      "baseTimestamp": "2026-09-25T00:00:00Z",
+      "candidates": [
+        {
+          "id": "ES-s",
+          "status": "approved",
+          "targets": [
+            {
+              "id": "TARGET-1",
+              "path": "infra/**",
+              "policy": "modify"
+            }
+          ],
+          "authorityKind": "standing",
+          "expiresAt": "2026-12-01T00:00:00Z"
+        }
+      ],
+      "changed": [
+        {
+          "path": "infra/main.tf",
+          "kind": "modified"
+        }
+      ],
+      "expected": {
+        "decisions": [
+          "protected_unauthorized"
+        ],
+        "codes": [
+          "ESRT008",
+          "ESRT012"
+        ],
+        "outcome": {
+          "advisory": "pass",
+          "standard": "fail",
+          "controlled": "fail"
+        }
+      }
+    }
+  ]
+}

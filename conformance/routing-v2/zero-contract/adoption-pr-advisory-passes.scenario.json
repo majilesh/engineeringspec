@@ -1,0 +1,24 @@
+{
+  "name": "adoption-pr-advisory-passes",
+  "pending": {
+    "phase": 2
+  },
+  "kind": "scenario",
+  "verifier": "VER-ADOPTION",
+  "steps": [
+    "Create a temporary Git repository with one README.md commit (the base).",
+    "Run adopt with default options and commit the generated files (the head).",
+    "Run the generated workflow's check command against the base."
+  ],
+  "expected": {
+    "mode": "advisory",
+    "exitCode": 0,
+    "codeownersEntries": [
+      "docs/engineering-specs/",
+      ".github/workflows/",
+      ".github/CODEOWNERS",
+      "engineering-spec.json"
+    ],
+    "generatesCopilotPromptFile": false
+  }
+}

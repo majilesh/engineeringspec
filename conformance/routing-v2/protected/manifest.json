@@ -1,0 +1,204 @@
+{
+  "format": "engineering-spec-routing-v2-conformance",
+  "formatVersion": "0.1",
+  "group": "protected",
+  "kind": "routing",
+  "vectors": [
+    {
+      "name": "protected-selected-full",
+      "pending": {
+        "phase": 3
+      },
+      "policy": {
+        "protectedPaths": [
+          "migrations/**"
+        ]
+      },
+      "selector": {
+        "cli": "ES-mig"
+      },
+      "baseTimestamp": "2026-09-25T00:00:00Z",
+      "candidates": [
+        {
+          "id": "ES-mig",
+          "status": "approved",
+          "targets": [
+            {
+              "id": "TARGET-1",
+              "path": "migrations/**",
+              "policy": "modify"
+            }
+          ]
+        },
+        {
+          "id": "ES-all",
+          "status": "approved",
+          "targets": [
+            {
+              "id": "TARGET-1",
+              "path": "**",
+              "policy": "modify"
+            }
+          ]
+        }
+      ],
+      "changed": [
+        {
+          "path": "migrations/001.sql",
+          "kind": "added"
+        }
+      ],
+      "expected": {
+        "decisions": [
+          "selected"
+        ],
+        "codes": [],
+        "outcome": {
+          "advisory": "pass",
+          "standard": "pass",
+          "controlled": "pass"
+        },
+        "attribution": [
+          "ES-mig"
+        ]
+      }
+    },
+    {
+      "name": "protected-lite-rejected",
+      "pending": {
+        "phase": 4
+      },
+      "policy": {
+        "protectedPaths": [
+          "migrations/**"
+        ]
+      },
+      "baseTimestamp": "2026-09-25T00:00:00Z",
+      "candidates": [
+        {
+          "id": "ES-lite",
+          "status": "approved",
+          "targets": [
+            {
+              "id": "TARGET-1",
+              "path": "migrations/**",
+              "policy": "modify"
+            }
+          ],
+          "profile": "lite"
+        }
+      ],
+      "changed": [
+        {
+          "path": "migrations/001.sql",
+          "kind": "added"
+        }
+      ],
+      "expected": {
+        "decisions": [
+          "protected_unauthorized"
+        ],
+        "codes": [
+          "ESRT008"
+        ],
+        "outcome": {
+          "advisory": "pass",
+          "standard": "fail",
+          "controlled": "fail"
+        }
+      }
+    },
+    {
+      "name": "protected-sole-change-contract",
+      "pending": {
+        "phase": 2
+      },
+      "policy": {
+        "protectedPaths": [
+          "migrations/**"
+        ]
+      },
+      "baseTimestamp": "2026-09-25T00:00:00Z",
+      "candidates": [
+        {
+          "id": "ES-mig",
+          "status": "approved",
+          "targets": [
+            {
+              "id": "TARGET-1",
+              "path": "migrations/**",
+              "policy": "modify"
+            }
+          ]
+        }
+      ],
+      "changed": [
+        {
+          "path": "migrations/001.sql",
+          "kind": "added"
+        }
+      ],
+      "expected": {
+        "decisions": [
+          "selected"
+        ],
+        "codes": [],
+        "outcome": {
+          "advisory": "pass",
+          "standard": "pass",
+          "controlled": "pass"
+        },
+        "attribution": [
+          "ES-mig"
+        ]
+      }
+    },
+    {
+      "name": "protected-standing-only-rejected",
+      "pending": {
+        "phase": 3
+      },
+      "policy": {
+        "protectedPaths": [
+          "migrations/**"
+        ]
+      },
+      "baseTimestamp": "2026-09-25T00:00:00Z",
+      "candidates": [
+        {
+          "id": "ES-s",
+          "status": "approved",
+          "targets": [
+            {
+              "id": "TARGET-1",
+              "path": "migrations/**",
+              "policy": "modify"
+            }
+          ],
+          "authorityKind": "standing",
+          "expiresAt": "2026-12-01T00:00:00Z"
+        }
+      ],
+      "changed": [
+        {
+          "path": "migrations/001.sql",
+          "kind": "added"
+        }
+      ],
+      "expected": {
+        "decisions": [
+          "protected_unauthorized"
+        ],
+        "codes": [
+          "ESRT008",
+          "ESRT012"
+        ],
+        "outcome": {
+          "advisory": "pass",
+          "standard": "fail",
+          "controlled": "fail"
+        }
+      }
+    }
+  ]
+}
