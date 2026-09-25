@@ -82,6 +82,10 @@ This contract is `proposed`. It grants nothing until a separate contract-only ch
     - docs/upgrading.md
     - skills/engineering-spec/SKILL.md
     - site/index.html
+    - SPEC.md
+    - integrations/claude/README.md
+    - integrations/codex/README.md
+    - integrations/cursor/README.md
   change_policy: modify
 - id: TARGET-ACTION-PIN
   component: generated-action-runtime-pin
