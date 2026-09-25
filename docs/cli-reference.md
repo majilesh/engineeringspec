@@ -37,7 +37,7 @@ Writing evidence inside the worktree would mutate the working state whose digest
 
 ### Compact agent JSON
 
-In the unpublished RC17 candidate, `next --format json` returns `permission`, `workflowState`, `currentChangeClassification`, `command`, `approvedIds`, `proposedIds`, and `blockers`. IDs come from the trusted-base candidates; `proposedIds` includes both drafts and proposals. Blockers retain diagnostic codes, messages, and paths without the full routing-candidate dump. Runnable package examples remain on published RC16 until RC17 receives separate publication approval.
+Since RC17, `next --format json` returns `permission`, `workflowState`, `currentChangeClassification`, `command`, `approvedIds`, `proposedIds`, and `blockers`. IDs come from the trusted-base candidates; `proposedIds` includes both drafts and proposals. Blockers retain diagnostic codes, messages, and paths without the full routing-candidate dump.
 
 `currentChangeClassification` is the existing classification of the observed complete working state, not the source of permission:
 
@@ -139,6 +139,22 @@ engineeringspec benchmark --ceremony --format json
 
 Measurement grants no authority, executes no verifier, and proves neither correctness nor trusted-check execution. It omits individual paths unless disclosure is explicit. Benchmark output preserves failed, slower, amended, open-authority, negative-routing, and incomplete results.
 
+## Adoption modes, selectors and receipts (RFC 0014, unreleased)
+
+These options are on `main` and not yet in a published release. They take effect when the trusted-base `engineering-spec.json` sets `mode`; without it, routing is unchanged.
+
+| Option | Commands | Behavior |
+|---|---|---|
+| `--bootstrap-mode advisory` | `select`, `check`, `review` | Lets a first adoption PR pass. Honored only when the trusted base has no `engineering-spec.json` and no approved contracts; otherwise ignored and reported as `bootstrap: ignored`. |
+| `--contract <id>` | `select`, `check`, `review` | Narrows routing to one approved trusted-base contract. It never widens authority or suppresses a deny. |
+| `--selector-label <label>` | `select`, `check`, `review` | A PR label naming a contract. Honored only with a trusted `selection.label` prefix. Repeatable. |
+| `--selector-branch <name>` | `select`, `check`, `review` | A PR branch naming a contract. Honored only with a trusted `selection.branch` prefix. |
+| `--lite` | `propose` | Writes a lite-profile draft: frontmatter and targets only. |
+
+`EngineeringSpec-Contract: <ID>` commit trailers in base..head are always read as selectors, and they survive into merge-queue commits.
+
+Reports add `enforcement: {mode, outcome, enforced}`. `select`, `check` and `review` exit according to `enforcement.outcome`, while `valid` still means every path is authorized. In configured modes, `finish --write-closure` writes `<specDirectory>/receipts/<ID>.receipt.json` instead of editing the contract.
+
 ## Safety invariants
 
 - Parsing, validation, doctor, status, next, catalogue, architecture, inspect, prepare, work, measure, context, and explain do not execute specification-declared runners.
@@ -153,7 +169,7 @@ Measurement grants no authority, executes no verifier, and proves neither correc
 Preview a managed integration upgrade before applying it:
 
 ```sh
-npx --yes @engineeringspec/cli@0.1.0-rc.16 adopt . \
+npx --yes @engineeringspec/cli@0.1.0-rc.17 adopt . \
   --spec docs/engineering-specs/change.engineering-spec.md \
   --merge --upgrade --dry-run
 ```

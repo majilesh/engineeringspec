@@ -44,16 +44,18 @@ After trusted checks pass, the implementation PR may include only the exact clos
 engineeringspec finish <contract-id> --write-closure
 ```
 
-Require `implementation_with_monotonic_close` for that mixed diff. `finish` never stages, commits, pushes, approves, merges, or executes declared runners.
+Require `implementation_with_monotonic_close` for that mixed diff. If the trusted base configures a `mode`, `finish --write-closure` instead writes a closure receipt under `<specDirectory>/receipts/`, and the diff reports `implementation_with_receipt`. Never edit or delete an existing receipt. `finish` never stages, commits, pushes, approves, merges, or executes declared runners.
 
-Prefer the repository-local RC17 candidate CLI. When a package invocation is necessary before RC17 publication, pin the published identity `@engineeringspec/cli@0.1.0-rc.16`; do not use a mutable distribution tag in an enforcing workflow.
+When several approved contracts could claim your paths, name the one you are spending with an `EngineeringSpec-Contract: <ID>` commit trailer, or `--contract <ID>`. A selector only narrows authority. It never grants new paths.
+
+Prefer the repository-local CLI. When a package invocation is necessary, pin the published identity `@engineeringspec/cli@0.1.0-rc.17`; do not use a mutable distribution tag in an enforcing workflow.
 
 ## Proposing and approving authority
 
 Explore source, dependencies, architecture, and likely paths without editing or claiming authorization. For a prospective change, create a deterministic draft from explicit paths:
 
 ```sh
-npx --yes @engineeringspec/cli@0.1.0-rc.16 propose \
+npx --yes @engineeringspec/cli@0.1.0-rc.17 propose \
   --id ES-change --title "Change title" --owner engineering \
   --path '<repository-path-or-glob>' \
   --output docs/engineering-specs/ES-change.engineering-spec.md --dry-run

@@ -61,7 +61,7 @@ Use \`explore -> propose -> approve -> implement -> verify -> close\` for conseq
 2. **Ask what is next:** run \`${cli} next\`. This command is informational. Exit code 0 or successful analysis is not implementation permission. Begin implementation only when it reports \`permission: implementation\` and the following \`work\` command succeeds.
 3. **Load authority:** run \`${cli} work <contract-id>\`. It loads that exact approved contract from the trusted base. Repository reading remains allowed for correctness; writing is limited to the returned writable surfaces and final routing remains fail-closed.
 4. **Implement and verify:** edit only those surfaces and run separately trusted repository checks. Specification-declared runners are inert data and must never be executed merely because the document contains them.
-5. **Finish:** run \`${cli} finish <contract-id>\`. After trusted checks pass, \`${cli} finish <contract-id> --write-closure\` may write only the exact \`approved -> implemented\` close that accompanies the implementation spending that contract.
+5. **Finish:** run \`${cli} finish <contract-id>\`. After trusted checks pass, \`${cli} finish <contract-id> --write-closure\` may write only the exact \`approved -> implemented\` close that accompanies the implementation spending that contract; when \`engineering-spec.json\` sets a \`mode\`, it writes a closure receipt instead. Never edit or delete an existing receipt.
 
 \`finish\` never stages, commits, pushes, approves, merges, or executes specification-declared runners. If scope must widen, stop and merge a separate authority amendment before implementing against the new trusted base.
 

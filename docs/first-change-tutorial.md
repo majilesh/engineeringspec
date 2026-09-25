@@ -2,7 +2,7 @@
 
 This walkthrough adds a fictional dark-mode preference under `src/settings/**`. It teaches one boundary: grant authority first, then spend it.
 
-Repository source is prepared as the unpublished RC17 candidate. The runnable package command below remains pinned to published RC16 until separate publication approval.
+The runnable package command below pins the published `@engineeringspec/cli@0.1.0-rc.17`.
 
 ## 1. Explore
 
@@ -13,7 +13,7 @@ Ask the coding agent to read the styling system, preference storage, and tests. 
 Create a prospective contract with an explicit path before writing code:
 
 ```sh
-npx --yes @engineeringspec/cli@0.1.0-rc.16 propose \
+npx --yes @engineeringspec/cli@0.1.0-rc.17 propose \
   --id ES-dark-mode \
   --title "Add dark mode" \
   --path 'src/settings/**' \

@@ -79,6 +79,17 @@ steps:
 
 The Action loads authority from the configured base, routes every changed path, and fails when a path is uncovered, ambiguous, or denied. Deny wins. A workspace proposal cannot contribute authority. Protect the job as a required check and protect `docs/engineering-specs/**` with CODEOWNERS. See [Production diff-scope gate](docs/production-gate.md).
 
+**Adoption modes (RFC 0014, on `main`, unreleased).** `engineering-spec.json` can set `mode: advisory | standard | controlled`, with trusted-base policy for governed, exempt and protected paths. New installations start in advisory mode, which reports without blocking and grants nothing.
+
+The same release adds:
+- selectors, which name one approved contract per PR;
+- standing authority with expiry;
+- change budgets;
+- receipt-based closure;
+- a 15-line lite contract profile.
+
+See the [draft specification](SPEC.md#adoption-modes-authority-kinds-and-closure-draft-rfc-0014) and [RFC 0014](rfcs/0014-routing-v2-adoption-modes.md). Without `mode`, behavior is unchanged.
+
 ## Minimal contract
 
 ````markdown
