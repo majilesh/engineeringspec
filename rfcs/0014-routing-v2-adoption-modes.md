@@ -1,7 +1,7 @@
 # RFC 0014: Routing v2 and adoption modes
 
-- **Status:** Proposed
-- **Authorizing contract:** `ES-routing-v2-adoption-modes` (proposed; grants no implementation authority until approved on the trusted base)
+- **Status:** Accepted (2026-09-25)
+- **Authorizing contract:** `ES-routing-v2-adoption-modes` (approved on the trusted base in #139)
 - **Supersedes authority of:** `ES-external-adopter-pilot-execution`
 - **Motivating evidence:** maintainer engineering review (2026-09-25), independently reproduced; findings are summarized in §Motivation
 
@@ -341,11 +341,13 @@ Implementation proceeds in the phases defined by the authorizing contract:
 - **Phase 6:** guard and adapters.
 - **Phase 7:** executable ceremony benchmark and Action startup.
 
-## Unresolved questions
+## Resolved decisions
 
-1. Receipt location and timing (§5).
-2. Whether standing authority tiering (§2 step 7) is acceptable or whether standing plus change overlap should also be `ambiguous` without a selector.
-3. Action bundling: committed bundled output versus production-only dependencies with prebuilt output.
-4. Whether `lite` contracts may ever satisfy protected paths when accompanied by a `full` constraint set elsewhere. Current proposal: never.
-5. Whether one authorizing contract is appropriate, or whether each phase should receive its own narrower contract.
-6. Maximum standing lifetime default, and whether expiry uses the base committer timestamp (proposed) or an explicit review date.
+These were recorded on acceptance and are binding for the implementation phases.
+
+1. **Receipt location and timing (§5):** option (a). `finish` writes `<specDirectory>/receipts/<contract-id>.receipt.json` in the implementation PR, under a new `implementation_with_receipt` governance classification. The contract file is not edited.
+2. **Standing versus change overlap (§2 step 7):** without a selector, a single allowing change contract takes the path over standing authority. Tiering decides attribution only. It never allows a denied, protected or grant-before-spend path.
+3. **Action startup (§10):** a committed bundled JavaScript action under `action/`, built by `scripts/build-action.mjs`. CI verifies that the committed bundle matches the source build.
+4. **Lite profile and protected paths (§6):** a `lite` contract never satisfies a protected path.
+5. **One contract or per-phase contracts:** one authorizing contract, `ES-routing-v2-adoption-modes`, with mandatory phase order (`CON-PHASE-ORDER`).
+6. **Standing lifetime (§4):** a default maximum of 180 days, configurable per repository. Expiry is evaluated against the trusted base commit's committer timestamp.
