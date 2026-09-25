@@ -80,6 +80,7 @@ export function routeChanges(
     eligible: required.has(candidate.spec.metadata.status),
     specRevision:candidate.spec.metadata.specRevision,
     semanticDigest:closureSemanticDigest(candidate.spec),
+    ...(candidate.spec.metadata.authorityKind === "standing" ? { authorityKind: "standing" as const } : {}),
   }));
   const eligible = ordered.filter((candidate) => required.has(candidate.spec.metadata.status));
   const diagnostics: Diagnostic[] = [];

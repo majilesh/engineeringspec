@@ -1,5 +1,7 @@
 import { assertSafeRepoPath, collectGitDiff, collectGitStagedDiff, collectGitWorktreeDiff } from "../gate/collectDiff.js";
 import { resolveCommitSha, tryReadGitBlob } from "../gate/loadSpec.js";
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
 import type { ChangedFile } from "../gate/types.js";
 import type { Status } from "../model/types.js";
 import { compareCodePoints } from "../normalizer/canonicalize.js";
@@ -12,9 +14,8 @@ import { classifyGovernanceChanges, inspectWorkspaceGovernance } from "./governa
 import { loadRoutingCandidates } from "./loadCandidates.js";
 import { closureSemanticDigest } from "../normalizer/digest.js";
 import { parseRepositoryConfig, REPOSITORY_CONFIG_PATH, RepositoryConfigError, type RepositoryConfig } from "../config/repositoryConfig.js";
-import { DEFAULT_POLICY, enforcementFor, evaluatePolicyRouting, type PolicyMode } from "../policy/evaluate.js";
+import { DEFAULT_POLICY, enforcementFor, evaluatePolicyRouting, isPassingDecision, type PolicyMode } from "../policy/evaluate.js";
 import type { Diagnostic } from "../diagnostics/Diagnostic.js";
-import { PASSING_DECISIONS } from "./types.js";
 
 export interface SelectSpecsOptions {
   directory: string;
@@ -32,6 +33,12 @@ export interface SelectSpecsOptions {
    * no engineering-spec.json and no approved contracts, so it can never weaken existing authority.
    */
   bootstrapMode?: "advisory";
+}
+
+/** Committer timestamp (ISO 8601) of an immutable commit; used for deterministic standing expiry. */
+async function resolveCommitTimestamp(sha: string, cwd?: string): Promise<string> {
+  const { stdout } = await promisify(execFile)("git", ["show", "-s", "--format=%cI", sha], { cwd, encoding: "utf8" });
+  return stdout.trim();
 }
 
 interface TrustedPolicy {
@@ -148,6 +155,7 @@ export async function selectSpecs(options: SelectSpecsOptions): Promise<RoutingR
         changed: routeableChanges,
         requiredStatuses,
         baseSha,
+        baseTimestamp: await resolveCommitTimestamp(baseSha, options.cwd),
       })
     : undefined;
   const routed = policyEvaluation
@@ -199,7 +207,7 @@ export async function selectSpecs(options: SelectSpecsOptions): Promise<RoutingR
           : "complete";
   const valid = !loadFailed && !diagnostics.some((item) => item.severity === "error")
     && !(options.strict && diagnostics.some((item) => item.severity === "warning"))
-    && routed.routes.every((route) => PASSING_DECISIONS.has(route.decision));
+    && routed.routes.every((route) => isPassingDecision(route.decision, trusted.mode ?? "legacy"));
   const enforcement = enforcementFor(trusted.mode ?? "legacy", valid, Boolean(trusted.error || (trusted.mode && loadFailed)));
   return {
     valid,

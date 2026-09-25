@@ -6,9 +6,6 @@
   "vectors": [
     {
       "name": "standing-single-allow",
-      "pending": {
-        "phase": 3
-      },
       "baseTimestamp": "2026-09-25T00:00:00Z",
       "candidates": [
         {
@@ -48,9 +45,6 @@
     },
     {
       "name": "change-over-standing-attribution",
-      "pending": {
-        "phase": 3
-      },
       "baseTimestamp": "2026-09-25T00:00:00Z",
       "candidates": [
         {
@@ -101,9 +95,6 @@
     },
     {
       "name": "standing-overlap-ambiguous",
-      "pending": {
-        "phase": 3
-      },
       "baseTimestamp": "2026-09-25T00:00:00Z",
       "candidates": [
         {
@@ -155,9 +146,6 @@
     },
     {
       "name": "standing-expired-by-base-timestamp",
-      "pending": {
-        "phase": 3
-      },
       "baseTimestamp": "2026-09-25T00:00:00Z",
       "candidates": [
         {
@@ -197,9 +185,6 @@
     },
     {
       "name": "standing-claims-protected-invalid",
-      "pending": {
-        "phase": 3
-      },
       "policy": {
         "protectedPaths": [
           "infra/**"

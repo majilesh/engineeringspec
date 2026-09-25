@@ -18,6 +18,8 @@ export interface RoutingCandidateSummary {
   eligible: boolean;
   specRevision:number;
   semanticDigest:string;
+  /** Present only for standing authority (RFC 0014 §4); change authority omits it. */
+  authorityKind?: "standing";
 }
 
 export interface RoutingClaim {
@@ -42,10 +44,8 @@ export interface SequencingAuditRecord {
 export type LegacyRouteDecision = "selected" | "uncovered" | "ambiguous" | "denied";
 
 /** Legacy decisions plus RFC 0014 policy decisions, which appear only when a mode is configured. */
-export type RouteDecision = LegacyRouteDecision | "exempt" | "ungoverned" | "protected_unauthorized";
+export type RouteDecision = LegacyRouteDecision | "standing" | "exempt" | "ungoverned" | "protected_unauthorized";
 
-/** Decisions that authorize a path; everything else is a violation. */
-export const PASSING_DECISIONS: ReadonlySet<RouteDecision> = new Set(["selected", "exempt", "ungoverned"]);
 
 export interface EnforcementResult {
   /** `legacy` when the trusted base configures no mode; `bootstrap_advisory` only for first adoption. */

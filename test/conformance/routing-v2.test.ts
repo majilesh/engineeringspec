@@ -17,6 +17,8 @@ import { classifyGovernanceChanges } from "../../src/routing/governance.js";
 import { partitionSpecificationChanges, selectSpecs, unsafeMixedClosureDiagnostic } from "../../src/routing/select.js";
 import type { LoadedRoutingCandidate } from "../../src/routing/types.js";
 import { validateFile } from "../../src/validator/validateFile.js";
+import { canonicalJson } from "../../src/normalizer/canonicalize.js";
+import { normalize } from "../../src/normalizer/normalize.js";
 import { runCli } from "../support/runCli.js";
 
 // RFC 0014 fixtures land before the semantics they test (CON-PHASE-ORDER).
@@ -144,6 +146,7 @@ describe("routing v2 conformance inventory", () => {
         else if (SCENARIOS[item.name]) it(item.name, SCENARIOS[item.name]!);
         else if (data.kind === "routing") it(item.name, () => assertRoutingVector(item as RoutingVector));
         else if (data.kind === "meta" && LEGACY[item.name]) it(item.name, LEGACY[item.name]!);
+        else if (data.kind === "document") it(item.name, () => assertDocument(group, item as DocumentVector));
         else it(item.name, () => { throw new Error(`No active runner for ${group.group}/${item.name}`); });
       }
     });
@@ -160,6 +163,8 @@ function loadedCandidate(candidate: Candidate, index: number): LoadedRoutingCand
       specFormat: "engineering-spec", specFormatVersion: "0.1", specRevision: candidate.specRevision ?? 1,
       id: candidate.id, title: candidate.id, status: candidate.status as EngineeringSpec["metadata"]["status"], owners: [{ team: "test" }],
       ...(candidate.profile ? { profiles: [{ name: candidate.profile, version: "0.1" }] } : {}),
+      ...(candidate.authorityKind ? { authorityKind: candidate.authorityKind } : {}),
+      ...(candidate.expiresAt ? { expiresAt: candidate.expiresAt } : {}),
     },
     sourceRefs: [],
     targets: candidate.targets.map((target) => ({ id: target.id, paths: [target.path], changePolicy: target.policy as TargetSurface["changePolicy"] })),
@@ -181,7 +186,7 @@ function evaluateVector(vector: RoutingVector, mode: AdoptionMode) {
   expect(classifyGovernanceChanges(SPEC_DIRECTORY, changed)).not.toBe("contract_only");
   // Vectors never carry workspace contract bodies, so a mixed change is never an exact monotonic close.
   const mixed = partitionSpecificationChanges(SPEC_DIRECTORY, changed).mixed ? [unsafeMixedClosureDiagnostic()] : [];
-  const evaluation = evaluatePolicyRouting({ mode, policy, specDirectory: SPEC_DIRECTORY, candidates: vector.candidates.map(loadedCandidate), changed });
+  const evaluation = evaluatePolicyRouting({ mode, policy, specDirectory: SPEC_DIRECTORY, candidates: vector.candidates.map(loadedCandidate), changed, baseTimestamp: vector.baseTimestamp });
   const diagnostics = [...evaluation.diagnostics, ...mixed].filter((item) => item.severity !== "info");
   return {
     decisions: evaluation.routes.map((route) => route.decision),
@@ -300,6 +305,18 @@ const LEGACY: Record<string, () => Promise<void>> = {
     }
   },
 };
+
+interface DocumentVector { name: string; file: string; expected: { valid: boolean; codes?: string[]; metadata?: Record<string, unknown>; canonicalBytes?: string } }
+
+async function assertDocument(group: InventoryGroup, vector: DocumentVector): Promise<void> {
+  const result = await validateFile(path.join(group.path, vector.file), { resolveProfiles: false });
+  expect(result.valid).toBe(vector.expected.valid);
+  if (vector.expected.codes) expect([...new Set(result.diagnostics.filter((item) => item.severity !== "info").map((item) => item.code))].sort()).toEqual(vector.expected.codes);
+  if (!vector.expected.valid) return;
+  const normalized = normalize(result.spec!);
+  if (vector.expected.metadata) expect(normalized.metadata).toMatchObject(vector.expected.metadata);
+  if (vector.expected.canonicalBytes) expect(canonicalJson(normalized)).toBe(readFileSync(path.join(group.path, vector.expected.canonicalBytes), "utf8"));
+}
 
 const SCENARIOS: Record<string, () => Promise<void>> = {
   "adoption-pr-advisory-passes": async () => {

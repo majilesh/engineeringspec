@@ -10,7 +10,10 @@ export interface EngineeringSpecMetadata {
   title: string; status: Status; owners: Owner[]; createdAt?: string; updatedAt?: string;
   repository?: RepositoryReference; baseRevision?: string; profiles?: ProfileReference[];
   supersedes?: string[]; extensions?: Record<string, unknown>;
+  /** RFC 0014. Absent means change authority; never defaulted into canonical JSON. */
+  authorityKind?: "change" | "standing"; expiresAt?: string; changeBudget?: ChangeBudget;
 }
+export interface ChangeBudget { maxFiles?: number; maxChangedLines?: number }
 export interface SourceReference { id: string; type: "productspec"|"github_issue"|"jira"|"linear"|"incident"|"adr"|"security_finding"|"regulation"|"document"|"other"; path?: string; ref?: string; uri?: string; revision?: string|number; digest?: DigestReference|string; itemIds?: string[]; title?: string }
 export interface TargetSurface { id: string; component?: string; repository?: string; paths: string[]; changePolicy: "modify"|"create"|"delete"|"read_only"|"interface_only"|"observe"; owner?: string; notes?: string }
 export interface AuthoritySuspension { contractId:string; specRevision:number; semanticDigest:string; paths:string[] }

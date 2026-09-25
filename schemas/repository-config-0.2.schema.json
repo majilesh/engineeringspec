@@ -17,7 +17,8 @@
       "properties": {
         "governedPaths": { "$ref": "#/$defs/globs" },
         "exemptPaths": { "$ref": "#/$defs/globs" },
-        "protectedPaths": { "$ref": "#/$defs/globs" }
+        "protectedPaths": { "$ref": "#/$defs/globs" },
+        "grantBeforeSpendPaths": { "$ref": "#/$defs/globs" }
       }
     },
     "trustedVerifiers": {
