@@ -140,7 +140,23 @@ jobs:
           fi
           # The approved base contract remains authoritative, including when this PR edits it.
           # Widen targets in a contract-only PR, merge it, then implement against that new base.
-      - name: Run approved multi-spec routing
+      # Authoritative routing runs a CLI built from the trusted base, so a change to
+      # routing, authority, config, or validation code can never evaluate itself.
+      - name: Build trusted-base CLI
+        if: (github.event_name == 'pull_request' || github.event_name == 'merge_group') && env.GATE == '1' && env.CONTRACT_ONLY != '1'
+        run: |
+          base_cli="$RUNNER_TEMP/engineeringspec-base"
+          git worktree add --detach "$base_cli" "$GATE_BASE"
+          npm ci --ignore-scripts --prefix "$base_cli"
+          npm run build --prefix "$base_cli"
+          echo "BASE_CLI=$base_cli/dist/cli.js" >> "$GITHUB_ENV"
+      - name: Run approved multi-spec routing (trusted-base CLI, authoritative)
+        if: (github.event_name == 'pull_request' || github.event_name == 'merge_group') && env.GATE == '1' && env.CONTRACT_ONLY != '1'
+        run: |
+          node "$BASE_CLI" validate docs/engineering-specs --strict --format github
+          node "$BASE_CLI" select docs/engineering-specs --base "$GATE_BASE" --head HEAD --strict --format github
+          node "$BASE_CLI" review --spec-dir docs/engineering-specs --base "$GATE_BASE" --head HEAD --no-worktree --strict --format github
+      - name: Action smoke test (PR head, non-authoritative)
         if: (github.event_name == 'pull_request' || github.event_name == 'merge_group') && env.GATE == '1' && env.CONTRACT_ONLY != '1'
         uses: ./
         with:

@@ -8,6 +8,7 @@ import { createProgram } from "../../src/cli/program.js";
 import { validateFile } from "../../src/index.js";
 import { adoptRepository } from "../../src/cli/adopt.js";
 import { summarizeAgentBenchmark } from "../../src/cli/benchmark.js";
+import { runCli } from "../support/runCli.js";
 
 async function invoke(args:string[]):Promise<number>{
   let code=0;
@@ -280,40 +281,28 @@ owners: [{team: test}]
     execFileSync("git",["-C",root,"add","."]);
     execFileSync("git",["-C",root,"-c","user.name=Test","-c","user.email=test@example.com","commit","-qm","fixture"]);
     execFileSync("git",["-C",root,"config","engineeringspec.trustedBase","HEAD"]);
-    const original=process.cwd();
-    process.chdir(root);
-    try {
-      expect(await invoke(["propose","--id","ES-cli-draft","--title","CLI draft","--path","src/a.ts","--output","specs/draft.engineeringspec.md","--dry-run","--quiet"])).toBe(0);
-      expect(await invoke(["review","--spec-dir","specs","--base","HEAD","--changed","src/a.ts","--strict","--quiet"])).toBe(0);
-      expect(await invoke(["review","--spec-dir","specs","--base","HEAD","--changed","outside.txt","--strict","--quiet"])).toBe(1);
-      expect(await invoke(["select","specs","--base","HEAD","--changed","src/a.ts","--strict","--quiet"])).toBe(0);
-      expect(await invoke(["select","specs","--base","HEAD","--changed","outside.txt","--strict","--quiet"])).toBe(1);
-      const prepareOutput:string[]=[];
-      const originalLog=console.log;
-      console.log=(message?:unknown)=>{prepareOutput.push(String(message));};
-      try {
-        expect(await invoke(["prepare","ES-cli-routing","--spec-dir","specs","--base","HEAD","--strict","--format","json"])).toBe(0);
-      } finally {
-        console.log=originalLog;
-      }
-      const prepared=JSON.parse(prepareOutput.join("\n")) as {result:string;permission:string;authority:{kind:string};verification:Array<Record<string,unknown>>};
-      expect(prepared).toMatchObject({result:"ready",permission:"implementation",authority:{kind:"base_pinned"}});
-      expect(JSON.stringify(prepared.verification)).not.toContain("argv");
-      expect(await invoke(["prepare","ES-missing","--spec-dir","specs","--base","HEAD","--strict","--quiet"])).toBe(1);
-      expect(await invoke(["check","--spec-dir","specs","--base","HEAD","--strict","--quiet"])).toBe(0);
-      expect(await invoke(["check","--spec-dir","specs","--quiet"])).toBe(0);
-      await writeFile(path.join(root,"specs","change.engineering-spec.md"),(await readFile(path.join(root,"specs","change.engineering-spec.md"),"utf8")).replace("status: approved","status: implemented"));
-      expect(await invoke(["check","--spec-dir","specs","--base","HEAD","--strict","--quiet"])).toBe(1);
-      expect(await invoke(["check","--spec-dir","specs","--base","HEAD","--allow-contract-only","--strict","--quiet"])).toBe(0);
-      expect(await invoke(["status","--spec-dir","specs","--base","HEAD","--allow-contract-only","--strict","--quiet"])).toBe(0);
-      execFileSync("git",["-C",root,"add","."]);
-      execFileSync("git",["-C",root,"-c","user.name=Test","-c","user.email=test@example.com","commit","-qm","close contract"]);
-      expect(await invoke(["select","specs","--base","HEAD","--strict","--quiet"])).toBe(0);
-      expect(await invoke(["check","--spec-dir","specs","--base","HEAD","--strict","--quiet"])).toBe(0);
-      expect(await invoke(["select","specs","--base","HEAD","--changed","src/a.ts","--strict","--quiet"])).toBe(1);
-    } finally {
-      process.chdir(original);
-    }
+    expect(runCli(root,["propose","--id","ES-cli-draft","--title","CLI draft","--path","src/a.ts","--output","specs/draft.engineeringspec.md","--dry-run","--quiet"]).code).toBe(0);
+    expect(runCli(root,["review","--spec-dir","specs","--base","HEAD","--changed","src/a.ts","--strict","--quiet"]).code).toBe(0);
+    expect(runCli(root,["review","--spec-dir","specs","--base","HEAD","--changed","outside.txt","--strict","--quiet"]).code).toBe(1);
+    expect(runCli(root,["select","specs","--base","HEAD","--changed","src/a.ts","--strict","--quiet"]).code).toBe(0);
+    expect(runCli(root,["select","specs","--base","HEAD","--changed","outside.txt","--strict","--quiet"]).code).toBe(1);
+    const prepareResult=runCli(root,["prepare","ES-cli-routing","--spec-dir","specs","--base","HEAD","--strict","--format","json"]);
+    expect(prepareResult.code).toBe(0);
+    const prepared=JSON.parse(prepareResult.out) as {result:string;permission:string;authority:{kind:string};verification:Array<Record<string,unknown>>};
+    expect(prepared).toMatchObject({result:"ready",permission:"implementation",authority:{kind:"base_pinned"}});
+    expect(JSON.stringify(prepared.verification)).not.toContain("argv");
+    expect(runCli(root,["prepare","ES-missing","--spec-dir","specs","--base","HEAD","--strict","--quiet"]).code).toBe(1);
+    expect(runCli(root,["check","--spec-dir","specs","--base","HEAD","--strict","--quiet"]).code).toBe(0);
+    expect(runCli(root,["check","--spec-dir","specs","--quiet"]).code).toBe(0);
+    await writeFile(path.join(root,"specs","change.engineering-spec.md"),(await readFile(path.join(root,"specs","change.engineering-spec.md"),"utf8")).replace("status: approved","status: implemented"));
+    expect(runCli(root,["check","--spec-dir","specs","--base","HEAD","--strict","--quiet"]).code).toBe(1);
+    expect(runCli(root,["check","--spec-dir","specs","--base","HEAD","--allow-contract-only","--strict","--quiet"]).code).toBe(0);
+    expect(runCli(root,["status","--spec-dir","specs","--base","HEAD","--allow-contract-only","--strict","--quiet"]).code).toBe(0);
+    execFileSync("git",["-C",root,"add","."]);
+    execFileSync("git",["-C",root,"-c","user.name=Test","-c","user.email=test@example.com","commit","-qm","close contract"]);
+    expect(runCli(root,["select","specs","--base","HEAD","--strict","--quiet"]).code).toBe(0);
+    expect(runCli(root,["check","--spec-dir","specs","--base","HEAD","--strict","--quiet"]).code).toBe(0);
+    expect(runCli(root,["select","specs","--base","HEAD","--changed","src/a.ts","--strict","--quiet"]).code).toBe(1);
   });
   it("scaffolds adoption files without overwriting by default",async()=>{
     const root=await mkdtemp(path.join(os.tmpdir(),"es-adopt-"));
