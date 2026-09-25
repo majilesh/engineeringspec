@@ -7,12 +7,13 @@ import { assertSafeRepoPath } from "../gate/collectDiff.js";
 import type { ChangedFile } from "../gate/types.js";
 import type { Status } from "../model/types.js";
 import { buildAuthorityDiff, type AuthorityDiff } from "../authority/diff.js";
+import { receiptContractId } from "../receipts/receipt.js";
 import { canonicalJson } from "../normalizer/canonicalize.js";
 import { normalize } from "../normalizer/normalize.js";
 import { validateFile } from "../validator/validateFile.js";
 import type { LoadedRoutingCandidate } from "./types.js";
 
-export type ChangeClassification = "none" | "contract_only" | "implementation" | "implementation_with_monotonic_close";
+export type ChangeClassification = "none" | "contract_only" | "implementation" | "implementation_with_monotonic_close" | "implementation_with_receipt";
 
 export interface GovernanceTransition {
   path: string;
@@ -43,14 +44,37 @@ export function classifyGovernanceChanges(directory: string, changed: ChangedFil
     assertSafeRepoPath(change.path);
     if (change.fromPath) assertSafeRepoPath(change.fromPath);
   }
-  const allInside = changed.every((change) => pathInside(directory, change.path)
+  // A deleted closure receipt is governance: only a contract-only change that also revises,
+  // supersedes, or rejects its contract may remove it (RFC 0014 C23).
+  const allInside = changed.every((change) => (change.kind === "deleted" && receiptContractId(directory, change.path) !== undefined) || (pathInside(directory, change.path)
     && isEngineeringSpecFilename(change.path)
-    && (!change.fromPath || (pathInside(directory, change.fromPath) && isEngineeringSpecFilename(change.fromPath))));
+    && (!change.fromPath || (pathInside(directory, change.fromPath) && isEngineeringSpecFilename(change.fromPath)))));
   return allInside ? "contract_only" : "implementation";
 }
 
 function statusOnly(candidate: LoadedRoutingCandidate["spec"], status: Status): string {
   return canonicalJson({ ...candidate, metadata: { ...candidate.metadata, status } });
+}
+
+/** A receipt may be removed only when the same change revises, supersedes, or rejects its contract. */
+function receiptRemovalDiagnostics(
+  directory: string,
+  changed: ChangedFile[],
+  workspace: Map<string, LoadedRoutingCandidate["spec"]>,
+  baseCandidates: LoadedRoutingCandidate[],
+): Diagnostic[] {
+  const out: Diagnostic[] = [];
+  for (const change of changed) {
+    const contractId = change.kind === "deleted" ? receiptContractId(directory, change.path) : undefined;
+    if (!contractId) continue;
+    const before = baseCandidates.find((candidate) => candidate.spec.metadata.id === contractId)?.spec;
+    const after = [...workspace.values()].find((spec) => spec.metadata.id === contractId);
+    const released = !before || !after
+      || after.metadata.specRevision > before.metadata.specRevision
+      || after.metadata.status === "superseded" || after.metadata.status === "rejected";
+    if (!released) out.push({ code: Codes.routingReceipt, severity: "error", file: change.path, message: `Removing ${change.path} would reactivate ${contractId}; remove a receipt only in the change that revises, supersedes, or rejects that contract` });
+  }
+  return out;
 }
 
 export const DEFAULT_MAX_STANDING_DAYS = 180;
@@ -151,7 +175,8 @@ export async function inspectWorkspaceGovernance(options: {
 
   const base = new Map(options.baseCandidates.map((candidate) => [candidate.path, candidate.spec]));
   diagnostics.push(...standingLifetimeDiagnostics(options, workspace, base));
-  errors += diagnostics.filter((item) => item.code === Codes.routingStandingExpired).length;
+  diagnostics.push(...receiptRemovalDiagnostics(options.directory, options.changed, workspace, options.baseCandidates));
+  errors += diagnostics.filter((item) => item.code === Codes.routingStandingExpired || item.code === Codes.routingReceipt).length;
   const transitions: GovernanceTransition[] = [];
   const authorityDiffs: AuthorityDiff[] = [];
   let lifecycleOnly = options.changed.length > 0;

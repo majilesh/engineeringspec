@@ -355,3 +355,95 @@ describe("standing lifetime cap", () => {
   });
 });
 
+describe("receipt-based closure end to end", () => {
+  const RECEIPT = "specs/receipts/ES-a.receipt.json";
+
+  async function implementWithReceipt(): Promise<{ root: string; base: string }> {
+    const repo = await repository({ config: { mode: "standard" }, contracts: [["ES-a", "approved", "src/**"], ["ES-b", "approved", "lib/**"]] });
+    await mkdir(path.join(repo.root, "src"));
+    await writeFile(path.join(repo.root, "src", "a.ts"), "export const a = 1;\n");
+    const finished = await finishContract({ contractId: "ES-a", cwd: repo.root, writeClosure: true });
+    expect(finished).toMatchObject({ result: "ready", closureWritten: true });
+    expect(await readFile(path.join(repo.root, "specs", "ES-a.engineering-spec.md"), "utf8")).toContain("status: approved");
+    return repo;
+  }
+
+  it("closes with a receipt in the implementation change, then spends the contract once merged", async () => {
+    const { root, base } = await implementWithReceipt();
+    const receipt = JSON.parse(await readFile(path.join(root, RECEIPT), "utf8")) as Record<string, unknown>;
+    expect(receipt).toMatchObject({ format: "engineering-spec-closure-receipt", contractId: "ES-a", specRevision: 1, baseSha: base });
+    const pr = await selectSpecs({ directory: "specs", base, cwd: root });
+    expect(pr).toMatchObject({ valid: true, governance: { classification: "implementation_with_receipt" } });
+    await expect(finishContract({ contractId: "ES-a", cwd: root, writeClosure: true })).rejects.toThrow();
+
+    const merged = commit(root, "implement and close ES-a");
+    const next = await nextAction({ cwd: root });
+    expect(next.status.routing.candidates.find((item) => item.specId === "ES-a")).toMatchObject({ spent: true });
+    expect(next.permission).toBe("implementation");
+    expect(next.command).toBe("engineeringspec work ES-b");
+    const work = runCli(root, ["work", "ES-a", "--format", "json"]);
+    expect(work.code).not.toBe(0);
+    expect(JSON.parse(work.out)).toMatchObject({ result: "blocked" });
+    await writeFile(path.join(root, "src", "a.ts"), "export const a = 2;\n");
+    const after = await selectSpecs({ directory: "specs", base: merged, cwd: root });
+    expect(after.routes.map((route) => route.decision)).toEqual(["uncovered"]);
+  });
+
+  it("accepts the receipt through a merge-queue style merge commit", async () => {
+    const { root, base } = await implementWithReceipt();
+    git(root, ["switch", "-q", "-c", "feature"]);
+    commit(root, "implement and close ES-a");
+    git(root, ["switch", "-q", "--detach", base]);
+    execFileSync("git", ["-C", root, "-c", "user.name=Queue", "-c", "user.email=queue@example.com", "merge", "-q", "--no-ff", "-m", "Merge queue batch", "feature"]);
+    const queued = await selectSpecs({ directory: "specs", base, head: "HEAD", worktree: false, cwd: root });
+    expect(queued).toMatchObject({ valid: true, governance: { classification: "implementation_with_receipt" } });
+  });
+
+  it("refuses to delete or edit a receipt outside a contract revision", async () => {
+    const { root } = await implementWithReceipt();
+    const merged = commit(root, "implement and close ES-a");
+    await writeFile(path.join(root, RECEIPT), (await readFile(path.join(root, RECEIPT), "utf8")).replace("\"cliVersion\"", "\"cliVersion\" "));
+    const edited = await selectSpecs({ directory: "specs", base: merged, cwd: root });
+    expect(edited.diagnostics.map((item) => item.code)).toContain("ESRT013");
+    expect(edited.valid).toBe(false);
+
+    git(root, ["rm", "-qf", RECEIPT]);
+    const implementationDelete = await selectSpecs({ directory: "specs", base: merged, cwd: root });
+    expect(implementationDelete.valid).toBe(false);
+    const governanceDelete = await selectSpecs({ directory: "specs", base: merged, cwd: root, allowContractOnly: true });
+    expect(governanceDelete.valid).toBe(false);
+    expect(governanceDelete.diagnostics).toContainEqual(expect.objectContaining({ code: "ESRT013", message: expect.stringMatching(/would reactivate ES-a/u) }));
+
+    const spec = path.join(root, "specs", "ES-a.engineering-spec.md");
+    await writeFile(spec, (await readFile(spec, "utf8")).replace("spec_revision: 1", "spec_revision: 2"));
+    const amendment = await selectSpecs({ directory: "specs", base: merged, cwd: root, allowContractOnly: true });
+    expect(amendment).toMatchObject({ valid: true, governance: { classification: "contract_only" } });
+  });
+
+  it("does not fail unrelated changes when an amendment leaves a stale receipt behind", async () => {
+    const { root } = await implementWithReceipt();
+    commit(root, "implement and close ES-a");
+    const spec = path.join(root, "specs", "ES-a.engineering-spec.md");
+    await writeFile(spec, (await readFile(spec, "utf8")).replace("spec_revision: 1", "spec_revision: 2"));
+    const amended = commit(root, "revise ES-a but keep its old receipt");
+    await mkdir(path.join(root, "lib"));
+    await writeFile(path.join(root, "lib", "x.ts"), "export const x = 1;\n");
+    const unrelated = await selectSpecs({ directory: "specs", base: amended, cwd: root });
+    expect(unrelated).toMatchObject({ valid: true });
+    expect(unrelated.diagnostics).toContainEqual(expect.objectContaining({ code: "ESRT013", severity: "info" }));
+    await writeFile(path.join(root, "src", "a.ts"), "export const a = 3;\n");
+    const related = await selectSpecs({ directory: "specs", base: amended, cwd: root });
+    expect(related.routes.find((route) => route.path === "src/a.ts")).toMatchObject({ decision: "selected" });
+    expect(related.diagnostics).toContainEqual(expect.objectContaining({ code: "ESRT013", severity: "error" }));
+  });
+
+  it("keeps the exact status close in legacy repositories", async () => {
+    const { root } = await repository({ config: {}, contracts: [["ES-a", "approved", "src/**"]] });
+    await mkdir(path.join(root, "src"));
+    await writeFile(path.join(root, "src", "a.ts"), "export const a = 1;\n");
+    expect(await finishContract({ contractId: "ES-a", cwd: root, writeClosure: true })).toMatchObject({ closureWritten: true });
+    expect(await readFile(path.join(root, "specs", "ES-a.engineering-spec.md"), "utf8")).toContain("status: implemented");
+    await expect(readFile(path.join(root, RECEIPT), "utf8")).rejects.toThrow();
+  });
+});
+

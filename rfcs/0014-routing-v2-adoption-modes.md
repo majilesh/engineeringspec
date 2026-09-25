@@ -408,4 +408,19 @@ Runtimes older than this change reject unknown keys in `engineering-spec.json`, 
   - For lite documents, absent `engineering-source-refs` and `engineering-verification` blocks normalize to empty arrays, and the schema's minimum-one rule applies only to non-lite documents. Non-lite documents and their digests are unchanged.
   - Declared coverage treats only the ProductSpec profile as external (`unknown`), so a lite contract does not make coverage unknown.
   - `propose --lite` writes a 15-line draft.
+- **C23. Receipt lanes and lifecycle.**
+  - **When receipts apply.** Receipts are honored only in configured modes. Legacy repositories keep the exact `approved → implemented` close, and `finish` writes a receipt only in configured modes. The pinned pre-RFC-0014 Action and older CLIs never read receipts, so under them a receipt-closed contract stays open.
+  - **Where receipts live.** They are stored at `<specDirectory>/receipts/<ID>.receipt.json`, and `finish --write-closure` never overwrites one.
+  - **Adding a receipt.** A receipt added in the implementation lane closes its contract when all of these hold:
+    - it parses;
+    - its file name matches `contractId`;
+    - its revision and closure semantic digest match the trusted-base contract;
+    - its `baseSha` is the trusted base or an ancestor of it;
+    - when the change also has implementation paths, one of them spends that contract.
+
+    `changeDigest` and `cliVersion` are audit fields. They are not bound to the evaluating change, so receipts survive merge-queue rebatching. The change is classified `implementation_with_receipt`.
+  - **Editing or removing a receipt.** Editing, renaming or deleting a receipt in the implementation lane is refused (`ESRT013`), because it would re-grant authority. The contract-only lane may delete a receipt only in the change that also revises (new `spec_revision`), supersedes or rejects its contract.
+  - **Invalid receipts.** An invalid receipt already on the trusted base spends nothing, so it fails safe. `ESRT013` is an error only for changes that touch its contract, and info otherwise.
+  - **Spent contracts.** A spent contract keeps its denies (C16). `next`/`status` count it as closed, marked `spent` in candidate summaries. `work` and `finish` are blocked for it. A selector naming it fails with `ESRT009`.
+  - **This repository's CI.** Only `*.engineering-spec.md` documents and RFCs count as contract-only. Receipt paths are always routed.
 

@@ -175,7 +175,7 @@ owners: [{team: test}]
     expect(workflow.match(/gate-spec-dir:/g)).toHaveLength(1);
     expect(workflow).toContain("gate-base: ${{ env.GATE_BASE }}");
     expect(workflow).toContain("git diff --name-status -z --find-renames");
-    expect(workflow).toContain("docs/engineering-specs/*|rfcs/*");
+    expect(workflow).toContain("docs/engineering-specs/*.engineering-spec.md|docs/engineering-specs/*.engineeringspec.md|rfcs/*");
     expect(workflow).toContain("R*|C*");
     expect(workflow).toContain("CONTRACT_ONLY=1");
     expect(workflow).toContain("env.CONTRACT_ONLY != '1'");
@@ -220,6 +220,13 @@ ${classifier}`,"--",base],{cwd:root,env:{...process.env,GITHUB_ENV:githubEnv}});
     execFileSync("git",["-C",root,"add","."]);
     execFileSync("git",["-C",root,"-c","user.name=Test","-c","user.email=test@example.com","commit","-qm","contract"]);
     expect(classify(root,base)).toContain("CONTRACT_ONLY=1");
+    const receiptBase=execFileSync("git",["-C",root,"rev-parse","HEAD"],{encoding:"utf8"}).trim();
+    await mkdir(path.join(root,"docs","engineering-specs","receipts"));
+    await writeFile(path.join(root,"docs","engineering-specs","receipts","ES-change.receipt.json"),"{}\n");
+    execFileSync("git",["-C",root,"add","."]);
+    execFileSync("git",["-C",root,"-c","user.name=Test","-c","user.email=test@example.com","commit","-qm","receipt"]);
+    // Closure receipts are never contract-only in this repository's CI; they are always routed.
+    expect(classify(root,receiptBase)).toContain("CONTRACT_ONLY=0");
     await writeFile(path.join(root,"src","implementation.ts"),"export {};\n");
     execFileSync("git",["-C",root,"add","."]);
     execFileSync("git",["-C",root,"-c","user.name=Test","-c","user.email=test@example.com","commit","-qm","mixed"]);

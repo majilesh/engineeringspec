@@ -1,5 +1,8 @@
 import { assertSafeRepoPath, collectChangedLineCount, collectGitDiff, collectGitStagedDiff, collectGitWorktreeDiff } from "../gate/collectDiff.js";
-import { resolveCommitSha, tryReadGitBlob } from "../gate/loadSpec.js";
+import { gitShowToplevel, listGitTreePaths, readGitBlob, resolveCommitSha, tryReadGitBlob } from "../gate/loadSpec.js";
+import { readFile } from "node:fs/promises";
+import path from "node:path";
+import { isReceiptLocation, parseClosureReceipt, RECEIPT_DIRECTORY, receiptContractId } from "../receipts/receipt.js";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import type { ChangedFile } from "../gate/types.js";
@@ -14,7 +17,7 @@ import { classifyGovernanceChanges, inspectWorkspaceGovernance } from "./governa
 import { loadRoutingCandidates, type LoadedCandidateSet } from "./loadCandidates.js";
 import { closureSemanticDigest } from "../normalizer/digest.js";
 import { parseRepositoryConfig, REPOSITORY_CONFIG_PATH, RepositoryConfigError, type RepositoryConfig } from "../config/repositoryConfig.js";
-import { CONTRACT_TRAILER, DEFAULT_POLICY, enforcementFor, evaluatePolicyRouting, isPassingDecision, selectorSources, type PolicyMode } from "../policy/evaluate.js";
+import { CONTRACT_TRAILER, DEFAULT_POLICY, enforcementFor, evaluatePolicyRouting, isPassingDecision, selectorSources, type PolicyMode, type ReceiptInput } from "../policy/evaluate.js";
 import type { Diagnostic } from "../diagnostics/Diagnostic.js";
 
 export interface SelectSpecsOptions {
@@ -35,6 +38,54 @@ export interface SelectSpecsOptions {
   bootstrapMode?: "advisory";
   /** Untrusted selector requests (RFC 0014 §3). Commit trailers in base..head are read automatically. */
   selector?: { contract?: string; labels?: string[]; branch?: string };
+}
+
+async function isAncestor(sha: string, of: string, cwd?: string): Promise<boolean> {
+  try {
+    await promisify(execFile)("git", ["merge-base", "--is-ancestor", sha, of], { cwd });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function receiptInput(file: string, text: string | undefined, baseSha: string, cwd?: string): Promise<ReceiptInput> {
+  if (text === undefined) return { path: file, problem: "missing", baseIsAncestor: false };
+  try {
+    const receipt = parseClosureReceipt(text);
+    return { path: file, receipt, baseIsAncestor: await isAncestor(receipt.baseSha, baseSha, cwd) };
+  } catch (error) {
+    return { path: file, problem: error instanceof Error ? error.message : String(error), baseIsAncestor: false };
+  }
+}
+
+/** Closure receipts committed in the trusted base tree. */
+async function loadBaseReceipts(baseSha: string, directory: string, cwd?: string): Promise<ReceiptInput[]> {
+  if (directory === ".") return [];
+  const files = await listGitTreePaths(baseSha, `${directory}/${RECEIPT_DIRECTORY}`, cwd);
+  return Promise.all(files.map(async (file) => receiptInput(file, await readGitBlob(baseSha, file, cwd), baseSha, cwd)));
+}
+
+/** Content of receipts this change adds, read from the same state the change was collected from. */
+async function loadChangeReceipts(changed: ChangedFile[], directory: string, baseSha: string, headSha: string, options: SelectSpecsOptions): Promise<Map<string, ReceiptInput>> {
+  const added = changed.filter((change) => change.kind === "added" && isReceiptLocation(directory, change.path));
+  const result = new Map<string, ReceiptInput>();
+  if (added.length === 0) return result;
+  const root = await gitShowToplevel(options.cwd);
+  for (const change of added) {
+    let text: string | undefined;
+    try {
+      text = options.staged
+        ? await readGitBlob("", change.path, options.cwd).catch(() => undefined)
+        : options.worktree !== false && !options.changed
+          ? await readFile(path.join(root, change.path), "utf8")
+          : await readGitBlob(headSha, change.path, options.cwd);
+    } catch {
+      text = undefined;
+    }
+    result.set(change.path, await receiptInput(change.path, text, baseSha, options.cwd));
+  }
+  return result;
 }
 
 /** Line counts cost extra git work, so they are collected only when some budget could apply. */
@@ -91,10 +142,11 @@ async function loadTrustedPolicy(baseSha: string, eligibleCount: number, options
 
 /** Splits a change into specification-directory documents and everything else. */
 export function partitionSpecificationChanges(directory: string, changed: ChangedFile[]): { specChanges: ChangedFile[]; implementationChanges: ChangedFile[]; mixed: boolean } {
-  const isSpecChange = (change: ChangedFile): boolean => directory !== "."
+  // Deleting a closure receipt is governance, matching classifyGovernanceChanges (RFC 0014 C23).
+  const isSpecChange = (change: ChangedFile): boolean => (change.kind === "deleted" && receiptContractId(directory, change.path) !== undefined) || (directory !== "."
     && change.path.startsWith(`${directory}/`)
     && isEngineeringSpecFilename(change.path)
-    && (!change.fromPath || (change.fromPath.startsWith(`${directory}/`) && isEngineeringSpecFilename(change.fromPath)));
+    && (!change.fromPath || (change.fromPath.startsWith(`${directory}/`) && isEngineeringSpecFilename(change.fromPath))));
   const specChanges = changed.filter(isSpecChange);
   const implementationChanges = changed.filter((change) => !isSpecChange(change));
   return { specChanges, implementationChanges, mixed: specChanges.length > 0 && implementationChanges.length > 0 };
@@ -173,6 +225,8 @@ export async function selectSpecs(options: SelectSpecsOptions): Promise<RoutingR
         baseSha,
         baseTimestamp,
         selector: selectorSources({ ...options.selector, trailers: await contractTrailers(baseSha, headSha, options.cwd) }, trusted.config?.selection),
+        baseReceipts: await loadBaseReceipts(baseSha, directory, options.cwd),
+        changeReceipts: await loadChangeReceipts(routeableChanges, directory, baseSha, headSha, options),
         ...(options.changed || !budgetsConfigured(trusted.config, candidates) ? {} : {
           changedLines: await collectChangedLineCount({
             base: baseSha,
@@ -244,8 +298,12 @@ export async function selectSpecs(options: SelectSpecsOptions): Promise<RoutingR
     requiredStatuses,
     changedDigest: routed.changedDigest,
     changed,
-    governance: governanceInspection?.report ?? { enabled: Boolean(options.allowContractOnly), classification },
-    candidates: routed.candidates,
+    governance: policyEvaluation?.closedContracts
+      ? { ...(governanceInspection?.report ?? { enabled: Boolean(options.allowContractOnly) }), classification: "implementation_with_receipt" }
+      : governanceInspection?.report ?? { enabled: Boolean(options.allowContractOnly), classification },
+    candidates: policyEvaluation?.spentContracts
+      ? routed.candidates.map((candidate) => policyEvaluation.spentContracts!.includes(candidate.specId) ? { ...candidate, spent: true as const } : candidate)
+      : routed.candidates,
     coverage: { status: coverageStatus, specs: specCoverage },
     routes: loadFailed ? [] : routed.routes,
     ...(policyEvaluation?.changeDecisions ? { changeDecisions: policyEvaluation.changeDecisions } : {}),

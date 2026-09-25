@@ -7,6 +7,8 @@ import type { Status } from "../model/types.js";
 import { compareCodePoints } from "../normalizer/canonicalize.js";
 import { matchTargetGlob } from "../path/targetGlob.js";
 import { expandedChanges, routeChanges } from "../routing/route.js";
+import { closureSemanticDigest } from "../normalizer/digest.js";
+import { checkReceipt, isReceiptLocation, receiptContractId, type ClosureReceipt } from "../receipts/receipt.js";
 import type {
   EnforcementResult,
   LoadedRoutingCandidate,
@@ -39,6 +41,19 @@ export interface PolicyEvaluationInput {
   selector?: SelectorSource[];
   /** Added plus deleted lines for the same range as `changed`; absent when counts are unavailable. */
   changedLines?: number;
+  /** Closure receipts in the trusted base tree (RFC 0014 §5). */
+  baseReceipts?: ReceiptInput[];
+  /** Workspace content of receipt files this change adds, keyed by path. */
+  changeReceipts?: Map<string, ReceiptInput>;
+}
+
+export interface ReceiptInput {
+  path: string;
+  receipt?: ClosureReceipt;
+  /** Why the file could not be read as a receipt. */
+  problem?: string;
+  /** Whether `receipt.baseSha` is the trusted base or one of its ancestors. */
+  baseIsAncestor: boolean;
 }
 
 export interface SelectorSource {
@@ -69,7 +84,9 @@ export function selectorSources(
   return sources;
 }
 
-function resolveSelector(input: PolicyEvaluationInput, required: Status[]): { selected?: LoadedRoutingCandidate; diagnostics: Diagnostic[] } {
+const candidateKey = (candidate: LoadedRoutingCandidate): string => `${candidate.spec.metadata.id}\0${candidate.path}`;
+
+function resolveSelector(input: PolicyEvaluationInput, required: Status[], spent: ReadonlySet<string>): { selected?: LoadedRoutingCandidate; diagnostics: Diagnostic[] } {
   const sources = input.selector ?? [];
   if (sources.length === 0) return { diagnostics: [] };
   const invalid = (message: string): Diagnostic => ({ code: Codes.routingSelector, severity: "error", message, hint: "Name exactly one approved, unexpired contract from the trusted base with --contract, a commit trailer, or the configured label or branch prefix." });
@@ -82,6 +99,7 @@ function resolveSelector(input: PolicyEvaluationInput, required: Status[]): { se
   if (matches.length !== 1) return { diagnostics: [invalid(`Selector ${ids[0]} matches ${matches.length} trusted-base contracts; exactly one is required`)] };
   const selected = matches[0]!;
   if (!required.includes(selected.spec.metadata.status)) return { diagnostics: [invalid(`Selector ${ids[0]} names a ${selected.spec.metadata.status} contract, which grants no authority`)] };
+  if (spent.has(candidateKey(selected))) return { diagnostics: [invalid(`Selector ${ids[0]} names a contract already spent by a trusted-base receipt`)] };
   if (isExpired(selected, input.baseTimestamp)) {
     return {
       diagnostics: [
@@ -103,6 +121,10 @@ export interface PolicyEvaluation {
   selectedContract?: string;
   /** Whole-change decisions; present only when a change budget applied (RFC 0014 §7, C3). */
   changeDecisions?: Array<"over_budget">;
+  /** Contracts this change closes with a valid added receipt. */
+  closedContracts?: string[];
+  /** Contracts already spent by a valid trusted-base receipt. */
+  spentContracts?: string[];
 }
 
 /** Decisions that authorize a path. `standing` does not in controlled mode (RFC 0014 C7). */
@@ -146,14 +168,18 @@ const describeClaims = (claims: RoutingClaim[]): string =>
  */
 export function evaluatePolicyRouting(input: PolicyEvaluationInput): PolicyEvaluation {
   const required = input.requiredStatuses ?? ["approved"];
-  const selector = resolveSelector(input, required);
+  const receipts = spentByReceipts(input, required);
+  const selector = resolveSelector(input, required, receipts.spent);
   // An invalid selector never falls back to unselected routing (RFC 0014 §3).
   if (selector.diagnostics.length > 0) return { routes: [], diagnostics: selector.diagnostics, sequencing: [], authorized: false };
+  // Receipt files are closures, not implementation paths; they are decided after routing.
+  const receiptChanges = input.changed.filter((change) => isReceiptLocation(input.specDirectory, change.path) || (change.fromPath !== undefined && isReceiptLocation(input.specDirectory, change.fromPath)));
+  const routeable = input.changed.filter((change) => !receiptChanges.includes(change));
   const eligible = input.candidates.filter((candidate) => required.includes(candidate.spec.metadata.status));
   const base = eligible.length > 0
-    ? routeChanges(input.candidates, input.changed, required, input.baseSha ? { baseSha: input.baseSha } : {})
+    ? routeChanges(input.candidates, routeable, required, input.baseSha ? { baseSha: input.baseSha } : {})
     : {
-        routes: expandedChanges(input.changed)
+        routes: expandedChanges(routeable)
           .sort((left, right) => compareCodePoints(left.path, right.path) || compareCodePoints(left.kind, right.kind))
           .map((entry): ReportedRoute => ({ path: entry.path, kind: entry.kind, decision: "uncovered", allows: [], denies: [], claims: [] })),
         diagnostics: [] as Diagnostic[],
@@ -180,7 +206,8 @@ export function evaluatePolicyRouting(input: PolicyEvaluationInput): PolicyEvalu
       ? route.allows.filter((claim) => claim.specId === selector.selected!.spec.metadata.id && claim.specPath === selector.selected!.path)
       : route.allows;
     const expired = scoped.filter((claim) => { const candidate = candidateOf(claim); return candidate ? isExpired(candidate, input.baseTimestamp) : false; });
-    const live = scoped.filter((claim) => !expired.includes(claim));
+    // Spending, like expiry, removes allows only; the contract's denies were applied above (C16).
+    const live = scoped.filter((claim) => !expired.includes(claim) && !receipts.spent.has(`${claim.specId}\0${claim.specPath}`));
     const change = live.filter((claim) => { const candidate = candidateOf(claim); return !candidate || !isStanding(candidate); });
     const standing = live.filter((claim) => { const candidate = candidateOf(claim); return Boolean(candidate && isStanding(candidate)); });
     const reportExpired = (severity: Diagnostic["severity"]): void => {
@@ -226,19 +253,85 @@ export function evaluatePolicyRouting(input: PolicyEvaluationInput): PolicyEvalu
     return uncovered();
   });
 
-  const budget = evaluateBudget(input, routes, selector.selected, candidateOf);
+  const closures = decideReceiptChanges(input, receiptChanges, routes, routeable.length > 0, receipts.spent, required);
+  const claimed = new Set([...routes.flatMap((route) => route.allows.map((claim) => claim.specId)), ...(selector.selected ? [selector.selected.spec.metadata.id] : [])]);
+  // An invalid trusted-base receipt only fails changes that touch its contract (C23).
+  const receiptFindings = receipts.findings.map((finding): Diagnostic => ({ ...finding, severity: finding.contractId && claimed.has(finding.contractId) ? "error" : "info" }));
+  const allRoutes = [...routes, ...closures.routes].sort((left, right) => compareCodePoints(left.path, right.path) || compareCodePoints(left.kind, right.kind));
+  const budget = evaluateBudget(input, routes, selector.selected, candidateOf, routeable.length);
   // Keep whole-change and sequencing findings; per-path routing findings are re-derived above.
   const rederived = new Set<string>([Codes.routingUncovered, Codes.routingAmbiguous, Codes.routingDenied]);
-  const all = [...base.diagnostics.filter((item) => !(item.file && rederived.has(item.code))), ...diagnostics, ...budget.diagnostics];
+  const all = [...base.diagnostics.filter((item) => !(item.file && rederived.has(item.code))), ...diagnostics, ...closures.diagnostics, ...receiptFindings, ...budget.diagnostics];
+  const spentIds = input.candidates.filter((candidate) => receipts.spent.has(candidateKey(candidate))).map((candidate) => candidate.spec.metadata.id);
   return {
     ...(selector.selected ? { selectedContract: selector.selected.spec.metadata.id } : {}),
     ...(budget.changeDecisions ? { changeDecisions: budget.changeDecisions } : {}),
-    routes,
+    ...(closures.closed.length ? { closedContracts: closures.closed } : {}),
+    ...(spentIds.length ? { spentContracts: spentIds.sort(compareCodePoints) } : {}),
+    routes: allRoutes,
     diagnostics: all,
     sequencing: base.sequencing,
-    authorized: routes.every((route) => isPassingDecision(route.decision, input.mode))
+    authorized: allRoutes.every((route) => isPassingDecision(route.decision, input.mode))
       && !all.some((item) => item.severity === "error"),
   };
+}
+
+type ReceiptFinding = Omit<Diagnostic, "severity"> & { contractId?: string };
+
+/** Valid trusted-base receipts spend their contract; invalid ones spend nothing (fail safe). */
+function spentByReceipts(input: PolicyEvaluationInput, required: Status[]): { spent: Set<string>; findings: ReceiptFinding[] } {
+  const spent = new Set<string>();
+  const findings: ReceiptFinding[] = [];
+  for (const item of input.baseReceipts ?? []) {
+    const named = receiptContractId(input.specDirectory, item.path);
+    const reject = (reason: string, contractId = named): void => {
+      findings.push({ code: Codes.routingReceipt, file: item.path, message: `Receipt ${item.path} ${reason}; it spends nothing`, hint: "Remove or correct the receipt in a reviewed contract-only change.", ...(contractId ? { contractId } : {}) });
+    };
+    if (!item.receipt) { reject(`is not a valid closure receipt (${item.problem ?? "unreadable"})`); continue; }
+    if (named !== item.receipt.contractId) { reject(`is stored under ${named ?? "an invalid name"} but names ${item.receipt.contractId}`, item.receipt.contractId); continue; }
+    const check = checkReceipt(item.receipt, input.candidates, { baseIsAncestor: item.baseIsAncestor, requiredStatuses: required });
+    if (check.spent) spent.add(candidateKey(check.spent));
+    else reject(check.problem ?? "is invalid", item.receipt.contractId);
+  }
+  return { spent, findings };
+}
+
+/**
+ * A receipt the change adds closes the contract it names when it is valid and, if the change
+ * also has implementation paths, one of them spends that contract. Editing, renaming or
+ * deleting a receipt outside the contract-only lane would re-grant authority, so it is refused.
+ */
+function decideReceiptChanges(
+  input: PolicyEvaluationInput,
+  receiptChanges: ChangedFile[],
+  routes: ReportedRoute[],
+  hasImplementation: boolean,
+  spent: ReadonlySet<string>,
+  required: Status[],
+): { routes: ReportedRoute[]; diagnostics: Diagnostic[]; closed: string[] } {
+  const attributed = new Set(routes.flatMap((route) => route.decision === "selected" && route.selected ? [route.selected.specId] : []));
+  const out: ReportedRoute[] = [];
+  const diagnostics: Diagnostic[] = [];
+  const closed: string[] = [];
+  for (const entry of expandedChanges(receiptChanges)) {
+    const refuse = (reason: string): void => {
+      diagnostics.push({ code: Codes.routingReceipt, severity: "error", file: entry.path, message: `${entry.path} (${entry.kind}) ${reason}` });
+      out.push({ path: entry.path, kind: entry.kind, decision: "protected_unauthorized", allows: [], denies: [], claims: [] });
+    };
+    if (entry.kind !== "added") { refuse("changes an existing closure receipt; removing or editing a receipt would re-grant authority"); continue; }
+    const content = input.changeReceipts?.get(entry.path);
+    const named = receiptContractId(input.specDirectory, entry.path);
+    if (!content?.receipt || !named) { refuse(`is not a valid closure receipt (${content?.problem ?? "unreadable or misnamed"})`); continue; }
+    if (content.receipt.contractId !== named) { refuse(`is named for ${named} but closes ${content.receipt.contractId}`); continue; }
+    const check = checkReceipt(content.receipt, input.candidates, { baseIsAncestor: content.baseIsAncestor, requiredStatuses: required });
+    if (!check.spent) { refuse(`${check.problem ?? "is invalid"}`); continue; }
+    if (spent.has(candidateKey(check.spent))) { refuse(`closes ${named}, which a trusted-base receipt already spent`); continue; }
+    if (hasImplementation && !attributed.has(named)) { refuse(`closes ${named}, which no implementation path in this change spends`); continue; }
+    closed.push(named);
+    const claim: RoutingClaim = { specId: named, specPath: check.spent.path, targetIds: [], specRevision: check.spent.spec.metadata.specRevision, semanticDigest: closureSemanticDigest(check.spent.spec) };
+    out.push({ path: entry.path, kind: entry.kind, decision: "selected", selected: claim, allows: [claim], denies: [], claims: [claim] });
+  }
+  return { routes: out, diagnostics, closed };
 }
 
 /**
@@ -250,6 +343,7 @@ function evaluateBudget(
   routes: ReportedRoute[],
   selected: LoadedRoutingCandidate | undefined,
   candidateOf: (claim: RoutingClaim) => LoadedRoutingCandidate | undefined,
+  files: number,
 ): { changeDecisions?: Array<"over_budget">; diagnostics: Diagnostic[] } {
   const attributed = new Map<string, LoadedRoutingCandidate>();
   for (const route of routes) {
@@ -261,7 +355,6 @@ function evaluateBudget(
   const limits = owner?.spec.metadata.changeBudget ?? input.policy.budgets;
   if (!limits) return { diagnostics: [] };
   const source = owner?.spec.metadata.changeBudget ? `contract ${owner.spec.metadata.id}` : "the repository policy";
-  const files = input.changed.length;
   const lines = input.changedLines;
   const over: string[] = [];
   if (limits.maxFiles !== undefined && files > limits.maxFiles) over.push(`${files} files exceeds ${limits.maxFiles}`);

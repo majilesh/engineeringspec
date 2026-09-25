@@ -1,3 +1,4 @@
+import { selectSpecs } from "../routing/select.js";
 import { isEngineeringSpecFilename } from "../discovery/discover.js";
 import { listGitTreePaths, readGitBlob, resolveCommitSha, resolveGitRelativeDirectory } from "../gate/loadSpec.js";
 import { compareCodePoints } from "../normalizer/canonicalize.js";
@@ -63,7 +64,7 @@ function blocked(
   };
 }
 
-export async function prepareChange(options: PrepareOptions): Promise<PrepareReport> {
+async function prepareBrief(options: PrepareOptions): Promise<PrepareReport> {
   const baseSha = await resolveCommitSha(options.base, options.cwd);
   const directory = await resolveGitRelativeDirectory(options.specDirectory, options.cwd);
   const paths = (await listGitTreePaths(baseSha, directory, options.cwd))
@@ -252,4 +253,28 @@ export function prepareMarkdown(report: PrepareReport): string {
     : ["None declared through an `escalate` constraint."]));
   lines.push("", "_Declared verifier runners are inert and were not executed or exposed._", "");
   return lines.join("\n");
+}
+
+/**
+ * Loads the pre-code brief for one approved trusted-base contract. A contract that a valid
+ * trusted-base closure receipt has spent grants no further authority (RFC 0014 §5).
+ */
+export async function prepareChange(options: PrepareOptions): Promise<PrepareReport> {
+  const report = await prepareBrief(options);
+  if (report.result !== "ready") return report;
+  const routing = await selectSpecs({
+    directory: options.specDirectory,
+    base: report.authority.baseSha,
+    changed: [],
+    ...(options.strict === undefined ? {} : { strict: options.strict }),
+    ...(options.cwd ? { cwd: options.cwd } : {}),
+  });
+  if (!routing.candidates.some((candidate) => candidate.specId === options.contractId && candidate.spent)) return report;
+  return blocked(
+    options,
+    report.authority.baseSha,
+    options.specDirectory,
+    `${options.contractId} was already spent by a closure receipt on the trusted base`,
+    "Revise the contract (a new spec_revision) or approve a new change contract in a contract-only change.",
+  );
 }

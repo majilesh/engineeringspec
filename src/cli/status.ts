@@ -55,7 +55,11 @@ function standingAuthority(report: RoutingReport): { standingAuthority?: string[
 function lifecycleCounts(report: RoutingReport): Record<Status, number> {
   const counts: Record<Status, number> = { draft: 0, proposed: 0, approved: 0, implemented: 0, superseded: 0, rejected: 0 };
   // Standing authority stays approved until it expires, so it is counted separately (RFC 0014 §4).
-  for (const candidate of report.candidates) if (candidate.authorityKind !== "standing") counts[candidate.status] += 1;
+  // A contract spent by a trusted-base receipt is closed even though its file still says approved.
+  for (const candidate of report.candidates) {
+    if (candidate.authorityKind === "standing") continue;
+    counts[candidate.spent ? "implemented" : candidate.status] += 1;
+  }
   return counts;
 }
 
