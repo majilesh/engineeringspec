@@ -150,6 +150,7 @@ These options are on `main` and not yet in a published release. They take effect
 | `--selector-label <label>` | `select`, `check`, `review` | A PR label naming a contract. Honored only with a trusted `selection.label` prefix. Repeatable. |
 | `--selector-branch <name>` | `select`, `check`, `review` | A PR branch naming a contract. Honored only with a trusted `selection.branch` prefix. |
 | `--lite` | `propose` | Writes a lite-profile draft: frontmatter and targets only. |
+| `guard --path <p>` / `guard --stdin` | `guard` | Read-only edit guard for agent hooks. It answers `allow`, `deny` (exit 1) or `warn` (advisory mode) for proposed paths, using the same trusted-base routing as `check`. Paths outside the repository are ignored. See the [integrations](../integrations/README.md). |
 
 `EngineeringSpec-Contract: <ID>` commit trailers in base..head are always read as selectors, and they survive into merge-queue commits.
 

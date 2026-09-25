@@ -6,9 +6,6 @@
   "vectors": [
     {
       "name": "guard-equals-routing-all-fixtures",
-      "pending": {
-        "phase": 6
-      },
       "references": [
         "conformance/routing-v2"
       ],

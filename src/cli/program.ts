@@ -27,6 +27,8 @@ import { buildAgentContext, explainPath } from "../query/agentContext.js";
 import { adoptRepository } from "./adopt.js";
 import { evaluateCeremonyBenchmark, summarizeAgentBenchmark } from "./benchmark.js";
 import { selectSpecs } from "../routing/select.js";
+import { guardChange } from "./guard.js";
+import { displaySafe } from "./render.js";
 import type { EnforcementResult } from "../routing/types.js";
 import { isPassingDecision } from "../policy/evaluate.js";
 import type { Diagnostic } from "../diagnostics/Diagnostic.js";
@@ -1057,6 +1059,58 @@ export function createProgram(setCode: (code: number) => void): Command {
           output(markdown, "text");
         } else output(report, "json");
         setCode(ExitCode.success);
+      } catch (error) {
+        console.error(error instanceof Error ? error.message : String(error));
+        setCode(ExitCode.io);
+      }
+    });
+
+  program
+    .command("guard")
+    .description("Check proposed edits against trusted-base authority before they happen (read-only guardrail for agent hooks)")
+    .option("--path <path>", "proposed path; absolute or relative to the current directory (repeatable)", (value, previous: string[] = []) => previous.concat(value), [])
+    .addOption(new Option("--change-kind <kind>", "change kind for every --path; inferred from the filesystem when omitted").choices(["added", "modified", "deleted"]))
+    .option("--contract <id>", "narrow to one approved trusted-base contract (never widens authority)")
+    .option("--stdin", "read {\"paths\":[{\"path\",\"kind\"?}],\"contract\"?} from standard input")
+    .option("--base <ref>", "trusted base ref override")
+    .addOption(new Option("--format <format>", "output format").choices(["text", "json"]))
+    .action(async (options, command) => {
+      try {
+        const global = command.optsWithGlobals() as GlobalOptions;
+        let paths = (options.path as string[]).map((item) => ({ path: item, ...(options.changeKind ? { kind: options.changeKind as ChangeKind } : {}) }));
+        let contract = options.contract as string | undefined;
+        if (options.stdin) {
+          const chunks: Buffer[] = [];
+          for await (const chunk of process.stdin) {
+            chunks.push(chunk as Buffer);
+            if (chunks.reduce((size, item) => size + item.length, 0) > 1024 * 1024) throw new Error("guard --stdin input exceeds 1 MiB");
+          }
+          const event = JSON.parse(Buffer.concat(chunks).toString("utf8")) as { paths?: Array<{ path?: unknown; kind?: unknown }>; contract?: unknown };
+          if (!Array.isArray(event.paths) || event.paths.some((item) => typeof item?.path !== "string")) throw new Error("guard --stdin expects {\"paths\":[{\"path\":string}]}");
+          paths = [...paths, ...event.paths.map((item) => ({
+            path: item.path as string,
+            ...(item.kind === "added" || item.kind === "modified" || item.kind === "deleted" ? { kind: item.kind as ChangeKind } : {}),
+          }))];
+          if (!contract && typeof event.contract === "string") contract = event.contract;
+        }
+        if (paths.length === 0) {
+          console.error("guard requires --path or --stdin with at least one path");
+          setCode(ExitCode.usage);
+          return;
+        }
+        const result = await guardChange({ paths, ...(contract ? { contract } : {}), ...(options.base ? { base: options.base as string } : {}) });
+        if (!global.quiet) {
+          const format = options.format ?? global.format;
+          if (format === "json") output(result, "json");
+          else output([
+            `guard: ${result.verdict}`,
+            `enforcement: ${result.enforcement.mode}${result.enforcement.enforced ? "" : " (not enforced)"}`,
+            ...result.paths.map((item) => `${item.allow ? "✓" : "x"} ${displaySafe(item.path)} (${item.kind}): ${item.decision}`),
+            ...result.ignored.map((item) => `- ${displaySafe(item)}: outside the repository; not governed`),
+            ...result.reasons.map((reason) => `reason: ${displaySafe(reason)}`),
+          ].join("\n"), "text");
+        }
+        setCode(result.verdict === "deny" ? ExitCode.validation : ExitCode.success);
       } catch (error) {
         console.error(error instanceof Error ? error.message : String(error));
         setCode(ExitCode.io);
