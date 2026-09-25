@@ -353,7 +353,8 @@ owners: [{team: test}]
     expect(agents).toContain("explore -> propose -> approve -> implement -> verify -> close");
     expect(agents).toContain(`@engineeringspec/cli@${version}`);
     expect(agents).not.toContain("@next");
-    const releasedGuidanceVersion="0.1.0-rc.16";
+    // The newest published package; guidance must not call a published release "unpublished".
+    const releasedGuidanceVersion="0.1.0-rc.17";
     const skill=await readFile("skills/engineering-spec/SKILL.md","utf8");
     expect(skill).toContain(`@engineeringspec/cli@${releasedGuidanceVersion}`);
     expect(skill).not.toContain("@engineeringspec/cli@next");
@@ -361,6 +362,7 @@ owners: [{team: test}]
       const source=await readFile(file,"utf8");
       expect(source,file).toContain(releasedGuidanceVersion);
       expect(source,file).not.toContain("0.1.0-rc.6");
+      expect(source,file).not.toContain("unpublished");
     }
     for (const file of ["README.md","docs/lifecycle.md","docs/troubleshooting.md"]) {
       const source=await readFile(file,"utf8");

@@ -9,7 +9,7 @@ EngineeringSpec gives humans, coding agents, and CI one reviewed answer to what 
 From the root of a Git repository, preview the quickstart scaffold:
 
 ```sh
-npx --yes @engineeringspec/cli@0.1.0-rc.16 adopt . --quickstart \
+npx --yes @engineeringspec/cli@0.1.0-rc.17 adopt . --quickstart \
   --maintainer @YOUR_GITHUB_USER_OR_TEAM --dry-run
 ```
 
@@ -20,7 +20,7 @@ The preview lists the files it would create: repository defaults, a draft first 
 Review the preview, replace the maintainer placeholder, and rerun without `--dry-run`:
 
 ```sh
-npx --yes @engineeringspec/cli@0.1.0-rc.16 adopt . --quickstart \
+npx --yes @engineeringspec/cli@0.1.0-rc.17 adopt . --quickstart \
   --maintainer @YOUR_GITHUB_USER_OR_TEAM
 ```
 
@@ -31,12 +31,21 @@ Choose the operating level deliberately:
 
 TRY does not have the same merge-enforcement strength as PRODUCTION. You can complete this walkthrough before making the generated check required.
 
+**Adoption modes (RFC 0014, unreleased).** A source build of `adopt` writes `mode: advisory` into `engineering-spec.json`, and the generated workflow passes `bootstrap-mode: advisory`, so the adoption PR itself passes. Advisory reports findings without blocking, and it never grants permission.
+
+When you're ready, a reviewed change to `engineering-spec.json` moves the repository to `standard`. There you can:
+- exempt paths such as `docs/**`;
+- protect sensitive paths;
+- rely on long-lived standing authority.
+
+`controlled` keeps today's per-change contracts for every governed path. See the [draft specification](../SPEC.md#adoption-modes-authority-kinds-and-closure-draft-rfc-0014).
+
 ## 3. Propose one small change
 
 Create a bounded prospective proposal before implementation exists:
 
 ```sh
-npx --yes @engineeringspec/cli@0.1.0-rc.16 propose \
+npx --yes @engineeringspec/cli@0.1.0-rc.17 propose \
   --id ES-first \
   --title "First governed change" \
   --path 'src/example/**' \
@@ -64,7 +73,7 @@ engineeringspec work ES-first
 
 If another path is needed, stop. Propose and merge a separately reviewed authority amendment before editing that path.
 
-For machine consumption in the unpublished RC17 compact-ticket candidate, add `--format json` to the repository-local `next` or `work`. `next` names the approved and pending contract IDs and reports the current diff classification separately from permission; `none` means no diff yet. `work` returns only pre-code authority, not a predicted workflow lane. Use `--verbose` when an existing consumer needs the previous full JSON reports. The runnable `npx` examples remain on published RC16 until RC17 receives separate publication approval.
+For machine consumption, add `--format json` to the repository-local `next` or `work`. `next` names the approved and pending contract IDs and reports the current diff classification separately from permission; `none` means no diff yet. `work` returns only pre-code authority, not a predicted workflow lane. Use `--verbose` when an existing consumer needs the previous full JSON reports.
 
 ## 6. Finish
 

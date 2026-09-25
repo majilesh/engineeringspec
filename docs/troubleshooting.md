@@ -1,6 +1,6 @@
 # Troubleshooting
 
-Repository source is prepared as the unpublished `@engineeringspec/cli@0.1.0-rc.17` candidate. Runnable package diagnostics remain pinned to published RC16 until separate publication approval.
+Runnable package diagnostics pin the published `@engineeringspec/cli@0.1.0-rc.17`.
 
 ## `prepare` is blocked
 
@@ -9,8 +9,8 @@ Repository source is prepared as the unpublished `@engineeringspec/cli@0.1.0-rc.
 Start with:
 
 ```sh
-npx --yes @engineeringspec/cli@0.1.0-rc.16 doctor . --spec-dir docs/engineering-specs --base origin/main --strict
-npx --yes @engineeringspec/cli@0.1.0-rc.16 status --spec-dir docs/engineering-specs --base origin/main --allow-contract-only --strict
+npx --yes @engineeringspec/cli@0.1.0-rc.17 doctor . --spec-dir docs/engineering-specs --base origin/main --strict
+npx --yes @engineeringspec/cli@0.1.0-rc.17 status --spec-dir docs/engineering-specs --base origin/main --allow-contract-only --strict
 ```
 
 ## Base ref does not resolve
@@ -50,6 +50,17 @@ A matching `read_only` or `observe` target, or an incompatible change policy, de
 ## Duplicate ID (`ESRT005`)
 
 Eligible contracts share an ID. Assign durable unique IDs in a contract-only change.
+
+## Adoption modes, selectors and receipts (RFC 0014, unreleased)
+
+These codes appear only when the trusted-base `engineering-spec.json` sets `mode`. In `advisory` mode they are reported but never block (`enforcement: advisory (not enforced)`). An advisory pass still grants no permission, closure or receipt.
+
+- **Protected path not authorized (`ESRT008`).** The path is in `protectedPaths`, the specification directory, `engineering-spec.json` or a CODEOWNERS file. Exactly one approved, full-profile change contract must allow it. Standing authority and lite contracts never do. Merge a contract-only change granting the path, or change `protectedPaths` in a reviewed change to `engineering-spec.json`.
+- **Invalid selector (`ESRT009`).** A `--contract` value, `EngineeringSpec-Contract:` trailer, label or branch names a malformed, unknown, draft, expired or spent contract, or two sources name different contracts. Routing does not fall back to unselected routing. Fix or remove the selector. Merge-queue batches that combine PRs naming different contracts also report this; use batch size 1 if you rely on selectors.
+- **Change budget exceeded (`ESRT010`).** Split the change, or raise `change_budget` or `policy.budgets` in a reviewed change. An info-level `ESRT010` means the line budget could not be evaluated for explicitly listed paths.
+- **Standing authority expired or not approvable (`ESRT011`).** Expiry is measured from the trusted base commit. Approve a renewed standing contract or a change contract. In the contract-only lane, `expires_at` must be after the base commit and within `policy.maxStandingDays` (default 180).
+- **Standing authority on a protected or grant-before-spend path (`ESRT012`).** These paths always need an approved change contract.
+- **Closure receipt problem (`ESRT013`).** A receipt names the wrong contract, revision or digest, or its `baseSha` is not an ancestor of the trusted base. An invalid receipt spends nothing. Implementation PRs may not edit or delete receipts; delete a stale receipt only in the contract-only change that revises, supersedes or rejects its contract.
 
 ## Strict warning failure
 
