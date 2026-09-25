@@ -241,9 +241,6 @@
     },
     {
       "name": "selector-rejects-spent",
-      "pending": {
-        "phase": 4
-      },
       "selector": {
         "cli": "ES-a"
       },

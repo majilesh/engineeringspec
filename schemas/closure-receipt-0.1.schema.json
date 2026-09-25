@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://engineeringspec.org/schemas/closure-receipt-0.1.schema.json",
+  "title": "EngineeringSpec closure receipt 0.1",
+  "description": "RFC 0014 §5. Spends one approved change contract. Receipts only remove eligibility; changeDigest and cliVersion are audit fields.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["format", "formatVersion", "contractId", "specRevision", "semanticDigest", "baseSha", "changeDigest", "cliVersion"],
+  "properties": {
+    "format": { "const": "engineering-spec-closure-receipt" },
+    "formatVersion": { "const": "0.1" },
+    "contractId": { "type": "string", "pattern": "^[A-Z][A-Z0-9]*-[A-Za-z0-9][A-Za-z0-9._-]*$" },
+    "specRevision": { "type": "integer", "minimum": 1 },
+    "semanticDigest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "baseSha": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "changeDigest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "cliVersion": { "type": "string", "minLength": 1 }
+  }
+}

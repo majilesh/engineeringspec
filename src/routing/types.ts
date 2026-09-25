@@ -20,6 +20,8 @@ export interface RoutingCandidateSummary {
   semanticDigest:string;
   /** Present only for standing authority (RFC 0014 §4); change authority omits it. */
   authorityKind?: "standing";
+  /** Present only when a valid trusted-base closure receipt spent this contract (RFC 0014 §5). */
+  spent?: true;
 }
 
 export interface RoutingClaim {

@@ -103,7 +103,8 @@ jobs:
             local changed_path="$1"
             changed_count=$((changed_count + 1))
             case "$changed_path" in
-              docs/engineering-specs/*|rfcs/*) ;;
+              # Only contract documents and RFCs are contract-only; receipts and anything else are routed.
+              docs/engineering-specs/*.engineering-spec.md|docs/engineering-specs/*.engineeringspec.md|rfcs/*) ;;
               *) contract_only=0 ;;
             esac
             case "$changed_path" in

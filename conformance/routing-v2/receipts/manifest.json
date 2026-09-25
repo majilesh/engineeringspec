@@ -6,9 +6,6 @@
   "vectors": [
     {
       "name": "receipt-spends-change-contract",
-      "pending": {
-        "phase": 4
-      },
       "baseTimestamp": "2026-09-25T00:00:00Z",
       "candidates": [
         {
@@ -55,9 +52,6 @@
     },
     {
       "name": "receipt-mismatched-digest",
-      "pending": {
-        "phase": 4
-      },
       "baseTimestamp": "2026-09-25T00:00:00Z",
       "candidates": [
         {
@@ -107,9 +101,6 @@
     },
     {
       "name": "receipt-stale-revision",
-      "pending": {
-        "phase": 4
-      },
       "baseTimestamp": "2026-09-25T00:00:00Z",
       "candidates": [
         {
@@ -160,9 +151,6 @@
     },
     {
       "name": "receipt-for-standing-rejected",
-      "pending": {
-        "phase": 4
-      },
       "baseTimestamp": "2026-09-25T00:00:00Z",
       "candidates": [
         {
@@ -214,9 +202,6 @@
     },
     {
       "name": "receipt-forged-fails-safe",
-      "pending": {
-        "phase": 4
-      },
       "baseTimestamp": "2026-09-25T00:00:00Z",
       "candidates": [
         {

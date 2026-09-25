@@ -1,9 +1,9 @@
-import { realpath, writeFile } from "node:fs/promises";
+import { mkdir, realpath, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { resolveRepositoryConfig } from "../config/repositoryConfig.js";
 import { collectGitWorktreeDiff } from "../gate/collectDiff.js";
 import { gitShowToplevel, readGitBlob } from "../gate/loadSpec.js";
-import { digest } from "../normalizer/digest.js";
+import { closureSemanticDigest, digest } from "../normalizer/digest.js";
 import { normalize } from "../normalizer/normalize.js";
 import { readEvidenceFile, type ImplementationReceipt, type VerificationEvidence } from "../evidence/receipt.js";
 import { buildPrMetadata, type PrMetadata } from "../evidence/prMetadata.js";
@@ -12,6 +12,7 @@ import { packageVersion } from "./version.js";
 import { prepareChange } from "./prepare.js";
 import { buildReview, type ReviewReport } from "./review.js";
 import { transitionStatus } from "./transition.js";
+import { receiptPath, type ClosureReceipt } from "../receipts/receipt.js";
 
 export interface FinishReport {
   result: "ready" | "blocked";
@@ -47,7 +48,12 @@ export async function finishContract(options: { contractId: string; base?: strin
   }
   let closureWritten = false;
   if (options.writeClosure) {
-    await transitionStatus(path.join(root, brief.authority.specPath), "implemented", true);
+    if (review.enforcement.mode === "legacy") {
+      await transitionStatus(path.join(root, brief.authority.specPath), "implemented", true);
+    } else {
+      // Configured modes close with a receipt instead of editing the contract (RFC 0014 §5).
+      await writeClosureReceipt(root, config.config.specDirectory, options.contractId, config.baseSha, brief.authority.specPath, review.changedDigest, options.cwd);
+    }
     closureWritten = true;
     review = await buildReview({ specDirectory: config.config.specDirectory, base: config.baseSha, strict: config.config.strict, staged: Boolean(options.staged), worktree: !options.staged, allowContractOnly: true, ...(options.cwd ? { cwd: options.cwd } : {}) });
     if (!review.valid) return { result: "blocked", review, closureWritten };
@@ -94,4 +100,24 @@ export async function finishContract(options: { contractId: string; base?: strin
   const pr = buildPrMetadata(receipt);
   if (resolvedOutput) await writeFile(resolvedOutput, `${JSON.stringify({ receipt, pr }, null, 2)}\n`, "utf8");
   return { result: "ready", review, receipt, pr, closureWritten };
+}
+
+async function writeClosureReceipt(root: string, specDirectory: string, contractId: string, baseSha: string, specPath: string, changeDigest: string, cwd?: string): Promise<void> {
+  const base = await validateMarkdown(await readGitBlob(baseSha, specPath, cwd), `${baseSha}:${specPath}`, { resolveProfiles: false });
+  if (!base.spec) throw new Error(`Unable to load ${contractId} from the trusted base`);
+  const spec = normalize(base.spec);
+  const receipt: ClosureReceipt = {
+    format: "engineering-spec-closure-receipt",
+    formatVersion: "0.1",
+    contractId,
+    specRevision: spec.metadata.specRevision,
+    semanticDigest: closureSemanticDigest(spec),
+    baseSha,
+    changeDigest,
+    cliVersion: packageVersion(),
+  };
+  const destination = path.join(root, receiptPath(specDirectory, contractId));
+  await mkdir(path.dirname(destination), { recursive: true });
+  // "wx": a contract is closed once; an existing receipt is never overwritten.
+  await writeFile(destination, `${JSON.stringify(receipt, null, 2)}\n`, { encoding: "utf8", flag: "wx" });
 }

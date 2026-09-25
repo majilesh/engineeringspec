@@ -18,6 +18,8 @@ import { partitionSpecificationChanges, selectSpecs, unsafeMixedClosureDiagnosti
 import type { LoadedRoutingCandidate } from "../../src/routing/types.js";
 import { validateFile } from "../../src/validator/validateFile.js";
 import { canonicalJson } from "../../src/normalizer/canonicalize.js";
+import { closureSemanticDigest } from "../../src/normalizer/digest.js";
+import type { ClosureReceipt } from "../../src/receipts/receipt.js";
 import { normalize } from "../../src/normalizer/normalize.js";
 import { runCli } from "../support/runCli.js";
 
@@ -191,10 +193,19 @@ function evaluateVector(vector: RoutingVector, mode: AdoptionMode) {
   const selector = vector.selector
     ? selectorSources({ ...(vector.selector.cli ? { contract: vector.selector.cli } : {}), labels: vector.selector.label ? [vector.selector.label] : [], ...(vector.selector.branch ? { branch: vector.selector.branch } : {}) }, { label: "engineeringspec:", branch: "es/" })
     : undefined;
+  const candidates = vector.candidates.map(loadedCandidate);
+  // Fixture receipts use @digest(ID) and @base placeholders for values only the evaluator can know.
+  const baseReceipts = (vector.receipts ?? []).map((raw) => {
+    const receipt = { format: "engineering-spec-closure-receipt", formatVersion: "0.1", ...raw } as unknown as ClosureReceipt;
+    const digestOf = /^@digest\((.+)\)$/u.exec(String(raw.semanticDigest));
+    if (digestOf) receipt.semanticDigest = closureSemanticDigest(candidates.find((candidate) => candidate.spec.metadata.id === digestOf[1])!.spec);
+    if (raw.baseSha === "@base") receipt.baseSha = "a".repeat(40);
+    return { path: `${SPEC_DIRECTORY}/receipts/${receipt.contractId}.receipt.json`, receipt, baseIsAncestor: raw.baseSha === "@base" };
+  });
   const counted = vector.changed.some((change) => change.additions !== undefined || change.binary);
   const changedLines = vector.changed.reduce((sum, change) => sum + (change.binary ? 0 : (change.additions ?? 0) + (change.deletions ?? 0)), 0);
   const evaluation = evaluatePolicyRouting({
-    mode, policy, specDirectory: SPEC_DIRECTORY, candidates: vector.candidates.map(loadedCandidate), changed, baseTimestamp: vector.baseTimestamp,
+    mode, policy, specDirectory: SPEC_DIRECTORY, candidates, changed, baseTimestamp: vector.baseTimestamp, baseReceipts,
     ...(selector ? { selector } : {}),
     ...(counted ? { changedLines } : {}),
   });
