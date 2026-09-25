@@ -20,7 +20,7 @@ adopt -> propose bounded authority -> human review + merge
 Preview adoption with the published RC17 CLI:
 
 ```sh
-npx --yes @engineeringspec/cli@0.1.0-rc.17 adopt . --quickstart \
+npx --yes @engineeringspec/cli@0.1.0-rc.18 adopt . --quickstart \
   --maintainer @YOUR_GITHUB_USER_OR_TEAM --dry-run
 ```
 
@@ -67,7 +67,7 @@ steps:
   - uses: actions/checkout@v4
     with:
       fetch-depth: 0
-  - uses: majilesh/engineeringspec@ddf813e4e69d9b2f9a9eb3f0f241747746021cf3
+  - uses: majilesh/engineeringspec@9dc9ef0fd1861f35781610921cacb416849e3e5f
     with:
       path: docs/engineering-specs
       strict: true
@@ -79,7 +79,7 @@ steps:
 
 The Action loads authority from the configured base, routes every changed path, and fails when a path is uncovered, ambiguous, or denied. Deny wins. A workspace proposal cannot contribute authority. Protect the job as a required check and protect `docs/engineering-specs/**` with CODEOWNERS. See [Production diff-scope gate](docs/production-gate.md).
 
-**Adoption modes (RFC 0014, on `main`, unreleased).** `engineering-spec.json` can set `mode: advisory | standard | controlled`, with trusted-base policy for governed, exempt and protected paths. New installations start in advisory mode, which reports without blocking and grants nothing.
+**Adoption modes (RFC 0014, since 0.1.0-rc.18).** `engineering-spec.json` can set `mode: advisory | standard | controlled`, with trusted-base policy for governed, exempt and protected paths. New installations start in advisory mode, which reports without blocking and grants nothing.
 
 The same release adds:
 - selectors, which name one approved contract per PR;
@@ -163,4 +163,4 @@ Private repositories are supported: the CLI and Action operate on the checked-ou
 
 ## Status
 
-The published `@engineeringspec/cli@0.1.0-rc.17` package includes compact PermissionTickets. The immutable Action runtime remains independently pinned. The repository remains a draft open specification and reference implementation, and there are no retained external pilot pairs yet. A read-only MCP adapter remains deliberately deferred until measured adoption friction warrants another transport.
+The published `@engineeringspec/cli@0.1.0-rc.18` package includes compact PermissionTickets. The immutable Action runtime remains independently pinned. The repository remains a draft open specification and reference implementation, and there are no retained external pilot pairs yet. A read-only MCP adapter remains deliberately deferred until measured adoption friction warrants another transport.

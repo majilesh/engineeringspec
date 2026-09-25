@@ -1,6 +1,6 @@
 # Troubleshooting
 
-Runnable package diagnostics pin the published `@engineeringspec/cli@0.1.0-rc.17`.
+Runnable package diagnostics pin the published `@engineeringspec/cli@0.1.0-rc.18`.
 
 ## `prepare` is blocked
 
@@ -9,8 +9,8 @@ Runnable package diagnostics pin the published `@engineeringspec/cli@0.1.0-rc.17
 Start with:
 
 ```sh
-npx --yes @engineeringspec/cli@0.1.0-rc.17 doctor . --spec-dir docs/engineering-specs --base origin/main --strict
-npx --yes @engineeringspec/cli@0.1.0-rc.17 status --spec-dir docs/engineering-specs --base origin/main --allow-contract-only --strict
+npx --yes @engineeringspec/cli@0.1.0-rc.18 doctor . --spec-dir docs/engineering-specs --base origin/main --strict
+npx --yes @engineeringspec/cli@0.1.0-rc.18 status --spec-dir docs/engineering-specs --base origin/main --allow-contract-only --strict
 ```
 
 ## Base ref does not resolve
@@ -51,7 +51,7 @@ A matching `read_only` or `observe` target, or an incompatible change policy, de
 
 Eligible contracts share an ID. Assign durable unique IDs in a contract-only change.
 
-## Adoption modes, selectors and receipts (RFC 0014, unreleased)
+## Adoption modes, selectors and receipts (RFC 0014)
 
 These codes appear only when the trusted-base `engineering-spec.json` sets `mode`. In `advisory` mode they are reported but never block (`enforcement: advisory (not enforced)`). An advisory pass still grants no permission, closure or receipt.
 

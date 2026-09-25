@@ -99,7 +99,7 @@ While EngineeringSpec 0.1 is a prerelease draft, release candidates MAY add back
 
 ## Adoption modes, authority kinds and closure (draft, RFC 0014)
 
-These additions are draft 0.1 fields and reference-tooling behavior from [RFC 0014](rfcs/0014-routing-v2-adoption-modes.md). They are on `main` and not yet in a published release. Documents that do not use them keep their canonical JSON and digests.
+These additions are draft 0.1 fields and reference-tooling behavior from [RFC 0014](rfcs/0014-routing-v2-adoption-modes.md). They were first released in `0.1.0-rc.18`. Documents that do not use them keep their canonical JSON and digests.
 
 **Frontmatter.** The following fields are optional:
 - `authority_kind`: `change` (the default when absent) or `standing`. Standing authority MUST declare `expires_at`.

@@ -9,6 +9,7 @@ import { validateFile } from "../../src/index.js";
 import { adoptRepository } from "../../src/cli/adopt.js";
 import { summarizeAgentBenchmark } from "../../src/cli/benchmark.js";
 import { runCli } from "../support/runCli.js";
+import { CURRENT_ACTION_SHA } from "../../src/adoption/releases.js";
 
 async function invoke(args:string[]):Promise<number>{
   let code=0;
@@ -322,7 +323,7 @@ owners: [{team: test}]
     expect(await readFile(path.join(root,".github/workflows/engineering-spec.yml"),"utf8")).toContain("gate-require-status: approved");
     expect(await readFile(path.join(root,".github/workflows/engineering-spec.yml"),"utf8")).toContain("gate-allow-contract-only: true");
     expect(await readFile(path.join(root,".github/workflows/engineering-spec.yml"),"utf8")).toContain("steps.approved-base.outputs.ref");
-    expect(await readFile(path.join(root,".github/workflows/engineering-spec.yml"),"utf8")).toContain("majilesh/engineeringspec@ddf813e4e69d9b2f9a9eb3f0f241747746021cf3");
+    expect(await readFile(path.join(root,".github/workflows/engineering-spec.yml"),"utf8")).toContain(`majilesh/engineeringspec@${CURRENT_ACTION_SHA}`);
     expect(await readFile(path.join(root,"CLAUDE.md"),"utf8")).toContain("@AGENTS.md");
     const dry=await adoptRepository({root,specPath:"docs/engineering-specs/ES-change.engineering-spec.md",dryRun:true});
     expect(dry.skipped).toHaveLength(5);
@@ -354,7 +355,7 @@ owners: [{team: test}]
     expect(agents).toContain(`@engineeringspec/cli@${version}`);
     expect(agents).not.toContain("@next");
     // The newest published package; guidance must not call a published release "unpublished".
-    const releasedGuidanceVersion="0.1.0-rc.17";
+    const releasedGuidanceVersion="0.1.0-rc.18";
     const skill=await readFile("skills/engineering-spec/SKILL.md","utf8");
     expect(skill).toContain(`@engineeringspec/cli@${releasedGuidanceVersion}`);
     expect(skill).not.toContain("@engineeringspec/cli@next");
@@ -369,7 +370,7 @@ owners: [{team: test}]
       expect(source,file).toContain(version);
       expect(source,file).not.toContain("0.1.0-rc.6");
     }
-    expect(await readFile("README.md","utf8")).toContain("ddf813e4e69d9b2f9a9eb3f0f241747746021cf3");
+    expect(await readFile("README.md","utf8")).toContain(CURRENT_ACTION_SHA);
   });
   it("detects origin HEAD and safely merges text guidance",async()=>{
     const root=await mkdtemp(path.join(os.tmpdir(),"es-adopt-merge-"));
@@ -399,8 +400,8 @@ owners: [{team: test}]
     expect(dry.updated).toEqual(expect.arrayContaining(["AGENTS.md",".github/workflows/engineering-spec.yml"]));
     expect(await readFile(path.join(root,"AGENTS.md"),"utf8")).toContain("0.1.0-rc.6");
     await adoptRepository({root,specPath:"docs/engineering-specs/change.engineering-spec.md",baseRef:"origin/main",merge:true,upgrade:true});
-    expect(await readFile(path.join(root,"AGENTS.md"),"utf8")).toContain("0.1.0-rc.17");
-    expect(await readFile(path.join(root,".github","workflows","engineering-spec.yml"),"utf8")).toContain("ddf813e4e69d9b2f9a9eb3f0f241747746021cf3");
+    expect(await readFile(path.join(root,"AGENTS.md"),"utf8")).toContain("0.1.0-rc.18");
+    expect(await readFile(path.join(root,".github","workflows","engineering-spec.yml"),"utf8")).toContain(CURRENT_ACTION_SHA);
   });
   it("keeps dry-run write-free and rejects unsafe scaffold interpolation",async()=>{
     const root=await mkdtemp(path.join(os.tmpdir(),"es-adopt-dry-"));

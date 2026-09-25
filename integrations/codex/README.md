@@ -4,7 +4,7 @@ Codex automatically reads repository `AGENTS.md` guidance. Keep the generated li
 
 Ask Codex to use `next`, then `work <contract-id>` before consequential edits, run separately trusted repository checks, and use `finish <contract-id>` before completion. The skill is guidance, not extra authority; base-pinned approved contracts remain the only implementation authority.
 
-## Edit guard hook (RFC 0014, unreleased)
+## Edit guard hook (RFC 0014)
 
 [`hooks/engineeringspec-guard.mjs`](hooks/engineeringspec-guard.mjs) handles `PreToolUse` for `apply_patch`. It reads the `*** Add/Update/Delete File:` and `*** Move to:` headers from `tool_input.command`, checks every path with `engineeringspec guard`, and returns `permissionDecision: "deny"` when any path is outside approved authority. On `Stop` it reports complete-state `check` failures to stderr but does not block. Shell commands are left to that check and to CI.
 

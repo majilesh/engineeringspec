@@ -4,6 +4,10 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+## [0.1.0-rc.18] - 2026-09-26
+
+Published to npm; the `next` and `latest` dist-tags both identify this release. The generated GitHub Action pin moves from the RC16 anchor to the RFC 0014 runtime anchor, `9dc9ef0fd1861f35781610921cacb416849e3e5f`.
+
 ### Added (RFC 0014, `ES-routing-v2-adoption-modes`)
 
 - **Adoption modes and policy.** Adoption modes (`advisory`, `standard`, `controlled`) and trusted-base repository policy (`governedPaths`, `exemptPaths`, `protectedPaths`, `grantBeforeSpendPaths`, `budgets`, `maxStandingDays`, `selection`) in repository configuration 0.2. Without `mode`, routing is unchanged.
@@ -25,6 +29,11 @@ All notable changes to this project are documented here.
 - CI routes pull requests with a CLI built from the trusted base, not the PR head.
 - Tests no longer change the process working directory.
 - Coverage thresholds include routing, authority and configuration code.
+- The release workflow also moves the `latest` dist-tag to each release candidate after the trusted publish.
+
+### Security
+
+- The lockfile updates `fast-uri` 3.1.5 → 3.1.8 (a runtime dependency, via ajv) and `js-yaml` 4.3.1 → 4.3.2 (a development dependency, via eslint), resolving the high-severity advisories. `npm audit --audit-level=high` passes. A moderate `vitest` advisory that requires a breaking upgrade remains open.
 
 ## [0.1.0-rc.17] - 2026-08-29
 
