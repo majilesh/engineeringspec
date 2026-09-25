@@ -1,3 +1,4 @@
+import { PASSING_DECISIONS } from "../routing/types.js";
 import type { ChangedFile } from "../gate/types.js";
 import type { Status } from "../model/types.js";
 import { compareCodePoints } from "../normalizer/canonicalize.js";
@@ -40,6 +41,7 @@ export interface WorkflowStatusOptions {
   changed?: ChangedFile[];
   cwd?: string;
   allowContractOnly?: boolean;
+  bootstrapMode?: "advisory";
 }
 
 function lifecycleCounts(report: RoutingReport): Record<Status, number> {
@@ -80,6 +82,7 @@ export async function workflowStatus(options: WorkflowStatusOptions): Promise<Wo
     ...(options.changed ? { changed: options.changed } : {}),
     ...(options.cwd ? { cwd: options.cwd } : {}),
     allowContractOnly: Boolean(options.allowContractOnly),
+    ...(options.bootstrapMode ? { bootstrapMode: options.bootstrapMode } : {}),
   });
   const selectedRoutes = routing.routes.filter((route) => route.decision === "selected" && route.selected);
   const selectedContracts = [...new Set(selectedRoutes.map((route) => route.selected!.specId))].sort(compareCodePoints);
@@ -94,7 +97,7 @@ export async function workflowStatus(options: WorkflowStatusOptions): Promise<Wo
     workingState: {
       changed: routing.changed.length,
       selected: selectedRoutes.length,
-      violations: routing.routes.filter((route) => route.decision !== "selected").length,
+      violations: routing.routes.filter((route) => !PASSING_DECISIONS.has(route.decision)).length,
     },
     selectedContracts,
     routedTargets,

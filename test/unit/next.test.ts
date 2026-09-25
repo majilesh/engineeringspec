@@ -25,6 +25,7 @@ function report(classification: ChangeClassification = "none"): next.NextReport 
         valid: true, base: "main", baseSha: "a".repeat(40), head: "HEAD", headSha: "b".repeat(40), candidateDirectory: "specs",
         requiredStatuses: ["approved"], changedDigest: "digest", changed: [], governance: { enabled: true, classification },
         candidates, coverage: { status: "complete", specs: [] }, routes: [], diagnostics: [], sequencing: [],
+        enforcement: { mode: "legacy", outcome: "pass", enforced: true },
       },
     },
   };

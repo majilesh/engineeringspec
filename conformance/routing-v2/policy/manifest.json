@@ -6,9 +6,6 @@
   "vectors": [
     {
       "name": "exempt-path-passes",
-      "pending": {
-        "phase": 2
-      },
       "policy": {
         "exemptPaths": [
           "docs/**"
@@ -36,9 +33,6 @@
     },
     {
       "name": "ungoverned-path-passes",
-      "pending": {
-        "phase": 2
-      },
       "policy": {
         "governedPaths": [
           "src/**"
@@ -66,9 +60,6 @@
     },
     {
       "name": "protected-overrides-exempt",
-      "pending": {
-        "phase": 2
-      },
       "policy": {
         "exemptPaths": [
           "docs/**"
@@ -101,9 +92,6 @@
     },
     {
       "name": "implicit-protection-spec-directory",
-      "pending": {
-        "phase": 2
-      },
       "baseTimestamp": "2026-09-25T00:00:00Z",
       "candidates": [
         {
@@ -150,9 +138,6 @@
     },
     {
       "name": "implicit-protection-config",
-      "pending": {
-        "phase": 2
-      },
       "baseTimestamp": "2026-09-25T00:00:00Z",
       "candidates": [
         {
@@ -189,9 +174,6 @@
     },
     {
       "name": "implicit-protection-codeowners",
-      "pending": {
-        "phase": 2
-      },
       "policy": {
         "exemptPaths": [
           ".github/**"
@@ -221,9 +203,6 @@
     },
     {
       "name": "invalid-policy-glob",
-      "pending": {
-        "phase": 2
-      },
       "policy": {
         "exemptPaths": [
           "docs/{a,b}/**"

@@ -48,7 +48,7 @@ export function digestRoutedChanges(changed: ChangedFile[]): string {
   return `sha256:${createHash("sha256").update(payload, "utf8").digest("hex")}`;
 }
 
-function expandedChanges(changed: ChangedFile[]): Array<{ path: string; kind: ChangeKind }> {
+export function expandedChanges(changed: ChangedFile[]): Array<{ path: string; kind: ChangeKind }> {
   return changed.flatMap((change) => change.kind === "renamed" && change.fromPath
     ? [{ path: change.fromPath, kind: "deleted" as const }, { path: change.path, kind: "added" as const }]
     : [{ path: change.path, kind: change.kind }]);

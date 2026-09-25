@@ -27,6 +27,8 @@ import { buildAgentContext, explainPath } from "../query/agentContext.js";
 import { adoptRepository } from "./adopt.js";
 import { evaluateCeremonyBenchmark, summarizeAgentBenchmark } from "./benchmark.js";
 import { selectSpecs } from "../routing/select.js";
+import { PASSING_DECISIONS, type EnforcementResult } from "../routing/types.js";
+import type { Diagnostic } from "../diagnostics/Diagnostic.js";
 import { diagnoseRepository } from "./doctor.js";
 import { workflowStatus } from "./status.js";
 import { transitionStatus } from "./transition.js";
@@ -80,6 +82,25 @@ function textReport(report: PathValidationReport): string {
   const header = `${report.valid ? "valid" : "invalid"}: ${report.path} (${report.files.length} documents, ${report.errors} errors, ${report.warnings} warnings)`;
   return report.diagnostics.length > 0 ? `${header}\n${formatDiagnostics(report.diagnostics)}` : header;
 }
+
+/** Exit code follows the enforcement outcome; `valid` stays the authorization truth (RFC 0014). */
+function enforcementExitCode(enforcement: EnforcementResult): number {
+  return enforcement.outcome === "pass" ? ExitCode.success : ExitCode.validation;
+}
+
+/** Advisory findings are reported, not enforced, so GitHub annotations downgrade errors to warnings. */
+function annotated(diagnostic: Diagnostic, enforcement: EnforcementResult): Diagnostic {
+  return !enforcement.enforced && diagnostic.severity === "error" ? { ...diagnostic, severity: "warning" } : diagnostic;
+}
+
+/** Empty for legacy routing so existing output is unchanged. */
+function enforcementLines(enforcement: EnforcementResult): string[] {
+  if (enforcement.mode === "legacy" && !enforcement.bootstrap) return [];
+  const bootstrap = enforcement.bootstrap ? `; bootstrap ${enforcement.bootstrap}` : "";
+  return [`enforcement: ${enforcement.mode}${enforcement.enforced ? "" : " (not enforced)"}; outcome ${enforcement.outcome}${bootstrap}`];
+}
+
+const bootstrapModeOption = () => new Option("--bootstrap-mode <mode>", "first-adoption advisory mode; ignored when the trusted base has engineering-spec.json or approved contracts").choices(["advisory"]);
 
 export function createProgram(setCode: (code: number) => void): Command {
   const formatOption = new Option("--format <format>", "output format")
@@ -643,6 +664,7 @@ export function createProgram(setCode: (code: number) => void): Command {
     .option("--staged", "inspect committed and staged changes only")
     .option("--no-worktree", "exclude working-tree changes")
     .option("--allow-contract-only", "allow strictly validated specification-directory-only governance changes")
+    .addOption(bootstrapModeOption())
     .addOption(new Option("--change-kind <kind>").choices(["added", "modified", "deleted", "renamed"]).default("modified"))
     .addOption(new Option("--format <format>", "output format").choices(["text", "json", "github", "markdown"]))
     .action(async (options, command) => {
@@ -663,18 +685,20 @@ export function createProgram(setCode: (code: number) => void): Command {
           worktree: options.staged ? false : options.worktree !== false,
           ...(options.changed.length ? { changed: changedFromPathList(options.changed, options.changeKind as ChangeKind) } : {}),
           allowContractOnly: Boolean(options.allowContractOnly),
+          ...(options.bootstrapMode ? { bootstrapMode: options.bootstrapMode as "advisory" } : {}),
         });
         const markdown = reviewMarkdown(report);
         if (!global.quiet) {
           if (global.format === "json") output(report, "json");
           else if (global.format === "markdown") output(markdown, "text");
           else if (global.format === "github") {
-            for (const diagnostic of report.diagnostics) console.log(formatGitHubDiagnostic(diagnostic));
-            console.log(`::${report.valid ? "notice" : "error"} title=EngineeringSpec review::${report.workingState.violations} violation(s)`);
+            for (const diagnostic of report.diagnostics) console.log(formatGitHubDiagnostic(annotated(diagnostic, report.enforcement)));
+            const level = report.valid ? "notice" : report.enforcement.enforced ? "error" : "warning";
+            console.log(`::${level} title=EngineeringSpec review::${report.workingState.violations} violation(s)${report.enforcement.enforced ? "" : " (advisory; not enforced)"}`);
             if (process.env.GITHUB_STEP_SUMMARY) await appendFile(process.env.GITHUB_STEP_SUMMARY, `${markdown}\n`, "utf8");
-          } else output(reviewText(report), "text");
+          } else output([reviewText(report), ...enforcementLines(report.enforcement)].join("\n"), "text");
         }
-        setCode(report.valid ? ExitCode.success : ExitCode.validation);
+        setCode(enforcementExitCode(report.enforcement));
       } catch (error) {
         console.error(error instanceof Error ? error.message : String(error));
         setCode(ExitCode.io);
@@ -739,6 +763,7 @@ export function createProgram(setCode: (code: number) => void): Command {
     .option("--staged", "check committed and staged changes only")
     .option("--no-worktree", "exclude working-tree changes and check committed changes only")
     .option("--allow-contract-only", "allow strictly validated specification-directory-only governance changes")
+    .addOption(bootstrapModeOption())
     .addOption(new Option("--format <format>", "output format").choices(["text", "json", "markdown"]))
     .action(async (file, options, command) => {
       try {
@@ -763,17 +788,19 @@ export function createProgram(setCode: (code: number) => void): Command {
             staged: Boolean(options.staged),
             worktree: options.staged ? false : options.worktree !== false,
             allowContractOnly: Boolean(options.allowContractOnly),
+            ...(options.bootstrapMode ? { bootstrapMode: options.bootstrapMode as "advisory" } : {}),
           });
           const text = [
             `check: ${routed.valid ? "pass" : "fail"}`,
+            ...enforcementLines(routed.enforcement),
             `contracts: base ${routed.baseSha} (${routed.candidates.filter((item) => item.eligible).length} eligible)`,
-            `working state: ${routed.changed.length} changed, ${routed.routes.filter((item) => item.decision !== "selected").length} violations`,
+            `working state: ${routed.changed.length} changed, ${routed.routes.filter((item) => !PASSING_DECISIONS.has(item.decision)).length} violations`,
             `declared coverage: ${routed.coverage.status}`,
             `change classification: ${routed.governance.classification}`,
             ...routed.diagnostics.map((diagnostic) => `${diagnostic.severity}: ${diagnostic.code} ${diagnostic.message}`),
           ].join("\n");
           if (!global.quiet) output(global.format === "json" ? routed : text, global.format);
-          setCode(routed.valid ? ExitCode.success : ExitCode.validation);
+          setCode(enforcementExitCode(routed.enforcement));
           return;
         }
         const report = await agentCheck({
@@ -831,6 +858,7 @@ export function createProgram(setCode: (code: number) => void): Command {
     .option("--worktree", "route the complete working state")
     .option("--staged", "route committed and staged changes")
     .option("--allow-contract-only", "allow strictly validated specification-directory-only governance changes")
+    .addOption(bootstrapModeOption())
     .addOption(new Option("--change-kind <kind>").choices(["added", "modified", "deleted", "renamed"]).default("modified"))
     .addOption(new Option("--format <format>", "output format").choices(["text", "json", "github", "markdown"]))
     .action(async (directory, options, command) => {
@@ -860,9 +888,11 @@ export function createProgram(setCode: (code: number) => void): Command {
           staged: Boolean(options.staged),
           worktree: Boolean(options.worktree),
           allowContractOnly: Boolean(options.allowContractOnly),
+          ...(options.bootstrapMode ? { bootstrapMode: options.bootstrapMode as "advisory" } : {}),
         });
         const text = [
           `select: ${report.valid ? "pass" : "fail"}`,
+          ...enforcementLines(report.enforcement),
           `base: ${report.baseSha}`,
           `candidates: ${report.candidates.length}, eligible: ${report.candidates.filter((item) => item.eligible).length}`,
           `changed: ${report.changed.length}, selected: ${report.routes.filter((item) => item.decision === "selected").length}`,
@@ -871,10 +901,10 @@ export function createProgram(setCode: (code: number) => void): Command {
           ...report.diagnostics.map((diagnostic) => `${diagnostic.severity}: ${diagnostic.code} ${diagnostic.message}`),
         ].join("\n");
         if (!global.quiet) {
-          if (global.format === "github") for (const diagnostic of report.diagnostics) console.log(formatGitHubDiagnostic(diagnostic));
+          if (global.format === "github") for (const diagnostic of report.diagnostics) console.log(formatGitHubDiagnostic(annotated(diagnostic, report.enforcement)));
           else output(global.format === "json" ? report : text, global.format);
         }
-        setCode(report.valid ? ExitCode.success : ExitCode.validation);
+        setCode(enforcementExitCode(report.enforcement));
       } catch (error) {
         console.error(error instanceof Error ? error.message : String(error));
         setCode(ExitCode.io);

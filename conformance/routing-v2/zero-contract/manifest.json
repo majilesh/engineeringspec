@@ -6,9 +6,6 @@
   "vectors": [
     {
       "name": "advisory-no-candidates-passes",
-      "pending": {
-        "phase": 2
-      },
       "baseTimestamp": "2026-09-25T00:00:00Z",
       "candidates": [],
       "changed": [
@@ -33,9 +30,6 @@
     },
     {
       "name": "standard-no-candidates-exempt-passes",
-      "pending": {
-        "phase": 2
-      },
       "policy": {
         "exemptPaths": [
           "docs/**"
@@ -63,9 +57,6 @@
     },
     {
       "name": "standard-no-candidates-governed-fails",
-      "pending": {
-        "phase": 2
-      },
       "policy": {
         "governedPaths": [
           "src/**"

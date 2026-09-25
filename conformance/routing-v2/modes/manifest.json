@@ -6,9 +6,6 @@
   "vectors": [
     {
       "name": "advisory-reports-uncovered",
-      "pending": {
-        "phase": 2
-      },
       "baseTimestamp": "2026-09-25T00:00:00Z",
       "candidates": [
         {
@@ -45,9 +42,6 @@
     },
     {
       "name": "standard-fails-uncovered",
-      "pending": {
-        "phase": 2
-      },
       "baseTimestamp": "2026-09-25T00:00:00Z",
       "candidates": [
         {
@@ -93,9 +87,6 @@
     },
     {
       "name": "controlled-fails-uncovered",
-      "pending": {
-        "phase": 2
-      },
       "policy": {
         "exemptPaths": [
           "docs/**"
@@ -142,9 +133,6 @@
     },
     {
       "name": "decisions-identical-across-modes",
-      "pending": {
-        "phase": 2
-      },
       "policy": {
         "governedPaths": [
           "src/**",
