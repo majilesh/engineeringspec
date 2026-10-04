@@ -17,10 +17,10 @@ adopt -> propose bounded authority -> human review + merge
       -> finish <contract-id> -> implementation PR + exact close
 ```
 
-Preview adoption with the published RC17 CLI:
+Preview adoption with the published RC19 CLI:
 
 ```sh
-npx --yes @engineeringspec/cli@0.1.0-rc.18 adopt . --quickstart \
+npx --yes @engineeringspec/cli@0.1.0-rc.19 adopt . --quickstart \
   --maintainer @YOUR_GITHUB_USER_OR_TEAM --dry-run
 ```
 
@@ -67,7 +67,7 @@ steps:
   - uses: actions/checkout@v4
     with:
       fetch-depth: 0
-  - uses: majilesh/engineeringspec@9dc9ef0fd1861f35781610921cacb416849e3e5f
+  - uses: majilesh/engineeringspec@7360ea935bb19d49912f055ec509b364f9e6ad9b
     with:
       path: docs/engineering-specs
       strict: true
@@ -164,4 +164,4 @@ Private repositories are supported: the CLI and Action operate on the checked-ou
 
 ## Status
 
-The published `@engineeringspec/cli@0.1.0-rc.18` package includes compact PermissionTickets. The immutable Action runtime remains independently pinned. The repository remains a draft open specification and reference implementation, and there are no retained external pilot pairs yet. A read-only MCP adapter remains deliberately deferred until measured adoption friction warrants another transport.
+The published `@engineeringspec/cli@0.1.0-rc.19` package includes compact PermissionTickets and offline Visual Verification Briefs. The immutable Action runtime remains independently pinned. The repository remains a draft open specification and reference implementation, and there are no retained external pilot pairs yet. A read-only MCP adapter remains deliberately deferred until measured adoption friction warrants another transport.

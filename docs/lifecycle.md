@@ -6,7 +6,7 @@ For new authority, the default review boundary is two pull requests: merge one r
 
 With trusted repository configuration on the base, use `engineeringspec next`, `engineeringspec work <contract-id>`, and `engineeringspec finish <contract-id>`. Explicit lower-level commands and flags remain supported for debugging and CI. `next` is informational: successful analysis is not implementation authority. Start implementation only when it reports `permission: implementation` and `work` successfully loads the exact approved trusted-base contract.
 
-Runnable package examples pin the published `@engineeringspec/cli@0.1.0-rc.18`.
+Runnable package examples pin the published `@engineeringspec/cli@0.1.0-rc.19`.
 
 | Workflow stage | Typical contract state | Authority and outcome |
 |---|---|---|
@@ -42,8 +42,8 @@ Use `superseded` when a reviewed replacement contract owns the change. Use `reje
 After repository-owned checks pass, the implementation PR may change only the exact authorizing contract lifecycle to `implemented`:
 
 ```sh
-npx --yes @engineeringspec/cli@0.1.0-rc.18 finish ES-change --format markdown
-npx --yes @engineeringspec/cli@0.1.0-rc.18 finish ES-change --write-closure
+npx --yes @engineeringspec/cli@0.1.0-rc.19 finish ES-change --format markdown
+npx --yes @engineeringspec/cli@0.1.0-rc.19 finish ES-change --write-closure
 ```
 
 With code in the same diff, the result must say `change classification: implementation_with_monotonic_close`; a standalone closure remains `contract_only`. Any semantic edit, authority widening, or unrelated contract close fails. Require normal repository checks and maintainer review before merging. Approved-base routing still applies to every implementation path.

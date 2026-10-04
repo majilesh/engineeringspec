@@ -180,7 +180,7 @@ Reports add `enforcement: {mode, outcome, enforced}`. `select`, `check` and `rev
 Preview a managed integration upgrade before applying it:
 
 ```sh
-npx --yes @engineeringspec/cli@0.1.0-rc.18 adopt . \
+npx --yes @engineeringspec/cli@0.1.0-rc.19 adopt . \
   --spec docs/engineering-specs/change.engineering-spec.md \
   --merge --upgrade --dry-run
 ```

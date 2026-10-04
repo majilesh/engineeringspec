@@ -4,6 +4,10 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+## [0.1.0-rc.19] - 2026-10-05
+
+Ships the Visual Verification Brief and merged brace-expansion remediation. Current Action guidance pins the reviewed Visual Verification Brief runtime anchor `7360ea935bb19d49912f055ec509b364f9e6ad9b`.
+
 ### Added
 
 - Visual Verification Brief: `review --format html` produces a standalone offline view of path routing, applicable constraints, verifier relationships, supplied evidence and trusted-base provenance. Repeatable `--evidence` inputs use existing binding validation. Reported passes remain assertions; the existing change digest binds paths and change kinds rather than implementation bytes. No verifiers execute and no authority is granted. Existing review formats and enforcement outcomes remain unchanged.
