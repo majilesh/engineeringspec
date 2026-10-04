@@ -145,6 +145,7 @@ The short workflow composes deterministic lower-level primitives for validation,
 - `doctor` and `status` diagnose adoption and lifecycle state.
 - `prepare`, `review`, `select`, and `check` expose base-pinned routing and complete-state checks.
 - `context` and `explain` inspect obligations and individual path decisions.
+- `review --format html` creates an offline [Visual Verification Brief](docs/visual-verification-brief.md) showing scope, obligations, and supplied evidence. It executes no verifiers and grants no authority.
 - `catalogue` searches contracts; `architecture` supplies read-only proposal context.
 - `replay` evaluates a historical snapshot without granting current authority.
 - `benchmark --ceremony` evaluates deterministic ceremony scenarios without executing runners.

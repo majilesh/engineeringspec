@@ -1,0 +1,16 @@
+[
+  {"name":"selected complete change","decision":"selected","valid":true,"mode":"legacy","outcome":"pass","scope":"complete_working_state","classification":"implementation","changed":1},
+  {"name":"standing authority","decision":"standing","valid":true,"mode":"standard","outcome":"pass","scope":"complete_working_state","classification":"implementation","changed":1},
+  {"name":"exempt path","decision":"exempt","valid":true,"mode":"standard","outcome":"pass","scope":"complete_working_state","classification":"implementation","changed":1},
+  {"name":"ungoverned path","decision":"ungoverned","valid":true,"mode":"standard","outcome":"pass","scope":"complete_working_state","classification":"implementation","changed":1},
+  {"name":"protected unauthorized","decision":"protected_unauthorized","valid":false,"mode":"controlled","outcome":"fail","scope":"complete_working_state","classification":"implementation","changed":1},
+  {"name":"denied path","decision":"denied","valid":false,"mode":"legacy","outcome":"fail","scope":"complete_working_state","classification":"implementation","changed":1},
+  {"name":"ambiguous path","decision":"ambiguous","valid":false,"mode":"legacy","outcome":"fail","scope":"complete_working_state","classification":"implementation","changed":1},
+  {"name":"uncovered path","decision":"uncovered","valid":false,"mode":"legacy","outcome":"fail","scope":"complete_working_state","classification":"implementation","changed":1},
+  {"name":"advisory pass is unauthorized","decision":"uncovered","valid":false,"mode":"advisory","outcome":"pass","scope":"complete_working_state","classification":"implementation","changed":1},
+  {"name":"no changes","valid":true,"mode":"legacy","outcome":"pass","scope":"complete_working_state","classification":"none","changed":0},
+  {"name":"contract governance","valid":true,"mode":"legacy","outcome":"pass","scope":"complete_working_state","classification":"contract_only","changed":1},
+  {"name":"staged partial check","decision":"selected","valid":true,"mode":"legacy","outcome":"pass","scope":"committed_and_staged","classification":"implementation","changed":1},
+  {"name":"committed partial check","decision":"selected","valid":true,"mode":"legacy","outcome":"pass","scope":"committed_only","classification":"implementation","changed":1},
+  {"name":"explicit paths partial check","decision":"selected","valid":true,"mode":"legacy","outcome":"pass","scope":"explicit_paths","classification":"implementation","changed":1}
+]

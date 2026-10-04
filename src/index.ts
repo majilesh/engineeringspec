@@ -15,6 +15,8 @@ export * from "./query/coverage.js";
 export * from "./query/applicability.js";
 export * from "./query/agentContext.js";
 export * from "./query/changeBrief.js";
+export * from "./query/verificationBrief.js";
+export * from "./cli/verificationBrief.js";
 export * from "./catalogue/catalogue.js";
 export * from "./architecture/backstage.js";
 export * from "./cli/agentCheck.js";
