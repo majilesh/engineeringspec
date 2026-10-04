@@ -4,6 +4,10 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+### Security
+
+- Patch transitive `brace-expansion` dependencies to 1.1.21, 2.1.7, and 5.0.12 and regenerate the Action bundle to address brace-expansion denial-of-service advisories. Direct dependency ranges and CLI behavior remain unchanged. The high-severity audit passes; three moderate Vitest-related findings remain outside this patch.
+
 ## [0.1.0-rc.18] - 2026-09-26
 
 Published to npm; the `next` and `latest` dist-tags both identify this release. The generated GitHub Action pin moves from the RC16 anchor to the RFC 0014 runtime anchor, `9dc9ef0fd1861f35781610921cacb416849e3e5f`.
