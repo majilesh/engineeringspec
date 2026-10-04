@@ -1,6 +1,6 @@
 # Troubleshooting
 
-Runnable package diagnostics pin the published `@engineeringspec/cli@0.1.0-rc.18`.
+Runnable package diagnostics pin the published `@engineeringspec/cli@0.1.0-rc.19`.
 
 ## `prepare` is blocked
 
@@ -9,8 +9,8 @@ Runnable package diagnostics pin the published `@engineeringspec/cli@0.1.0-rc.18
 Start with:
 
 ```sh
-npx --yes @engineeringspec/cli@0.1.0-rc.18 doctor . --spec-dir docs/engineering-specs --base origin/main --strict
-npx --yes @engineeringspec/cli@0.1.0-rc.18 status --spec-dir docs/engineering-specs --base origin/main --allow-contract-only --strict
+npx --yes @engineeringspec/cli@0.1.0-rc.19 doctor . --spec-dir docs/engineering-specs --base origin/main --strict
+npx --yes @engineeringspec/cli@0.1.0-rc.19 status --spec-dir docs/engineering-specs --base origin/main --allow-contract-only --strict
 ```
 
 ## Base ref does not resolve

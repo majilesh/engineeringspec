@@ -2,14 +2,14 @@ import { readFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
 import { CURRENT_ACTION_SHA } from "../../src/adoption/releases.js";
 
-const RFC0014_ACTION_SHA = "9dc9ef0fd1861f35781610921cacb416849e3e5f";
+const VISUAL_BRIEF_ACTION_SHA = "7360ea935bb19d49912f055ec509b364f9e6ad9b";
 const RC16_ACTION_SHA = "ddf813e4e69d9b2f9a9eb3f0f241747746021cf3";
 const HISTORICAL_RC14_ACTION_SHA = "1b9fe313353584862456d607c495f4e660e3fdf3";
 
-describe("RC18 release and RFC 0014 Action runtime readiness", () => {
+describe("RC19 release and Visual Verification Brief Action readiness", () => {
   it("updates only the corrective package identity while preserving historical identities", async () => {
     const packageSource = JSON.parse(await readFile("package.json", "utf8")) as { version: string };
-    expect(packageSource.version).toBe("0.1.0-rc.18");
+    expect(packageSource.version).toBe("0.1.0-rc.19");
 
     for (const file of [
       "README.md",
@@ -34,8 +34,8 @@ describe("RC18 release and RFC 0014 Action runtime readiness", () => {
     expect(historical).toContain("e2d485cfeeb4ce745a57293db089ff70cc4648de");
   });
 
-  it("pins generated enforcement to the reviewed immutable RFC 0014 runtime anchor", async () => {
-    expect(CURRENT_ACTION_SHA).toBe(RFC0014_ACTION_SHA);
+  it("pins generated enforcement to the reviewed immutable Visual Verification Brief runtime anchor", async () => {
+    expect(CURRENT_ACTION_SHA).toBe(VISUAL_BRIEF_ACTION_SHA);
     expect(CURRENT_ACTION_SHA).toMatch(/^[0-9a-f]{40}$/u);
     const governance = await readFile("src/routing/governance.ts", "utf8");
     const selection = await readFile("src/routing/select.ts", "utf8");
@@ -45,7 +45,7 @@ describe("RC18 release and RFC 0014 Action runtime readiness", () => {
 
     for (const file of ["README.md", "docs/maintaining-specs.md", "docs/production-gate.md"]) {
       const source = await readFile(file, "utf8");
-      expect(source, file).toContain(RFC0014_ACTION_SHA);
+      expect(source, file).toContain(VISUAL_BRIEF_ACTION_SHA);
       expect(source, file).not.toContain(["@@RFC0014", "ACTION_ANCHOR@@"].join("_"));
     }
     // The RC16 anchor remains documented only as history.

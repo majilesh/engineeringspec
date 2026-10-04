@@ -32114,11 +32114,11 @@ import { promisify as promisify3 } from "node:util";
 
 // src/cli/version.ts
 function packageVersion() {
-  return "0.1.0-rc.18";
+  return "0.1.0-rc.19";
 }
 
 // src/adoption/releases.ts
-var CURRENT_ACTION_SHA = "9dc9ef0fd1861f35781610921cacb416849e3e5f";
+var CURRENT_ACTION_SHA = "7360ea935bb19d49912f055ec509b364f9e6ad9b";
 function detectIntegrationVersions(texts) {
   const cliVersions = /* @__PURE__ */ new Set();
   const actionPins = /* @__PURE__ */ new Set();

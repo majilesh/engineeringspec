@@ -1,6 +1,6 @@
-// The reviewed RFC 0014 runtime anchor: the trusted main commit that merged the bundled
+// The reviewed Visual Verification Brief runtime anchor: the trusted main commit that merged the bundled
 // Action (action/cli.mjs). It already existed when this pin was written.
-export const CURRENT_ACTION_SHA = "9dc9ef0fd1861f35781610921cacb416849e3e5f";
+export const CURRENT_ACTION_SHA = "7360ea935bb19d49912f055ec509b364f9e6ad9b";
 
 export interface IntegrationVersions {
   cliVersions: string[];
