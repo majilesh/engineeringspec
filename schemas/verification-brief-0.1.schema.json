@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://engineeringspec.org/schemas/verification-brief-0.1.schema.json",
+  "title": "EngineeringSpec Visual Verification Brief 0.1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["format", "formatVersion", "authority", "baseSha", "headSha", "changedDigest", "evaluation", "authorized", "enforcement", "classification", "workingState", "coverage", "next", "routes", "sequencing", "authorityDiffs", "diagnostics", "contracts"],
+  "properties": {
+    "format": {"const": "engineering-spec-verification-brief"},
+    "formatVersion": {"const": "0.1"},
+    "authority": {"const": "read_only_projection"},
+    "baseSha": {"$ref": "#/$defs/sha"},
+    "headSha": {"$ref": "#/$defs/sha"},
+    "changedDigest": {"$ref": "#/$defs/digest"},
+    "evaluation": {
+      "type": "object", "additionalProperties": false, "required": ["scope", "completeWorkingState"],
+      "properties": {"scope": {"enum": ["complete_working_state", "committed_and_staged", "committed_only", "explicit_paths"]}, "completeWorkingState": {"type": "boolean"}},
+      "allOf": [{"if": {"properties": {"scope": {"const": "complete_working_state"}}}, "then": {"properties": {"completeWorkingState": {"const": true}}}, "else": {"properties": {"completeWorkingState": {"const": false}}}}]
+    },
+    "authorized": {"type": "boolean"},
+    "classification": {"enum": ["none", "contract_only", "implementation", "implementation_with_monotonic_close", "implementation_with_receipt"]},
+    "enforcement": {
+      "type": "object", "additionalProperties": false, "required": ["mode", "outcome", "enforced"],
+      "properties": {"mode": {"enum": ["legacy", "advisory", "standard", "controlled", "bootstrap_advisory"]}, "outcome": {"enum": ["pass", "fail", "error"]}, "enforced": {"type": "boolean"}, "bootstrap": {"enum": ["honored", "ignored"]}, "selectedContract": {"type": "string"}}
+    },
+    "workingState": {
+      "type": "object", "additionalProperties": false, "required": ["changed", "selected", "violations"],
+      "properties": {"changed": {"$ref": "#/$defs/count"}, "selected": {"$ref": "#/$defs/count"}, "violations": {"$ref": "#/$defs/count"}}
+    },
+    "coverage": {
+      "type": "object", "additionalProperties": false, "required": ["status", "specs"],
+      "properties": {"status": {"enum": ["complete", "partial", "unknown", "not_applicable"]}, "specs": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["specId", "status"], "properties": {"specId": {"type": "string"}, "status": {"enum": ["complete", "partial", "unknown", "not_applicable"]}}}}}
+    },
+    "next": {
+      "type": "object", "additionalProperties": false, "required": ["stage", "message"],
+      "properties": {"stage": {"enum": ["explore", "propose", "approve", "implement", "verify", "close", "blocked"]}, "message": {"type": "string"}}
+    },
+    "routes": {"type": "array", "items": {"$ref": "#/$defs/route"}},
+    "sequencing": {"type": "array", "items": {"type": "object"}},
+    "authorityDiffs": {"type": "array", "items": {"type": "object"}},
+    "diagnostics": {"type": "array", "items": {"type": "object", "required": ["code", "severity", "message"], "properties": {"code": {"type": "string"}, "severity": {"enum": ["error", "warning", "info"]}, "message": {"type": "string"}, "file": {"type": "string"}}}},
+    "contracts": {"type": "array", "items": {"$ref": "#/$defs/contract"}}
+  },
+  "$defs": {
+    "sha": {"type": "string", "pattern": "^[0-9a-f]{40,64}$"},
+    "digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "count": {"type": "integer", "minimum": 0},
+    "strings": {"type": "array", "items": {"type": "string"}},
+    "claim": {
+      "type": "object", "additionalProperties": false, "required": ["specId", "specPath", "targetIds", "specRevision", "semanticDigest"],
+      "properties": {"specId": {"type": "string"}, "specPath": {"type": "string"}, "targetIds": {"$ref": "#/$defs/strings"}, "specRevision": {"type": "integer", "minimum": 1}, "semanticDigest": {"$ref": "#/$defs/digest"}}
+    },
+    "route": {
+      "type": "object", "additionalProperties": false, "required": ["path", "kind", "decision", "allows", "denies", "claims"],
+      "properties": {"path": {"type": "string"}, "kind": {"enum": ["added", "modified", "deleted", "renamed"]}, "decision": {"enum": ["selected", "standing", "exempt", "ungoverned", "protected_unauthorized", "denied", "ambiguous", "uncovered"]}, "selected": {"$ref": "#/$defs/claim"}, "allows": {"type": "array", "items": {"$ref": "#/$defs/claim"}}, "denies": {"type": "array", "items": {"$ref": "#/$defs/claim"}}, "claims": {"type": "array", "items": {"$ref": "#/$defs/claim"}}, "sequencing": {"type": "array", "items": {"type": "object"}}}
+    },
+    "contract": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "title", "status", "path", "specRevision", "semanticDigest", "targets", "constraints", "verification", "excludedEvidenceCount"],
+      "properties": {
+        "id": {"type": "string"}, "title": {"type": "string"}, "status": {"enum": ["draft", "proposed", "approved", "implemented", "superseded", "rejected"]}, "path": {"type": "string"}, "specRevision": {"type": "integer", "minimum": 1}, "semanticDigest": {"$ref": "#/$defs/digest"}, "excludedEvidenceCount": {"$ref": "#/$defs/count"},
+        "targets": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["id", "paths", "changePolicy"], "properties": {"id": {"type": "string"}, "paths": {"$ref": "#/$defs/strings"}, "changePolicy": {"enum": ["modify", "create", "delete", "read_only", "interface_only", "observe"]}}}},
+        "constraints": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["id", "level", "statement", "targetIds", "verifierIds"], "properties": {"id": {"type": "string"}, "level": {"enum": ["must", "must_not", "should", "should_not", "escalate"]}, "statement": {"type": "string"}, "targetIds": {"$ref": "#/$defs/strings"}, "verifierIds": {"$ref": "#/$defs/strings"}}}},
+        "verification": {"type": "array", "items": {"$ref": "#/$defs/verifier"}}
+      }
+    },
+    "verifier": {
+      "type": "object", "additionalProperties": false, "required": ["verifierId", "state", "kind", "proves", "source"],
+      "properties": {"verifierId": {"type": "string"}, "state": {"enum": ["declared", "mapped", "attempted", "passed", "failed", "rejected", "not_run"]}, "kind": {"enum": ["test", "static_analysis", "schema_check", "policy", "performance", "security", "ai_eval", "human_review", "runtime_observation"]}, "proves": {"$ref": "#/$defs/strings"}, "source": {"enum": ["declaration", "supplied"]}, "artifact": {"type": "string"}, "digest": {"type": "string"}, "note": {"type": "string"}},
+      "allOf": [{"if": {"properties": {"state": {"enum": ["attempted", "passed", "failed"]}}}, "then": {"required": ["artifact", "digest"], "properties": {"artifact": {"type": "string"}, "digest": {"$ref": "#/$defs/digest"}}}}, {"if": {"properties": {"source": {"const": "declaration"}}}, "then": {"properties": {"state": {"const": "declared"}}}}]
+    }
+  }
+}

@@ -53,11 +53,11 @@ var require_error = __commonJS({
        * @param {string} code an id string representing the error
        * @param {string} message human-readable description of the error
        */
-      constructor(exitCode, code, message2) {
+      constructor(exitCode, code2, message2) {
         super(message2);
         Error.captureStackTrace(this, this.constructor);
         this.name = this.constructor.name;
-        this.code = code;
+        this.code = code2;
         this.exitCode = exitCode;
         this.nestedError = void 0;
       }
@@ -1651,9 +1651,9 @@ Expecting one of '${allowedValues.join("', '")}'`);
        * @return never
        * @private
        */
-      _exit(exitCode, code, message2) {
+      _exit(exitCode, code2, message2) {
         if (this._exitCallback) {
-          this._exitCallback(new CommanderError2(exitCode, code, message2));
+          this._exitCallback(new CommanderError2(exitCode, code2, message2));
         }
         process2.exit(exitCode);
       }
@@ -2291,14 +2291,14 @@ Expecting one of '${allowedValues.join("', '")}'`);
           });
         }
         const exitCallback = this._exitCallback;
-        proc.on("close", (code) => {
-          code = code ?? 1;
+        proc.on("close", (code2) => {
+          code2 = code2 ?? 1;
           if (!exitCallback) {
-            process2.exit(code);
+            process2.exit(code2);
           } else {
             exitCallback(
               new CommanderError2(
-                code,
+                code2,
                 "commander.executeSubCommandAsync",
                 "(close)"
               )
@@ -2805,8 +2805,8 @@ Expecting one of '${allowedValues.join("', '")}'`);
         }
         const config = errorOptions || {};
         const exitCode = config.exitCode || 1;
-        const code = config.code || "commander.error";
-        this._exit(exitCode, code, message2);
+        const code2 = config.code || "commander.error";
+        this._exit(exitCode, code2, message2);
       }
       /**
        * Apply any option related environment variables, if option does
@@ -3208,9 +3208,9 @@ Expecting one of '${allowedValues.join("', '")}'`);
           helpWidth: context.helpWidth,
           outputHasColors: context.hasColors
         });
-        const text3 = helper.formatHelp(this, helper);
-        if (context.hasColors) return text3;
-        return this._outputConfiguration.stripColor(text3);
+        const text4 = helper.formatHelp(this, helper);
+        if (context.hasColors) return text4;
+        return this._outputConfiguration.stripColor(text4);
       }
       /**
        * @typedef HelpContext
@@ -3370,7 +3370,7 @@ Expecting one of '${allowedValues.join("', '")}'`);
        * @param {(string | Function)} text - string to add, or a function returning a string
        * @return {Command} `this` command for chaining
        */
-      addHelpText(position2, text3) {
+      addHelpText(position2, text4) {
         const allowedValues = ["beforeAll", "before", "after", "afterAll"];
         if (!allowedValues.includes(position2)) {
           throw new Error(`Unexpected value for position to addHelpText.
@@ -3379,10 +3379,10 @@ Expecting one of '${allowedValues.join("', '")}'`);
         const helpEvent = `${position2}Help`;
         this.on(helpEvent, (context) => {
           let helpStr;
-          if (typeof text3 === "function") {
-            helpStr = text3({ error: context.error, command: context.command });
+          if (typeof text4 === "function") {
+            helpStr = text4({ error: context.error, command: context.command });
           } else {
-            helpStr = text3;
+            helpStr = text4;
           }
           if (helpStr) {
             context.write(`${helpStr}
@@ -4009,12 +4009,12 @@ var require_directives = __commonJS({
        * Given a fully resolved tag, returns its printable string form,
        * taking into account current tag prefixes and defaults.
        */
-      tagString(tag) {
+      tagString(tag2) {
         for (const [handle, prefix] of Object.entries(this.tags)) {
-          if (tag.startsWith(prefix))
-            return handle + escapeTagName(tag.substring(prefix.length));
+          if (tag2.startsWith(prefix))
+            return handle + escapeTagName(tag2.substring(prefix.length));
         }
-        return tag[0] === "!" ? tag : `!<${tag}>`;
+        return tag2[0] === "!" ? tag2 : `!<${tag2}>`;
       }
       toString(doc) {
         const lines = this.yaml.explicit ? [`%YAML ${this.yaml.version || "1.2"}`] : [];
@@ -4050,9 +4050,9 @@ var require_anchors = __commonJS({
     "use strict";
     var identity = require_identity();
     var visit2 = require_visit();
-    function anchorIsValid(anchor) {
-      if (/[\x00-\x19\s,[\]{}]/.test(anchor)) {
-        const sa = JSON.stringify(anchor);
+    function anchorIsValid(anchor2) {
+      if (/[\x00-\x19\s,[\]{}]/.test(anchor2)) {
+        const sa = JSON.stringify(anchor2);
         const msg = `Anchor must not contain whitespace or control characters: ${sa}`;
         throw new Error(msg);
       }
@@ -4083,9 +4083,9 @@ var require_anchors = __commonJS({
         onAnchor: (source) => {
           aliasObjects.push(source);
           prevAnchors ?? (prevAnchors = anchorNames(doc));
-          const anchor = findNewAnchor(prefix, prevAnchors);
-          prevAnchors.add(anchor);
-          return anchor;
+          const anchor2 = findNewAnchor(prefix, prevAnchors);
+          prevAnchors.add(anchor2);
+          return anchor2;
         },
         /**
          * With circular references, the source node is only resolved after all
@@ -4330,8 +4330,8 @@ var require_Alias = __commonJS({
     function getAliasCount(doc, node2, anchors2) {
       if (identity.isAlias(node2)) {
         const source = node2.resolve(doc);
-        const anchor = anchors2 && source && anchors2.get(source);
-        return anchor ? anchor.count * anchor.aliasCount : 0;
+        const anchor2 = anchors2 && source && anchors2.get(source);
+        return anchor2 ? anchor2.count * anchor2.aliasCount : 0;
       } else if (identity.isCollection(node2)) {
         let count = 0;
         for (const item of node2.items) {
@@ -4623,14 +4623,14 @@ var require_foldFlowLines = __commonJS({
     var FOLD_FLOW = "flow";
     var FOLD_BLOCK = "block";
     var FOLD_QUOTED = "quoted";
-    function foldFlowLines(text3, indent, mode = "flow", { indentAtStart, lineWidth = 80, minContentWidth = 20, onFold, onOverflow } = {}) {
+    function foldFlowLines(text4, indent, mode = "flow", { indentAtStart, lineWidth = 80, minContentWidth = 20, onFold, onOverflow } = {}) {
       if (!lineWidth || lineWidth < 0)
-        return text3;
+        return text4;
       if (lineWidth < minContentWidth)
         minContentWidth = 0;
       const endStep = Math.max(1 + minContentWidth, 1 + lineWidth - indent.length);
-      if (text3.length <= endStep)
-        return text3;
+      if (text4.length <= endStep)
+        return text4;
       const folds = [];
       const escapedFolds = {};
       let end = lineWidth - indent.length;
@@ -4647,14 +4647,14 @@ var require_foldFlowLines = __commonJS({
       let escStart = -1;
       let escEnd = -1;
       if (mode === FOLD_BLOCK) {
-        i = consumeMoreIndentedLines(text3, i, indent.length);
+        i = consumeMoreIndentedLines(text4, i, indent.length);
         if (i !== -1)
           end = i + endStep;
       }
-      for (let ch; ch = text3[i += 1]; ) {
+      for (let ch; ch = text4[i += 1]; ) {
         if (mode === FOLD_QUOTED && ch === "\\") {
           escStart = i;
-          switch (text3[i + 1]) {
+          switch (text4[i + 1]) {
             case "x":
               i += 3;
               break;
@@ -4671,12 +4671,12 @@ var require_foldFlowLines = __commonJS({
         }
         if (ch === "\n") {
           if (mode === FOLD_BLOCK)
-            i = consumeMoreIndentedLines(text3, i, indent.length);
+            i = consumeMoreIndentedLines(text4, i, indent.length);
           end = i + indent.length + endStep;
           split = void 0;
         } else {
           if (ch === " " && prev && prev !== " " && prev !== "\n" && prev !== "	") {
-            const next = text3[i + 1];
+            const next = text4[i + 1];
             if (next && next !== " " && next !== "\n" && next !== "	")
               split = i;
           }
@@ -4688,12 +4688,12 @@ var require_foldFlowLines = __commonJS({
             } else if (mode === FOLD_QUOTED) {
               while (prev === " " || prev === "	") {
                 prev = ch;
-                ch = text3[i += 1];
+                ch = text4[i += 1];
                 overflow = true;
               }
               const j = i > escEnd + 1 ? i - 2 : escStart - 1;
               if (escapedFolds[j])
-                return text3;
+                return text4;
               folds.push(j);
               escapedFolds[j] = true;
               end = j + endStep;
@@ -4708,39 +4708,39 @@ var require_foldFlowLines = __commonJS({
       if (overflow && onOverflow)
         onOverflow();
       if (folds.length === 0)
-        return text3;
+        return text4;
       if (onFold)
         onFold();
-      let res = text3.slice(0, folds[0]);
+      let res = text4.slice(0, folds[0]);
       for (let i2 = 0; i2 < folds.length; ++i2) {
         const fold = folds[i2];
-        const end2 = folds[i2 + 1] || text3.length;
+        const end2 = folds[i2 + 1] || text4.length;
         if (fold === 0)
           res = `
-${indent}${text3.slice(0, end2)}`;
+${indent}${text4.slice(0, end2)}`;
         else {
           if (mode === FOLD_QUOTED && escapedFolds[fold])
-            res += `${text3[fold]}\\`;
+            res += `${text4[fold]}\\`;
           res += `
-${indent}${text3.slice(fold + 1, end2)}`;
+${indent}${text4.slice(fold + 1, end2)}`;
         }
       }
       return res;
     }
-    function consumeMoreIndentedLines(text3, i, indent) {
+    function consumeMoreIndentedLines(text4, i, indent) {
       let end = i;
       let start = i + 1;
-      let ch = text3[start];
+      let ch = text4[start];
       while (ch === " " || ch === "	") {
         if (i < start + indent) {
-          ch = text3[++i];
+          ch = text4[++i];
         } else {
           do {
-            ch = text3[++i];
+            ch = text4[++i];
           } while (ch && ch !== "\n");
           end = i;
           start = i + 1;
-          ch = text3[start];
+          ch = text4[start];
         }
       }
       return end;
@@ -4803,8 +4803,8 @@ var require_stringifyString = __commonJS({
             case "u":
               {
                 str += json.slice(start, i);
-                const code = json.substr(i + 2, 4);
-                switch (code) {
+                const code2 = json.substr(i + 2, 4);
+                switch (code2) {
                   case "0000":
                     str += "\\0";
                     break;
@@ -4830,8 +4830,8 @@ var require_stringifyString = __commonJS({
                     str += "\\P";
                     break;
                   default:
-                    if (code.substr(0, 2) === "00")
-                      str += "\\x" + code.substr(2);
+                    if (code2.substr(0, 2) === "00")
+                      str += "\\x" + code2.substr(2);
                     else
                       str += json.substr(i, 6);
                 }
@@ -4991,7 +4991,7 @@ ${indent}${start}${value2}${end}`;
       const str = value2.replace(/\n+/g, `$&
 ${indent}`);
       if (actualString) {
-        const test = (tag) => tag.default && tag.tag !== "tag:yaml.org,2002:str" && tag.test?.test(str);
+        const test = (tag2) => tag2.default && tag2.tag !== "tag:yaml.org,2002:str" && tag2.test?.test(str);
         const { compat, tags } = ctx.doc.schema;
         if (tags.some(test) || compat?.some(test))
           return quotedString(value2, ctx);
@@ -5116,14 +5116,14 @@ var require_stringify = __commonJS({
       if (!doc.directives)
         return "";
       const props = [];
-      const anchor = (identity.isScalar(node2) || identity.isCollection(node2)) && node2.anchor;
-      if (anchor && anchors.anchorIsValid(anchor)) {
-        anchors$1.add(anchor);
-        props.push(`&${anchor}`);
+      const anchor2 = (identity.isScalar(node2) || identity.isCollection(node2)) && node2.anchor;
+      if (anchor2 && anchors.anchorIsValid(anchor2)) {
+        anchors$1.add(anchor2);
+        props.push(`&${anchor2}`);
       }
-      const tag = node2.tag ?? (tagObj.default ? null : tagObj.tag);
-      if (tag)
-        props.push(doc.directives.tagString(tag));
+      const tag2 = node2.tag ?? (tagObj.default ? null : tagObj.tag);
+      if (tag2)
+        props.push(doc.directives.tagString(tag2));
       return props.join(" ");
     }
     function stringify(item, ctx, onComment, onChompKeep) {
@@ -5331,7 +5331,7 @@ var require_merge = __commonJS({
       }),
       stringify: () => MERGE_KEY
     };
-    var isMergeKey = (ctx, key) => (merge.identify(key) || identity.isScalar(key) && (!key.type || key.type === Scalar.Scalar.PLAIN) && merge.identify(key.value)) && ctx?.doc.schema.tags.some((tag) => tag.tag === merge.tag && tag.default);
+    var isMergeKey = (ctx, key) => (merge.identify(key) || identity.isScalar(key) && (!key.type || key.type === Scalar.Scalar.PLAIN) && merge.identify(key.value)) && ctx?.doc.schema.tags.some((tag2) => tag2.tag === merge.tag && tag2.default);
     function addMergeToJSMap(ctx, map, value2) {
       const source = resolveAliasValue(ctx, value2);
       if (identity.isSeq(source))
@@ -5998,14 +5998,14 @@ var require_bool = __commonJS({
 var require_stringifyNumber = __commonJS({
   "node_modules/yaml/dist/stringify/stringifyNumber.js"(exports) {
     "use strict";
-    function stringifyNumber({ format, minFractionDigits, tag, value: value2 }) {
+    function stringifyNumber({ format, minFractionDigits, tag: tag2, value: value2 }) {
       if (typeof value2 === "bigint")
         return String(value2);
       const num = typeof value2 === "number" ? value2 : Number(value2);
       if (!isFinite(num))
         return isNaN(num) ? ".nan" : num < 0 ? "-.inf" : ".inf";
       let n = Object.is(value2, -0) ? "-0" : JSON.stringify(value2);
-      if (!format && minFractionDigits && (!tag || tag === "tag:yaml.org,2002:float") && /^-?\d/.test(n) && !n.includes("e")) {
+      if (!format && minFractionDigits && (!tag2 || tag2 === "tag:yaml.org,2002:float") && /^-?\d/.test(n) && !n.includes("e")) {
         let i = n.indexOf(".");
         if (i < 0) {
           i = n.length;
@@ -6880,17 +6880,17 @@ var require_tags = __commonJS({
         }
       }
       if (Array.isArray(customTags)) {
-        for (const tag of customTags)
-          tags = tags.concat(tag);
+        for (const tag2 of customTags)
+          tags = tags.concat(tag2);
       } else if (typeof customTags === "function") {
         tags = customTags(tags.slice());
       }
       if (addMergeTag)
         tags = tags.concat(merge.merge);
-      return tags.reduce((tags2, tag) => {
-        const tagObj = typeof tag === "string" ? tagsByName[tag] : tag;
+      return tags.reduce((tags2, tag2) => {
+        const tagObj = typeof tag2 === "string" ? tagsByName[tag2] : tag2;
         if (!tagObj) {
-          const tagName = JSON.stringify(tag);
+          const tagName = JSON.stringify(tag2);
           const keys = Object.keys(tagsByName).map((key) => JSON.stringify(key)).join(", ");
           throw new Error(`Unknown custom tag ${tagName}; use one of ${keys}`);
         }
@@ -7130,7 +7130,7 @@ var require_Document = __commonJS({
           options = replacer;
           replacer = void 0;
         }
-        const { aliasDuplicateObjects, anchorPrefix, flow: flow3, keepUndefined, onTagObj, tag } = options ?? {};
+        const { aliasDuplicateObjects, anchorPrefix, flow: flow3, keepUndefined, onTagObj, tag: tag2 } = options ?? {};
         const { onAnchor, setAnchors, sourceObjects } = anchors.createNodeAnchors(
           this,
           // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
@@ -7145,7 +7145,7 @@ var require_Document = __commonJS({
           schema: this.schema,
           sourceObjects
         };
-        const node2 = createNode.createNode(value2, tag, ctx);
+        const node2 = createNode.createNode(value2, tag2, ctx);
         if (flow3 && identity.isCollection(node2))
           node2.flow = true;
         setAnchors();
@@ -7330,22 +7330,22 @@ var require_errors = __commonJS({
   "node_modules/yaml/dist/errors.js"(exports) {
     "use strict";
     var YAMLError = class extends Error {
-      constructor(name, pos, code, message2) {
+      constructor(name, pos, code2, message2) {
         super();
         this.name = name;
-        this.code = code;
+        this.code = code2;
         this.message = message2;
         this.pos = pos;
       }
     };
     var YAMLParseError = class extends YAMLError {
-      constructor(pos, code, message2) {
-        super("YAMLParseError", pos, code, message2);
+      constructor(pos, code2, message2) {
+        super("YAMLParseError", pos, code2, message2);
       }
     };
     var YAMLWarning = class extends YAMLError {
-      constructor(pos, code, message2) {
-        super("YAMLWarning", pos, code, message2);
+      constructor(pos, code2, message2) {
+        super("YAMLWarning", pos, code2, message2);
       }
     };
     var prettifyError = (src, lc) => (error) => {
@@ -7403,8 +7403,8 @@ var require_resolve_props = __commonJS({
       let hasNewline = false;
       let reqSpace = false;
       let tab = null;
-      let anchor = null;
-      let tag = null;
+      let anchor2 = null;
+      let tag2 = null;
       let newlineAfterProp = null;
       let comma = null;
       let found = null;
@@ -7450,25 +7450,25 @@ var require_resolve_props = __commonJS({
               commentSep += token.source;
             atNewline = true;
             hasNewline = true;
-            if (anchor || tag)
+            if (anchor2 || tag2)
               newlineAfterProp = token;
             hasSpace = true;
             break;
           case "anchor":
-            if (anchor)
+            if (anchor2)
               onError(token, "MULTIPLE_ANCHORS", "A node can have at most one anchor");
             if (token.source.endsWith(":"))
               onError(token.offset + token.source.length - 1, "BAD_ALIAS", "Anchor ending in : is ambiguous", true);
-            anchor = token;
+            anchor2 = token;
             start ?? (start = token.offset);
             atNewline = false;
             hasSpace = false;
             reqSpace = true;
             break;
           case "tag": {
-            if (tag)
+            if (tag2)
               onError(token, "MULTIPLE_TAGS", "A node can have at most one tag");
-            tag = token;
+            tag2 = token;
             start ?? (start = token.offset);
             atNewline = false;
             hasSpace = false;
@@ -7476,7 +7476,7 @@ var require_resolve_props = __commonJS({
             break;
           }
           case indicator:
-            if (anchor || tag)
+            if (anchor2 || tag2)
               onError(token, "BAD_PROP_ORDER", `Anchors and tags must be after the ${token.source} indicator`);
             if (found)
               onError(token, "UNEXPECTED_TOKEN", `Unexpected ${token.source} in ${flow3 ?? "collection"}`);
@@ -7513,8 +7513,8 @@ var require_resolve_props = __commonJS({
         spaceBefore,
         comment,
         hasNewline,
-        anchor,
-        tag,
+        anchor: anchor2,
+        tag: tag2,
         newlineAfterProp,
         end,
         start: start ?? end
@@ -7611,8 +7611,8 @@ var require_resolve_block_map = __commonJS({
     var utilFlowIndentCheck = require_util_flow_indent_check();
     var utilMapIncludes = require_util_map_includes();
     var startColMsg = "All mapping items must start at the same column";
-    function resolveBlockMap({ composeNode, composeEmptyNode }, ctx, bm, onError, tag) {
-      const NodeClass = tag?.nodeClass ?? YAMLMap.YAMLMap;
+    function resolveBlockMap({ composeNode, composeEmptyNode }, ctx, bm, onError, tag2) {
+      const NodeClass = tag2?.nodeClass ?? YAMLMap.YAMLMap;
       const map = new NodeClass(ctx.schema);
       if (ctx.atRoot)
         ctx.atRoot = false;
@@ -7715,8 +7715,8 @@ var require_resolve_block_seq = __commonJS({
     var YAMLSeq = require_YAMLSeq();
     var resolveProps = require_resolve_props();
     var utilFlowIndentCheck = require_util_flow_indent_check();
-    function resolveBlockSeq({ composeNode, composeEmptyNode }, ctx, bs, onError, tag) {
-      const NodeClass = tag?.nodeClass ?? YAMLSeq.YAMLSeq;
+    function resolveBlockSeq({ composeNode, composeEmptyNode }, ctx, bs, onError, tag2) {
+      const NodeClass = tag2?.nodeClass ?? YAMLSeq.YAMLSeq;
       const seq = new NodeClass(ctx.schema);
       if (ctx.atRoot)
         ctx.atRoot = false;
@@ -7816,10 +7816,10 @@ var require_resolve_flow_collection = __commonJS({
     var utilMapIncludes = require_util_map_includes();
     var blockMsg = "Block collections are not allowed within flow collections";
     var isBlock = (token) => token && (token.type === "block-map" || token.type === "block-seq");
-    function resolveFlowCollection({ composeNode, composeEmptyNode }, ctx, fc, onError, tag) {
+    function resolveFlowCollection({ composeNode, composeEmptyNode }, ctx, fc, onError, tag2) {
       const isMap = fc.start.source === "{";
       const fcName = isMap ? "flow map" : "flow sequence";
-      const NodeClass = tag?.nodeClass ?? (isMap ? YAMLMap.YAMLMap : YAMLSeq.YAMLSeq);
+      const NodeClass = tag2?.nodeClass ?? (isMap ? YAMLMap.YAMLMap : YAMLSeq.YAMLSeq);
       const coll = new NodeClass(ctx.schema);
       coll.flow = true;
       const atRoot = ctx.atRoot;
@@ -8007,8 +8007,8 @@ var require_compose_collection = __commonJS({
     var resolveBlockMap = require_resolve_block_map();
     var resolveBlockSeq = require_resolve_block_seq();
     var resolveFlowCollection = require_resolve_flow_collection();
-    function resolveCollection(CN, ctx, token, onError, tagName, tag) {
-      const coll = token.type === "block-map" ? resolveBlockMap.resolveBlockMap(CN, ctx, token, onError, tag) : token.type === "block-seq" ? resolveBlockSeq.resolveBlockSeq(CN, ctx, token, onError, tag) : resolveFlowCollection.resolveFlowCollection(CN, ctx, token, onError, tag);
+    function resolveCollection(CN, ctx, token, onError, tagName, tag2) {
+      const coll = token.type === "block-map" ? resolveBlockMap.resolveBlockMap(CN, ctx, token, onError, tag2) : token.type === "block-seq" ? resolveBlockSeq.resolveBlockSeq(CN, ctx, token, onError, tag2) : resolveFlowCollection.resolveFlowCollection(CN, ctx, token, onError, tag2);
       const Coll = coll.constructor;
       if (tagName === "!" || tagName === Coll.tagName) {
         coll.tag = Coll.tagName;
@@ -8022,8 +8022,8 @@ var require_compose_collection = __commonJS({
       const tagToken = props.tag;
       const tagName = !tagToken ? null : ctx.directives.tagName(tagToken.source, (msg) => onError(tagToken, "TAG_RESOLVE_FAILED", msg));
       if (token.type === "block-seq") {
-        const { anchor, newlineAfterProp: nl } = props;
-        const lastProp = anchor && tagToken ? anchor.offset > tagToken.offset ? anchor : tagToken : anchor ?? tagToken;
+        const { anchor: anchor2, newlineAfterProp: nl } = props;
+        const lastProp = anchor2 && tagToken ? anchor2.offset > tagToken.offset ? anchor2 : tagToken : anchor2 ?? tagToken;
         if (lastProp && (!nl || nl.offset < lastProp.offset)) {
           const message2 = "Missing newline after block sequence props";
           onError(lastProp, "MISSING_CHAR", message2);
@@ -8033,12 +8033,12 @@ var require_compose_collection = __commonJS({
       if (!tagToken || !tagName || tagName === "!" || tagName === YAMLMap.YAMLMap.tagName && expType === "map" || tagName === YAMLSeq.YAMLSeq.tagName && expType === "seq") {
         return resolveCollection(CN, ctx, token, onError, tagName);
       }
-      let tag = ctx.schema.tags.find((t) => t.tag === tagName && t.collection === expType);
-      if (!tag) {
+      let tag2 = ctx.schema.tags.find((t) => t.tag === tagName && t.collection === expType);
+      if (!tag2) {
         const kt = ctx.schema.knownTags[tagName];
         if (kt?.collection === expType) {
           ctx.schema.tags.push(Object.assign({}, kt, { default: false }));
-          tag = kt;
+          tag2 = kt;
         } else {
           if (kt) {
             onError(tagToken, "BAD_COLLECTION_TYPE", `${kt.tag} used for ${expType} collection, but expects ${kt.collection ?? "scalar"}`, true);
@@ -8048,13 +8048,13 @@ var require_compose_collection = __commonJS({
           return resolveCollection(CN, ctx, token, onError, tagName);
         }
       }
-      const coll = resolveCollection(CN, ctx, token, onError, tagName, tag);
-      const res = tag.resolve?.(coll, (msg) => onError(tagToken, "TAG_RESOLVE_FAILED", msg), ctx.options) ?? coll;
+      const coll = resolveCollection(CN, ctx, token, onError, tagName, tag2);
+      const res = tag2.resolve?.(coll, (msg) => onError(tagToken, "TAG_RESOLVE_FAILED", msg), ctx.options) ?? coll;
       const node2 = identity.isNode(res) ? res : new Scalar.Scalar(res);
       node2.range = coll.range;
       node2.tag = tagName;
-      if (tag?.format)
-        node2.format = tag.format;
+      if (tag2?.format)
+        node2.format = tag2.format;
       return node2;
     }
     exports.composeCollection = composeCollection;
@@ -8254,7 +8254,7 @@ var require_resolve_flow_scalar = __commonJS({
       const { offset, type, source, end } = scalar;
       let _type;
       let value2;
-      const _onError = (rel, code, msg) => onError(offset + rel, code, msg);
+      const _onError = (rel, code2, msg) => onError(offset + rel, code2, msg);
       switch (type) {
         case "scalar":
           _type = Scalar.Scalar.PLAIN;
@@ -8451,9 +8451,9 @@ var require_resolve_flow_scalar = __commonJS({
     function parseCharCode(source, offset, length, onError) {
       const cc = source.substr(offset, length);
       const ok3 = cc.length === length && /^[0-9a-fA-F]+$/.test(cc);
-      const code = ok3 ? parseInt(cc, 16) : NaN;
+      const code2 = ok3 ? parseInt(cc, 16) : NaN;
       try {
-        return String.fromCodePoint(code);
+        return String.fromCodePoint(code2);
       } catch {
         const raw = source.substr(offset - 2, length + 2);
         onError(offset - 2, "BAD_DQ_ESCAPE", `Invalid escape sequence ${raw}`);
@@ -8475,18 +8475,18 @@ var require_compose_scalar = __commonJS({
     function composeScalar(ctx, token, tagToken, onError) {
       const { value: value2, type, comment, range: range2 } = token.type === "block-scalar" ? resolveBlockScalar.resolveBlockScalar(ctx, token, onError) : resolveFlowScalar.resolveFlowScalar(token, ctx.options.strict, onError);
       const tagName = tagToken ? ctx.directives.tagName(tagToken.source, (msg) => onError(tagToken, "TAG_RESOLVE_FAILED", msg)) : null;
-      let tag;
+      let tag2;
       if (ctx.options.stringKeys && ctx.atKey) {
-        tag = ctx.schema[identity.SCALAR];
+        tag2 = ctx.schema[identity.SCALAR];
       } else if (tagName)
-        tag = findScalarTagByName(ctx.schema, value2, tagName, tagToken, onError);
+        tag2 = findScalarTagByName(ctx.schema, value2, tagName, tagToken, onError);
       else if (token.type === "scalar")
-        tag = findScalarTagByTest(ctx, value2, token, onError);
+        tag2 = findScalarTagByTest(ctx, value2, token, onError);
       else
-        tag = ctx.schema[identity.SCALAR];
+        tag2 = ctx.schema[identity.SCALAR];
       let scalar;
       try {
-        const res = tag.resolve(value2, (msg) => onError(tagToken ?? token, "TAG_RESOLVE_FAILED", msg), ctx.options);
+        const res = tag2.resolve(value2, (msg) => onError(tagToken ?? token, "TAG_RESOLVE_FAILED", msg), ctx.options);
         scalar = identity.isScalar(res) ? res : new Scalar.Scalar(res);
       } catch (error) {
         const msg = error instanceof Error ? error.message : String(error);
@@ -8499,8 +8499,8 @@ var require_compose_scalar = __commonJS({
         scalar.type = type;
       if (tagName)
         scalar.tag = tagName;
-      if (tag.format)
-        scalar.format = tag.format;
+      if (tag2.format)
+        scalar.format = tag2.format;
       if (comment)
         scalar.comment = comment;
       return scalar;
@@ -8509,17 +8509,17 @@ var require_compose_scalar = __commonJS({
       if (tagName === "!")
         return schema[identity.SCALAR];
       const matchWithTest = [];
-      for (const tag of schema.tags) {
-        if (!tag.collection && tag.tag === tagName) {
-          if (tag.default && tag.test)
-            matchWithTest.push(tag);
+      for (const tag2 of schema.tags) {
+        if (!tag2.collection && tag2.tag === tagName) {
+          if (tag2.default && tag2.test)
+            matchWithTest.push(tag2);
           else
-            return tag;
+            return tag2;
         }
       }
-      for (const tag of matchWithTest)
-        if (tag.test?.test(value2))
-          return tag;
+      for (const tag2 of matchWithTest)
+        if (tag2.test?.test(value2))
+          return tag2;
       const kt = schema.knownTags[tagName];
       if (kt && !kt.collection) {
         schema.tags.push(Object.assign({}, kt, { default: false, test: void 0 }));
@@ -8529,17 +8529,17 @@ var require_compose_scalar = __commonJS({
       return schema[identity.SCALAR];
     }
     function findScalarTagByTest({ atKey, directives, schema }, value2, token, onError) {
-      const tag = schema.tags.find((tag2) => (tag2.default === true || atKey && tag2.default === "key") && tag2.test?.test(value2)) || schema[identity.SCALAR];
+      const tag2 = schema.tags.find((tag3) => (tag3.default === true || atKey && tag3.default === "key") && tag3.test?.test(value2)) || schema[identity.SCALAR];
       if (schema.compat) {
-        const compat = schema.compat.find((tag2) => tag2.default && tag2.test?.test(value2)) ?? schema[identity.SCALAR];
-        if (tag.tag !== compat.tag) {
-          const ts = directives.tagString(tag.tag);
+        const compat = schema.compat.find((tag3) => tag3.default && tag3.test?.test(value2)) ?? schema[identity.SCALAR];
+        if (tag2.tag !== compat.tag) {
+          const ts = directives.tagString(tag2.tag);
           const cs = directives.tagString(compat.tag);
           const msg = `Value may be parsed as either ${ts} or ${cs}`;
           onError(token, "TAG_RESOLVE_FAILED", msg, true);
         }
       }
-      return tag;
+      return tag2;
     }
     exports.composeScalar = composeScalar;
   }
@@ -8588,30 +8588,30 @@ var require_compose_node = __commonJS({
     var CN = { composeNode, composeEmptyNode };
     function composeNode(ctx, token, props, onError) {
       const atKey = ctx.atKey;
-      const { spaceBefore, comment, anchor, tag } = props;
+      const { spaceBefore, comment, anchor: anchor2, tag: tag2 } = props;
       let node2;
       let isSrcToken = true;
       switch (token.type) {
         case "alias":
           node2 = composeAlias(ctx, token, onError);
-          if (anchor || tag)
+          if (anchor2 || tag2)
             onError(token, "ALIAS_PROPS", "An alias node must not specify any properties");
           break;
         case "scalar":
         case "single-quoted-scalar":
         case "double-quoted-scalar":
         case "block-scalar":
-          node2 = composeScalar.composeScalar(ctx, token, tag, onError);
-          if (anchor)
-            node2.anchor = anchor.source.substring(1);
+          node2 = composeScalar.composeScalar(ctx, token, tag2, onError);
+          if (anchor2)
+            node2.anchor = anchor2.source.substring(1);
           break;
         case "block-map":
         case "block-seq":
         case "flow-collection":
           try {
             node2 = composeCollection.composeCollection(CN, ctx, token, props, onError);
-            if (anchor)
-              node2.anchor = anchor.source.substring(1);
+            if (anchor2)
+              node2.anchor = anchor2.source.substring(1);
           } catch (error) {
             const message2 = error instanceof Error ? error.message : String(error);
             onError(token, "RESOURCE_EXHAUSTION", message2);
@@ -8624,11 +8624,11 @@ var require_compose_node = __commonJS({
         }
       }
       node2 ?? (node2 = composeEmptyNode(ctx, token.offset, void 0, null, props, onError));
-      if (anchor && node2.anchor === "")
-        onError(anchor, "BAD_ALIAS", "Anchor cannot be an empty string");
+      if (anchor2 && node2.anchor === "")
+        onError(anchor2, "BAD_ALIAS", "Anchor cannot be an empty string");
       if (atKey && ctx.options.stringKeys && (!identity.isScalar(node2) || typeof node2.value !== "string" || node2.tag && node2.tag !== "tag:yaml.org,2002:str")) {
         const msg = "With stringKeys, all keys must be strings";
-        onError(tag ?? token, "NON_STRING_KEY", msg);
+        onError(tag2 ?? token, "NON_STRING_KEY", msg);
       }
       if (spaceBefore)
         node2.spaceBefore = true;
@@ -8642,18 +8642,18 @@ var require_compose_node = __commonJS({
         node2.srcToken = token;
       return node2;
     }
-    function composeEmptyNode(ctx, offset, before, pos, { spaceBefore, comment, anchor, tag, end }, onError) {
+    function composeEmptyNode(ctx, offset, before, pos, { spaceBefore, comment, anchor: anchor2, tag: tag2, end }, onError) {
       const token = {
         type: "scalar",
         offset: utilEmptyScalarPosition.emptyScalarPosition(offset, before, pos),
         indent: -1,
         source: ""
       };
-      const node2 = composeScalar.composeScalar(ctx, token, tag, onError);
-      if (anchor) {
-        node2.anchor = anchor.source.substring(1);
+      const node2 = composeScalar.composeScalar(ctx, token, tag2, onError);
+      if (anchor2) {
+        node2.anchor = anchor2.source.substring(1);
         if (node2.anchor === "")
-          onError(anchor, "BAD_ALIAS", "Anchor cannot be an empty string");
+          onError(anchor2, "BAD_ALIAS", "Anchor cannot be an empty string");
       }
       if (spaceBefore)
         node2.spaceBefore = true;
@@ -8775,12 +8775,12 @@ var require_composer = __commonJS({
         this.prelude = [];
         this.errors = [];
         this.warnings = [];
-        this.onError = (source, code, message2, warning) => {
+        this.onError = (source, code2, message2, warning) => {
           const pos = getErrorPos(source);
           if (warning)
-            this.warnings.push(new errors.YAMLWarning(pos, code, message2));
+            this.warnings.push(new errors.YAMLWarning(pos, code2, message2));
           else
-            this.errors.push(new errors.YAMLParseError(pos, code, message2));
+            this.errors.push(new errors.YAMLParseError(pos, code2, message2));
         };
         this.directives = new directives.Directives({ version: options.version || "1.2" });
         this.options = options;
@@ -8942,12 +8942,12 @@ var require_cst_scalar = __commonJS({
     var stringifyString = require_stringifyString();
     function resolveAsScalar(token, strict = true, onError) {
       if (token) {
-        const _onError = (pos, code, message2) => {
+        const _onError = (pos, code2, message2) => {
           const offset = typeof pos === "number" ? pos : Array.isArray(pos) ? pos[0] : pos.offset;
           if (onError)
-            onError(offset, code, message2);
+            onError(offset, code2, message2);
           else
-            throw new errors.YAMLParseError([offset, offset + 1], code, message2);
+            throw new errors.YAMLParseError([offset, offset + 1], code2, message2);
         };
         switch (token.type) {
           case "scalar":
@@ -11014,9 +11014,9 @@ var require_code = __commonJS({
     };
     exports.Name = Name;
     var _Code = class extends _CodeOrName {
-      constructor(code) {
+      constructor(code2) {
         super();
-        this._items = typeof code === "string" ? [code] : code;
+        this._items = typeof code2 === "string" ? [code2] : code2;
       }
       toString() {
         return this.str;
@@ -11043,13 +11043,13 @@ var require_code = __commonJS({
     exports._Code = _Code;
     exports.nil = new _Code("");
     function _(strs, ...args) {
-      const code = [strs[0]];
+      const code2 = [strs[0]];
       let i = 0;
       while (i < args.length) {
-        addCodeArg(code, args[i]);
-        code.push(strs[++i]);
+        addCodeArg(code2, args[i]);
+        code2.push(strs[++i]);
       }
-      return new _Code(code);
+      return new _Code(code2);
     }
     exports._ = _;
     var plus = new _Code("+");
@@ -11065,13 +11065,13 @@ var require_code = __commonJS({
       return new _Code(expr);
     }
     exports.str = str;
-    function addCodeArg(code, arg) {
+    function addCodeArg(code2, arg) {
       if (arg instanceof _Code)
-        code.push(...arg._items);
+        code2.push(...arg._items);
       else if (arg instanceof Name)
-        code.push(arg);
+        code2.push(arg);
       else
-        code.push(interpolate(arg));
+        code2.push(interpolate(arg));
     }
     exports.addCodeArg = addCodeArg;
     function optimize(expr) {
@@ -11255,7 +11255,7 @@ var require_scope = __commonJS({
         }, usedValues, getCode);
       }
       _reduceValues(values, valueCode, usedValues = {}, getCode) {
-        let code = code_1.nil;
+        let code2 = code_1.nil;
         for (const prefix in values) {
           const vs = values[prefix];
           if (!vs)
@@ -11268,16 +11268,16 @@ var require_scope = __commonJS({
             let c = valueCode(name);
             if (c) {
               const def = this.opts.es5 ? exports.varKinds.var : exports.varKinds.const;
-              code = (0, code_1._)`${code}${def} ${name} = ${c};${this.opts._n}`;
+              code2 = (0, code_1._)`${code2}${def} ${name} = ${c};${this.opts._n}`;
             } else if (c = getCode === null || getCode === void 0 ? void 0 : getCode(name)) {
-              code = (0, code_1._)`${code}${c}${this.opts._n}`;
+              code2 = (0, code_1._)`${code2}${c}${this.opts._n}`;
             } else {
               throw new ValueError(name);
             }
             nameSet.set(name, UsedValueState.Completed);
           });
         }
-        return code;
+        return code2;
       }
     };
     exports.ValueScope = ValueScope;
@@ -11437,9 +11437,9 @@ var require_codegen = __commonJS({
       }
     };
     var AnyCode = class extends Node {
-      constructor(code) {
+      constructor(code2) {
         super();
-        this.code = code;
+        this.code = code2;
       }
       render({ _n }) {
         return `${this.code};` + _n;
@@ -11461,7 +11461,7 @@ var require_codegen = __commonJS({
         this.nodes = nodes;
       }
       render(opts) {
-        return this.nodes.reduce((code, n) => code + n.render(opts), "");
+        return this.nodes.reduce((code2, n) => code2 + n.render(opts), "");
       }
       optimizeNodes() {
         const { nodes } = this;
@@ -11509,10 +11509,10 @@ var require_codegen = __commonJS({
         this.condition = condition;
       }
       render(opts) {
-        let code = `if(${this.condition})` + super.render(opts);
+        let code2 = `if(${this.condition})` + super.render(opts);
         if (this.else)
-          code += "else " + this.else.render(opts);
-        return code;
+          code2 += "else " + this.else.render(opts);
+        return code2;
       }
       optimizeNodes() {
         super.optimizeNodes();
@@ -11633,12 +11633,12 @@ var require_codegen = __commonJS({
     Return.kind = "return";
     var Try = class extends BlockNode {
       render(opts) {
-        let code = "try" + super.render(opts);
+        let code2 = "try" + super.render(opts);
         if (this.catch)
-          code += this.catch.render(opts);
+          code2 += this.catch.render(opts);
         if (this.finally)
-          code += this.finally.render(opts);
-        return code;
+          code2 += this.finally.render(opts);
+        return code2;
       }
       optimizeNodes() {
         var _a2, _b;
@@ -11755,18 +11755,18 @@ var require_codegen = __commonJS({
       }
       // returns code for object literal for the passed argument list of key-value pairs
       object(...keyValues) {
-        const code = ["{"];
+        const code2 = ["{"];
         for (const [key, value2] of keyValues) {
-          if (code.length > 1)
-            code.push(",");
-          code.push(key);
+          if (code2.length > 1)
+            code2.push(",");
+          code2.push(key);
           if (key !== value2 || this.opts.es5) {
-            code.push(":");
-            (0, code_1.addCodeArg)(code, value2);
+            code2.push(":");
+            (0, code_1.addCodeArg)(code2, value2);
           }
         }
-        code.push("}");
-        return new code_1._Code(code);
+        code2.push("}");
+        return new code_1._Code(code2);
       }
       // `if` clause (or statement if `thenBody` and, optionally, `elseBody` are passed)
       if(condition, thenBody, elseBody) {
@@ -13250,11 +13250,11 @@ var require_resolve = __commonJS({
           }
           return ref;
         }
-        function addAnchor(anchor) {
-          if (typeof anchor == "string") {
-            if (!ANCHOR.test(anchor))
-              throw new Error(`invalid anchor "${anchor}"`);
-            addRef.call(this, `#${anchor}`);
+        function addAnchor(anchor2) {
+          if (typeof anchor2 == "string") {
+            if (!ANCHOR.test(anchor2))
+              throw new Error(`invalid anchor "${anchor2}"`);
+            addRef.call(this, `#${anchor2}`);
           }
         }
       });
@@ -14085,22 +14085,22 @@ var require_utils = __commonJS({
     }
     function stringArrayToHexStripped(input) {
       let acc = "";
-      let code = 0;
+      let code2 = 0;
       let i = 0;
       for (i = 0; i < input.length; i++) {
-        code = input[i].charCodeAt(0);
-        if (code === 48) {
+        code2 = input[i].charCodeAt(0);
+        if (code2 === 48) {
           continue;
         }
-        if (!(code >= 48 && code <= 57 || code >= 65 && code <= 70 || code >= 97 && code <= 102)) {
+        if (!(code2 >= 48 && code2 <= 57 || code2 >= 65 && code2 <= 70 || code2 >= 97 && code2 <= 102)) {
           return "";
         }
         acc += input[i];
         break;
       }
       for (i += 1; i < input.length; i++) {
-        code = input[i].charCodeAt(0);
-        if (!(code >= 48 && code <= 57 || code >= 65 && code <= 70 || code >= 97 && code <= 102)) {
+        code2 = input[i].charCodeAt(0);
+        if (!(code2 >= 48 && code2 <= 57 || code2 >= 65 && code2 <= 70 || code2 >= 97 && code2 <= 102)) {
           return "";
         }
         acc += input[i];
@@ -14342,15 +14342,15 @@ var require_utils = __commonJS({
         if (isPathCharacter(ch)) {
           output2 += ch;
         } else {
-          const code = input.charCodeAt(i);
-          if (code < 128) {
-            output2 += isEscapeSafe(code) ? ch : BYTE_HEX[code];
-          } else if (code < 55296 || code > 57343) {
-            output2 += percentEncodeNonAscii(code);
-          } else if (code <= 56319 && i + 1 < input.length) {
+          const code2 = input.charCodeAt(i);
+          if (code2 < 128) {
+            output2 += isEscapeSafe(code2) ? ch : BYTE_HEX[code2];
+          } else if (code2 < 55296 || code2 > 57343) {
+            output2 += percentEncodeNonAscii(code2);
+          } else if (code2 <= 56319 && i + 1 < input.length) {
             const low = input.charCodeAt(i + 1);
             if (low >= 56320 && low <= 57343) {
-              output2 += percentEncodeNonAscii(65536 + (code - 55296 << 10) + (low - 56320));
+              output2 += percentEncodeNonAscii(65536 + (code2 - 55296 << 10) + (low - 56320));
               i++;
             } else {
               output2 += percentEncodeNonAscii(65533);
@@ -14381,15 +14381,15 @@ var require_utils = __commonJS({
         if (isPathCharacter(ch) && (ch !== ":" || !firstSegment)) {
           output2 += ch;
         } else {
-          const code = input.charCodeAt(i);
-          if (code < 128) {
-            output2 += BYTE_HEX[code];
-          } else if (code < 55296 || code > 57343) {
-            output2 += percentEncodeNonAscii(code);
-          } else if (code <= 56319 && i + 1 < input.length) {
+          const code2 = input.charCodeAt(i);
+          if (code2 < 128) {
+            output2 += BYTE_HEX[code2];
+          } else if (code2 < 55296 || code2 > 57343) {
+            output2 += percentEncodeNonAscii(code2);
+          } else if (code2 <= 56319 && i + 1 < input.length) {
             const low = input.charCodeAt(i + 1);
             if (low >= 56320 && low <= 57343) {
-              output2 += percentEncodeNonAscii(65536 + (code - 55296 << 10) + (low - 56320));
+              output2 += percentEncodeNonAscii(65536 + (code2 - 55296 << 10) + (low - 56320));
               i++;
             } else {
               output2 += percentEncodeNonAscii(65533);
@@ -14416,15 +14416,15 @@ var require_utils = __commonJS({
         if (isAllowed(ch)) {
           output2 += ch;
         } else {
-          const code = input.charCodeAt(i);
-          if (code < 128) {
-            output2 += BYTE_HEX[code];
-          } else if (code < 55296 || code > 57343) {
-            output2 += percentEncodeNonAscii(code);
-          } else if (code <= 56319 && i + 1 < input.length) {
+          const code2 = input.charCodeAt(i);
+          if (code2 < 128) {
+            output2 += BYTE_HEX[code2];
+          } else if (code2 < 55296 || code2 > 57343) {
+            output2 += percentEncodeNonAscii(code2);
+          } else if (code2 <= 56319 && i + 1 < input.length) {
             const low = input.charCodeAt(i + 1);
             if (low >= 56320 && low <= 57343) {
-              output2 += percentEncodeNonAscii(65536 + (code - 55296 << 10) + (low - 56320));
+              output2 += percentEncodeNonAscii(65536 + (code2 - 55296 << 10) + (low - 56320));
               i++;
             } else {
               output2 += percentEncodeNonAscii(65533);
@@ -14469,15 +14469,15 @@ var require_utils = __commonJS({
         if (isQueryFragmentCharacter(ch)) {
           output2 += ch;
         } else {
-          const code = input.charCodeAt(i);
-          if (code < 128) {
-            output2 += isEscapeSafe(code) ? ch : BYTE_HEX[code];
-          } else if (code < 55296 || code > 57343) {
-            output2 += percentEncodeNonAscii(code);
-          } else if (code <= 56319 && i + 1 < input.length) {
+          const code2 = input.charCodeAt(i);
+          if (code2 < 128) {
+            output2 += isEscapeSafe(code2) ? ch : BYTE_HEX[code2];
+          } else if (code2 < 55296 || code2 > 57343) {
+            output2 += percentEncodeNonAscii(code2);
+          } else if (code2 <= 56319 && i + 1 < input.length) {
             const low = input.charCodeAt(i + 1);
             if (low >= 56320 && low <= 57343) {
-              output2 += percentEncodeNonAscii(65536 + (code - 55296 << 10) + (low - 56320));
+              output2 += percentEncodeNonAscii(65536 + (code2 - 55296 << 10) + (low - 56320));
               i++;
             } else {
               output2 += percentEncodeNonAscii(65533);
@@ -15577,7 +15577,7 @@ var require_core = __commonJS({
       errorsText(errors = this.errors, { separator = ", ", dataVar = "data" } = {}) {
         if (!errors || errors.length === 0)
           return "No errors";
-        return errors.map((e) => `${dataVar}${e.instancePath} ${e.message}`).reduce((text3, msg) => text3 + separator + msg);
+        return errors.map((e) => `${dataVar}${e.instancePath} ${e.message}`).reduce((text4, msg) => text4 + separator + msg);
       }
       $dataMetaSchema(metaSchema, keywordsJsonPointers) {
         const rules = this.RULES.all;
@@ -17357,10 +17357,10 @@ var require_dynamicAnchor = __commonJS({
       schemaType: "string",
       code: (cxt) => dynamicAnchor(cxt, cxt.schema)
     };
-    function dynamicAnchor(cxt, anchor) {
+    function dynamicAnchor(cxt, anchor2) {
       const { gen, it } = cxt;
-      it.schemaEnv.root.dynamicAnchors[anchor] = true;
-      const v = (0, codegen_1._)`${names_1.default.dynamicAnchors}${(0, codegen_1.getProperty)(anchor)}`;
+      it.schemaEnv.root.dynamicAnchors[anchor2] = true;
+      const v = (0, codegen_1._)`${names_1.default.dynamicAnchors}${(0, codegen_1.getProperty)(anchor2)}`;
       const validate2 = it.errSchemaPath === "#" ? it.validateName : _getValidate(cxt);
       gen.if((0, codegen_1._)`!${v}`, () => gen.assign(v, validate2));
     }
@@ -17395,7 +17395,7 @@ var require_dynamicRef = __commonJS({
       const { gen, keyword, it } = cxt;
       if (ref[0] !== "#")
         throw new Error(`"${keyword}" only supports hash fragment reference`);
-      const anchor = ref.slice(1);
+      const anchor2 = ref.slice(1);
       if (it.allErrors) {
         _dynamicRef();
       } else {
@@ -17404,8 +17404,8 @@ var require_dynamicRef = __commonJS({
         cxt.ok(valid);
       }
       function _dynamicRef(valid) {
-        if (it.schemaEnv.root.dynamicAnchors[anchor]) {
-          const v = gen.let("_v", (0, codegen_1._)`${names_1.default.dynamicAnchors}${(0, codegen_1.getProperty)(anchor)}`);
+        if (it.schemaEnv.root.dynamicAnchors[anchor2]) {
+          const v = gen.let("_v", (0, codegen_1._)`${names_1.default.dynamicAnchors}${(0, codegen_1.getProperty)(anchor2)}`);
           gen.if(v, _callRef(v, valid), _callRef(it.validateName, valid));
         } else {
           _callRef(it.validateName, valid)();
@@ -17729,8 +17729,8 @@ var require_format2 = __commonJS({
             }
           }
           function getFormat(fmtDef) {
-            const code = fmtDef instanceof RegExp ? (0, codegen_1.regexpCode)(fmtDef) : opts.code.formats ? (0, codegen_1._)`${opts.code.formats}${(0, codegen_1.getProperty)(schema)}` : void 0;
-            const fmt = gen.scopeValue("formats", { key: schema, ref: fmtDef, code });
+            const code2 = fmtDef instanceof RegExp ? (0, codegen_1.regexpCode)(fmtDef) : opts.code.formats ? (0, codegen_1._)`${opts.code.formats}${(0, codegen_1.getProperty)(schema)}` : void 0;
+            const fmt = gen.scopeValue("formats", { key: schema, ref: fmtDef, code: code2 });
             if (typeof fmtDef == "object" && !(fmtDef instanceof RegExp)) {
               return [fmtDef.type || "string", fmtDef.validate, (0, codegen_1._)`${fmt}.validate`];
             }
@@ -17839,7 +17839,7 @@ var require_discriminator = __commonJS({
     var util_1 = require_util();
     var error = {
       message: ({ params: { discrError, tagName } }) => discrError === types_1.DiscrError.Tag ? `tag "${tagName}" must be string` : `value of tag "${tagName}" must be in oneOf`,
-      params: ({ params: { discrError, tag, tagName } }) => (0, codegen_1._)`{error: ${discrError}, tag: ${tagName}, tagValue: ${tag}}`
+      params: ({ params: { discrError, tag: tag2, tagName } }) => (0, codegen_1._)`{error: ${discrError}, tag: ${tagName}, tagValue: ${tag2}}`
     };
     var def = {
       keyword: "discriminator",
@@ -17860,18 +17860,18 @@ var require_discriminator = __commonJS({
         if (!oneOf)
           throw new Error("discriminator: requires oneOf keyword");
         const valid = gen.let("valid", false);
-        const tag = gen.const("tag", (0, codegen_1._)`${data}${(0, codegen_1.getProperty)(tagName)}`);
-        gen.if((0, codegen_1._)`typeof ${tag} == "string"`, () => validateMapping(), () => cxt.error(false, { discrError: types_1.DiscrError.Tag, tag, tagName }));
+        const tag2 = gen.const("tag", (0, codegen_1._)`${data}${(0, codegen_1.getProperty)(tagName)}`);
+        gen.if((0, codegen_1._)`typeof ${tag2} == "string"`, () => validateMapping(), () => cxt.error(false, { discrError: types_1.DiscrError.Tag, tag: tag2, tagName }));
         cxt.ok(valid);
         function validateMapping() {
           const mapping = getMapping();
           gen.if(false);
           for (const tagValue in mapping) {
-            gen.elseIf((0, codegen_1._)`${tag} === ${tagValue}`);
+            gen.elseIf((0, codegen_1._)`${tag2} === ${tagValue}`);
             gen.assign(valid, applyTagSchema(mapping[tagValue]));
           }
           gen.else();
-          cxt.error(false, { discrError: types_1.DiscrError.Mapping, tag, tagName });
+          cxt.error(false, { discrError: types_1.DiscrError.Mapping, tag: tag2, tagName });
           gen.endIf();
         }
         function applyTagSchema(schemaProp) {
@@ -18977,7 +18977,7 @@ var require_dist2 = __commonJS({
 
 // src/cli/program.ts
 import { fileURLToPath as fileURLToPath2 } from "node:url";
-import { access as access2, appendFile, readFile as readFile14, writeFile as writeFile7 } from "node:fs/promises";
+import { access as access2, appendFile, readFile as readFile15, writeFile as writeFile7 } from "node:fs/promises";
 import { constants } from "node:fs";
 import path18 from "node:path";
 
@@ -24605,14 +24605,14 @@ function syntaxExtension(all2, extension2) {
     const maybe = hasOwnProperty.call(all2, hook) ? all2[hook] : void 0;
     const left = maybe || (all2[hook] = {});
     const right = extension2[hook];
-    let code;
+    let code2;
     if (right) {
-      for (code in right) {
-        if (!hasOwnProperty.call(left, code)) left[code] = [];
-        const value2 = right[code];
+      for (code2 in right) {
+        if (!hasOwnProperty.call(left, code2)) left[code2] = [];
+        const value2 = right[code2];
         constructs(
           // @ts-expect-error Looks like a list.
-          left[code],
+          left[code2],
           Array.isArray(value2) ? value2 : value2 ? [value2] : []
         );
       }
@@ -24631,20 +24631,20 @@ function constructs(existing, list2) {
 
 // node_modules/micromark-util-decode-numeric-character-reference/index.js
 function decodeNumericCharacterReference(value2, base) {
-  const code = Number.parseInt(value2, base);
+  const code2 = Number.parseInt(value2, base);
   if (
     // C0 except for HT, LF, FF, CR, space.
-    code < 9 || code === 11 || code > 13 && code < 32 || // Control character (DEL) of C0, and C1 controls.
-    code > 126 && code < 160 || // Lone high surrogates and low surrogates.
-    code > 55295 && code < 57344 || // Noncharacters.
-    code > 64975 && code < 65008 || /* eslint-disable no-bitwise */
-    (code & 65535) === 65535 || (code & 65535) === 65534 || /* eslint-enable no-bitwise */
+    code2 < 9 || code2 === 11 || code2 > 13 && code2 < 32 || // Control character (DEL) of C0, and C1 controls.
+    code2 > 126 && code2 < 160 || // Lone high surrogates and low surrogates.
+    code2 > 55295 && code2 < 57344 || // Noncharacters.
+    code2 > 64975 && code2 < 65008 || /* eslint-disable no-bitwise */
+    (code2 & 65535) === 65535 || (code2 & 65535) === 65534 || /* eslint-enable no-bitwise */
     // Out of range
-    code > 1114111
+    code2 > 1114111
   ) {
     return "\uFFFD";
   }
-  return String.fromCodePoint(code);
+  return String.fromCodePoint(code2);
 }
 
 // node_modules/micromark-util-normalize-identifier/index.js
@@ -24656,31 +24656,31 @@ function normalizeIdentifier(value2) {
 var asciiAlpha = regexCheck(/[A-Za-z]/);
 var asciiAlphanumeric = regexCheck(/[\dA-Za-z]/);
 var asciiAtext = regexCheck(/[#-'*+\--9=?A-Z^-~]/);
-function asciiControl(code) {
+function asciiControl(code2) {
   return (
     // Special whitespace codes (which have negative values), C0 and Control
     // character DEL
-    code !== null && (code < 32 || code === 127)
+    code2 !== null && (code2 < 32 || code2 === 127)
   );
 }
 var asciiDigit = regexCheck(/\d/);
 var asciiHexDigit = regexCheck(/[\dA-Fa-f]/);
 var asciiPunctuation = regexCheck(/[!-/:-@[-`{-~]/);
-function markdownLineEnding(code) {
-  return code !== null && code < -2;
+function markdownLineEnding(code2) {
+  return code2 !== null && code2 < -2;
 }
-function markdownLineEndingOrSpace(code) {
-  return code !== null && (code < 0 || code === 32);
+function markdownLineEndingOrSpace(code2) {
+  return code2 !== null && (code2 < 0 || code2 === 32);
 }
-function markdownSpace(code) {
-  return code === -2 || code === -1 || code === 32;
+function markdownSpace(code2) {
+  return code2 === -2 || code2 === -1 || code2 === 32;
 }
 var unicodePunctuation = regexCheck(new RegExp("\\p{P}|\\p{S}", "u"));
 var unicodeWhitespace = regexCheck(/\s/);
 function regexCheck(regex) {
   return check;
-  function check(code) {
-    return code !== null && code > -1 && regex.test(String.fromCharCode(code));
+  function check(code2) {
+    return code2 !== null && code2 > -1 && regex.test(String.fromCharCode(code2));
   }
 }
 
@@ -24689,20 +24689,20 @@ function factorySpace(effects, ok3, type, max) {
   const limit = max ? max - 1 : Number.POSITIVE_INFINITY;
   let size = 0;
   return start;
-  function start(code) {
-    if (markdownSpace(code)) {
+  function start(code2) {
+    if (markdownSpace(code2)) {
       effects.enter(type);
-      return prefix(code);
+      return prefix(code2);
     }
-    return ok3(code);
+    return ok3(code2);
   }
-  function prefix(code) {
-    if (markdownSpace(code) && size++ < limit) {
-      effects.consume(code);
+  function prefix(code2) {
+    if (markdownSpace(code2) && size++ < limit) {
+      effects.consume(code2);
       return prefix;
     }
     effects.exit(type);
-    return ok3(code);
+    return ok3(code2);
   }
 }
 
@@ -24714,21 +24714,21 @@ function initializeContent(effects) {
   const contentStart = effects.attempt(this.parser.constructs.contentInitial, afterContentStartConstruct, paragraphInitial);
   let previous2;
   return contentStart;
-  function afterContentStartConstruct(code) {
-    if (code === null) {
-      effects.consume(code);
+  function afterContentStartConstruct(code2) {
+    if (code2 === null) {
+      effects.consume(code2);
       return;
     }
     effects.enter("lineEnding");
-    effects.consume(code);
+    effects.consume(code2);
     effects.exit("lineEnding");
     return factorySpace(effects, contentStart, "linePrefix");
   }
-  function paragraphInitial(code) {
+  function paragraphInitial(code2) {
     effects.enter("paragraph");
-    return lineStart(code);
+    return lineStart(code2);
   }
-  function lineStart(code) {
+  function lineStart(code2) {
     const token = effects.enter("chunkText", {
       contentType: "text",
       previous: previous2
@@ -24737,21 +24737,21 @@ function initializeContent(effects) {
       previous2.next = token;
     }
     previous2 = token;
-    return data(code);
+    return data(code2);
   }
-  function data(code) {
-    if (code === null) {
+  function data(code2) {
+    if (code2 === null) {
       effects.exit("chunkText");
       effects.exit("paragraph");
-      effects.consume(code);
+      effects.consume(code2);
       return;
     }
-    if (markdownLineEnding(code)) {
-      effects.consume(code);
+    if (markdownLineEnding(code2)) {
+      effects.consume(code2);
       effects.exit("chunkText");
       return lineStart;
     }
-    effects.consume(code);
+    effects.consume(code2);
     return data;
   }
 }
@@ -24771,15 +24771,15 @@ function initializeDocument(effects) {
   let childToken;
   let lineStartOffset;
   return start;
-  function start(code) {
+  function start(code2) {
     if (continued < stack.length) {
       const item = stack[continued];
       self.containerState = item[1];
-      return effects.attempt(item[0].continuation, documentContinue, checkNewContainers)(code);
+      return effects.attempt(item[0].continuation, documentContinue, checkNewContainers)(code2);
     }
-    return checkNewContainers(code);
+    return checkNewContainers(code2);
   }
-  function documentContinue(code) {
+  function documentContinue(code2) {
     continued++;
     if (self.containerState._closeFlow) {
       self.containerState._closeFlow = void 0;
@@ -24805,47 +24805,47 @@ function initializeDocument(effects) {
       }
       splice(self.events, indexBeforeFlow + 1, 0, self.events.slice(indexBeforeExits));
       self.events.length = index2;
-      return checkNewContainers(code);
+      return checkNewContainers(code2);
     }
-    return start(code);
+    return start(code2);
   }
-  function checkNewContainers(code) {
+  function checkNewContainers(code2) {
     if (continued === stack.length) {
       if (!childFlow) {
-        return documentContinued(code);
+        return documentContinued(code2);
       }
       if (childFlow.currentConstruct && childFlow.currentConstruct.concrete) {
-        return flowStart(code);
+        return flowStart(code2);
       }
       self.interrupt = Boolean(childFlow.currentConstruct && !childFlow._gfmTableDynamicInterruptHack);
     }
     self.containerState = {};
-    return effects.check(containerConstruct, thereIsANewContainer, thereIsNoNewContainer)(code);
+    return effects.check(containerConstruct, thereIsANewContainer, thereIsNoNewContainer)(code2);
   }
-  function thereIsANewContainer(code) {
+  function thereIsANewContainer(code2) {
     if (childFlow) closeFlow();
     exitContainers(continued);
-    return documentContinued(code);
+    return documentContinued(code2);
   }
-  function thereIsNoNewContainer(code) {
+  function thereIsNoNewContainer(code2) {
     self.parser.lazy[self.now().line] = continued !== stack.length;
     lineStartOffset = self.now().offset;
-    return flowStart(code);
+    return flowStart(code2);
   }
-  function documentContinued(code) {
+  function documentContinued(code2) {
     self.containerState = {};
-    return effects.attempt(containerConstruct, containerContinue, flowStart)(code);
+    return effects.attempt(containerConstruct, containerContinue, flowStart)(code2);
   }
-  function containerContinue(code) {
+  function containerContinue(code2) {
     continued++;
     stack.push([self.currentConstruct, self.containerState]);
-    return documentContinued(code);
+    return documentContinued(code2);
   }
-  function flowStart(code) {
-    if (code === null) {
+  function flowStart(code2) {
+    if (code2 === null) {
       if (childFlow) closeFlow();
       exitContainers(0);
-      effects.consume(code);
+      effects.consume(code2);
       return;
     }
     childFlow = childFlow || self.parser.flow(self.now());
@@ -24854,23 +24854,23 @@ function initializeDocument(effects) {
       contentType: "flow",
       previous: childToken
     });
-    return flowContinue(code);
+    return flowContinue(code2);
   }
-  function flowContinue(code) {
-    if (code === null) {
+  function flowContinue(code2) {
+    if (code2 === null) {
       writeToChild(effects.exit("chunkFlow"), true);
       exitContainers(0);
-      effects.consume(code);
+      effects.consume(code2);
       return;
     }
-    if (markdownLineEnding(code)) {
-      effects.consume(code);
+    if (markdownLineEnding(code2)) {
+      effects.consume(code2);
       writeToChild(effects.exit("chunkFlow"));
       continued = 0;
       self.interrupt = void 0;
       return start;
     }
-    effects.consume(code);
+    effects.consume(code2);
     return flowContinue;
   }
   function writeToChild(token, endOfFile) {
@@ -24939,11 +24939,11 @@ function tokenizeContainer(effects, ok3, nok) {
 }
 
 // node_modules/micromark-util-classify-character/index.js
-function classifyCharacter(code) {
-  if (code === null || markdownLineEndingOrSpace(code) || unicodeWhitespace(code)) {
+function classifyCharacter(code2) {
+  if (code2 === null || markdownLineEndingOrSpace(code2) || unicodeWhitespace(code2)) {
     return 1;
   }
-  if (unicodePunctuation(code)) {
+  if (unicodePunctuation(code2)) {
     return 2;
   }
 }
@@ -24972,7 +24972,7 @@ function resolveAllAttention(events, context) {
   let index2 = -1;
   let open;
   let group;
-  let text3;
+  let text4;
   let openingSequence;
   let closingSequence;
   let use;
@@ -25010,7 +25010,7 @@ function resolveAllAttention(events, context) {
             },
             end
           };
-          text3 = {
+          text4 = {
             type: use > 1 ? "strongText" : "emphasisText",
             start: {
               ...events[open][1].end
@@ -25038,9 +25038,9 @@ function resolveAllAttention(events, context) {
           if (events[open][1].end.offset - events[open][1].start.offset) {
             nextEvents = push(nextEvents, [["enter", events[open][1], context], ["exit", events[open][1], context]]);
           }
-          nextEvents = push(nextEvents, [["enter", group, context], ["enter", openingSequence, context], ["exit", openingSequence, context], ["enter", text3, context]]);
+          nextEvents = push(nextEvents, [["enter", group, context], ["enter", openingSequence, context], ["exit", openingSequence, context], ["enter", text4, context]]);
           nextEvents = push(nextEvents, resolveAll(context.parser.constructs.insideSpan.null, events.slice(open + 1, index2), context));
-          nextEvents = push(nextEvents, [["exit", text3, context], ["enter", closingSequence, context], ["exit", closingSequence, context], ["exit", group, context]]);
+          nextEvents = push(nextEvents, [["exit", text4, context], ["enter", closingSequence, context], ["exit", closingSequence, context], ["exit", group, context]]);
           if (events[index2][1].end.offset - events[index2][1].start.offset) {
             offset = 2;
             nextEvents = push(nextEvents, [["enter", events[index2][1], context], ["exit", events[index2][1], context]]);
@@ -25068,23 +25068,23 @@ function tokenizeAttention(effects, ok3) {
   const before = classifyCharacter(previous2);
   let marker;
   return start;
-  function start(code) {
-    marker = code;
+  function start(code2) {
+    marker = code2;
     effects.enter("attentionSequence");
-    return inside(code);
+    return inside(code2);
   }
-  function inside(code) {
-    if (code === marker) {
-      effects.consume(code);
+  function inside(code2) {
+    if (code2 === marker) {
+      effects.consume(code2);
       return inside;
     }
     const token = effects.exit("attentionSequence");
-    const after = classifyCharacter(code);
-    const open = !after || after === 2 && before || attentionMarkers2.includes(code);
+    const after = classifyCharacter(code2);
+    const open = !after || after === 2 && before || attentionMarkers2.includes(code2);
     const close2 = !before || before === 2 && after || attentionMarkers2.includes(previous2);
     token._open = Boolean(marker === 42 ? open : open && (before || !close2));
     token._close = Boolean(marker === 42 ? close2 : close2 && (after || !open));
-    return ok3(code);
+    return ok3(code2);
   }
 }
 function movePoint(point3, offset) {
@@ -25101,96 +25101,96 @@ var autolink = {
 function tokenizeAutolink(effects, ok3, nok) {
   let size = 0;
   return start;
-  function start(code) {
+  function start(code2) {
     effects.enter("autolink");
     effects.enter("autolinkMarker");
-    effects.consume(code);
+    effects.consume(code2);
     effects.exit("autolinkMarker");
     effects.enter("autolinkProtocol");
     return open;
   }
-  function open(code) {
-    if (asciiAlpha(code)) {
-      effects.consume(code);
+  function open(code2) {
+    if (asciiAlpha(code2)) {
+      effects.consume(code2);
       return schemeOrEmailAtext;
     }
-    if (code === 64) {
-      return nok(code);
+    if (code2 === 64) {
+      return nok(code2);
     }
-    return emailAtext(code);
+    return emailAtext(code2);
   }
-  function schemeOrEmailAtext(code) {
-    if (code === 43 || code === 45 || code === 46 || asciiAlphanumeric(code)) {
+  function schemeOrEmailAtext(code2) {
+    if (code2 === 43 || code2 === 45 || code2 === 46 || asciiAlphanumeric(code2)) {
       size = 1;
-      return schemeInsideOrEmailAtext(code);
+      return schemeInsideOrEmailAtext(code2);
     }
-    return emailAtext(code);
+    return emailAtext(code2);
   }
-  function schemeInsideOrEmailAtext(code) {
-    if (code === 58) {
-      effects.consume(code);
+  function schemeInsideOrEmailAtext(code2) {
+    if (code2 === 58) {
+      effects.consume(code2);
       size = 0;
       return urlInside;
     }
-    if ((code === 43 || code === 45 || code === 46 || asciiAlphanumeric(code)) && size++ < 32) {
-      effects.consume(code);
+    if ((code2 === 43 || code2 === 45 || code2 === 46 || asciiAlphanumeric(code2)) && size++ < 32) {
+      effects.consume(code2);
       return schemeInsideOrEmailAtext;
     }
     size = 0;
-    return emailAtext(code);
+    return emailAtext(code2);
   }
-  function urlInside(code) {
-    if (code === 62) {
+  function urlInside(code2) {
+    if (code2 === 62) {
       effects.exit("autolinkProtocol");
       effects.enter("autolinkMarker");
-      effects.consume(code);
+      effects.consume(code2);
       effects.exit("autolinkMarker");
       effects.exit("autolink");
       return ok3;
     }
-    if (code === null || code === 32 || code === 60 || asciiControl(code)) {
-      return nok(code);
+    if (code2 === null || code2 === 32 || code2 === 60 || asciiControl(code2)) {
+      return nok(code2);
     }
-    effects.consume(code);
+    effects.consume(code2);
     return urlInside;
   }
-  function emailAtext(code) {
-    if (code === 64) {
-      effects.consume(code);
+  function emailAtext(code2) {
+    if (code2 === 64) {
+      effects.consume(code2);
       return emailAtSignOrDot;
     }
-    if (asciiAtext(code)) {
-      effects.consume(code);
+    if (asciiAtext(code2)) {
+      effects.consume(code2);
       return emailAtext;
     }
-    return nok(code);
+    return nok(code2);
   }
-  function emailAtSignOrDot(code) {
-    return asciiAlphanumeric(code) ? emailLabel(code) : nok(code);
+  function emailAtSignOrDot(code2) {
+    return asciiAlphanumeric(code2) ? emailLabel(code2) : nok(code2);
   }
-  function emailLabel(code) {
-    if (code === 46) {
-      effects.consume(code);
+  function emailLabel(code2) {
+    if (code2 === 46) {
+      effects.consume(code2);
       size = 0;
       return emailAtSignOrDot;
     }
-    if (code === 62) {
+    if (code2 === 62) {
       effects.exit("autolinkProtocol").type = "autolinkEmail";
       effects.enter("autolinkMarker");
-      effects.consume(code);
+      effects.consume(code2);
       effects.exit("autolinkMarker");
       effects.exit("autolink");
       return ok3;
     }
-    return emailValue(code);
+    return emailValue(code2);
   }
-  function emailValue(code) {
-    if ((code === 45 || asciiAlphanumeric(code)) && size++ < 63) {
-      const next = code === 45 ? emailValue : emailLabel;
-      effects.consume(code);
+  function emailValue(code2) {
+    if ((code2 === 45 || asciiAlphanumeric(code2)) && size++ < 63) {
+      const next = code2 === 45 ? emailValue : emailLabel;
+      effects.consume(code2);
       return next;
     }
-    return nok(code);
+    return nok(code2);
   }
 }
 
@@ -25201,11 +25201,11 @@ var blankLine = {
 };
 function tokenizeBlankLine(effects, ok3, nok) {
   return start;
-  function start(code) {
-    return markdownSpace(code) ? factorySpace(effects, after, "linePrefix")(code) : after(code);
+  function start(code2) {
+    return markdownSpace(code2) ? factorySpace(effects, after, "linePrefix")(code2) : after(code2);
   }
-  function after(code) {
-    return code === null || markdownLineEnding(code) ? ok3(code) : nok(code);
+  function after(code2) {
+    return code2 === null || markdownLineEnding(code2) ? ok3(code2) : nok(code2);
   }
 }
 
@@ -25221,8 +25221,8 @@ var blockQuote = {
 function tokenizeBlockQuoteStart(effects, ok3, nok) {
   const self = this;
   return start;
-  function start(code) {
-    if (code === 62) {
+  function start(code2) {
+    if (code2 === 62) {
       const state = self.containerState;
       if (!state.open) {
         effects.enter("blockQuote", {
@@ -25232,35 +25232,35 @@ function tokenizeBlockQuoteStart(effects, ok3, nok) {
       }
       effects.enter("blockQuotePrefix");
       effects.enter("blockQuoteMarker");
-      effects.consume(code);
+      effects.consume(code2);
       effects.exit("blockQuoteMarker");
       return after;
     }
-    return nok(code);
+    return nok(code2);
   }
-  function after(code) {
-    if (markdownSpace(code)) {
+  function after(code2) {
+    if (markdownSpace(code2)) {
       effects.enter("blockQuotePrefixWhitespace");
-      effects.consume(code);
+      effects.consume(code2);
       effects.exit("blockQuotePrefixWhitespace");
       effects.exit("blockQuotePrefix");
       return ok3;
     }
     effects.exit("blockQuotePrefix");
-    return ok3(code);
+    return ok3(code2);
   }
 }
 function tokenizeBlockQuoteContinuation(effects, ok3, nok) {
   const self = this;
   return contStart;
-  function contStart(code) {
-    if (markdownSpace(code)) {
-      return factorySpace(effects, contBefore, "linePrefix", self.parser.constructs.disable.null.includes("codeIndented") ? void 0 : 4)(code);
+  function contStart(code2) {
+    if (markdownSpace(code2)) {
+      return factorySpace(effects, contBefore, "linePrefix", self.parser.constructs.disable.null.includes("codeIndented") ? void 0 : 4)(code2);
     }
-    return contBefore(code);
+    return contBefore(code2);
   }
-  function contBefore(code) {
-    return effects.attempt(blockQuote, ok3, nok)(code);
+  function contBefore(code2) {
+    return effects.attempt(blockQuote, ok3, nok)(code2);
   }
 }
 function exit(effects) {
@@ -25274,22 +25274,22 @@ var characterEscape = {
 };
 function tokenizeCharacterEscape(effects, ok3, nok) {
   return start;
-  function start(code) {
+  function start(code2) {
     effects.enter("characterEscape");
     effects.enter("escapeMarker");
-    effects.consume(code);
+    effects.consume(code2);
     effects.exit("escapeMarker");
     return inside;
   }
-  function inside(code) {
-    if (asciiPunctuation(code)) {
+  function inside(code2) {
+    if (asciiPunctuation(code2)) {
       effects.enter("characterEscapeValue");
-      effects.consume(code);
+      effects.consume(code2);
       effects.exit("characterEscapeValue");
       effects.exit("characterEscape");
       return ok3;
     }
-    return nok(code);
+    return nok(code2);
   }
 }
 
@@ -25304,29 +25304,29 @@ function tokenizeCharacterReference(effects, ok3, nok) {
   let max;
   let test;
   return start;
-  function start(code) {
+  function start(code2) {
     effects.enter("characterReference");
     effects.enter("characterReferenceMarker");
-    effects.consume(code);
+    effects.consume(code2);
     effects.exit("characterReferenceMarker");
     return open;
   }
-  function open(code) {
-    if (code === 35) {
+  function open(code2) {
+    if (code2 === 35) {
       effects.enter("characterReferenceMarkerNumeric");
-      effects.consume(code);
+      effects.consume(code2);
       effects.exit("characterReferenceMarkerNumeric");
       return numeric2;
     }
     effects.enter("characterReferenceValue");
     max = 31;
     test = asciiAlphanumeric;
-    return value2(code);
+    return value2(code2);
   }
-  function numeric2(code) {
-    if (code === 88 || code === 120) {
+  function numeric2(code2) {
+    if (code2 === 88 || code2 === 120) {
       effects.enter("characterReferenceMarkerHexadecimal");
-      effects.consume(code);
+      effects.consume(code2);
       effects.exit("characterReferenceMarkerHexadecimal");
       effects.enter("characterReferenceValue");
       max = 6;
@@ -25336,25 +25336,25 @@ function tokenizeCharacterReference(effects, ok3, nok) {
     effects.enter("characterReferenceValue");
     max = 7;
     test = asciiDigit;
-    return value2(code);
+    return value2(code2);
   }
-  function value2(code) {
-    if (code === 59 && size) {
+  function value2(code2) {
+    if (code2 === 59 && size) {
       const token = effects.exit("characterReferenceValue");
       if (test === asciiAlphanumeric && !decodeNamedCharacterReference(self.sliceSerialize(token))) {
-        return nok(code);
+        return nok(code2);
       }
       effects.enter("characterReferenceMarker");
-      effects.consume(code);
+      effects.consume(code2);
       effects.exit("characterReferenceMarker");
       effects.exit("characterReference");
       return ok3;
     }
-    if (test(code) && size++ < max) {
-      effects.consume(code);
+    if (test(code2) && size++ < max) {
+      effects.consume(code2);
       return value2;
     }
-    return nok(code);
+    return nok(code2);
   }
 }
 
@@ -25378,166 +25378,166 @@ function tokenizeCodeFenced(effects, ok3, nok) {
   let sizeOpen = 0;
   let marker;
   return start;
-  function start(code) {
-    return beforeSequenceOpen(code);
+  function start(code2) {
+    return beforeSequenceOpen(code2);
   }
-  function beforeSequenceOpen(code) {
+  function beforeSequenceOpen(code2) {
     const tail = self.events[self.events.length - 1];
     initialPrefix = tail && tail[1].type === "linePrefix" ? tail[2].sliceSerialize(tail[1], true).length : 0;
-    marker = code;
+    marker = code2;
     effects.enter("codeFenced");
     effects.enter("codeFencedFence");
     effects.enter("codeFencedFenceSequence");
-    return sequenceOpen(code);
+    return sequenceOpen(code2);
   }
-  function sequenceOpen(code) {
-    if (code === marker) {
+  function sequenceOpen(code2) {
+    if (code2 === marker) {
       sizeOpen++;
-      effects.consume(code);
+      effects.consume(code2);
       return sequenceOpen;
     }
     if (sizeOpen < 3) {
-      return nok(code);
+      return nok(code2);
     }
     effects.exit("codeFencedFenceSequence");
-    return markdownSpace(code) ? factorySpace(effects, infoBefore, "whitespace")(code) : infoBefore(code);
+    return markdownSpace(code2) ? factorySpace(effects, infoBefore, "whitespace")(code2) : infoBefore(code2);
   }
-  function infoBefore(code) {
-    if (code === null || markdownLineEnding(code)) {
+  function infoBefore(code2) {
+    if (code2 === null || markdownLineEnding(code2)) {
       effects.exit("codeFencedFence");
-      return self.interrupt ? ok3(code) : effects.check(nonLazyContinuation, atNonLazyBreak, after)(code);
+      return self.interrupt ? ok3(code2) : effects.check(nonLazyContinuation, atNonLazyBreak, after)(code2);
     }
     effects.enter("codeFencedFenceInfo");
     effects.enter("chunkString", {
       contentType: "string"
     });
-    return info(code);
+    return info(code2);
   }
-  function info(code) {
-    if (code === null || markdownLineEnding(code)) {
+  function info(code2) {
+    if (code2 === null || markdownLineEnding(code2)) {
       effects.exit("chunkString");
       effects.exit("codeFencedFenceInfo");
-      return infoBefore(code);
+      return infoBefore(code2);
     }
-    if (markdownSpace(code)) {
+    if (markdownSpace(code2)) {
       effects.exit("chunkString");
       effects.exit("codeFencedFenceInfo");
-      return factorySpace(effects, metaBefore, "whitespace")(code);
+      return factorySpace(effects, metaBefore, "whitespace")(code2);
     }
-    if (code === 96 && code === marker) {
-      return nok(code);
+    if (code2 === 96 && code2 === marker) {
+      return nok(code2);
     }
-    effects.consume(code);
+    effects.consume(code2);
     return info;
   }
-  function metaBefore(code) {
-    if (code === null || markdownLineEnding(code)) {
-      return infoBefore(code);
+  function metaBefore(code2) {
+    if (code2 === null || markdownLineEnding(code2)) {
+      return infoBefore(code2);
     }
     effects.enter("codeFencedFenceMeta");
     effects.enter("chunkString", {
       contentType: "string"
     });
-    return meta(code);
+    return meta(code2);
   }
-  function meta(code) {
-    if (code === null || markdownLineEnding(code)) {
+  function meta(code2) {
+    if (code2 === null || markdownLineEnding(code2)) {
       effects.exit("chunkString");
       effects.exit("codeFencedFenceMeta");
-      return infoBefore(code);
+      return infoBefore(code2);
     }
-    if (code === 96 && code === marker) {
-      return nok(code);
+    if (code2 === 96 && code2 === marker) {
+      return nok(code2);
     }
-    effects.consume(code);
+    effects.consume(code2);
     return meta;
   }
-  function atNonLazyBreak(code) {
-    return effects.attempt(closeStart, after, contentBefore)(code);
+  function atNonLazyBreak(code2) {
+    return effects.attempt(closeStart, after, contentBefore)(code2);
   }
-  function contentBefore(code) {
+  function contentBefore(code2) {
     effects.enter("lineEnding");
-    effects.consume(code);
+    effects.consume(code2);
     effects.exit("lineEnding");
     return contentStart;
   }
-  function contentStart(code) {
-    return initialPrefix > 0 && markdownSpace(code) ? factorySpace(effects, beforeContentChunk, "linePrefix", initialPrefix + 1)(code) : beforeContentChunk(code);
+  function contentStart(code2) {
+    return initialPrefix > 0 && markdownSpace(code2) ? factorySpace(effects, beforeContentChunk, "linePrefix", initialPrefix + 1)(code2) : beforeContentChunk(code2);
   }
-  function beforeContentChunk(code) {
-    if (code === null || markdownLineEnding(code)) {
-      return effects.check(nonLazyContinuation, atNonLazyBreak, after)(code);
+  function beforeContentChunk(code2) {
+    if (code2 === null || markdownLineEnding(code2)) {
+      return effects.check(nonLazyContinuation, atNonLazyBreak, after)(code2);
     }
     effects.enter("codeFlowValue");
-    return contentChunk(code);
+    return contentChunk(code2);
   }
-  function contentChunk(code) {
-    if (code === null || markdownLineEnding(code)) {
+  function contentChunk(code2) {
+    if (code2 === null || markdownLineEnding(code2)) {
       effects.exit("codeFlowValue");
-      return beforeContentChunk(code);
+      return beforeContentChunk(code2);
     }
-    effects.consume(code);
+    effects.consume(code2);
     return contentChunk;
   }
-  function after(code) {
+  function after(code2) {
     effects.exit("codeFenced");
-    return ok3(code);
+    return ok3(code2);
   }
   function tokenizeCloseStart(effects2, ok4, nok2) {
     let size = 0;
     return startBefore;
-    function startBefore(code) {
+    function startBefore(code2) {
       effects2.enter("lineEnding");
-      effects2.consume(code);
+      effects2.consume(code2);
       effects2.exit("lineEnding");
       return start2;
     }
-    function start2(code) {
+    function start2(code2) {
       effects2.enter("codeFencedFence");
-      return markdownSpace(code) ? factorySpace(effects2, beforeSequenceClose, "linePrefix", self.parser.constructs.disable.null.includes("codeIndented") ? void 0 : 4)(code) : beforeSequenceClose(code);
+      return markdownSpace(code2) ? factorySpace(effects2, beforeSequenceClose, "linePrefix", self.parser.constructs.disable.null.includes("codeIndented") ? void 0 : 4)(code2) : beforeSequenceClose(code2);
     }
-    function beforeSequenceClose(code) {
-      if (code === marker) {
+    function beforeSequenceClose(code2) {
+      if (code2 === marker) {
         effects2.enter("codeFencedFenceSequence");
-        return sequenceClose(code);
+        return sequenceClose(code2);
       }
-      return nok2(code);
+      return nok2(code2);
     }
-    function sequenceClose(code) {
-      if (code === marker) {
+    function sequenceClose(code2) {
+      if (code2 === marker) {
         size++;
-        effects2.consume(code);
+        effects2.consume(code2);
         return sequenceClose;
       }
       if (size >= sizeOpen) {
         effects2.exit("codeFencedFenceSequence");
-        return markdownSpace(code) ? factorySpace(effects2, sequenceCloseAfter, "whitespace")(code) : sequenceCloseAfter(code);
+        return markdownSpace(code2) ? factorySpace(effects2, sequenceCloseAfter, "whitespace")(code2) : sequenceCloseAfter(code2);
       }
-      return nok2(code);
+      return nok2(code2);
     }
-    function sequenceCloseAfter(code) {
-      if (code === null || markdownLineEnding(code)) {
+    function sequenceCloseAfter(code2) {
+      if (code2 === null || markdownLineEnding(code2)) {
         effects2.exit("codeFencedFence");
-        return ok4(code);
+        return ok4(code2);
       }
-      return nok2(code);
+      return nok2(code2);
     }
   }
 }
 function tokenizeNonLazyContinuation(effects, ok3, nok) {
   const self = this;
   return start;
-  function start(code) {
-    if (code === null) {
-      return nok(code);
+  function start(code2) {
+    if (code2 === null) {
+      return nok(code2);
     }
     effects.enter("lineEnding");
-    effects.consume(code);
+    effects.consume(code2);
     effects.exit("lineEnding");
     return lineStart;
   }
-  function lineStart(code) {
-    return self.parser.lazy[self.now().line] ? nok(code) : ok3(code);
+  function lineStart(code2) {
+    return self.parser.lazy[self.now().line] ? nok(code2) : ok3(code2);
   }
 }
 
@@ -25553,55 +25553,55 @@ var furtherStart = {
 function tokenizeCodeIndented(effects, ok3, nok) {
   const self = this;
   return start;
-  function start(code) {
+  function start(code2) {
     effects.enter("codeIndented");
-    return factorySpace(effects, afterPrefix, "linePrefix", 4 + 1)(code);
+    return factorySpace(effects, afterPrefix, "linePrefix", 4 + 1)(code2);
   }
-  function afterPrefix(code) {
+  function afterPrefix(code2) {
     const tail = self.events[self.events.length - 1];
-    return tail && tail[1].type === "linePrefix" && tail[2].sliceSerialize(tail[1], true).length >= 4 ? atBreak(code) : nok(code);
+    return tail && tail[1].type === "linePrefix" && tail[2].sliceSerialize(tail[1], true).length >= 4 ? atBreak(code2) : nok(code2);
   }
-  function atBreak(code) {
-    if (code === null) {
-      return after(code);
+  function atBreak(code2) {
+    if (code2 === null) {
+      return after(code2);
     }
-    if (markdownLineEnding(code)) {
-      return effects.attempt(furtherStart, atBreak, after)(code);
+    if (markdownLineEnding(code2)) {
+      return effects.attempt(furtherStart, atBreak, after)(code2);
     }
     effects.enter("codeFlowValue");
-    return inside(code);
+    return inside(code2);
   }
-  function inside(code) {
-    if (code === null || markdownLineEnding(code)) {
+  function inside(code2) {
+    if (code2 === null || markdownLineEnding(code2)) {
       effects.exit("codeFlowValue");
-      return atBreak(code);
+      return atBreak(code2);
     }
-    effects.consume(code);
+    effects.consume(code2);
     return inside;
   }
-  function after(code) {
+  function after(code2) {
     effects.exit("codeIndented");
-    return ok3(code);
+    return ok3(code2);
   }
 }
 function tokenizeFurtherStart(effects, ok3, nok) {
   const self = this;
   return furtherStart2;
-  function furtherStart2(code) {
+  function furtherStart2(code2) {
     if (self.parser.lazy[self.now().line]) {
-      return nok(code);
+      return nok(code2);
     }
-    if (markdownLineEnding(code)) {
+    if (markdownLineEnding(code2)) {
       effects.enter("lineEnding");
-      effects.consume(code);
+      effects.consume(code2);
       effects.exit("lineEnding");
       return furtherStart2;
     }
-    return factorySpace(effects, afterPrefix, "linePrefix", 4 + 1)(code);
+    return factorySpace(effects, afterPrefix, "linePrefix", 4 + 1)(code2);
   }
-  function afterPrefix(code) {
+  function afterPrefix(code2) {
     const tail = self.events[self.events.length - 1];
-    return tail && tail[1].type === "linePrefix" && tail[2].sliceSerialize(tail[1], true).length >= 4 ? ok3(code) : markdownLineEnding(code) ? furtherStart2(code) : nok(code);
+    return tail && tail[1].type === "linePrefix" && tail[2].sliceSerialize(tail[1], true).length >= 4 ? ok3(code2) : markdownLineEnding(code2) ? furtherStart2(code2) : nok(code2);
   }
 }
 
@@ -25649,8 +25649,8 @@ function resolveCodeText(events) {
   }
   return events;
 }
-function previous(code) {
-  return code !== 96 || this.events[this.events.length - 1][1].type === "characterEscape";
+function previous(code2) {
+  return code2 !== 96 || this.events[this.events.length - 1][1].type === "characterEscape";
 }
 function tokenizeCodeText(effects, ok3, nok) {
   const self = this;
@@ -25658,65 +25658,65 @@ function tokenizeCodeText(effects, ok3, nok) {
   let size;
   let token;
   return start;
-  function start(code) {
+  function start(code2) {
     effects.enter("codeText");
     effects.enter("codeTextSequence");
-    return sequenceOpen(code);
+    return sequenceOpen(code2);
   }
-  function sequenceOpen(code) {
-    if (code === 96) {
-      effects.consume(code);
+  function sequenceOpen(code2) {
+    if (code2 === 96) {
+      effects.consume(code2);
       sizeOpen++;
       return sequenceOpen;
     }
     effects.exit("codeTextSequence");
-    return between(code);
+    return between(code2);
   }
-  function between(code) {
-    if (code === null) {
-      return nok(code);
+  function between(code2) {
+    if (code2 === null) {
+      return nok(code2);
     }
-    if (code === 32) {
+    if (code2 === 32) {
       effects.enter("space");
-      effects.consume(code);
+      effects.consume(code2);
       effects.exit("space");
       return between;
     }
-    if (code === 96) {
+    if (code2 === 96) {
       token = effects.enter("codeTextSequence");
       size = 0;
-      return sequenceClose(code);
+      return sequenceClose(code2);
     }
-    if (markdownLineEnding(code)) {
+    if (markdownLineEnding(code2)) {
       effects.enter("lineEnding");
-      effects.consume(code);
+      effects.consume(code2);
       effects.exit("lineEnding");
       return between;
     }
     effects.enter("codeTextData");
-    return data(code);
+    return data(code2);
   }
-  function data(code) {
-    if (code === null || code === 32 || code === 96 || markdownLineEnding(code)) {
+  function data(code2) {
+    if (code2 === null || code2 === 32 || code2 === 96 || markdownLineEnding(code2)) {
       effects.exit("codeTextData");
-      return between(code);
+      return between(code2);
     }
-    effects.consume(code);
+    effects.consume(code2);
     return data;
   }
-  function sequenceClose(code) {
-    if (code === 96) {
-      effects.consume(code);
+  function sequenceClose(code2) {
+    if (code2 === 96) {
+      effects.consume(code2);
       size++;
       return sequenceClose;
     }
     if (size === sizeOpen) {
       effects.exit("codeTextSequence");
       effects.exit("codeText");
-      return ok3(code);
+      return ok3(code2);
     }
     token.type = "codeTextData";
-    return data(code);
+    return data(code2);
   }
 }
 
@@ -26082,30 +26082,30 @@ function resolveContent(events) {
 function tokenizeContent(effects, ok3) {
   let previous2;
   return chunkStart;
-  function chunkStart(code) {
+  function chunkStart(code2) {
     effects.enter("content");
     previous2 = effects.enter("chunkContent", {
       contentType: "content"
     });
-    return chunkInside(code);
+    return chunkInside(code2);
   }
-  function chunkInside(code) {
-    if (code === null) {
-      return contentEnd(code);
+  function chunkInside(code2) {
+    if (code2 === null) {
+      return contentEnd(code2);
     }
-    if (markdownLineEnding(code)) {
-      return effects.check(continuationConstruct, contentContinue, contentEnd)(code);
+    if (markdownLineEnding(code2)) {
+      return effects.check(continuationConstruct, contentContinue, contentEnd)(code2);
     }
-    effects.consume(code);
+    effects.consume(code2);
     return chunkInside;
   }
-  function contentEnd(code) {
+  function contentEnd(code2) {
     effects.exit("chunkContent");
     effects.exit("content");
-    return ok3(code);
+    return ok3(code2);
   }
-  function contentContinue(code) {
-    effects.consume(code);
+  function contentContinue(code2) {
+    effects.consume(code2);
     effects.exit("chunkContent");
     previous2.next = effects.enter("chunkContent", {
       contentType: "content",
@@ -26118,22 +26118,22 @@ function tokenizeContent(effects, ok3) {
 function tokenizeContinuation(effects, ok3, nok) {
   const self = this;
   return startLookahead;
-  function startLookahead(code) {
+  function startLookahead(code2) {
     effects.exit("chunkContent");
     effects.enter("lineEnding");
-    effects.consume(code);
+    effects.consume(code2);
     effects.exit("lineEnding");
     return factorySpace(effects, prefixed, "linePrefix");
   }
-  function prefixed(code) {
-    if (code === null || markdownLineEnding(code)) {
-      return nok(code);
+  function prefixed(code2) {
+    if (code2 === null || markdownLineEnding(code2)) {
+      return nok(code2);
     }
     const tail = self.events[self.events.length - 1];
     if (!self.parser.constructs.disable.null.includes("codeIndented") && tail && tail[1].type === "linePrefix" && tail[2].sliceSerialize(tail[1], true).length >= 4) {
-      return ok3(code);
+      return ok3(code2);
     }
-    return effects.interrupt(self.parser.constructs.flow, nok, ok3)(code);
+    return effects.interrupt(self.parser.constructs.flow, nok, ok3)(code2);
   }
 }
 
@@ -26142,17 +26142,17 @@ function factoryDestination(effects, ok3, nok, type, literalType, literalMarkerT
   const limit = max || Number.POSITIVE_INFINITY;
   let balance = 0;
   return start;
-  function start(code) {
-    if (code === 60) {
+  function start(code2) {
+    if (code2 === 60) {
       effects.enter(type);
       effects.enter(literalType);
       effects.enter(literalMarkerType);
-      effects.consume(code);
+      effects.consume(code2);
       effects.exit(literalMarkerType);
       return enclosedBefore;
     }
-    if (code === null || code === 32 || code === 41 || asciiControl(code)) {
-      return nok(code);
+    if (code2 === null || code2 === 32 || code2 === 41 || asciiControl(code2)) {
+      return nok(code2);
     }
     effects.enter(type);
     effects.enter(rawType);
@@ -26160,12 +26160,12 @@ function factoryDestination(effects, ok3, nok, type, literalType, literalMarkerT
     effects.enter("chunkString", {
       contentType: "string"
     });
-    return raw(code);
+    return raw(code2);
   }
-  function enclosedBefore(code) {
-    if (code === 62) {
+  function enclosedBefore(code2) {
+    if (code2 === 62) {
       effects.enter(literalMarkerType);
-      effects.consume(code);
+      effects.consume(code2);
       effects.exit(literalMarkerType);
       effects.exit(literalType);
       effects.exit(type);
@@ -26175,57 +26175,57 @@ function factoryDestination(effects, ok3, nok, type, literalType, literalMarkerT
     effects.enter("chunkString", {
       contentType: "string"
     });
-    return enclosed(code);
+    return enclosed(code2);
   }
-  function enclosed(code) {
-    if (code === 62) {
+  function enclosed(code2) {
+    if (code2 === 62) {
       effects.exit("chunkString");
       effects.exit(stringType);
-      return enclosedBefore(code);
+      return enclosedBefore(code2);
     }
-    if (code === null || code === 60 || markdownLineEnding(code)) {
-      return nok(code);
+    if (code2 === null || code2 === 60 || markdownLineEnding(code2)) {
+      return nok(code2);
     }
-    effects.consume(code);
-    return code === 92 ? enclosedEscape : enclosed;
+    effects.consume(code2);
+    return code2 === 92 ? enclosedEscape : enclosed;
   }
-  function enclosedEscape(code) {
-    if (code === 60 || code === 62 || code === 92) {
-      effects.consume(code);
+  function enclosedEscape(code2) {
+    if (code2 === 60 || code2 === 62 || code2 === 92) {
+      effects.consume(code2);
       return enclosed;
     }
-    return enclosed(code);
+    return enclosed(code2);
   }
-  function raw(code) {
-    if (!balance && (code === null || code === 41 || markdownLineEndingOrSpace(code))) {
+  function raw(code2) {
+    if (!balance && (code2 === null || code2 === 41 || markdownLineEndingOrSpace(code2))) {
       effects.exit("chunkString");
       effects.exit(stringType);
       effects.exit(rawType);
       effects.exit(type);
-      return ok3(code);
+      return ok3(code2);
     }
-    if (balance < limit && code === 40) {
-      effects.consume(code);
+    if (balance < limit && code2 === 40) {
+      effects.consume(code2);
       balance++;
       return raw;
     }
-    if (code === 41) {
-      effects.consume(code);
+    if (code2 === 41) {
+      effects.consume(code2);
       balance--;
       return raw;
     }
-    if (code === null || code === 32 || code === 40 || asciiControl(code)) {
-      return nok(code);
+    if (code2 === null || code2 === 32 || code2 === 40 || asciiControl(code2)) {
+      return nok(code2);
     }
-    effects.consume(code);
-    return code === 92 ? rawEscape : raw;
+    effects.consume(code2);
+    return code2 === 92 ? rawEscape : raw;
   }
-  function rawEscape(code) {
-    if (code === 40 || code === 41 || code === 92) {
-      effects.consume(code);
+  function rawEscape(code2) {
+    if (code2 === 40 || code2 === 41 || code2 === 92) {
+      effects.consume(code2);
       return raw;
     }
-    return raw(code);
+    return raw(code2);
   }
 }
 
@@ -26235,58 +26235,58 @@ function factoryLabel(effects, ok3, nok, type, markerType, stringType) {
   let size = 0;
   let seen;
   return start;
-  function start(code) {
+  function start(code2) {
     effects.enter(type);
     effects.enter(markerType);
-    effects.consume(code);
+    effects.consume(code2);
     effects.exit(markerType);
     effects.enter(stringType);
     return atBreak;
   }
-  function atBreak(code) {
-    if (size > 999 || code === null || code === 91 || code === 93 && !seen || // To do: remove in the future once we’ve switched from
+  function atBreak(code2) {
+    if (size > 999 || code2 === null || code2 === 91 || code2 === 93 && !seen || // To do: remove in the future once we’ve switched from
     // `micromark-extension-footnote` to `micromark-extension-gfm-footnote`,
     // which doesn’t need this.
     // Hidden footnotes hook.
     /* c8 ignore next 3 */
-    code === 94 && !size && "_hiddenFootnoteSupport" in self.parser.constructs) {
-      return nok(code);
+    code2 === 94 && !size && "_hiddenFootnoteSupport" in self.parser.constructs) {
+      return nok(code2);
     }
-    if (code === 93) {
+    if (code2 === 93) {
       effects.exit(stringType);
       effects.enter(markerType);
-      effects.consume(code);
+      effects.consume(code2);
       effects.exit(markerType);
       effects.exit(type);
       return ok3;
     }
-    if (markdownLineEnding(code)) {
+    if (markdownLineEnding(code2)) {
       effects.enter("lineEnding");
-      effects.consume(code);
+      effects.consume(code2);
       effects.exit("lineEnding");
       return atBreak;
     }
     effects.enter("chunkString", {
       contentType: "string"
     });
-    return labelInside(code);
+    return labelInside(code2);
   }
-  function labelInside(code) {
-    if (code === null || code === 91 || code === 93 || markdownLineEnding(code) || size++ > 999) {
+  function labelInside(code2) {
+    if (code2 === null || code2 === 91 || code2 === 93 || markdownLineEnding(code2) || size++ > 999) {
       effects.exit("chunkString");
-      return atBreak(code);
+      return atBreak(code2);
     }
-    effects.consume(code);
-    if (!seen) seen = !markdownSpace(code);
-    return code === 92 ? labelEscape : labelInside;
+    effects.consume(code2);
+    if (!seen) seen = !markdownSpace(code2);
+    return code2 === 92 ? labelEscape : labelInside;
   }
-  function labelEscape(code) {
-    if (code === 91 || code === 92 || code === 93) {
-      effects.consume(code);
+  function labelEscape(code2) {
+    if (code2 === 91 || code2 === 92 || code2 === 93) {
+      effects.consume(code2);
       size++;
       return labelInside;
     }
-    return labelInside(code);
+    return labelInside(code2);
   }
 }
 
@@ -26294,61 +26294,61 @@ function factoryLabel(effects, ok3, nok, type, markerType, stringType) {
 function factoryTitle(effects, ok3, nok, type, markerType, stringType) {
   let marker;
   return start;
-  function start(code) {
-    if (code === 34 || code === 39 || code === 40) {
+  function start(code2) {
+    if (code2 === 34 || code2 === 39 || code2 === 40) {
       effects.enter(type);
       effects.enter(markerType);
-      effects.consume(code);
+      effects.consume(code2);
       effects.exit(markerType);
-      marker = code === 40 ? 41 : code;
+      marker = code2 === 40 ? 41 : code2;
       return begin;
     }
-    return nok(code);
+    return nok(code2);
   }
-  function begin(code) {
-    if (code === marker) {
+  function begin(code2) {
+    if (code2 === marker) {
       effects.enter(markerType);
-      effects.consume(code);
+      effects.consume(code2);
       effects.exit(markerType);
       effects.exit(type);
       return ok3;
     }
     effects.enter(stringType);
-    return atBreak(code);
+    return atBreak(code2);
   }
-  function atBreak(code) {
-    if (code === marker) {
+  function atBreak(code2) {
+    if (code2 === marker) {
       effects.exit(stringType);
       return begin(marker);
     }
-    if (code === null) {
-      return nok(code);
+    if (code2 === null) {
+      return nok(code2);
     }
-    if (markdownLineEnding(code)) {
+    if (markdownLineEnding(code2)) {
       effects.enter("lineEnding");
-      effects.consume(code);
+      effects.consume(code2);
       effects.exit("lineEnding");
       return factorySpace(effects, atBreak, "linePrefix");
     }
     effects.enter("chunkString", {
       contentType: "string"
     });
-    return inside(code);
+    return inside(code2);
   }
-  function inside(code) {
-    if (code === marker || code === null || markdownLineEnding(code)) {
+  function inside(code2) {
+    if (code2 === marker || code2 === null || markdownLineEnding(code2)) {
       effects.exit("chunkString");
-      return atBreak(code);
+      return atBreak(code2);
     }
-    effects.consume(code);
-    return code === 92 ? escape3 : inside;
+    effects.consume(code2);
+    return code2 === 92 ? escape3 : inside;
   }
-  function escape3(code) {
-    if (code === marker || code === 92) {
-      effects.consume(code);
+  function escape3(code2) {
+    if (code2 === marker || code2 === 92) {
+      effects.consume(code2);
       return inside;
     }
-    return inside(code);
+    return inside(code2);
   }
 }
 
@@ -26356,18 +26356,18 @@ function factoryTitle(effects, ok3, nok, type, markerType, stringType) {
 function factoryWhitespace(effects, ok3) {
   let seen;
   return start;
-  function start(code) {
-    if (markdownLineEnding(code)) {
+  function start(code2) {
+    if (markdownLineEnding(code2)) {
       effects.enter("lineEnding");
-      effects.consume(code);
+      effects.consume(code2);
       effects.exit("lineEnding");
       seen = true;
       return start;
     }
-    if (markdownSpace(code)) {
-      return factorySpace(effects, start, seen ? "linePrefix" : "lineSuffix")(code);
+    if (markdownSpace(code2)) {
+      return factorySpace(effects, start, seen ? "linePrefix" : "lineSuffix")(code2);
     }
-    return ok3(code);
+    return ok3(code2);
   }
 }
 
@@ -26384,11 +26384,11 @@ function tokenizeDefinition(effects, ok3, nok) {
   const self = this;
   let identifier;
   return start;
-  function start(code) {
+  function start(code2) {
     effects.enter("definition");
-    return before(code);
+    return before(code2);
   }
-  function before(code) {
+  function before(code2) {
     return factoryLabel.call(
       self,
       effects,
@@ -26398,22 +26398,22 @@ function tokenizeDefinition(effects, ok3, nok) {
       "definitionLabel",
       "definitionLabelMarker",
       "definitionLabelString"
-    )(code);
+    )(code2);
   }
-  function labelAfter(code) {
+  function labelAfter(code2) {
     identifier = normalizeIdentifier(self.sliceSerialize(self.events[self.events.length - 1][1]).slice(1, -1));
-    if (code === 58) {
+    if (code2 === 58) {
       effects.enter("definitionMarker");
-      effects.consume(code);
+      effects.consume(code2);
       effects.exit("definitionMarker");
       return markerAfter;
     }
-    return nok(code);
+    return nok(code2);
   }
-  function markerAfter(code) {
-    return markdownLineEndingOrSpace(code) ? factoryWhitespace(effects, destinationBefore)(code) : destinationBefore(code);
+  function markerAfter(code2) {
+    return markdownLineEndingOrSpace(code2) ? factoryWhitespace(effects, destinationBefore)(code2) : destinationBefore(code2);
   }
-  function destinationBefore(code) {
+  function destinationBefore(code2) {
     return factoryDestination(
       effects,
       destinationAfter,
@@ -26424,36 +26424,36 @@ function tokenizeDefinition(effects, ok3, nok) {
       "definitionDestinationLiteralMarker",
       "definitionDestinationRaw",
       "definitionDestinationString"
-    )(code);
+    )(code2);
   }
-  function destinationAfter(code) {
-    return effects.attempt(titleBefore, after, after)(code);
+  function destinationAfter(code2) {
+    return effects.attempt(titleBefore, after, after)(code2);
   }
-  function after(code) {
-    return markdownSpace(code) ? factorySpace(effects, afterWhitespace, "whitespace")(code) : afterWhitespace(code);
+  function after(code2) {
+    return markdownSpace(code2) ? factorySpace(effects, afterWhitespace, "whitespace")(code2) : afterWhitespace(code2);
   }
-  function afterWhitespace(code) {
-    if (code === null || markdownLineEnding(code)) {
+  function afterWhitespace(code2) {
+    if (code2 === null || markdownLineEnding(code2)) {
       effects.exit("definition");
       self.parser.defined.push(identifier);
-      return ok3(code);
+      return ok3(code2);
     }
-    return nok(code);
+    return nok(code2);
   }
 }
 function tokenizeTitleBefore(effects, ok3, nok) {
   return titleBefore2;
-  function titleBefore2(code) {
-    return markdownLineEndingOrSpace(code) ? factoryWhitespace(effects, beforeMarker)(code) : nok(code);
+  function titleBefore2(code2) {
+    return markdownLineEndingOrSpace(code2) ? factoryWhitespace(effects, beforeMarker)(code2) : nok(code2);
   }
-  function beforeMarker(code) {
-    return factoryTitle(effects, titleAfter, nok, "definitionTitle", "definitionTitleMarker", "definitionTitleString")(code);
+  function beforeMarker(code2) {
+    return factoryTitle(effects, titleAfter, nok, "definitionTitle", "definitionTitleMarker", "definitionTitleString")(code2);
   }
-  function titleAfter(code) {
-    return markdownSpace(code) ? factorySpace(effects, titleAfterOptionalWhitespace, "whitespace")(code) : titleAfterOptionalWhitespace(code);
+  function titleAfter(code2) {
+    return markdownSpace(code2) ? factorySpace(effects, titleAfterOptionalWhitespace, "whitespace")(code2) : titleAfterOptionalWhitespace(code2);
   }
-  function titleAfterOptionalWhitespace(code) {
-    return code === null || markdownLineEnding(code) ? ok3(code) : nok(code);
+  function titleAfterOptionalWhitespace(code2) {
+    return code2 === null || markdownLineEnding(code2) ? ok3(code2) : nok(code2);
   }
 }
 
@@ -26464,17 +26464,17 @@ var hardBreakEscape = {
 };
 function tokenizeHardBreakEscape(effects, ok3, nok) {
   return start;
-  function start(code) {
+  function start(code2) {
     effects.enter("hardBreakEscape");
-    effects.consume(code);
+    effects.consume(code2);
     return after;
   }
-  function after(code) {
-    if (markdownLineEnding(code)) {
+  function after(code2) {
+    if (markdownLineEnding(code2)) {
       effects.exit("hardBreakEscape");
-      return ok3(code);
+      return ok3(code2);
     }
-    return nok(code);
+    return nok(code2);
   }
 }
 
@@ -26488,7 +26488,7 @@ function resolveHeadingAtx(events, context) {
   let contentEnd = events.length - 2;
   let contentStart = 3;
   let content3;
-  let text3;
+  let text4;
   if (events[contentStart][1].type === "whitespace") {
     contentStart += 2;
   }
@@ -26504,67 +26504,67 @@ function resolveHeadingAtx(events, context) {
       start: events[contentStart][1].start,
       end: events[contentEnd][1].end
     };
-    text3 = {
+    text4 = {
       type: "chunkText",
       start: events[contentStart][1].start,
       end: events[contentEnd][1].end,
       contentType: "text"
     };
-    splice(events, contentStart, contentEnd - contentStart + 1, [["enter", content3, context], ["enter", text3, context], ["exit", text3, context], ["exit", content3, context]]);
+    splice(events, contentStart, contentEnd - contentStart + 1, [["enter", content3, context], ["enter", text4, context], ["exit", text4, context], ["exit", content3, context]]);
   }
   return events;
 }
 function tokenizeHeadingAtx(effects, ok3, nok) {
   let size = 0;
   return start;
-  function start(code) {
+  function start(code2) {
     effects.enter("atxHeading");
-    return before(code);
+    return before(code2);
   }
-  function before(code) {
+  function before(code2) {
     effects.enter("atxHeadingSequence");
-    return sequenceOpen(code);
+    return sequenceOpen(code2);
   }
-  function sequenceOpen(code) {
-    if (code === 35 && size++ < 6) {
-      effects.consume(code);
+  function sequenceOpen(code2) {
+    if (code2 === 35 && size++ < 6) {
+      effects.consume(code2);
       return sequenceOpen;
     }
-    if (code === null || markdownLineEndingOrSpace(code)) {
+    if (code2 === null || markdownLineEndingOrSpace(code2)) {
       effects.exit("atxHeadingSequence");
-      return atBreak(code);
+      return atBreak(code2);
     }
-    return nok(code);
+    return nok(code2);
   }
-  function atBreak(code) {
-    if (code === 35) {
+  function atBreak(code2) {
+    if (code2 === 35) {
       effects.enter("atxHeadingSequence");
-      return sequenceFurther(code);
+      return sequenceFurther(code2);
     }
-    if (code === null || markdownLineEnding(code)) {
+    if (code2 === null || markdownLineEnding(code2)) {
       effects.exit("atxHeading");
-      return ok3(code);
+      return ok3(code2);
     }
-    if (markdownSpace(code)) {
-      return factorySpace(effects, atBreak, "whitespace")(code);
+    if (markdownSpace(code2)) {
+      return factorySpace(effects, atBreak, "whitespace")(code2);
     }
     effects.enter("atxHeadingText");
-    return data(code);
+    return data(code2);
   }
-  function sequenceFurther(code) {
-    if (code === 35) {
-      effects.consume(code);
+  function sequenceFurther(code2) {
+    if (code2 === 35) {
+      effects.consume(code2);
       return sequenceFurther;
     }
     effects.exit("atxHeadingSequence");
-    return atBreak(code);
+    return atBreak(code2);
   }
-  function data(code) {
-    if (code === null || code === 35 || markdownLineEndingOrSpace(code)) {
+  function data(code2) {
+    if (code2 === null || code2 === 35 || markdownLineEndingOrSpace(code2)) {
       effects.exit("atxHeadingText");
-      return atBreak(code);
+      return atBreak(code2);
     }
-    effects.consume(code);
+    effects.consume(code2);
     return data;
   }
 }
@@ -26673,343 +26673,343 @@ function tokenizeHtmlFlow(effects, ok3, nok) {
   let index2;
   let markerB;
   return start;
-  function start(code) {
-    return before(code);
+  function start(code2) {
+    return before(code2);
   }
-  function before(code) {
+  function before(code2) {
     effects.enter("htmlFlow");
     effects.enter("htmlFlowData");
-    effects.consume(code);
+    effects.consume(code2);
     return open;
   }
-  function open(code) {
-    if (code === 33) {
-      effects.consume(code);
+  function open(code2) {
+    if (code2 === 33) {
+      effects.consume(code2);
       return declarationOpen;
     }
-    if (code === 47) {
-      effects.consume(code);
+    if (code2 === 47) {
+      effects.consume(code2);
       closingTag = true;
       return tagCloseStart;
     }
-    if (code === 63) {
-      effects.consume(code);
+    if (code2 === 63) {
+      effects.consume(code2);
       marker = 3;
       return self.interrupt ? ok3 : continuationDeclarationInside;
     }
-    if (asciiAlpha(code)) {
-      effects.consume(code);
-      buffer = String.fromCharCode(code);
+    if (asciiAlpha(code2)) {
+      effects.consume(code2);
+      buffer = String.fromCharCode(code2);
       return tagName;
     }
-    return nok(code);
+    return nok(code2);
   }
-  function declarationOpen(code) {
-    if (code === 45) {
-      effects.consume(code);
+  function declarationOpen(code2) {
+    if (code2 === 45) {
+      effects.consume(code2);
       marker = 2;
       return commentOpenInside;
     }
-    if (code === 91) {
-      effects.consume(code);
+    if (code2 === 91) {
+      effects.consume(code2);
       marker = 5;
       index2 = 0;
       return cdataOpenInside;
     }
-    if (asciiAlpha(code)) {
-      effects.consume(code);
+    if (asciiAlpha(code2)) {
+      effects.consume(code2);
       marker = 4;
       return self.interrupt ? ok3 : continuationDeclarationInside;
     }
-    return nok(code);
+    return nok(code2);
   }
-  function commentOpenInside(code) {
-    if (code === 45) {
-      effects.consume(code);
+  function commentOpenInside(code2) {
+    if (code2 === 45) {
+      effects.consume(code2);
       return self.interrupt ? ok3 : continuationDeclarationInside;
     }
-    return nok(code);
+    return nok(code2);
   }
-  function cdataOpenInside(code) {
+  function cdataOpenInside(code2) {
     const value2 = "CDATA[";
-    if (code === value2.charCodeAt(index2++)) {
-      effects.consume(code);
+    if (code2 === value2.charCodeAt(index2++)) {
+      effects.consume(code2);
       if (index2 === value2.length) {
         return self.interrupt ? ok3 : continuation;
       }
       return cdataOpenInside;
     }
-    return nok(code);
+    return nok(code2);
   }
-  function tagCloseStart(code) {
-    if (asciiAlpha(code)) {
-      effects.consume(code);
-      buffer = String.fromCharCode(code);
+  function tagCloseStart(code2) {
+    if (asciiAlpha(code2)) {
+      effects.consume(code2);
+      buffer = String.fromCharCode(code2);
       return tagName;
     }
-    return nok(code);
+    return nok(code2);
   }
-  function tagName(code) {
-    if (code === null || code === 47 || code === 62 || markdownLineEndingOrSpace(code)) {
-      const slash = code === 47;
+  function tagName(code2) {
+    if (code2 === null || code2 === 47 || code2 === 62 || markdownLineEndingOrSpace(code2)) {
+      const slash = code2 === 47;
       const name = buffer.toLowerCase();
       if (!slash && !closingTag && htmlRawNames.includes(name)) {
         marker = 1;
-        return self.interrupt ? ok3(code) : continuation(code);
+        return self.interrupt ? ok3(code2) : continuation(code2);
       }
       if (htmlBlockNames.includes(buffer.toLowerCase())) {
         marker = 6;
         if (slash) {
-          effects.consume(code);
+          effects.consume(code2);
           return basicSelfClosing;
         }
-        return self.interrupt ? ok3(code) : continuation(code);
+        return self.interrupt ? ok3(code2) : continuation(code2);
       }
       marker = 7;
-      return self.interrupt && !self.parser.lazy[self.now().line] ? nok(code) : closingTag ? completeClosingTagAfter(code) : completeAttributeNameBefore(code);
+      return self.interrupt && !self.parser.lazy[self.now().line] ? nok(code2) : closingTag ? completeClosingTagAfter(code2) : completeAttributeNameBefore(code2);
     }
-    if (code === 45 || asciiAlphanumeric(code)) {
-      effects.consume(code);
-      buffer += String.fromCharCode(code);
+    if (code2 === 45 || asciiAlphanumeric(code2)) {
+      effects.consume(code2);
+      buffer += String.fromCharCode(code2);
       return tagName;
     }
-    return nok(code);
+    return nok(code2);
   }
-  function basicSelfClosing(code) {
-    if (code === 62) {
-      effects.consume(code);
+  function basicSelfClosing(code2) {
+    if (code2 === 62) {
+      effects.consume(code2);
       return self.interrupt ? ok3 : continuation;
     }
-    return nok(code);
+    return nok(code2);
   }
-  function completeClosingTagAfter(code) {
-    if (markdownSpace(code)) {
-      effects.consume(code);
+  function completeClosingTagAfter(code2) {
+    if (markdownSpace(code2)) {
+      effects.consume(code2);
       return completeClosingTagAfter;
     }
-    return completeEnd(code);
+    return completeEnd(code2);
   }
-  function completeAttributeNameBefore(code) {
-    if (code === 47) {
-      effects.consume(code);
+  function completeAttributeNameBefore(code2) {
+    if (code2 === 47) {
+      effects.consume(code2);
       return completeEnd;
     }
-    if (code === 58 || code === 95 || asciiAlpha(code)) {
-      effects.consume(code);
+    if (code2 === 58 || code2 === 95 || asciiAlpha(code2)) {
+      effects.consume(code2);
       return completeAttributeName;
     }
-    if (markdownSpace(code)) {
-      effects.consume(code);
+    if (markdownSpace(code2)) {
+      effects.consume(code2);
       return completeAttributeNameBefore;
     }
-    return completeEnd(code);
+    return completeEnd(code2);
   }
-  function completeAttributeName(code) {
-    if (code === 45 || code === 46 || code === 58 || code === 95 || asciiAlphanumeric(code)) {
-      effects.consume(code);
+  function completeAttributeName(code2) {
+    if (code2 === 45 || code2 === 46 || code2 === 58 || code2 === 95 || asciiAlphanumeric(code2)) {
+      effects.consume(code2);
       return completeAttributeName;
     }
-    return completeAttributeNameAfter(code);
+    return completeAttributeNameAfter(code2);
   }
-  function completeAttributeNameAfter(code) {
-    if (code === 61) {
-      effects.consume(code);
+  function completeAttributeNameAfter(code2) {
+    if (code2 === 61) {
+      effects.consume(code2);
       return completeAttributeValueBefore;
     }
-    if (markdownSpace(code)) {
-      effects.consume(code);
+    if (markdownSpace(code2)) {
+      effects.consume(code2);
       return completeAttributeNameAfter;
     }
-    return completeAttributeNameBefore(code);
+    return completeAttributeNameBefore(code2);
   }
-  function completeAttributeValueBefore(code) {
-    if (code === null || code === 60 || code === 61 || code === 62 || code === 96) {
-      return nok(code);
+  function completeAttributeValueBefore(code2) {
+    if (code2 === null || code2 === 60 || code2 === 61 || code2 === 62 || code2 === 96) {
+      return nok(code2);
     }
-    if (code === 34 || code === 39) {
-      effects.consume(code);
-      markerB = code;
+    if (code2 === 34 || code2 === 39) {
+      effects.consume(code2);
+      markerB = code2;
       return completeAttributeValueQuoted;
     }
-    if (markdownSpace(code)) {
-      effects.consume(code);
+    if (markdownSpace(code2)) {
+      effects.consume(code2);
       return completeAttributeValueBefore;
     }
-    return completeAttributeValueUnquoted(code);
+    return completeAttributeValueUnquoted(code2);
   }
-  function completeAttributeValueQuoted(code) {
-    if (code === markerB) {
-      effects.consume(code);
+  function completeAttributeValueQuoted(code2) {
+    if (code2 === markerB) {
+      effects.consume(code2);
       markerB = null;
       return completeAttributeValueQuotedAfter;
     }
-    if (code === null || markdownLineEnding(code)) {
-      return nok(code);
+    if (code2 === null || markdownLineEnding(code2)) {
+      return nok(code2);
     }
-    effects.consume(code);
+    effects.consume(code2);
     return completeAttributeValueQuoted;
   }
-  function completeAttributeValueUnquoted(code) {
-    if (code === null || code === 34 || code === 39 || code === 47 || code === 60 || code === 61 || code === 62 || code === 96 || markdownLineEndingOrSpace(code)) {
-      return completeAttributeNameAfter(code);
+  function completeAttributeValueUnquoted(code2) {
+    if (code2 === null || code2 === 34 || code2 === 39 || code2 === 47 || code2 === 60 || code2 === 61 || code2 === 62 || code2 === 96 || markdownLineEndingOrSpace(code2)) {
+      return completeAttributeNameAfter(code2);
     }
-    effects.consume(code);
+    effects.consume(code2);
     return completeAttributeValueUnquoted;
   }
-  function completeAttributeValueQuotedAfter(code) {
-    if (code === 47 || code === 62 || markdownSpace(code)) {
-      return completeAttributeNameBefore(code);
+  function completeAttributeValueQuotedAfter(code2) {
+    if (code2 === 47 || code2 === 62 || markdownSpace(code2)) {
+      return completeAttributeNameBefore(code2);
     }
-    return nok(code);
+    return nok(code2);
   }
-  function completeEnd(code) {
-    if (code === 62) {
-      effects.consume(code);
+  function completeEnd(code2) {
+    if (code2 === 62) {
+      effects.consume(code2);
       return completeAfter;
     }
-    return nok(code);
+    return nok(code2);
   }
-  function completeAfter(code) {
-    if (code === null || markdownLineEnding(code)) {
-      return continuation(code);
+  function completeAfter(code2) {
+    if (code2 === null || markdownLineEnding(code2)) {
+      return continuation(code2);
     }
-    if (markdownSpace(code)) {
-      effects.consume(code);
+    if (markdownSpace(code2)) {
+      effects.consume(code2);
       return completeAfter;
     }
-    return nok(code);
+    return nok(code2);
   }
-  function continuation(code) {
-    if (code === 45 && marker === 2) {
-      effects.consume(code);
+  function continuation(code2) {
+    if (code2 === 45 && marker === 2) {
+      effects.consume(code2);
       return continuationCommentInside;
     }
-    if (code === 60 && marker === 1) {
-      effects.consume(code);
+    if (code2 === 60 && marker === 1) {
+      effects.consume(code2);
       return continuationRawTagOpen;
     }
-    if (code === 62 && marker === 4) {
-      effects.consume(code);
+    if (code2 === 62 && marker === 4) {
+      effects.consume(code2);
       return continuationClose;
     }
-    if (code === 63 && marker === 3) {
-      effects.consume(code);
+    if (code2 === 63 && marker === 3) {
+      effects.consume(code2);
       return continuationDeclarationInside;
     }
-    if (code === 93 && marker === 5) {
-      effects.consume(code);
+    if (code2 === 93 && marker === 5) {
+      effects.consume(code2);
       return continuationCdataInside;
     }
-    if (markdownLineEnding(code) && (marker === 6 || marker === 7)) {
+    if (markdownLineEnding(code2) && (marker === 6 || marker === 7)) {
       effects.exit("htmlFlowData");
-      return effects.check(blankLineBefore, continuationAfter, continuationStart)(code);
+      return effects.check(blankLineBefore, continuationAfter, continuationStart)(code2);
     }
-    if (code === null || markdownLineEnding(code)) {
+    if (code2 === null || markdownLineEnding(code2)) {
       effects.exit("htmlFlowData");
-      return continuationStart(code);
+      return continuationStart(code2);
     }
-    effects.consume(code);
+    effects.consume(code2);
     return continuation;
   }
-  function continuationStart(code) {
-    return effects.check(nonLazyContinuationStart, continuationStartNonLazy, continuationAfter)(code);
+  function continuationStart(code2) {
+    return effects.check(nonLazyContinuationStart, continuationStartNonLazy, continuationAfter)(code2);
   }
-  function continuationStartNonLazy(code) {
+  function continuationStartNonLazy(code2) {
     effects.enter("lineEnding");
-    effects.consume(code);
+    effects.consume(code2);
     effects.exit("lineEnding");
     return continuationBefore;
   }
-  function continuationBefore(code) {
-    if (code === null || markdownLineEnding(code)) {
-      return continuationStart(code);
+  function continuationBefore(code2) {
+    if (code2 === null || markdownLineEnding(code2)) {
+      return continuationStart(code2);
     }
     effects.enter("htmlFlowData");
-    return continuation(code);
+    return continuation(code2);
   }
-  function continuationCommentInside(code) {
-    if (code === 45) {
-      effects.consume(code);
+  function continuationCommentInside(code2) {
+    if (code2 === 45) {
+      effects.consume(code2);
       return continuationDeclarationInside;
     }
-    return continuation(code);
+    return continuation(code2);
   }
-  function continuationRawTagOpen(code) {
-    if (code === 47) {
-      effects.consume(code);
+  function continuationRawTagOpen(code2) {
+    if (code2 === 47) {
+      effects.consume(code2);
       buffer = "";
       return continuationRawEndTag;
     }
-    return continuation(code);
+    return continuation(code2);
   }
-  function continuationRawEndTag(code) {
-    if (code === 62) {
+  function continuationRawEndTag(code2) {
+    if (code2 === 62) {
       const name = buffer.toLowerCase();
       if (htmlRawNames.includes(name)) {
-        effects.consume(code);
+        effects.consume(code2);
         return continuationClose;
       }
-      return continuation(code);
+      return continuation(code2);
     }
-    if (asciiAlpha(code) && buffer.length < 8) {
-      effects.consume(code);
-      buffer += String.fromCharCode(code);
+    if (asciiAlpha(code2) && buffer.length < 8) {
+      effects.consume(code2);
+      buffer += String.fromCharCode(code2);
       return continuationRawEndTag;
     }
-    return continuation(code);
+    return continuation(code2);
   }
-  function continuationCdataInside(code) {
-    if (code === 93) {
-      effects.consume(code);
+  function continuationCdataInside(code2) {
+    if (code2 === 93) {
+      effects.consume(code2);
       return continuationDeclarationInside;
     }
-    return continuation(code);
+    return continuation(code2);
   }
-  function continuationDeclarationInside(code) {
-    if (code === 62) {
-      effects.consume(code);
+  function continuationDeclarationInside(code2) {
+    if (code2 === 62) {
+      effects.consume(code2);
       return continuationClose;
     }
-    if (code === 45 && marker === 2) {
-      effects.consume(code);
+    if (code2 === 45 && marker === 2) {
+      effects.consume(code2);
       return continuationDeclarationInside;
     }
-    return continuation(code);
+    return continuation(code2);
   }
-  function continuationClose(code) {
-    if (code === null || markdownLineEnding(code)) {
+  function continuationClose(code2) {
+    if (code2 === null || markdownLineEnding(code2)) {
       effects.exit("htmlFlowData");
-      return continuationAfter(code);
+      return continuationAfter(code2);
     }
-    effects.consume(code);
+    effects.consume(code2);
     return continuationClose;
   }
-  function continuationAfter(code) {
+  function continuationAfter(code2) {
     effects.exit("htmlFlow");
-    return ok3(code);
+    return ok3(code2);
   }
 }
 function tokenizeNonLazyContinuationStart(effects, ok3, nok) {
   const self = this;
   return start;
-  function start(code) {
-    if (markdownLineEnding(code)) {
+  function start(code2) {
+    if (markdownLineEnding(code2)) {
       effects.enter("lineEnding");
-      effects.consume(code);
+      effects.consume(code2);
       effects.exit("lineEnding");
       return after;
     }
-    return nok(code);
+    return nok(code2);
   }
-  function after(code) {
-    return self.parser.lazy[self.now().line] ? nok(code) : ok3(code);
+  function after(code2) {
+    return self.parser.lazy[self.now().line] ? nok(code2) : ok3(code2);
   }
 }
 function tokenizeBlankLineBefore(effects, ok3, nok) {
   return start;
-  function start(code) {
+  function start(code2) {
     effects.enter("lineEnding");
-    effects.consume(code);
+    effects.consume(code2);
     effects.exit("lineEnding");
     return effects.attempt(blankLine, ok3, nok);
   }
@@ -27026,298 +27026,298 @@ function tokenizeHtmlText(effects, ok3, nok) {
   let index2;
   let returnState;
   return start;
-  function start(code) {
+  function start(code2) {
     effects.enter("htmlText");
     effects.enter("htmlTextData");
-    effects.consume(code);
+    effects.consume(code2);
     return open;
   }
-  function open(code) {
-    if (code === 33) {
-      effects.consume(code);
+  function open(code2) {
+    if (code2 === 33) {
+      effects.consume(code2);
       return declarationOpen;
     }
-    if (code === 47) {
-      effects.consume(code);
+    if (code2 === 47) {
+      effects.consume(code2);
       return tagCloseStart;
     }
-    if (code === 63) {
-      effects.consume(code);
+    if (code2 === 63) {
+      effects.consume(code2);
       return instruction;
     }
-    if (asciiAlpha(code)) {
-      effects.consume(code);
+    if (asciiAlpha(code2)) {
+      effects.consume(code2);
       return tagOpen;
     }
-    return nok(code);
+    return nok(code2);
   }
-  function declarationOpen(code) {
-    if (code === 45) {
-      effects.consume(code);
+  function declarationOpen(code2) {
+    if (code2 === 45) {
+      effects.consume(code2);
       return commentOpenInside;
     }
-    if (code === 91) {
-      effects.consume(code);
+    if (code2 === 91) {
+      effects.consume(code2);
       index2 = 0;
       return cdataOpenInside;
     }
-    if (asciiAlpha(code)) {
-      effects.consume(code);
+    if (asciiAlpha(code2)) {
+      effects.consume(code2);
       return declaration;
     }
-    return nok(code);
+    return nok(code2);
   }
-  function commentOpenInside(code) {
-    if (code === 45) {
-      effects.consume(code);
+  function commentOpenInside(code2) {
+    if (code2 === 45) {
+      effects.consume(code2);
       return commentEnd;
     }
-    return nok(code);
+    return nok(code2);
   }
-  function comment(code) {
-    if (code === null) {
-      return nok(code);
+  function comment(code2) {
+    if (code2 === null) {
+      return nok(code2);
     }
-    if (code === 45) {
-      effects.consume(code);
+    if (code2 === 45) {
+      effects.consume(code2);
       return commentClose;
     }
-    if (markdownLineEnding(code)) {
+    if (markdownLineEnding(code2)) {
       returnState = comment;
-      return lineEndingBefore(code);
+      return lineEndingBefore(code2);
     }
-    effects.consume(code);
+    effects.consume(code2);
     return comment;
   }
-  function commentClose(code) {
-    if (code === 45) {
-      effects.consume(code);
+  function commentClose(code2) {
+    if (code2 === 45) {
+      effects.consume(code2);
       return commentEnd;
     }
-    return comment(code);
+    return comment(code2);
   }
-  function commentEnd(code) {
-    return code === 62 ? end(code) : code === 45 ? commentClose(code) : comment(code);
+  function commentEnd(code2) {
+    return code2 === 62 ? end(code2) : code2 === 45 ? commentClose(code2) : comment(code2);
   }
-  function cdataOpenInside(code) {
+  function cdataOpenInside(code2) {
     const value2 = "CDATA[";
-    if (code === value2.charCodeAt(index2++)) {
-      effects.consume(code);
+    if (code2 === value2.charCodeAt(index2++)) {
+      effects.consume(code2);
       return index2 === value2.length ? cdata : cdataOpenInside;
     }
-    return nok(code);
+    return nok(code2);
   }
-  function cdata(code) {
-    if (code === null) {
-      return nok(code);
+  function cdata(code2) {
+    if (code2 === null) {
+      return nok(code2);
     }
-    if (code === 93) {
-      effects.consume(code);
+    if (code2 === 93) {
+      effects.consume(code2);
       return cdataClose;
     }
-    if (markdownLineEnding(code)) {
+    if (markdownLineEnding(code2)) {
       returnState = cdata;
-      return lineEndingBefore(code);
+      return lineEndingBefore(code2);
     }
-    effects.consume(code);
+    effects.consume(code2);
     return cdata;
   }
-  function cdataClose(code) {
-    if (code === 93) {
-      effects.consume(code);
+  function cdataClose(code2) {
+    if (code2 === 93) {
+      effects.consume(code2);
       return cdataEnd;
     }
-    return cdata(code);
+    return cdata(code2);
   }
-  function cdataEnd(code) {
-    if (code === 62) {
-      return end(code);
+  function cdataEnd(code2) {
+    if (code2 === 62) {
+      return end(code2);
     }
-    if (code === 93) {
-      effects.consume(code);
+    if (code2 === 93) {
+      effects.consume(code2);
       return cdataEnd;
     }
-    return cdata(code);
+    return cdata(code2);
   }
-  function declaration(code) {
-    if (code === null || code === 62) {
-      return end(code);
+  function declaration(code2) {
+    if (code2 === null || code2 === 62) {
+      return end(code2);
     }
-    if (markdownLineEnding(code)) {
+    if (markdownLineEnding(code2)) {
       returnState = declaration;
-      return lineEndingBefore(code);
+      return lineEndingBefore(code2);
     }
-    effects.consume(code);
+    effects.consume(code2);
     return declaration;
   }
-  function instruction(code) {
-    if (code === null) {
-      return nok(code);
+  function instruction(code2) {
+    if (code2 === null) {
+      return nok(code2);
     }
-    if (code === 63) {
-      effects.consume(code);
+    if (code2 === 63) {
+      effects.consume(code2);
       return instructionClose;
     }
-    if (markdownLineEnding(code)) {
+    if (markdownLineEnding(code2)) {
       returnState = instruction;
-      return lineEndingBefore(code);
+      return lineEndingBefore(code2);
     }
-    effects.consume(code);
+    effects.consume(code2);
     return instruction;
   }
-  function instructionClose(code) {
-    return code === 62 ? end(code) : instruction(code);
+  function instructionClose(code2) {
+    return code2 === 62 ? end(code2) : instruction(code2);
   }
-  function tagCloseStart(code) {
-    if (asciiAlpha(code)) {
-      effects.consume(code);
+  function tagCloseStart(code2) {
+    if (asciiAlpha(code2)) {
+      effects.consume(code2);
       return tagClose;
     }
-    return nok(code);
+    return nok(code2);
   }
-  function tagClose(code) {
-    if (code === 45 || asciiAlphanumeric(code)) {
-      effects.consume(code);
+  function tagClose(code2) {
+    if (code2 === 45 || asciiAlphanumeric(code2)) {
+      effects.consume(code2);
       return tagClose;
     }
-    return tagCloseBetween(code);
+    return tagCloseBetween(code2);
   }
-  function tagCloseBetween(code) {
-    if (markdownLineEnding(code)) {
+  function tagCloseBetween(code2) {
+    if (markdownLineEnding(code2)) {
       returnState = tagCloseBetween;
-      return lineEndingBefore(code);
+      return lineEndingBefore(code2);
     }
-    if (markdownSpace(code)) {
-      effects.consume(code);
+    if (markdownSpace(code2)) {
+      effects.consume(code2);
       return tagCloseBetween;
     }
-    return end(code);
+    return end(code2);
   }
-  function tagOpen(code) {
-    if (code === 45 || asciiAlphanumeric(code)) {
-      effects.consume(code);
+  function tagOpen(code2) {
+    if (code2 === 45 || asciiAlphanumeric(code2)) {
+      effects.consume(code2);
       return tagOpen;
     }
-    if (code === 47 || code === 62 || markdownLineEndingOrSpace(code)) {
-      return tagOpenBetween(code);
+    if (code2 === 47 || code2 === 62 || markdownLineEndingOrSpace(code2)) {
+      return tagOpenBetween(code2);
     }
-    return nok(code);
+    return nok(code2);
   }
-  function tagOpenBetween(code) {
-    if (code === 47) {
-      effects.consume(code);
+  function tagOpenBetween(code2) {
+    if (code2 === 47) {
+      effects.consume(code2);
       return end;
     }
-    if (code === 58 || code === 95 || asciiAlpha(code)) {
-      effects.consume(code);
+    if (code2 === 58 || code2 === 95 || asciiAlpha(code2)) {
+      effects.consume(code2);
       return tagOpenAttributeName;
     }
-    if (markdownLineEnding(code)) {
+    if (markdownLineEnding(code2)) {
       returnState = tagOpenBetween;
-      return lineEndingBefore(code);
+      return lineEndingBefore(code2);
     }
-    if (markdownSpace(code)) {
-      effects.consume(code);
+    if (markdownSpace(code2)) {
+      effects.consume(code2);
       return tagOpenBetween;
     }
-    return end(code);
+    return end(code2);
   }
-  function tagOpenAttributeName(code) {
-    if (code === 45 || code === 46 || code === 58 || code === 95 || asciiAlphanumeric(code)) {
-      effects.consume(code);
+  function tagOpenAttributeName(code2) {
+    if (code2 === 45 || code2 === 46 || code2 === 58 || code2 === 95 || asciiAlphanumeric(code2)) {
+      effects.consume(code2);
       return tagOpenAttributeName;
     }
-    return tagOpenAttributeNameAfter(code);
+    return tagOpenAttributeNameAfter(code2);
   }
-  function tagOpenAttributeNameAfter(code) {
-    if (code === 61) {
-      effects.consume(code);
+  function tagOpenAttributeNameAfter(code2) {
+    if (code2 === 61) {
+      effects.consume(code2);
       return tagOpenAttributeValueBefore;
     }
-    if (markdownLineEnding(code)) {
+    if (markdownLineEnding(code2)) {
       returnState = tagOpenAttributeNameAfter;
-      return lineEndingBefore(code);
+      return lineEndingBefore(code2);
     }
-    if (markdownSpace(code)) {
-      effects.consume(code);
+    if (markdownSpace(code2)) {
+      effects.consume(code2);
       return tagOpenAttributeNameAfter;
     }
-    return tagOpenBetween(code);
+    return tagOpenBetween(code2);
   }
-  function tagOpenAttributeValueBefore(code) {
-    if (code === null || code === 60 || code === 61 || code === 62 || code === 96) {
-      return nok(code);
+  function tagOpenAttributeValueBefore(code2) {
+    if (code2 === null || code2 === 60 || code2 === 61 || code2 === 62 || code2 === 96) {
+      return nok(code2);
     }
-    if (code === 34 || code === 39) {
-      effects.consume(code);
-      marker = code;
+    if (code2 === 34 || code2 === 39) {
+      effects.consume(code2);
+      marker = code2;
       return tagOpenAttributeValueQuoted;
     }
-    if (markdownLineEnding(code)) {
+    if (markdownLineEnding(code2)) {
       returnState = tagOpenAttributeValueBefore;
-      return lineEndingBefore(code);
+      return lineEndingBefore(code2);
     }
-    if (markdownSpace(code)) {
-      effects.consume(code);
+    if (markdownSpace(code2)) {
+      effects.consume(code2);
       return tagOpenAttributeValueBefore;
     }
-    effects.consume(code);
+    effects.consume(code2);
     return tagOpenAttributeValueUnquoted;
   }
-  function tagOpenAttributeValueQuoted(code) {
-    if (code === marker) {
-      effects.consume(code);
+  function tagOpenAttributeValueQuoted(code2) {
+    if (code2 === marker) {
+      effects.consume(code2);
       marker = void 0;
       return tagOpenAttributeValueQuotedAfter;
     }
-    if (code === null) {
-      return nok(code);
+    if (code2 === null) {
+      return nok(code2);
     }
-    if (markdownLineEnding(code)) {
+    if (markdownLineEnding(code2)) {
       returnState = tagOpenAttributeValueQuoted;
-      return lineEndingBefore(code);
+      return lineEndingBefore(code2);
     }
-    effects.consume(code);
+    effects.consume(code2);
     return tagOpenAttributeValueQuoted;
   }
-  function tagOpenAttributeValueUnquoted(code) {
-    if (code === null || code === 34 || code === 39 || code === 60 || code === 61 || code === 96) {
-      return nok(code);
+  function tagOpenAttributeValueUnquoted(code2) {
+    if (code2 === null || code2 === 34 || code2 === 39 || code2 === 60 || code2 === 61 || code2 === 96) {
+      return nok(code2);
     }
-    if (code === 47 || code === 62 || markdownLineEndingOrSpace(code)) {
-      return tagOpenBetween(code);
+    if (code2 === 47 || code2 === 62 || markdownLineEndingOrSpace(code2)) {
+      return tagOpenBetween(code2);
     }
-    effects.consume(code);
+    effects.consume(code2);
     return tagOpenAttributeValueUnquoted;
   }
-  function tagOpenAttributeValueQuotedAfter(code) {
-    if (code === 47 || code === 62 || markdownLineEndingOrSpace(code)) {
-      return tagOpenBetween(code);
+  function tagOpenAttributeValueQuotedAfter(code2) {
+    if (code2 === 47 || code2 === 62 || markdownLineEndingOrSpace(code2)) {
+      return tagOpenBetween(code2);
     }
-    return nok(code);
+    return nok(code2);
   }
-  function end(code) {
-    if (code === 62) {
-      effects.consume(code);
+  function end(code2) {
+    if (code2 === 62) {
+      effects.consume(code2);
       effects.exit("htmlTextData");
       effects.exit("htmlText");
       return ok3;
     }
-    return nok(code);
+    return nok(code2);
   }
-  function lineEndingBefore(code) {
+  function lineEndingBefore(code2) {
     effects.exit("htmlTextData");
     effects.enter("lineEnding");
-    effects.consume(code);
+    effects.consume(code2);
     effects.exit("lineEnding");
     return lineEndingAfter;
   }
-  function lineEndingAfter(code) {
-    return markdownSpace(code) ? factorySpace(effects, lineEndingAfterPrefix, "linePrefix", self.parser.constructs.disable.null.includes("codeIndented") ? void 0 : 4)(code) : lineEndingAfterPrefix(code);
+  function lineEndingAfter(code2) {
+    return markdownSpace(code2) ? factorySpace(effects, lineEndingAfterPrefix, "linePrefix", self.parser.constructs.disable.null.includes("codeIndented") ? void 0 : 4)(code2) : lineEndingAfterPrefix(code2);
   }
-  function lineEndingAfterPrefix(code) {
+  function lineEndingAfterPrefix(code2) {
     effects.enter("htmlTextData");
-    return returnState(code);
+    return returnState(code2);
   }
 }
 
@@ -27400,7 +27400,7 @@ function resolveToLabelEnd(events, context) {
       ...events[close2][1].end
     }
   };
-  const text3 = {
+  const text4 = {
     type: "labelText",
     start: {
       ...events[open + offset + 2][1].end
@@ -27411,9 +27411,9 @@ function resolveToLabelEnd(events, context) {
   };
   media = [["enter", group, context], ["enter", label, context]];
   media = push(media, events.slice(open + 1, open + offset + 3));
-  media = push(media, [["enter", text3, context]]);
+  media = push(media, [["enter", text4, context]]);
   media = push(media, resolveAll(context.parser.constructs.insideSpan.null, events.slice(open + offset + 4, close2 - 3), context));
-  media = push(media, [["exit", text3, context], events[close2 - 2], events[close2 - 1], ["exit", label, context]]);
+  media = push(media, [["exit", text4, context], events[close2 - 2], events[close2 - 1], ["exit", label, context]]);
   media = push(media, events.slice(close2 + 1));
   media = push(media, [["exit", group, context]]);
   splice(events, open, events.length, media);
@@ -27431,12 +27431,12 @@ function tokenizeLabelEnd(effects, ok3, nok) {
     }
   }
   return start;
-  function start(code) {
+  function start(code2) {
     if (!labelStart) {
-      return nok(code);
+      return nok(code2);
     }
     if (labelStart._inactive) {
-      return labelEndNok(code);
+      return labelEndNok(code2);
     }
     defined = self.parser.defined.includes(normalizeIdentifier(self.sliceSerialize({
       start: labelStart.end,
@@ -27444,106 +27444,106 @@ function tokenizeLabelEnd(effects, ok3, nok) {
     })));
     effects.enter("labelEnd");
     effects.enter("labelMarker");
-    effects.consume(code);
+    effects.consume(code2);
     effects.exit("labelMarker");
     effects.exit("labelEnd");
     return after;
   }
-  function after(code) {
-    if (code === 40) {
-      return effects.attempt(resourceConstruct, labelEndOk, defined ? labelEndOk : labelEndNok)(code);
+  function after(code2) {
+    if (code2 === 40) {
+      return effects.attempt(resourceConstruct, labelEndOk, defined ? labelEndOk : labelEndNok)(code2);
     }
-    if (code === 91) {
-      return effects.attempt(referenceFullConstruct, labelEndOk, defined ? referenceNotFull : labelEndNok)(code);
+    if (code2 === 91) {
+      return effects.attempt(referenceFullConstruct, labelEndOk, defined ? referenceNotFull : labelEndNok)(code2);
     }
-    return defined ? labelEndOk(code) : labelEndNok(code);
+    return defined ? labelEndOk(code2) : labelEndNok(code2);
   }
-  function referenceNotFull(code) {
-    return effects.attempt(referenceCollapsedConstruct, labelEndOk, labelEndNok)(code);
+  function referenceNotFull(code2) {
+    return effects.attempt(referenceCollapsedConstruct, labelEndOk, labelEndNok)(code2);
   }
-  function labelEndOk(code) {
-    return ok3(code);
+  function labelEndOk(code2) {
+    return ok3(code2);
   }
-  function labelEndNok(code) {
+  function labelEndNok(code2) {
     labelStart._balanced = true;
-    return nok(code);
+    return nok(code2);
   }
 }
 function tokenizeResource(effects, ok3, nok) {
   return resourceStart;
-  function resourceStart(code) {
+  function resourceStart(code2) {
     effects.enter("resource");
     effects.enter("resourceMarker");
-    effects.consume(code);
+    effects.consume(code2);
     effects.exit("resourceMarker");
     return resourceBefore;
   }
-  function resourceBefore(code) {
-    return markdownLineEndingOrSpace(code) ? factoryWhitespace(effects, resourceOpen)(code) : resourceOpen(code);
+  function resourceBefore(code2) {
+    return markdownLineEndingOrSpace(code2) ? factoryWhitespace(effects, resourceOpen)(code2) : resourceOpen(code2);
   }
-  function resourceOpen(code) {
-    if (code === 41) {
-      return resourceEnd(code);
+  function resourceOpen(code2) {
+    if (code2 === 41) {
+      return resourceEnd(code2);
     }
-    return factoryDestination(effects, resourceDestinationAfter, resourceDestinationMissing, "resourceDestination", "resourceDestinationLiteral", "resourceDestinationLiteralMarker", "resourceDestinationRaw", "resourceDestinationString", 32)(code);
+    return factoryDestination(effects, resourceDestinationAfter, resourceDestinationMissing, "resourceDestination", "resourceDestinationLiteral", "resourceDestinationLiteralMarker", "resourceDestinationRaw", "resourceDestinationString", 32)(code2);
   }
-  function resourceDestinationAfter(code) {
-    return markdownLineEndingOrSpace(code) ? factoryWhitespace(effects, resourceBetween)(code) : resourceEnd(code);
+  function resourceDestinationAfter(code2) {
+    return markdownLineEndingOrSpace(code2) ? factoryWhitespace(effects, resourceBetween)(code2) : resourceEnd(code2);
   }
-  function resourceDestinationMissing(code) {
-    return nok(code);
+  function resourceDestinationMissing(code2) {
+    return nok(code2);
   }
-  function resourceBetween(code) {
-    if (code === 34 || code === 39 || code === 40) {
-      return factoryTitle(effects, resourceTitleAfter, nok, "resourceTitle", "resourceTitleMarker", "resourceTitleString")(code);
+  function resourceBetween(code2) {
+    if (code2 === 34 || code2 === 39 || code2 === 40) {
+      return factoryTitle(effects, resourceTitleAfter, nok, "resourceTitle", "resourceTitleMarker", "resourceTitleString")(code2);
     }
-    return resourceEnd(code);
+    return resourceEnd(code2);
   }
-  function resourceTitleAfter(code) {
-    return markdownLineEndingOrSpace(code) ? factoryWhitespace(effects, resourceEnd)(code) : resourceEnd(code);
+  function resourceTitleAfter(code2) {
+    return markdownLineEndingOrSpace(code2) ? factoryWhitespace(effects, resourceEnd)(code2) : resourceEnd(code2);
   }
-  function resourceEnd(code) {
-    if (code === 41) {
+  function resourceEnd(code2) {
+    if (code2 === 41) {
       effects.enter("resourceMarker");
-      effects.consume(code);
+      effects.consume(code2);
       effects.exit("resourceMarker");
       effects.exit("resource");
       return ok3;
     }
-    return nok(code);
+    return nok(code2);
   }
 }
 function tokenizeReferenceFull(effects, ok3, nok) {
   const self = this;
   return referenceFull;
-  function referenceFull(code) {
-    return factoryLabel.call(self, effects, referenceFullAfter, referenceFullMissing, "reference", "referenceMarker", "referenceString")(code);
+  function referenceFull(code2) {
+    return factoryLabel.call(self, effects, referenceFullAfter, referenceFullMissing, "reference", "referenceMarker", "referenceString")(code2);
   }
-  function referenceFullAfter(code) {
-    return self.parser.defined.includes(normalizeIdentifier(self.sliceSerialize(self.events[self.events.length - 1][1]).slice(1, -1))) ? ok3(code) : nok(code);
+  function referenceFullAfter(code2) {
+    return self.parser.defined.includes(normalizeIdentifier(self.sliceSerialize(self.events[self.events.length - 1][1]).slice(1, -1))) ? ok3(code2) : nok(code2);
   }
-  function referenceFullMissing(code) {
-    return nok(code);
+  function referenceFullMissing(code2) {
+    return nok(code2);
   }
 }
 function tokenizeReferenceCollapsed(effects, ok3, nok) {
   return referenceCollapsedStart;
-  function referenceCollapsedStart(code) {
+  function referenceCollapsedStart(code2) {
     effects.enter("reference");
     effects.enter("referenceMarker");
-    effects.consume(code);
+    effects.consume(code2);
     effects.exit("referenceMarker");
     return referenceCollapsedOpen;
   }
-  function referenceCollapsedOpen(code) {
-    if (code === 93) {
+  function referenceCollapsedOpen(code2) {
+    if (code2 === 93) {
       effects.enter("referenceMarker");
-      effects.consume(code);
+      effects.consume(code2);
       effects.exit("referenceMarker");
       effects.exit("reference");
       return ok3;
     }
-    return nok(code);
+    return nok(code2);
   }
 }
 
@@ -27556,25 +27556,25 @@ var labelStartImage = {
 function tokenizeLabelStartImage(effects, ok3, nok) {
   const self = this;
   return start;
-  function start(code) {
+  function start(code2) {
     effects.enter("labelImage");
     effects.enter("labelImageMarker");
-    effects.consume(code);
+    effects.consume(code2);
     effects.exit("labelImageMarker");
     return open;
   }
-  function open(code) {
-    if (code === 91) {
+  function open(code2) {
+    if (code2 === 91) {
       effects.enter("labelMarker");
-      effects.consume(code);
+      effects.consume(code2);
       effects.exit("labelMarker");
       effects.exit("labelImage");
       return after;
     }
-    return nok(code);
+    return nok(code2);
   }
-  function after(code) {
-    return code === 94 && "_hiddenFootnoteSupport" in self.parser.constructs ? nok(code) : ok3(code);
+  function after(code2) {
+    return code2 === 94 && "_hiddenFootnoteSupport" in self.parser.constructs ? nok(code2) : ok3(code2);
   }
 }
 
@@ -27587,16 +27587,16 @@ var labelStartLink = {
 function tokenizeLabelStartLink(effects, ok3, nok) {
   const self = this;
   return start;
-  function start(code) {
+  function start(code2) {
     effects.enter("labelLink");
     effects.enter("labelMarker");
-    effects.consume(code);
+    effects.consume(code2);
     effects.exit("labelMarker");
     effects.exit("labelLink");
     return after;
   }
-  function after(code) {
-    return code === 94 && "_hiddenFootnoteSupport" in self.parser.constructs ? nok(code) : ok3(code);
+  function after(code2) {
+    return code2 === 94 && "_hiddenFootnoteSupport" in self.parser.constructs ? nok(code2) : ok3(code2);
   }
 }
 
@@ -27607,9 +27607,9 @@ var lineEnding = {
 };
 function tokenizeLineEnding(effects, ok3) {
   return start;
-  function start(code) {
+  function start(code2) {
     effects.enter("lineEnding");
-    effects.consume(code);
+    effects.consume(code2);
     effects.exit("lineEnding");
     return factorySpace(effects, ok3, "linePrefix");
   }
@@ -27624,33 +27624,33 @@ function tokenizeThematicBreak(effects, ok3, nok) {
   let size = 0;
   let marker;
   return start;
-  function start(code) {
+  function start(code2) {
     effects.enter("thematicBreak");
-    return before(code);
+    return before(code2);
   }
-  function before(code) {
-    marker = code;
-    return atBreak(code);
+  function before(code2) {
+    marker = code2;
+    return atBreak(code2);
   }
-  function atBreak(code) {
-    if (code === marker) {
+  function atBreak(code2) {
+    if (code2 === marker) {
       effects.enter("thematicBreakSequence");
-      return sequence(code);
+      return sequence(code2);
     }
-    if (size >= 3 && (code === null || markdownLineEnding(code))) {
+    if (size >= 3 && (code2 === null || markdownLineEnding(code2))) {
       effects.exit("thematicBreak");
-      return ok3(code);
+      return ok3(code2);
     }
-    return nok(code);
+    return nok(code2);
   }
-  function sequence(code) {
-    if (code === marker) {
-      effects.consume(code);
+  function sequence(code2) {
+    if (code2 === marker) {
+      effects.consume(code2);
       size++;
       return sequence;
     }
     effects.exit("thematicBreakSequence");
-    return markdownSpace(code) ? factorySpace(effects, atBreak, "whitespace")(code) : atBreak(code);
+    return markdownSpace(code2) ? factorySpace(effects, atBreak, "whitespace")(code2) : atBreak(code2);
   }
 }
 
@@ -27677,9 +27677,9 @@ function tokenizeListStart(effects, ok3, nok) {
   let initialSize = tail && tail[1].type === "linePrefix" ? tail[2].sliceSerialize(tail[1], true).length : 0;
   let size = 0;
   return start;
-  function start(code) {
-    const kind = self.containerState.type || (code === 42 || code === 43 || code === 45 ? "listUnordered" : "listOrdered");
-    if (kind === "listUnordered" ? !self.containerState.marker || code === self.containerState.marker : asciiDigit(code)) {
+  function start(code2) {
+    const kind = self.containerState.type || (code2 === 42 || code2 === 43 || code2 === 45 ? "listUnordered" : "listOrdered");
+    if (kind === "listUnordered" ? !self.containerState.marker || code2 === self.containerState.marker : asciiDigit(code2)) {
       if (!self.containerState.type) {
         self.containerState.type = kind;
         effects.enter(kind, {
@@ -27688,32 +27688,32 @@ function tokenizeListStart(effects, ok3, nok) {
       }
       if (kind === "listUnordered") {
         effects.enter("listItemPrefix");
-        return code === 42 || code === 45 ? effects.check(thematicBreak, nok, atMarker)(code) : atMarker(code);
+        return code2 === 42 || code2 === 45 ? effects.check(thematicBreak, nok, atMarker)(code2) : atMarker(code2);
       }
-      if (!self.interrupt || code === 49) {
+      if (!self.interrupt || code2 === 49) {
         effects.enter("listItemPrefix");
         effects.enter("listItemValue");
-        return inside(code);
+        return inside(code2);
       }
     }
-    return nok(code);
+    return nok(code2);
   }
-  function inside(code) {
-    if (asciiDigit(code) && ++size < 10) {
-      effects.consume(code);
+  function inside(code2) {
+    if (asciiDigit(code2) && ++size < 10) {
+      effects.consume(code2);
       return inside;
     }
-    if ((!self.interrupt || size < 2) && (self.containerState.marker ? code === self.containerState.marker : code === 41 || code === 46)) {
+    if ((!self.interrupt || size < 2) && (self.containerState.marker ? code2 === self.containerState.marker : code2 === 41 || code2 === 46)) {
       effects.exit("listItemValue");
-      return atMarker(code);
+      return atMarker(code2);
     }
-    return nok(code);
+    return nok(code2);
   }
-  function atMarker(code) {
+  function atMarker(code2) {
     effects.enter("listItemMarker");
-    effects.consume(code);
+    effects.consume(code2);
     effects.exit("listItemMarker");
-    self.containerState.marker = self.containerState.marker || code;
+    self.containerState.marker = self.containerState.marker || code2;
     return effects.check(
       blankLine,
       // Can’t be empty when interrupting.
@@ -27721,55 +27721,55 @@ function tokenizeListStart(effects, ok3, nok) {
       effects.attempt(listItemPrefixWhitespaceConstruct, endOfPrefix, otherPrefix)
     );
   }
-  function onBlank(code) {
+  function onBlank(code2) {
     self.containerState.initialBlankLine = true;
     initialSize++;
-    return endOfPrefix(code);
+    return endOfPrefix(code2);
   }
-  function otherPrefix(code) {
-    if (markdownSpace(code)) {
+  function otherPrefix(code2) {
+    if (markdownSpace(code2)) {
       effects.enter("listItemPrefixWhitespace");
-      effects.consume(code);
+      effects.consume(code2);
       effects.exit("listItemPrefixWhitespace");
       return endOfPrefix;
     }
-    return nok(code);
+    return nok(code2);
   }
-  function endOfPrefix(code) {
+  function endOfPrefix(code2) {
     self.containerState.size = initialSize + self.sliceSerialize(effects.exit("listItemPrefix"), true).length;
-    return ok3(code);
+    return ok3(code2);
   }
 }
 function tokenizeListContinuation(effects, ok3, nok) {
   const self = this;
   self.containerState._closeFlow = void 0;
   return effects.check(blankLine, onBlank, notBlank);
-  function onBlank(code) {
+  function onBlank(code2) {
     self.containerState.furtherBlankLines = self.containerState.furtherBlankLines || self.containerState.initialBlankLine;
-    return factorySpace(effects, ok3, "listItemIndent", self.containerState.size + 1)(code);
+    return factorySpace(effects, ok3, "listItemIndent", self.containerState.size + 1)(code2);
   }
-  function notBlank(code) {
-    if (self.containerState.furtherBlankLines || !markdownSpace(code)) {
+  function notBlank(code2) {
+    if (self.containerState.furtherBlankLines || !markdownSpace(code2)) {
       self.containerState.furtherBlankLines = void 0;
       self.containerState.initialBlankLine = void 0;
-      return notInCurrentItem(code);
+      return notInCurrentItem(code2);
     }
     self.containerState.furtherBlankLines = void 0;
     self.containerState.initialBlankLine = void 0;
-    return effects.attempt(indentConstruct, ok3, notInCurrentItem)(code);
+    return effects.attempt(indentConstruct, ok3, notInCurrentItem)(code2);
   }
-  function notInCurrentItem(code) {
+  function notInCurrentItem(code2) {
     self.containerState._closeFlow = true;
     self.interrupt = void 0;
-    return factorySpace(effects, effects.attempt(list, ok3, nok), "linePrefix", self.parser.constructs.disable.null.includes("codeIndented") ? void 0 : 4)(code);
+    return factorySpace(effects, effects.attempt(list, ok3, nok), "linePrefix", self.parser.constructs.disable.null.includes("codeIndented") ? void 0 : 4)(code2);
   }
 }
 function tokenizeIndent(effects, ok3, nok) {
   const self = this;
   return factorySpace(effects, afterPrefix, "listItemIndent", self.containerState.size + 1);
-  function afterPrefix(code) {
+  function afterPrefix(code2) {
     const tail = self.events[self.events.length - 1];
-    return tail && tail[1].type === "listItemIndent" && tail[2].sliceSerialize(tail[1], true).length === self.containerState.size ? ok3(code) : nok(code);
+    return tail && tail[1].type === "listItemIndent" && tail[2].sliceSerialize(tail[1], true).length === self.containerState.size ? ok3(code2) : nok(code2);
   }
 }
 function tokenizeListEnd(effects) {
@@ -27778,9 +27778,9 @@ function tokenizeListEnd(effects) {
 function tokenizeListItemPrefixWhitespace(effects, ok3, nok) {
   const self = this;
   return factorySpace(effects, afterPrefix, "listItemPrefixWhitespace", self.parser.constructs.disable.null.includes("codeIndented") ? void 0 : 4 + 1);
-  function afterPrefix(code) {
+  function afterPrefix(code2) {
     const tail = self.events[self.events.length - 1];
-    return !markdownSpace(code) && tail && tail[1].type === "listItemPrefixWhitespace" ? ok3(code) : nok(code);
+    return !markdownSpace(code2) && tail && tail[1].type === "listItemPrefixWhitespace" ? ok3(code2) : nok(code2);
   }
 }
 
@@ -27793,7 +27793,7 @@ var setextUnderline = {
 function resolveToSetextUnderline(events, context) {
   let index2 = events.length;
   let content3;
-  let text3;
+  let text4;
   let definition2;
   while (index2--) {
     if (events[index2][0] === "enter") {
@@ -27802,7 +27802,7 @@ function resolveToSetextUnderline(events, context) {
         break;
       }
       if (events[index2][1].type === "paragraph") {
-        text3 = index2;
+        text4 = index2;
       }
     } else {
       if (events[index2][1].type === "content") {
@@ -27822,9 +27822,9 @@ function resolveToSetextUnderline(events, context) {
       ...events[events.length - 1][1].end
     }
   };
-  events[text3][1].type = "setextHeadingText";
+  events[text4][1].type = "setextHeadingText";
   if (definition2) {
-    events.splice(text3, 0, ["enter", heading, context]);
+    events.splice(text4, 0, ["enter", heading, context]);
     events.splice(definition2 + 1, 0, ["exit", events[content3][1], context]);
     events[content3][1].end = {
       ...events[definition2][1].end
@@ -27839,7 +27839,7 @@ function tokenizeSetextUnderline(effects, ok3, nok) {
   const self = this;
   let marker;
   return start;
-  function start(code) {
+  function start(code2) {
     let index2 = self.events.length;
     let paragraph;
     while (index2--) {
@@ -27850,29 +27850,29 @@ function tokenizeSetextUnderline(effects, ok3, nok) {
     }
     if (!self.parser.lazy[self.now().line] && (self.interrupt || paragraph)) {
       effects.enter("setextHeadingLine");
-      marker = code;
-      return before(code);
+      marker = code2;
+      return before(code2);
     }
-    return nok(code);
+    return nok(code2);
   }
-  function before(code) {
+  function before(code2) {
     effects.enter("setextHeadingLineSequence");
-    return inside(code);
+    return inside(code2);
   }
-  function inside(code) {
-    if (code === marker) {
-      effects.consume(code);
+  function inside(code2) {
+    if (code2 === marker) {
+      effects.consume(code2);
       return inside;
     }
     effects.exit("setextHeadingLineSequence");
-    return markdownSpace(code) ? factorySpace(effects, after, "lineSuffix")(code) : after(code);
+    return markdownSpace(code2) ? factorySpace(effects, after, "lineSuffix")(code2) : after(code2);
   }
-  function after(code) {
-    if (code === null || markdownLineEnding(code)) {
+  function after(code2) {
+    if (code2 === null || markdownLineEnding(code2)) {
       effects.exit("setextHeadingLine");
-      return ok3(code);
+      return ok3(code2);
     }
-    return nok(code);
+    return nok(code2);
   }
 }
 
@@ -27890,24 +27890,24 @@ function initializeFlow(effects) {
     effects.attempt(this.parser.constructs.flowInitial, afterConstruct, factorySpace(effects, effects.attempt(this.parser.constructs.flow, afterConstruct, effects.attempt(content2, afterConstruct)), "linePrefix"))
   );
   return initial;
-  function atBlankEnding(code) {
-    if (code === null) {
-      effects.consume(code);
+  function atBlankEnding(code2) {
+    if (code2 === null) {
+      effects.consume(code2);
       return;
     }
     effects.enter("lineEndingBlank");
-    effects.consume(code);
+    effects.consume(code2);
     effects.exit("lineEndingBlank");
     self.currentConstruct = void 0;
     return initial;
   }
-  function afterConstruct(code) {
-    if (code === null) {
-      effects.consume(code);
+  function afterConstruct(code2) {
+    if (code2 === null) {
+      effects.consume(code2);
       return;
     }
     effects.enter("lineEnding");
-    effects.consume(code);
+    effects.consume(code2);
     effects.exit("lineEnding");
     self.currentConstruct = void 0;
     return initial;
@@ -27928,33 +27928,33 @@ function initializeFactory(field) {
   function initializeText(effects) {
     const self = this;
     const constructs2 = this.parser.constructs[field];
-    const text3 = effects.attempt(constructs2, start, notText);
+    const text4 = effects.attempt(constructs2, start, notText);
     return start;
-    function start(code) {
-      return atBreak(code) ? text3(code) : notText(code);
+    function start(code2) {
+      return atBreak(code2) ? text4(code2) : notText(code2);
     }
-    function notText(code) {
-      if (code === null) {
-        effects.consume(code);
+    function notText(code2) {
+      if (code2 === null) {
+        effects.consume(code2);
         return;
       }
       effects.enter("data");
-      effects.consume(code);
+      effects.consume(code2);
       return data;
     }
-    function data(code) {
-      if (atBreak(code)) {
+    function data(code2) {
+      if (atBreak(code2)) {
         effects.exit("data");
-        return text3(code);
+        return text4(code2);
       }
-      effects.consume(code);
+      effects.consume(code2);
       return data;
     }
-    function atBreak(code) {
-      if (code === null) {
+    function atBreak(code2) {
+      if (code2 === null) {
         return true;
       }
-      const list2 = constructs2[code];
+      const list2 = constructs2[code2];
       let index2 = -1;
       if (list2) {
         while (++index2 < list2.length) {
@@ -28223,18 +28223,18 @@ function createTokenizer(parser, initialize, from) {
       }
     }
   }
-  function go(code) {
+  function go(code2) {
     consumed = void 0;
-    expectedCode = code;
-    state = state(code);
+    expectedCode = code2;
+    state = state(code2);
   }
-  function consume(code) {
-    if (markdownLineEnding(code)) {
+  function consume(code2) {
+    if (markdownLineEnding(code2)) {
       point3.line++;
       point3.column = 1;
-      point3.offset += code === -3 ? 2 : 1;
+      point3.offset += code2 === -3 ? 2 : 1;
       accountForPotentialSkip();
-    } else if (code !== -1) {
+    } else if (code2 !== -1) {
       point3.column++;
       point3.offset++;
     }
@@ -28250,7 +28250,7 @@ function createTokenizer(parser, initialize, from) {
         point3._index++;
       }
     }
-    context.previous = code;
+    context.previous = code2;
     consumed = true;
   }
   function enter(type, fields) {
@@ -28292,16 +28292,16 @@ function createTokenizer(parser, initialize, from) {
       ) : handleMapOfConstructs(constructs2);
       function handleMapOfConstructs(map) {
         return start;
-        function start(code) {
-          const left = code !== null && map[code];
-          const all2 = code !== null && map.null;
+        function start(code2) {
+          const left = code2 !== null && map[code2];
+          const all2 = code2 !== null && map.null;
           const list2 = [
             // To do: add more extension tests.
             /* c8 ignore next 2 */
             ...Array.isArray(left) ? left : left ? [left] : [],
             ...Array.isArray(all2) ? all2 : all2 ? [all2] : []
           ];
-          return handleListOfConstructs(list2)(code);
+          return handleListOfConstructs(list2)(code2);
         }
       }
       function handleListOfConstructs(list2) {
@@ -28314,14 +28314,14 @@ function createTokenizer(parser, initialize, from) {
       }
       function handleConstruct(construct) {
         return start;
-        function start(code) {
+        function start(code2) {
           info = store();
           currentConstruct = construct;
           if (!construct.partial) {
             context.currentConstruct = construct;
           }
           if (construct.name && context.parser.constructs.disable.null.includes(construct.name)) {
-            return nok(code);
+            return nok(code2);
           }
           return construct.tokenize.call(
             // If we do have fields, create an object w/ `context` as its
@@ -28331,15 +28331,15 @@ function createTokenizer(parser, initialize, from) {
             effects,
             ok3,
             nok
-          )(code);
+          )(code2);
         }
       }
-      function ok3(code) {
+      function ok3(code2) {
         consumed = true;
         onreturn(currentConstruct, info);
         return returnState;
       }
-      function nok(code) {
+      function nok(code2) {
         consumed = true;
         info.restore();
         if (++constructIndex < listOfConstructs.length) {
@@ -28498,7 +28498,7 @@ function preprocess() {
     let next;
     let startPosition;
     let endPosition;
-    let code;
+    let code2;
     value2 = buffer + (typeof value2 === "string" ? value2.toString() : new TextDecoder(encoding || void 0).decode(value2));
     startPosition = 0;
     buffer = "";
@@ -28512,12 +28512,12 @@ function preprocess() {
       search.lastIndex = startPosition;
       match2 = search.exec(value2);
       endPosition = match2 && match2.index !== void 0 ? match2.index : value2.length;
-      code = value2.charCodeAt(endPosition);
+      code2 = value2.charCodeAt(endPosition);
       if (!match2) {
         buffer = value2.slice(startPosition);
         break;
       }
-      if (code === 10 && startPosition === endPosition && atCarriageReturn) {
+      if (code2 === 10 && startPosition === endPosition && atCarriageReturn) {
         chunks.push(-3);
         atCarriageReturn = void 0;
       } else {
@@ -28529,7 +28529,7 @@ function preprocess() {
           chunks.push(value2.slice(startPosition, endPosition));
           column += endPosition - startPosition;
         }
-        switch (code) {
+        switch (code2) {
           case 0: {
             chunks.push(65533);
             column++;
@@ -28967,7 +28967,7 @@ function compiler(options) {
     const siblings = node2.children;
     let tail = siblings[siblings.length - 1];
     if (!tail || tail.type !== "text") {
-      tail = text3();
+      tail = text4();
       tail.position = {
         start: point2(token.start),
         // @ts-expect-error: we’ll add `end` later.
@@ -29212,7 +29212,7 @@ function compiler(options) {
       children: []
     };
   }
-  function text3() {
+  function text4() {
     return {
       type: "text",
       value: ""
@@ -29370,13 +29370,13 @@ function frontmatter(options) {
   let index2 = -1;
   while (++index2 < matters.length) {
     const matter2 = matters[index2];
-    const code = fence(matter2, "open").charCodeAt(0);
+    const code2 = fence(matter2, "open").charCodeAt(0);
     const construct = createConstruct(matter2);
-    const existing = flow3[code];
+    const existing = flow3[code2];
     if (Array.isArray(existing)) {
       existing.push(construct);
     } else {
-      flow3[code] = [construct];
+      flow3[code2] = [construct];
     }
   }
   return {
@@ -29414,7 +29414,7 @@ function createConstruct(matter2) {
   function tokenizeFrontmatter(effects, ok3, nok) {
     const self = this;
     return start;
-    function start(code) {
+    function start(code2) {
       const position2 = self.now();
       if (
         // Indent not allowed.
@@ -29423,119 +29423,119 @@ function createConstruct(matter2) {
       ) {
         buffer = fence(matter2, "open");
         bufferIndex = 0;
-        if (code === buffer.charCodeAt(bufferIndex)) {
+        if (code2 === buffer.charCodeAt(bufferIndex)) {
           effects.enter(frontmatterType);
           effects.enter(fenceType);
           effects.enter(sequenceType);
-          return openSequence(code);
+          return openSequence(code2);
         }
       }
-      return nok(code);
+      return nok(code2);
     }
-    function openSequence(code) {
+    function openSequence(code2) {
       if (bufferIndex === buffer.length) {
         effects.exit(sequenceType);
-        if (markdownSpace(code)) {
+        if (markdownSpace(code2)) {
           effects.enter("whitespace");
-          return openSequenceWhitespace(code);
+          return openSequenceWhitespace(code2);
         }
-        return openAfter(code);
+        return openAfter(code2);
       }
-      if (code === buffer.charCodeAt(bufferIndex++)) {
-        effects.consume(code);
+      if (code2 === buffer.charCodeAt(bufferIndex++)) {
+        effects.consume(code2);
         return openSequence;
       }
-      return nok(code);
+      return nok(code2);
     }
-    function openSequenceWhitespace(code) {
-      if (markdownSpace(code)) {
-        effects.consume(code);
+    function openSequenceWhitespace(code2) {
+      if (markdownSpace(code2)) {
+        effects.consume(code2);
         return openSequenceWhitespace;
       }
       effects.exit("whitespace");
-      return openAfter(code);
+      return openAfter(code2);
     }
-    function openAfter(code) {
-      if (markdownLineEnding(code)) {
+    function openAfter(code2) {
+      if (markdownLineEnding(code2)) {
         effects.exit(fenceType);
         effects.enter("lineEnding");
-        effects.consume(code);
+        effects.consume(code2);
         effects.exit("lineEnding");
         buffer = fence(matter2, "close");
         bufferIndex = 0;
         return effects.attempt(closingFenceConstruct, after, contentStart);
       }
-      return nok(code);
+      return nok(code2);
     }
-    function contentStart(code) {
-      if (code === null || markdownLineEnding(code)) {
-        return contentEnd(code);
+    function contentStart(code2) {
+      if (code2 === null || markdownLineEnding(code2)) {
+        return contentEnd(code2);
       }
       effects.enter(valueType);
-      return contentInside(code);
+      return contentInside(code2);
     }
-    function contentInside(code) {
-      if (code === null || markdownLineEnding(code)) {
+    function contentInside(code2) {
+      if (code2 === null || markdownLineEnding(code2)) {
         effects.exit(valueType);
-        return contentEnd(code);
+        return contentEnd(code2);
       }
-      effects.consume(code);
+      effects.consume(code2);
       return contentInside;
     }
-    function contentEnd(code) {
-      if (code === null) {
-        return nok(code);
+    function contentEnd(code2) {
+      if (code2 === null) {
+        return nok(code2);
       }
       effects.enter("lineEnding");
-      effects.consume(code);
+      effects.consume(code2);
       effects.exit("lineEnding");
       return effects.attempt(closingFenceConstruct, after, contentStart);
     }
-    function after(code) {
+    function after(code2) {
       effects.exit(frontmatterType);
-      return ok3(code);
+      return ok3(code2);
     }
   }
   function tokenizeClosingFence(effects, ok3, nok) {
     let bufferIndex2 = 0;
     return closeStart;
-    function closeStart(code) {
-      if (code === buffer.charCodeAt(bufferIndex2)) {
+    function closeStart(code2) {
+      if (code2 === buffer.charCodeAt(bufferIndex2)) {
         effects.enter(fenceType);
         effects.enter(sequenceType);
-        return closeSequence(code);
+        return closeSequence(code2);
       }
-      return nok(code);
+      return nok(code2);
     }
-    function closeSequence(code) {
+    function closeSequence(code2) {
       if (bufferIndex2 === buffer.length) {
         effects.exit(sequenceType);
-        if (markdownSpace(code)) {
+        if (markdownSpace(code2)) {
           effects.enter("whitespace");
-          return closeSequenceWhitespace(code);
+          return closeSequenceWhitespace(code2);
         }
-        return closeAfter(code);
+        return closeAfter(code2);
       }
-      if (code === buffer.charCodeAt(bufferIndex2++)) {
-        effects.consume(code);
+      if (code2 === buffer.charCodeAt(bufferIndex2++)) {
+        effects.consume(code2);
         return closeSequence;
       }
-      return nok(code);
+      return nok(code2);
     }
-    function closeSequenceWhitespace(code) {
-      if (markdownSpace(code)) {
-        effects.consume(code);
+    function closeSequenceWhitespace(code2) {
+      if (markdownSpace(code2)) {
+        effects.consume(code2);
         return closeSequenceWhitespace;
       }
       effects.exit("whitespace");
-      return closeAfter(code);
+      return closeAfter(code2);
     }
-    function closeAfter(code) {
-      if (code === null || markdownLineEnding(code)) {
+    function closeAfter(code2) {
+      if (code2 === null || markdownLineEnding(code2)) {
         effects.exit(fenceType);
-        return ok3(code);
+        return ok3(code2);
       }
-      return nok(code);
+      return nok(code2);
     }
   }
 }
@@ -30446,11 +30446,11 @@ function safeRelative(value2, label) {
   }
   return value2.replace(/\/$/u, "");
 }
-function parseRepositoryConfig(text3, label = REPOSITORY_CONFIG_PATH) {
-  if (Buffer.byteLength(text3, "utf8") > MAX_CONFIG_BYTES) throw new Error(`${label} exceeds the 1 MiB limit`);
+function parseRepositoryConfig(text4, label = REPOSITORY_CONFIG_PATH) {
+  if (Buffer.byteLength(text4, "utf8") > MAX_CONFIG_BYTES) throw new Error(`${label} exceeds the 1 MiB limit`);
   let parsed;
   try {
-    parsed = JSON.parse(text3);
+    parsed = JSON.parse(text4);
   } catch (error) {
     throw new Error(`${label} is not valid JSON: ${error instanceof Error ? error.message : String(error)}`);
   }
@@ -30511,9 +30511,9 @@ function parseSelection(raw, label) {
   return result;
 }
 var RepositoryConfigError = class extends Error {
-  constructor(message2, code) {
+  constructor(message2, code2) {
     super(message2);
-    this.code = code;
+    this.code = code2;
     this.name = "RepositoryConfigError";
   }
   code;
@@ -30910,7 +30910,7 @@ function displaySafe(value2) {
 }
 function markdownText(value2) {
   const escaped = displaySafe(value2).replaceAll("\\", "\\\\").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
-  return ["[", "]", "`", "*", "_", "{", "}", "|"].reduce((text3, character) => text3.replaceAll(character, `\\${character}`), escaped);
+  return ["[", "]", "`", "*", "_", "{", "}", "|"].reduce((text4, character) => text4.replaceAll(character, `\\${character}`), escaped);
 }
 function markdownCode(value2) {
   const safe2 = displaySafe(value2);
@@ -31031,8 +31031,8 @@ function buildChangeBrief(spec, authority) {
   return sanitizeBriefValue(report);
 }
 
-// src/catalogue/catalogue.ts
-import path7 from "node:path";
+// src/query/verificationBrief.ts
+import { readFile as readFile6, stat as stat2 } from "node:fs/promises";
 
 // src/validator/validateFile.ts
 import { isUtf8 } from "node:buffer";
@@ -31459,7 +31459,229 @@ async function validateFile(file, options = {}) {
   return validateBytes(await readFile4(file), file, options);
 }
 
+// src/evidence/receipt.ts
+import { readFile as readFile5 } from "node:fs/promises";
+var STATES = /* @__PURE__ */ new Set(["declared", "mapped", "attempted", "passed", "failed", "rejected", "not_run"]);
+async function readEvidenceFile(file, expectedIds, expected) {
+  const text4 = await readFile5(file, "utf8");
+  if (Buffer.byteLength(text4, "utf8") > 1024 * 1024) throw new Error("Evidence input exceeds the 1 MiB limit");
+  const value2 = JSON.parse(text4);
+  if (!value2 || typeof value2 !== "object" || Array.isArray(value2)) throw new Error("Evidence input must be a bound evidence envelope");
+  const envelope = value2;
+  for (const key of Object.keys(envelope)) if (!["authority", "changeDigest", "verification"].includes(key)) throw new Error(`Evidence input has unknown property ${key}`);
+  const authority = envelope.authority;
+  if (!authority || typeof authority !== "object" || Array.isArray(authority)) throw new Error("Evidence authority binding is required");
+  const binding = authority;
+  for (const key of ["baseSha", "contractId", "specRevision", "semanticDigest"]) {
+    if (binding[key] !== expected[key]) throw new Error(`Evidence authority binding ${key} does not match the checked implementation`);
+  }
+  if (envelope.changeDigest !== expected.changeDigest) throw new Error("Evidence changeDigest does not match the checked implementation");
+  if (!Array.isArray(envelope.verification)) throw new Error("Evidence verification must be an array");
+  return envelope.verification.map((raw, index2) => {
+    if (!raw || typeof raw !== "object" || Array.isArray(raw)) throw new Error(`Evidence item ${index2} must be an object`);
+    const item = raw;
+    for (const key of Object.keys(item)) if (!["verifierId", "state", "artifact", "digest", "note"].includes(key)) throw new Error(`Evidence item ${index2} has unknown property ${key}`);
+    if (typeof item.verifierId !== "string" || !expectedIds.has(item.verifierId)) throw new Error(`Evidence item ${index2} references an undeclared verifier`);
+    if (typeof item.state !== "string" || !STATES.has(item.state)) throw new Error(`Evidence item ${index2} has invalid state`);
+    for (const key of ["artifact", "digest", "note"]) if (item[key] !== void 0 && typeof item[key] !== "string") throw new Error(`Evidence item ${index2}.${key} must be a string`);
+    if (["attempted", "passed", "failed"].includes(item.state) && (typeof item.artifact !== "string" || typeof item.digest !== "string" || !/^sha256:[0-9a-f]{64}$/u.test(item.digest))) {
+      throw new Error(`Evidence item ${index2} in state ${item.state} requires an artifact and lowercase SHA-256 digest`);
+    }
+    return {
+      verifierId: item.verifierId,
+      state: item.state,
+      ...typeof item.artifact === "string" ? { artifact: item.artifact } : {},
+      ...typeof item.digest === "string" ? { digest: item.digest } : {},
+      ...typeof item.note === "string" ? { note: item.note } : {}
+    };
+  });
+}
+
+// src/query/verificationBrief.ts
+function selectedTargets(report) {
+  const ids = /* @__PURE__ */ new Map();
+  for (const route of report.routes) {
+    if (!["selected", "standing"].includes(route.decision) || !route.selected) continue;
+    const targetIds = ids.get(route.selected.specId) ?? /* @__PURE__ */ new Set();
+    for (const id of route.selected.targetIds) targetIds.add(id);
+    ids.set(route.selected.specId, targetIds);
+  }
+  return ids;
+}
+function projectVerificationBrief(report, sources, scope, evidence = /* @__PURE__ */ new Map()) {
+  const selected = selectedTargets(report);
+  const contracts = sources.filter(({ spec }) => selected.has(spec.metadata.id)).map(({ spec: raw, path: path19 }) => {
+    const spec = normalize(raw);
+    const targetIds = selected.get(spec.metadata.id);
+    const constraints = (spec.constraints ?? []).filter((item) => !item.appliesTo?.length || item.appliesTo.some((id) => targetIds.has(id)));
+    const relevantIds = new Set(constraints.map((item) => item.id));
+    const verifiers = spec.verification.filter((item) => item.proves.some((id) => relevantIds.has(id)));
+    const supplied = new Map((evidence.get(spec.metadata.id) ?? []).map((item) => [item.verifierId, item]));
+    const visibleIds = new Set(verifiers.map((item) => item.id));
+    return {
+      id: spec.metadata.id,
+      title: spec.metadata.title,
+      status: spec.metadata.status,
+      path: path19,
+      specRevision: spec.metadata.specRevision,
+      semanticDigest: digest(spec),
+      targets: spec.targets.filter((item) => targetIds.has(item.id)).map((item) => ({ id: item.id, paths: [...item.paths].sort(compareCodePoints), changePolicy: item.changePolicy })).sort((a, b) => compareCodePoints(a.id, b.id)),
+      constraints: constraints.map((item) => ({
+        id: item.id,
+        level: item.level,
+        statement: item.statement,
+        targetIds: [...item.appliesTo?.length ? item.appliesTo.filter((id) => targetIds.has(id)) : targetIds].sort(compareCodePoints),
+        verifierIds: verifiers.filter((verifier) => verifier.proves.includes(item.id)).map((verifier) => verifier.id).sort(compareCodePoints)
+      })).sort((a, b) => compareCodePoints(a.id, b.id)),
+      verification: verifiers.map((item) => ({
+        ...supplied.get(item.id) ?? { verifierId: item.id, state: "declared" },
+        kind: item.kind,
+        proves: [...item.proves].sort(compareCodePoints),
+        source: supplied.has(item.id) ? "supplied" : "declaration"
+      })).sort((a, b) => compareCodePoints(a.verifierId, b.verifierId)),
+      excludedEvidenceCount: [...supplied.keys()].filter((id) => !visibleIds.has(id)).length
+    };
+  }).sort((a, b) => compareCodePoints(a.id, b.id));
+  return {
+    format: "engineering-spec-verification-brief",
+    formatVersion: "0.1",
+    authority: "read_only_projection",
+    baseSha: report.baseSha,
+    headSha: report.headSha,
+    changedDigest: report.changedDigest,
+    evaluation: { scope, completeWorkingState: scope === "complete_working_state" },
+    authorized: report.valid,
+    enforcement: report.enforcement,
+    classification: report.classification,
+    workingState: report.workingState,
+    coverage: report.coverage,
+    next: report.next,
+    routes: report.routes,
+    sequencing: report.sequencing,
+    authorityDiffs: report.authorityDiffs,
+    diagnostics: report.diagnostics,
+    contracts
+  };
+}
+async function buildVerificationBrief(report, options) {
+  const identities = /* @__PURE__ */ new Map();
+  for (const route of report.routes) {
+    if (!["selected", "standing"].includes(route.decision) || !route.selected) continue;
+    const previous2 = identities.get(route.selected.specId);
+    if (previous2 && (previous2.specPath !== route.selected.specPath || previous2.specRevision !== route.selected.specRevision || previous2.semanticDigest !== route.selected.semanticDigest)) {
+      throw new Error(`Inconsistent checked identity for ${route.selected.specId}`);
+    }
+    identities.set(route.selected.specId, route.selected);
+  }
+  const sources = [];
+  for (const [id, identity] of [...identities].sort(([a], [b]) => compareCodePoints(a, b))) {
+    const result = await validateMarkdown(await readGitBlob(report.baseSha, identity.specPath, options.cwd), `${report.baseSha}:${identity.specPath}`, { resolveProfiles: false });
+    if (!result.spec || result.diagnostics.some((item) => item.severity === "error" || options.strict && item.severity === "warning")) {
+      throw new Error(`Checked base contract ${id} failed validation`);
+    }
+    const spec = normalize(result.spec);
+    if (spec.metadata.id !== id || spec.metadata.specRevision !== identity.specRevision || closureSemanticDigest(spec) !== identity.semanticDigest) {
+      throw new Error(`Checked base contract ${id} has a mismatched identity`);
+    }
+    sources.push({ path: identity.specPath, spec });
+  }
+  const evidence = /* @__PURE__ */ new Map();
+  const files2 = options.evidenceFiles ?? [];
+  if (files2.length > sources.length) throw new Error("Evidence envelope count exceeds selected contract count; duplicate or unselected contract input");
+  for (const file of files2) {
+    const metadata = await stat2(file);
+    if (!metadata.isFile() || metadata.size > 1024 * 1024) throw new Error("Evidence input must be a regular file of at most 1 MiB");
+    const text4 = await readFile6(file, "utf8");
+    if (Buffer.byteLength(text4, "utf8") > 1024 * 1024) throw new Error("Evidence input exceeds the 1 MiB limit");
+    const envelope = JSON.parse(text4);
+    const id = envelope && typeof envelope === "object" && "authority" in envelope && envelope.authority && typeof envelope.authority === "object" && "contractId" in envelope.authority ? envelope.authority.contractId : void 0;
+    const source = sources.find(({ spec }) => spec.metadata.id === id);
+    if (!source) throw new Error("Evidence references an unselected contract or lacks an authority binding");
+    const contractId = source.spec.metadata.id;
+    if (evidence.has(contractId)) throw new Error(`Duplicate evidence envelope for ${contractId}`);
+    const entries = await readEvidenceFile(file, new Set(source.spec.verification.map((item) => item.id)), {
+      baseSha: report.baseSha,
+      contractId,
+      specRevision: source.spec.metadata.specRevision,
+      semanticDigest: digest(source.spec),
+      changeDigest: report.changedDigest
+    });
+    if (new Set(entries.map((item) => item.verifierId)).size !== entries.length) throw new Error(`Duplicate verifier evidence for ${contractId}`);
+    evidence.set(contractId, entries);
+  }
+  return projectVerificationBrief(report, sources, options.scope, evidence);
+}
+
+// src/cli/verificationBrief.ts
+import { createHash as createHash4 } from "node:crypto";
+function text3(value2) {
+  return displaySafe(String(value2)).replace(/[&<>"']/gu, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[character]);
+}
+function code(value2) {
+  return `<code>${text3(value2)}</code>`;
+}
+function anchor(contract, kind, id) {
+  return text3(`${kind}-${encodeURIComponent(contract)}-${encodeURIComponent(id)}`);
+}
+function tag(value2, tone = "neutral") {
+  return `<span class="tag ${tone}">${text3(value2)}</span>`;
+}
+var STYLES = `
+:root{color-scheme:light;--paper:#f5f3ed;--panel:#fffefa;--ink:#182b35;--muted:#53656c;--line:#d7ded8;--accent:#246c62;--soft:#e6f0e8;--warn:#86580d;--warn-bg:#fff1d6;--bad:#ad3830;--bad-bg:#fbe6e2;--shadow:0 8px 30px #182b3506}
+:root[data-theme=dark]{color-scheme:dark;--paper:#101c24;--panel:#17262f;--ink:#edf3ef;--muted:#afc3c7;--line:#34454e;--accent:#8ed3bb;--soft:#213b36;--warn:#f4cc80;--warn-bg:#3d321c;--bad:#ffaca1;--bad-bg:#422a2c;--shadow:none}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.6 ui-sans-serif,system-ui,-apple-system,sans-serif}a{color:var(--accent)}.shell{max-width:1240px;margin:auto;padding:30px 36px 70px}.skip{position:absolute;top:-100px;left:12px}.skip:focus{top:12px;background:var(--panel);padding:12px;z-index:2}.top{display:flex;justify-content:space-between;align-items:center;gap:20px;border-bottom:1px solid var(--line);padding-bottom:20px}.brand{font-weight:800;letter-spacing:-.03em}.brand span{color:var(--accent)}.small,.muted{color:var(--muted);font-size:.9rem}.eyebrow{font-size:.75rem;text-transform:uppercase;letter-spacing:.14em;color:var(--accent);font-weight:800}.hero{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(0,1fr);gap:38px;padding:42px 0 30px;align-items:start}h1{font-size:clamp(2.2rem,5vw,3.7rem);line-height:1.06;letter-spacing:-.045em;margin:12px 0 18px}h2{font-size:1.5rem;letter-spacing:-.025em;margin:0 0 6px}h3{margin:0 0 8px;font-size:1.08rem}p{margin:8px 0 14px}.intro{max-width:640px;color:var(--muted)}.verdict{padding:22px;border:1px solid var(--line);border-radius:16px;background:var(--panel);box-shadow:var(--shadow)}.verdict h2{margin:10px 0 14px}.notice{padding:14px 18px;border:1px solid var(--line);border-left:4px solid var(--warn);border-radius:10px;background:var(--warn-bg);color:var(--warn)}.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin:14px 0 32px}.stat{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px}.stat strong{display:block;font-size:2rem;line-height:1.2;letter-spacing:-.04em}.stat span{color:var(--muted);font-size:.85rem}.tag{display:inline-block;border-radius:6px;padding:3px 8px;background:var(--soft);color:var(--accent);font-size:.75rem;font-weight:750;overflow-wrap:anywhere}.tag.warn{background:var(--warn-bg);color:var(--warn)}.tag.bad{background:var(--bad-bg);color:var(--bad)}.jump{display:flex;flex-wrap:wrap;gap:22px;border-bottom:1px solid var(--line);padding:0 0 18px}.jump a{text-decoration:none;font-size:.9rem;font-weight:650}.section{padding:32px 0;border-bottom:1px solid var(--line);scroll-margin-top:15px}.section-head{display:flex;justify-content:space-between;gap:20px;align-items:baseline;margin-bottom:20px}.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:12px;background:var(--panel)}table{border-collapse:collapse;width:100%;text-align:left}th,td{padding:14px 18px;vertical-align:top;border-bottom:1px solid var(--line)}th{font-size:.75rem;color:var(--muted);letter-spacing:.07em;text-transform:uppercase}tr:last-child td{border-bottom:0}td{font-size:.9rem}code{font: .83rem/1.5 ui-monospace,SFMono-Regular,Consolas,monospace;overflow-wrap:anywhere;white-space:normal}td:first-child{min-width:170px}td p{margin:6px 0}.claims{font-size:.78rem;color:var(--muted)}.toolbar{display:none;flex-wrap:wrap;gap:14px;margin:20px 0;align-items:end}.enhanced .toolbar{display:flex}.toolbar label{display:grid;gap:5px;font-size:.78rem;font-weight:700;color:var(--muted)}input,select,button{font:inherit;min-height:42px;border:1px solid var(--line);border-radius:7px;padding:8px 12px;background:var(--panel);color:var(--ink)}button{cursor:pointer;font-size:.85rem}input{max-width:100%}a:focus-visible,input:focus-visible,button:focus-visible,select:focus-visible,summary:focus-visible{outline:3px solid var(--accent);outline-offset:3px}.contract{margin:22px 0;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:22px}.contract-head{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}.flow{list-style:none;padding:0;margin:18px 0 0}.edge{display:grid;grid-template-columns:minmax(0,.8fr) 24px minmax(0,1.5fr) 24px minmax(0,1fr);gap:10px;align-items:center;border-top:1px solid var(--line);padding:18px 0}.node{padding:12px;background:var(--paper);border-radius:8px;min-width:0}.node .label{display:block;color:var(--muted);font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;margin-bottom:7px}.arrow{color:var(--accent);text-align:center;font-size:1.3rem}.node p{font-size:.88rem}.node ul{padding-left:18px;margin:8px 0}.evidence-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:14px}.evidence{padding:18px;border:1px solid var(--line);border-radius:12px;background:var(--panel);overflow-wrap:anywhere}.evidence h3{font-size:.92rem;margin:10px 0}.evidence .artifact{font-size:.8rem;background:var(--paper);padding:10px;border-radius:6px}.empty{padding:20px;background:var(--panel);border:1px dashed var(--line);border-radius:10px;color:var(--muted)}.provenance{display:grid;grid-template-columns:150px minmax(0,1fr);gap:8px 20px}.provenance dt{font-size:.85rem;color:var(--muted)}.provenance dd{margin:0;overflow-wrap:anywhere}details{margin:16px 0}summary{cursor:pointer;font-weight:650;color:var(--accent)}pre{white-space:pre-wrap;overflow-wrap:anywhere;font:.78rem/1.5 ui-monospace,monospace;background:var(--panel);border:1px solid var(--line);padding:18px;border-radius:10px}footer{color:var(--muted);font-size:.8rem;margin-top:28px}.enhancement{display:none}.enhanced .enhancement{display:inline-block}[hidden]{display:none!important}ul{overflow-wrap:anywhere}@media(max-width:760px){.shell{padding:20px 18px 45px}.hero{grid-template-columns:1fr;gap:18px;padding-top:26px}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.edge{grid-template-columns:1fr;gap:6px}.arrow{transform:rotate(90deg)}.provenance{grid-template-columns:1fr;gap:4px}.provenance dd{margin-bottom:12px}.section-head{display:block}.top{align-items:flex-start}}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}@media print{body{background:white;color:black}.shell{max-width:none;padding:0}.toolbar,.jump,.enhancement,.skip{display:none!important}.hero{padding-top:10px}.stat,.contract,.evidence,.verdict{box-shadow:none;break-inside:avoid}.section{padding:18px 0}.edge{break-inside:avoid}.table-wrap{overflow:visible}details::details-content{display:block!important;content-visibility:visible!important}.evidence[hidden],tr[hidden]{display:revert!important}}
+`;
+var SCRIPT = `
+document.body.classList.add('enhanced');
+const search=document.getElementById('search'),routeFilter=document.getElementById('route-filter'),evidenceFilter=document.getElementById('evidence-filter');
+const rows=Array.from(document.querySelectorAll('[data-route]')),cards=Array.from(document.querySelectorAll('[data-evidence]'));
+function filter(){const query=search.value.toLowerCase();let routeCount=0,evidenceCount=0;rows.forEach(row=>{row.hidden=!(row.textContent.toLowerCase().includes(query)&&(!routeFilter.value||row.dataset.route===routeFilter.value));if(!row.hidden)routeCount++});cards.forEach(card=>{card.hidden=!(card.textContent.toLowerCase().includes(query)&&(!evidenceFilter.value||card.dataset.evidence===evidenceFilter.value));if(!card.hidden)evidenceCount++});document.getElementById('filter-count').textContent=routeCount+' of '+rows.length+' paths \xB7 '+evidenceCount+' of '+cards.length+' verifier entries';document.getElementById('route-empty').hidden=routeCount!==0;document.getElementById('evidence-empty').hidden=evidenceCount!==0}
+[search,routeFilter,evidenceFilter].forEach(control=>control.addEventListener('input',filter));
+document.getElementById('reset').addEventListener('click',()=>{search.value='';routeFilter.value='';evidenceFilter.value='';filter()});
+document.getElementById('theme').addEventListener('click',()=>{const dark=document.documentElement.dataset.theme!=='dark';document.documentElement.dataset.theme=dark?'dark':'light';document.getElementById('theme').setAttribute('aria-pressed',String(dark))});
+document.getElementById('expand').addEventListener('click',()=>{document.querySelectorAll('details').forEach(item=>item.open=true)});
+let printDetails=[];window.addEventListener('beforeprint',()=>{printDetails=Array.from(document.querySelectorAll('details')).map(item=>[item,item.open]);printDetails.forEach(pair=>pair[0].open=true)});window.addEventListener('afterprint',()=>{printDetails.forEach(pair=>pair[0].open=pair[1])});
+filter();
+`;
+function headline(brief) {
+  if (!brief.authorized) return "Change is not authorized";
+  if (brief.classification === "contract_only") return "Contract-only governance";
+  if (brief.workingState.changed === 0) return "No changed paths to authorize";
+  return "Change is inside checked scope";
+}
+function evidenceCard(contract, item) {
+  const tone = ["failed", "rejected"].includes(item.state) ? "bad" : item.source === "supplied" ? "warn" : "neutral";
+  const status = item.source === "supplied" ? `Reported: ${item.state}` : "Declared \xB7 no evidence supplied";
+  return `<article class="evidence" id="${anchor(contract.id, "verifier", item.verifierId)}" data-evidence="${text3(item.state)}">${tag(status, tone)}<h3>${code(contract.id)} / ${code(item.verifierId)}</h3><p class="small">${text3(item.kind)} \xB7 Declares proof of ${item.proves.map(code).join(", ")}</p><p class="small">${item.source === "supplied" ? "Supplied assertion. Execution and artifact contents were not independently verified." : "This is a verification obligation. No verifier was executed by this brief."}</p>${item.artifact ? `<p class="artifact">Artifact (inert text): ${code(item.artifact)}<br>Digest: ${code(item.digest ?? "not supplied")}</p>` : ""}${item.note ? `<p class="small">Note: ${text3(item.note)}</p>` : ""}</article>`;
+}
+function relationships(contract) {
+  return `<article class="contract"><div class="contract-head"><div><h3>${text3(contract.title)}</h3><p class="small">${code(contract.id)} \xB7 revision ${contract.specRevision} \xB7 ${text3(contract.status)}</p></div>${tag("Trusted-base declarations")}</div><p class="small">Source: ${code(contract.path)}</p><ul class="flow">${contract.constraints.map((constraint2) => `<li class="edge"><div class="node"><span class="label">Applies to targets</span>${constraint2.targetIds.map((id) => {
+    const target = contract.targets.find((item) => item.id === id);
+    return `<p>${code(id)}${target ? `<br><span class="small">${text3(target.changePolicy)} \xB7 ${target.paths.map(code).join(", ")}</span>` : ""}</p>`;
+  }).join("")}</div><span class="arrow" aria-hidden="true">\u2192</span><div class="node"><span class="label">Constraint \xB7 ${text3(constraint2.level)}</span>${code(constraint2.id)}<p>${text3(constraint2.statement)}</p></div><span class="arrow" aria-hidden="true">\u2192</span><div class="node"><span class="label">Declared verifier links</span>${constraint2.verifierIds.length ? `<ul>${constraint2.verifierIds.map((id) => `<li><a href="#${anchor(contract.id, "verifier", id)}">${code(id)}</a></li>`).join("")}</ul>` : "<p>No verifier declares proof of this constraint.</p>"}</div></li>`).join("")}</ul>${contract.constraints.length ? "" : '<p class="empty">No applicable constraints are declared for these targets.</p>'}${contract.excludedEvidenceCount ? `<p class="notice">${contract.excludedEvidenceCount} supplied verifier entry/entries concern declarations outside the applicable obligation view.</p>` : ""}</article>`;
+}
+function verificationBriefHtml(brief) {
+  const hash = (value2) => `'sha256-${createHash4("sha256").update(value2).digest("base64")}'`;
+  const csp = `default-src 'none'; script-src ${hash(SCRIPT)}; style-src ${hash(STYLES)}; connect-src 'none'; img-src 'none'; font-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'`;
+  const serialized = JSON.stringify(brief).replace(/</gu, "\\u003c").replace(/>/gu, "\\u003e").replace(/&/gu, "\\u0026").replace(/[\u061c\u200e\u200f\u2028-\u202e\u2066-\u2069]/gu, (character) => `\\u${character.charCodeAt(0).toString(16).padStart(4, "0")}`);
+  const verifiers = brief.contracts.flatMap((contract) => contract.verification);
+  const supplied = verifiers.filter((item) => item.source === "supplied").length;
+  const missing = verifiers.length - supplied;
+  const routeOptions = [...new Set(brief.routes.map((item) => item.decision))].sort().map((value2) => `<option value="${text3(value2)}">${text3(value2)}</option>`).join("");
+  const stateOptions = ["declared", "mapped", "attempted", "passed", "failed", "rejected", "not_run"].map((value2) => `<option value="${value2}">${value2}</option>`).join("");
+  const scopeText = brief.evaluation.completeWorkingState ? "Complete working state" : `Partial check: ${brief.evaluation.scope}`;
+  const routeRows = brief.routes.map((route) => {
+    const blocked2 = ["denied", "ambiguous", "uncovered", "protected_unauthorized"].includes(route.decision);
+    const projected = ["selected", "standing"].includes(route.decision) && route.selected;
+    const claims = [...route.allows.map((item) => `Allow: ${item.specId} r${item.specRevision}`), ...route.denies.map((item) => `Deny: ${item.specId} r${item.specRevision}`)];
+    return `<tr data-route="${text3(route.decision)}"><td>${code(route.path)}<p class="small">${text3(route.kind)}</p></td><td>${tag(route.decision, blocked2 ? "bad" : "neutral")}</td><td>${route.selected ? `${code(route.selected.specId)}<p class="small">${route.selected.targetIds.map(code).join(", ")}</p>` : "No selected contract"}${claims.length ? `<p class="claims">${claims.map(text3).join("<br>")}</p>` : ""}${projected ? "" : '<p class="small">No applicable obligation projection for this route.</p>'}</td></tr>`;
+  }).join("");
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="${text3(csp)}"><title>Visual Verification Brief \xB7 EngineeringSpec</title><style>${STYLES}</style></head><body><a class="skip" href="#main">Skip to brief</a><div class="shell"><header class="top"><div class="brand">Engineering<span>Spec</span><div class="small">Read-only change review</div></div><div><button class="enhancement" id="theme" type="button" aria-pressed="false">Dark theme</button> <span class="tag">Brief v0.1</span></div></header><main id="main"><div class="hero"><div><p class="eyebrow">Scope, obligations, evidence</p><h1>Visual Verification<br>Brief</h1><p class="intro">See what this change touches, which constraints apply, and what verification evidence was supplied.</p><p class="small">${code(brief.baseSha.slice(0, 12))} \u2192 ${code(brief.headSha.slice(0, 12))} \xB7 ${text3(scopeText)}</p></div><aside class="verdict" aria-label="Authorization decision">${tag(brief.authorized ? "Scope decision" : "Blocked scope", brief.authorized ? "neutral" : "bad")}<h2>${text3(headline(brief))}</h2><p class="small">Classification: ${code(brief.classification)}</p><p class="small">Enforcement: ${text3(brief.enforcement.mode)} \xB7 ${text3(brief.enforcement.outcome)} \xB7 ${brief.enforcement.enforced ? "enforced" : "not enforced"}</p><p><strong>Next: ${text3(brief.next.stage)}</strong><br><span class="small">${text3(brief.next.message)}</span></p></aside></div><p class="notice">Scope authorization is separate from verification. This brief executes no checks, grants no approval, and does not establish implementation correctness.</p>${brief.classification === "contract_only" ? '<p class="notice">Contract-only governance grants no implementation authority.</p>' : ""}${brief.evaluation.completeWorkingState ? "" : '<p class="notice">Partial evaluation: omitted working-state changes were not checked. This report is not complete-worktree evidence.</p>'}${!brief.authorized && brief.enforcement.outcome === "pass" ? '<p class="notice">Advisory enforcement passed, but this change is not authorized.</p>' : ""}<div class="stats"><div class="stat"><strong>${brief.workingState.changed}</strong><span>Changed paths in this evaluation</span></div><div class="stat"><strong>${brief.workingState.violations}</strong><span>Routing violations</span></div><div class="stat"><strong>${verifiers.length}</strong><span>Applicable verifier identities</span></div><div class="stat"><strong>${missing}</strong><span>Without supplied evidence</span></div></div><nav class="jump" aria-label="Brief sections"><a href="#paths">Changed paths</a><a href="#obligations">Obligation map</a><a href="#evidence">Evidence checklist</a><a href="#diagnostics">Diagnostics</a><a href="#provenance">Provenance</a></nav><div class="toolbar" aria-label="Report filters"><label>Search paths and evidence<input id="search" type="search" placeholder="Path, contract, verifier\u2026"></label><label>Route decision<select id="route-filter"><option value="">All decisions</option>${routeOptions}</select></label><label>Evidence state<select id="evidence-filter"><option value="">All states</option>${stateOptions}</select></label><button id="reset" type="button">Reset filters</button><button id="expand" type="button">Expand details</button><span id="filter-count" class="small" role="status" aria-live="polite"></span></div><section class="section" id="paths"><div class="section-head"><h2>Changed paths</h2><span class="small">Original repository-wide routing decisions</span></div><div class="table-wrap"><table><caption class="small">Paths, decisions, and contract claims</caption><thead><tr><th scope="col">Path / change</th><th scope="col">Decision</th><th scope="col">Contract / targets</th></tr></thead><tbody>${routeRows}</tbody></table></div><p class="empty" id="route-empty"${brief.routes.length ? " hidden" : ""}>No paths to display in this view.</p></section><section class="section" id="obligations"><div class="section-head"><h2>Obligation map</h2><span class="small">Target \u2192 constraint \u2192 declared verifier</span></div><p class="small">Links describe declared proof obligations. They do not show that a check passed.</p>${brief.contracts.map(relationships).join("") || '<p class="empty">No selected or standing contract obligations are projected. Consult routing claims and diagnostics.</p>'}</section><section class="section" id="evidence"><div class="section-head"><h2>Evidence checklist</h2><span class="small">${supplied} supplied \xB7 ${missing} without evidence</span></div><p class="small">Reported states come from bound input files. Bindings do not authenticate execution or verify artifact contents. The change digest binds paths and change kinds, not implementation bytes. Missing evidence is not a failed check.</p><div class="evidence-grid">${brief.contracts.flatMap((contract) => contract.verification.map((item) => evidenceCard(contract, item))).join("")}</div><p class="empty" id="evidence-empty"${verifiers.length ? " hidden" : ""}>No verifier entries to display in this view.</p></section><section class="section" id="diagnostics"><h2>Diagnostics</h2>${brief.diagnostics.length ? `<ul>${brief.diagnostics.map((item) => `<li>${tag(item.severity, item.severity === "error" ? "bad" : "neutral")} ${code(item.code)} ${item.file ? code(item.file) : ""}<p>${text3(item.message)}</p></li>`).join("")}</ul>` : '<p class="small">No diagnostics were reported.</p>'}${brief.sequencing.length ? `<h3>Maintenance sequencing</h3><pre>${text3(JSON.stringify(brief.sequencing, null, 2))}</pre>` : ""}${brief.authorityDiffs.length ? `<details open><summary>Semantic authority differences</summary><pre>${text3(JSON.stringify(brief.authorityDiffs, null, 2))}</pre></details>` : ""}</section><section class="section" id="provenance"><h2>Provenance</h2><p class="small">Static observation. Regenerate after changes. Review private paths and constraint text before sharing.</p><dl class="provenance"><dt>Trusted base SHA</dt><dd>${code(brief.baseSha)}</dd><dt>Head SHA</dt><dd>${code(brief.headSha)}</dd><dt>Path-change digest</dt><dd>${code(brief.changedDigest)}</dd><dt>Evaluation scope</dt><dd>${text3(scopeText)}</dd><dt>Declared coverage</dt><dd>${text3(brief.coverage.status)} \xB7 declaration coverage, not a test-pass count</dd>${brief.contracts.map((contract) => `<dt>${text3(contract.id)} r${contract.specRevision}</dt><dd>${code(contract.path)}<br>Evidence-binding semantic digest: ${code(contract.semanticDigest)}</dd>`).join("")}</dl><details open><summary>Original route and claim identities</summary><pre>${text3(JSON.stringify(brief.routes, null, 2))}</pre></details></section></main><footer>EngineeringSpec \xB7 read-only projection \xB7 no verifier execution \xB7 no inferred approval \xB7 works offline</footer></div><script id="verification-brief" type="application/json">${serialized}</script><script>${SCRIPT}</script></body></html>`;
+}
+
 // src/catalogue/catalogue.ts
+import path7 from "node:path";
 var MAX_CATALOGUE_DOCUMENTS = 1e4;
 function locator(value2) {
   return value2.path ?? value2.ref ?? value2.uri;
@@ -31563,7 +31785,7 @@ function catalogueHtml(report) {
 
 // src/architecture/backstage.ts
 var import_yaml3 = __toESM(require_dist(), 1);
-import { readFile as readFile5, stat as stat2 } from "node:fs/promises";
+import { readFile as readFile7, stat as stat3 } from "node:fs/promises";
 var MAX_ARCHITECTURE_BYTES = 1024 * 1024;
 var MAX_ARCHITECTURE_ENTITIES = 1e3;
 var PATH_ANNOTATION = "engineeringspec.org/paths";
@@ -31579,9 +31801,9 @@ function safePathMapping(value2) {
   return value2.length <= 512 && !value2.startsWith("/") && !value2.includes("\\") && !value2.split("/").includes("..") && !value2.includes("\0");
 }
 async function importBackstageCatalogue(file) {
-  const details = await stat2(file);
+  const details = await stat3(file);
   if (!details.isFile() || details.size > MAX_ARCHITECTURE_BYTES) throw new Error("Architecture source must be a bounded file");
-  const source = await readFile5(file, "utf8");
+  const source = await readFile7(file, "utf8");
   const documents = (0, import_yaml3.parseAllDocuments)(source, { strict: true, uniqueKeys: true });
   if (documents.length > MAX_ARCHITECTURE_ENTITIES) throw new Error(`Architecture entity limit exceeded (${documents.length} > ${MAX_ARCHITECTURE_ENTITIES})`);
   const components = [];
@@ -31613,7 +31835,7 @@ async function importBackstageCatalogue(file) {
 
 // src/gate/collectDiff.ts
 import { execFile as execFile2 } from "node:child_process";
-import { readFile as readFile6 } from "node:fs/promises";
+import { readFile as readFile8 } from "node:fs/promises";
 import path8 from "node:path";
 import { promisify as promisify2 } from "node:util";
 var execFileAsync2 = promisify2(execFile2);
@@ -31633,11 +31855,11 @@ function assertSafeRepoPath(filePath) {
   }
 }
 function kindFromStatus(status) {
-  const code = status[0];
-  if (code === "R" || code === "C") return { kind: "renamed", renameLike: true };
-  if (code === "A") return { kind: "added", renameLike: false };
-  if (code === "D") return { kind: "deleted", renameLike: false };
-  if (code === "M" || code === "T") return { kind: "modified", renameLike: false };
+  const code2 = status[0];
+  if (code2 === "R" || code2 === "C") return { kind: "renamed", renameLike: true };
+  if (code2 === "A") return { kind: "added", renameLike: false };
+  if (code2 === "D") return { kind: "deleted", renameLike: false };
+  if (code2 === "M" || code2 === "T") return { kind: "modified", renameLike: false };
   return void 0;
 }
 function parseNameStatusZ(output2) {
@@ -31819,10 +32041,10 @@ function parseNumstatZ(output2) {
 async function untrackedLineCount(paths, cwd) {
   let lines = 0;
   for (const file of paths) {
-    const bytes = await readFile6(path8.resolve(cwd ?? process.cwd(), file));
+    const bytes = await readFile8(path8.resolve(cwd ?? process.cwd(), file));
     if (bytes.includes(0)) continue;
-    const text3 = bytes.toString("utf8");
-    lines += text3.length === 0 ? 0 : text3.split("\n").length - (text3.endsWith("\n") ? 1 : 0);
+    const text4 = bytes.toString("utf8");
+    lines += text4.length === 0 ? 0 : text4.split("\n").length - (text4.endsWith("\n") ? 1 : 0);
   }
   return lines;
 }
@@ -31886,7 +32108,7 @@ async function agentCheck(options) {
 
 // src/cli/adopt.ts
 import { execFile as execFile3 } from "node:child_process";
-import { access, mkdir, readFile as readFile7, writeFile } from "node:fs/promises";
+import { access, mkdir, readFile as readFile9, writeFile } from "node:fs/promises";
 import path9 from "node:path";
 import { promisify as promisify3 } from "node:util";
 
@@ -31900,9 +32122,9 @@ var CURRENT_ACTION_SHA = "9dc9ef0fd1861f35781610921cacb416849e3e5f";
 function detectIntegrationVersions(texts) {
   const cliVersions = /* @__PURE__ */ new Set();
   const actionPins = /* @__PURE__ */ new Set();
-  for (const text3 of texts) {
-    for (const match2 of text3.matchAll(/@engineeringspec\/cli@([0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z.-]+)?)/gu)) cliVersions.add(match2[1]);
-    for (const match2 of text3.matchAll(/majilesh\/engineeringspec@([0-9a-f]{40})/gu)) actionPins.add(match2[1]);
+  for (const text4 of texts) {
+    for (const match2 of text4.matchAll(/@engineeringspec\/cli@([0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z.-]+)?)/gu)) cliVersions.add(match2[1]);
+    for (const match2 of text4.matchAll(/majilesh\/engineeringspec@([0-9a-f]{40})/gu)) actionPins.add(match2[1]);
   }
   return { cliVersions: [...cliVersions].sort(), actionPins: [...actionPins].sort() };
 }
@@ -32180,7 +32402,7 @@ async function adoptRepository(options) {
     }
     if (exists && !options.force) {
       if (options.merge || options.upgrade) {
-        const existing = await readFile7(destination, "utf8");
+        const existing = await readFile9(destination, "utf8");
         const merged = mergeContent(relative, existing, content3, Boolean(options.upgrade));
         if (merged !== void 0) {
           if (merged !== existing) {
@@ -32204,9 +32426,9 @@ async function adoptRepository(options) {
 
 // src/cli/benchmark.ts
 import { execFileSync, spawnSync } from "node:child_process";
-import { createHash as createHash4 } from "node:crypto";
+import { createHash as createHash5 } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
-import { mkdir as mkdir2, mkdtemp, readFile as readFile8, writeFile as writeFile2 } from "node:fs/promises";
+import { mkdir as mkdir2, mkdtemp, readFile as readFile10, writeFile as writeFile2 } from "node:fs/promises";
 import os from "node:os";
 import path10 from "node:path";
 var MEASURED_FIELDS = ["actualOutcome", "commands", "pullRequests", "lifecycleEdits", "handEditedFiles", "mutations", "runnerExecutions", "diagnostics", "measured"];
@@ -32322,17 +32544,17 @@ ${this.statuses()}`;
     const destination = path10.join(this.root, file);
     let previous2 = "";
     try {
-      previous2 = await readFile8(destination, "utf8");
+      previous2 = await readFile10(destination, "utf8");
     } catch {
       previous2 = "";
     }
-    const status = (text3) => /^status: (\w+)$/mu.exec(text3)?.[1];
+    const status = (text4) => /^status: (\w+)$/mu.exec(text4)?.[1];
     if (file.startsWith("specs/") && previous2 && status(previous2) !== status(content3)) this.lifecycleEdits += 1;
     await mkdir2(path10.dirname(destination), { recursive: true });
     await writeFile2(destination, content3);
   }
   async read(file) {
-    return readFile8(path10.join(this.root, file), "utf8");
+    return readFile10(path10.join(this.root, file), "utf8");
   }
   /** Merges the working state into the trusted base, as a reviewed pull request would. */
   merge(message2) {
@@ -32457,7 +32679,7 @@ async function runCeremonyBenchmark(value2, options) {
     };
     const failures = [];
     if (measured.outcome !== spec.expected.outcome) failures.push(`outcome ${measured.outcome}, expected ${spec.expected.outcome}`);
-    for (const code of spec.expected.diagnostics) if (!measured.diagnostics.includes(code)) failures.push(`missing diagnostic ${code}`);
+    for (const code2 of spec.expected.diagnostics) if (!measured.diagnostics.includes(code2)) failures.push(`missing diagnostic ${code2}`);
     if (measured.currentAuthorityGranted !== spec.expected.currentAuthorityGranted) failures.push(`currentAuthorityGranted ${measured.currentAuthorityGranted}, expected ${spec.expected.currentAuthorityGranted}`);
     if (measured.pullRequests !== spec.expected.pullRequests) failures.push(`pullRequests ${measured.pullRequests}, expected ${spec.expected.pullRequests}`);
     if (measured.runnerExecutions !== 0) failures.push("a declared runner executed");
@@ -32467,7 +32689,7 @@ async function runCeremonyBenchmark(value2, options) {
   return {
     format: "engineering-spec-ceremony-result",
     formatVersion: "0.2",
-    fixtureDigest: `sha256:${createHash4("sha256").update(JSON.stringify(value2)).digest("hex")}`,
+    fixtureDigest: `sha256:${createHash5("sha256").update(JSON.stringify(value2)).digest("hex")}`,
     valid: scenarios.every((item) => item.passed),
     scenarios,
     summary: { commands: sum("commands"), pullRequests: sum("pullRequests"), lifecycleEdits: sum("lifecycleEdits"), handEditedFiles: sum("handEditedFiles"), mutations: sum("mutations"), runnerExecutions: sum("runnerExecutions") }
@@ -32523,7 +32745,7 @@ var SHA_PATTERN = /^[0-9a-f]{40}$/u;
 var DIGEST_PATTERN = /^sha256:[0-9a-f]{64}$/u;
 function canonicalPathDigest(paths) {
   const ordered2 = [...new Set(paths)].sort(compareCodePoints);
-  return `sha256:${createHash4("sha256").update(JSON.stringify(ordered2), "utf8").digest("hex")}`;
+  return `sha256:${createHash5("sha256").update(JSON.stringify(ordered2), "utf8").digest("hex")}`;
 }
 function assertStringArray(value2, label) {
   if (!Array.isArray(value2) || value2.some((item) => typeof item !== "string" || item.length === 0)) {
@@ -32923,7 +33145,7 @@ function summarizeAgentBenchmark(values) {
 }
 
 // src/measurement/measure.ts
-import { createHash as createHash6 } from "node:crypto";
+import { createHash as createHash7 } from "node:crypto";
 
 // src/routing/loadCandidates.ts
 var MAX_ROUTING_CANDIDATES = 1e4;
@@ -32960,7 +33182,7 @@ async function loadRoutingCandidates(options) {
 }
 
 // src/routing/route.ts
-import { createHash as createHash5 } from "node:crypto";
+import { createHash as createHash6 } from "node:crypto";
 var WRITABLE = /* @__PURE__ */ new Set(["modify", "create", "delete", "interface_only"]);
 var FORBIDDEN2 = /* @__PURE__ */ new Set(["read_only", "observe"]);
 function policyAllows2(kind, policy) {
@@ -32988,7 +33210,7 @@ function evaluatePath2(spec, file, kind) {
 function digestRoutedChanges(changed) {
   const payload = `${[...changed].map((item) => `${item.kind}	${item.fromPath ?? ""}	${item.path}`).sort(compareCodePoints).join("\n")}
 `;
-  return `sha256:${createHash5("sha256").update(payload, "utf8").digest("hex")}`;
+  return `sha256:${createHash6("sha256").update(payload, "utf8").digest("hex")}`;
 }
 function expandedChanges(changed) {
   return changed.flatMap((change) => change.kind === "renamed" && change.fromPath ? [{ path: change.fromPath, kind: "deleted" }, { path: change.path, kind: "added" }] : [{ path: change.path, kind: change.kind }]);
@@ -33179,7 +33401,7 @@ function routeChanges(candidates, changed, requiredStatuses = ["approved"], opti
 var WRITABLE2 = /* @__PURE__ */ new Set(["modify", "create", "delete", "interface_only"]);
 var CREATE_CAPABLE = /* @__PURE__ */ new Set(["modify", "create", "interface_only"]);
 function canonicalDigest(value2) {
-  return `sha256:${createHash6("sha256").update(JSON.stringify(value2), "utf8").digest("hex")}`;
+  return `sha256:${createHash7("sha256").update(JSON.stringify(value2), "utf8").digest("hex")}`;
 }
 function ordered(values) {
   return [...new Set(values)].sort(compareCodePoints);
@@ -33362,11 +33584,11 @@ async function measureScope(options) {
 }
 
 // src/cli/doctor.ts
-import { readFile as readFile10, readdir as readdir2, stat as stat3 } from "node:fs/promises";
+import { readFile as readFile12, readdir as readdir2, stat as stat4 } from "node:fs/promises";
 import path14 from "node:path";
 
 // src/routing/select.ts
-import { readFile as readFile9 } from "node:fs/promises";
+import { readFile as readFile11 } from "node:fs/promises";
 import path12 from "node:path";
 
 // src/receipts/receipt.ts
@@ -33385,9 +33607,9 @@ function receiptContractId(specDirectory, file) {
 function isReceiptLocation(specDirectory, file) {
   return specDirectory !== "." && file.startsWith(`${specDirectory}/${RECEIPT_DIRECTORY}/`);
 }
-function parseClosureReceipt(text3) {
-  if (Buffer.byteLength(text3, "utf8") > MAX_RECEIPT_BYTES) throw new Error("receipt exceeds 64 KiB");
-  const value2 = JSON.parse(text3);
+function parseClosureReceipt(text4) {
+  if (Buffer.byteLength(text4, "utf8") > MAX_RECEIPT_BYTES) throw new Error("receipt exceeds 64 KiB");
+  const value2 = JSON.parse(text4);
   if (!value2 || typeof value2 !== "object" || Array.isArray(value2)) throw new Error("receipt must be a JSON object");
   const allowed = /* @__PURE__ */ new Set(["format", "formatVersion", "contractId", "specRevision", "semanticDigest", "baseSha", "changeDigest", "cliVersion"]);
   for (const key of Object.keys(value2)) if (!allowed.has(key)) throw new Error(`receipt contains unknown property ${JSON.stringify(key)}`);
@@ -33831,10 +34053,10 @@ async function isAncestor(sha, of, cwd) {
     return false;
   }
 }
-async function receiptInput(file, text3, baseSha, cwd) {
-  if (text3 === void 0) return { path: file, problem: "missing", baseIsAncestor: false };
+async function receiptInput(file, text4, baseSha, cwd) {
+  if (text4 === void 0) return { path: file, problem: "missing", baseIsAncestor: false };
   try {
-    const receipt = parseClosureReceipt(text3);
+    const receipt = parseClosureReceipt(text4);
     return { path: file, receipt, baseIsAncestor: await isAncestor(receipt.baseSha, baseSha, cwd) };
   } catch (error) {
     return { path: file, problem: error instanceof Error ? error.message : String(error), baseIsAncestor: false };
@@ -33851,13 +34073,13 @@ async function loadChangeReceipts(changed, directory, baseSha, headSha, options)
   if (added2.length === 0) return result;
   const root = await gitShowToplevel(options.cwd);
   for (const change of added2) {
-    let text3;
+    let text4;
     try {
-      text3 = options.staged ? await readGitBlob("", change.path, options.cwd).catch(() => void 0) : options.worktree !== false && !options.changed ? await readFile9(path12.join(root, change.path), "utf8") : await readGitBlob(headSha, change.path, options.cwd);
+      text4 = options.staged ? await readGitBlob("", change.path, options.cwd).catch(() => void 0) : options.worktree !== false && !options.changed ? await readFile11(path12.join(root, change.path), "utf8") : await readGitBlob(headSha, change.path, options.cwd);
     } catch {
-      text3 = void 0;
+      text4 = void 0;
     }
-    result.set(change.path, await receiptInput(change.path, text3, baseSha, options.cwd));
+    result.set(change.path, await receiptInput(change.path, text4, baseSha, options.cwd));
   }
   return result;
 }
@@ -33873,17 +34095,17 @@ async function resolveCommitTimestamp(sha, cwd) {
   return stdout.trim();
 }
 async function loadTrustedPolicy(baseSha, eligibleCount, options) {
-  const text3 = await tryReadGitBlob(baseSha, REPOSITORY_CONFIG_PATH, options.cwd);
-  if (text3 === void 0) {
+  const text4 = await tryReadGitBlob(baseSha, REPOSITORY_CONFIG_PATH, options.cwd);
+  if (text4 === void 0) {
     if (options.bootstrapMode === "advisory" && eligibleCount === 0) return { mode: "bootstrap_advisory", bootstrap: "honored" };
     return options.bootstrapMode ? { bootstrap: "ignored" } : {};
   }
   const bootstrap = options.bootstrapMode ? { bootstrap: "ignored" } : {};
   let config;
   try {
-    config = parseRepositoryConfig(text3, `${baseSha}:${REPOSITORY_CONFIG_PATH}`);
+    config = parseRepositoryConfig(text4, `${baseSha}:${REPOSITORY_CONFIG_PATH}`);
   } catch (error) {
-    if (!/"(mode|policy)"\s*:/u.test(text3)) return { ...bootstrap };
+    if (!/"(mode|policy)"\s*:/u.test(text4)) return { ...bootstrap };
     return {
       ...bootstrap,
       mode: "standard",
@@ -34077,9 +34299,9 @@ function failed(id, message2, remediation) {
 }
 async function boundedText(file) {
   try {
-    const details = await stat3(file);
+    const details = await stat4(file);
     if (!details.isFile() || details.size > MAX_INTEGRATION_FILE_BYTES) return void 0;
-    return await readFile10(file, "utf8");
+    return await readFile12(file, "utf8");
   } catch (error) {
     if (error.code === "ENOENT") return void 0;
     throw error;
@@ -34110,7 +34332,7 @@ async function integrationVersionCheck(root) {
   const files2 = ["AGENTS.md", "CLAUDE.md", ".cursor/rules/engineering-spec.mdc", ".github/workflows/engineering-spec.yml"];
   const texts = (await Promise.all(files2.map((file) => boundedText(path14.join(root, file))))).filter((value2) => value2 !== void 0);
   const detected = detectIntegrationVersions(texts);
-  const workflow = texts.find((text3) => text3.includes("gate-spec-dir:"));
+  const workflow = texts.find((text4) => text4.includes("gate-spec-dir:"));
   const expectedCli = packageVersion();
   const cliDrift = detected.cliVersions.some((version) => version !== expectedCli);
   const actionDrift = detected.actionPins.some((pin) => pin !== CURRENT_ACTION_SHA) || Boolean(workflow && detected.actionPins.length !== 1);
@@ -34151,10 +34373,10 @@ async function protectedOwnershipCheck(root, specDirectory) {
   return missing.length === 0 ? { id: "protected-ownership", status: "pass", message: "CODEOWNERS assigns owners to contracts, workflows, CODEOWNERS and the policy file." } : { id: "protected-ownership", status: "warning", message: `CODEOWNERS leaves unowned: ${missing.join(", ")}. A pull request could weaken the gate that reviews it.`, remediation };
 }
 async function enforcementModeCheck(root) {
-  const text3 = await boundedText(path14.join(root, "engineering-spec.json"));
-  if (text3 === void 0) return void 0;
+  const text4 = await boundedText(path14.join(root, "engineering-spec.json"));
+  if (text4 === void 0) return void 0;
   try {
-    const mode = parseRepositoryConfig(text3).mode;
+    const mode = parseRepositoryConfig(text4).mode;
     if (mode === "advisory") return { id: "enforcement-mode", status: "warning", message: "engineering-spec.json sets mode advisory: findings are reported but nothing is enforced.", remediation: "Set mode to standard or controlled in a reviewed change when ready to enforce." };
     return mode ? { id: "enforcement-mode", status: "pass", message: `engineering-spec.json enforces mode ${mode}.` } : void 0;
   } catch {
@@ -34187,7 +34409,7 @@ async function diagnoseRepository(options = {}) {
   let relativeDirectory;
   try {
     relativeDirectory = await resolveGitRelativeDirectory(specDirectory, root);
-    const directoryStat = await stat3(path14.join(root, relativeDirectory));
+    const directoryStat = await stat4(path14.join(root, relativeDirectory));
     if (!directoryStat.isDirectory()) throw new Error("not a directory");
     checks.push({ id: "spec-directory", status: "pass", message: `Specification directory ${relativeDirectory} exists.` });
   } catch {
@@ -34672,7 +34894,7 @@ async function prepareChange(options) {
 }
 
 // src/cli/review.ts
-function selectedTargets(status) {
+function selectedTargets2(status) {
   const selected = /* @__PURE__ */ new Map();
   for (const route of status.routing.routes) {
     if (route.decision !== "selected" || !route.selected) continue;
@@ -34696,7 +34918,7 @@ async function buildReview(options) {
     ...options.bootstrapMode ? { bootstrapMode: options.bootstrapMode } : {},
     ...options.selector ? { selector: options.selector } : {}
   });
-  const selected = selectedTargets(status);
+  const selected = selectedTargets2(status);
   const contracts = [];
   for (const [specId, targetSet] of [...selected].sort(([left], [right]) => compareCodePoints(left, right))) {
     const candidate = status.routing.candidates.find((item) => item.specId === specId && item.eligible);
@@ -34751,11 +34973,11 @@ function safe(value2) {
   return markdownText(value2);
 }
 function reviewMarkdown(report) {
-  const headline = !report.valid ? "\u274C **Change is not authorized**" : report.classification === "contract_only" ? "\u2705 **Contract-only governance change is valid; it grants no implementation authority**" : report.workingState.changed === 0 ? "\u2705 **No changed paths to authorize**" : "\u2705 **Change is inside approved scope**";
+  const headline2 = !report.valid ? "\u274C **Change is not authorized**" : report.classification === "contract_only" ? "\u2705 **Contract-only governance change is valid; it grants no implementation authority**" : report.workingState.changed === 0 ? "\u2705 **No changed paths to authorize**" : "\u2705 **Change is inside approved scope**";
   const lines = [
     "## EngineeringSpec review",
     "",
-    headline,
+    headline2,
     "",
     `- Authority: ${markdownCode(report.authority)} at ${markdownCode(report.baseSha)}`,
     `- Change classification: ${markdownCode(report.classification)}`,
@@ -34843,8 +35065,8 @@ async function nextAction(options = {}) {
   const command = nextCommand(status, approvedIds);
   const ambiguous = status.routing.diagnostics.some((item) => item.code === Codes.routingAmbiguous);
   const historicalMismatch = config.warnings.some((item) => item.includes("informational inspection"));
-  const code = historicalMismatch ? "historical-replay" : ambiguous ? "resolve-authority-conflict" : status.next.stage === "approve" || status.next.stage === "propose" ? "request-approval" : status.next.stage === "verify" || status.next.stage === "close" ? "finish" : "work";
-  const recommendationCommand = code === "historical-replay" ? "engineeringspec replay <contract-id> --at <full-commit-sha> --operation review --head-at <full-commit-sha>" : code === "resolve-authority-conflict" ? "Narrow paths or merge an independently approved exact maintenance controller." : command;
+  const code2 = historicalMismatch ? "historical-replay" : ambiguous ? "resolve-authority-conflict" : status.next.stage === "approve" || status.next.stage === "propose" ? "request-approval" : status.next.stage === "verify" || status.next.stage === "close" ? "finish" : "work";
+  const recommendationCommand = code2 === "historical-replay" ? "engineeringspec replay <contract-id> --at <full-commit-sha> --operation review --head-at <full-commit-sha>" : code2 === "resolve-authority-conflict" ? "Narrow paths or merge an independently approved exact maintenance controller." : command;
   return {
     valid: analysisValid,
     analysisValid,
@@ -34854,7 +35076,7 @@ async function nextAction(options = {}) {
     config: summarizeRepositoryConfig(config),
     status,
     command,
-    recommendation: { code, reason: status.next.message, diagnostics: status.routing.diagnostics.map((item) => item.code), command: recommendationCommand }
+    recommendation: { code: code2, reason: status.next.message, diagnostics: status.routing.diagnostics.map((item) => item.code), command: recommendationCommand }
   };
 }
 function shellArgument(value2) {
@@ -34955,44 +35177,6 @@ function workTicket(report) {
 import { mkdir as mkdir4, realpath as realpath2, writeFile as writeFile5 } from "node:fs/promises";
 import path16 from "node:path";
 
-// src/evidence/receipt.ts
-import { readFile as readFile11 } from "node:fs/promises";
-var STATES = /* @__PURE__ */ new Set(["declared", "mapped", "attempted", "passed", "failed", "rejected", "not_run"]);
-async function readEvidenceFile(file, expectedIds, expected) {
-  const text3 = await readFile11(file, "utf8");
-  if (Buffer.byteLength(text3, "utf8") > 1024 * 1024) throw new Error("Evidence input exceeds the 1 MiB limit");
-  const value2 = JSON.parse(text3);
-  if (!value2 || typeof value2 !== "object" || Array.isArray(value2)) throw new Error("Evidence input must be a bound evidence envelope");
-  const envelope = value2;
-  for (const key of Object.keys(envelope)) if (!["authority", "changeDigest", "verification"].includes(key)) throw new Error(`Evidence input has unknown property ${key}`);
-  const authority = envelope.authority;
-  if (!authority || typeof authority !== "object" || Array.isArray(authority)) throw new Error("Evidence authority binding is required");
-  const binding = authority;
-  for (const key of ["baseSha", "contractId", "specRevision", "semanticDigest"]) {
-    if (binding[key] !== expected[key]) throw new Error(`Evidence authority binding ${key} does not match the checked implementation`);
-  }
-  if (envelope.changeDigest !== expected.changeDigest) throw new Error("Evidence changeDigest does not match the checked implementation");
-  if (!Array.isArray(envelope.verification)) throw new Error("Evidence verification must be an array");
-  return envelope.verification.map((raw, index2) => {
-    if (!raw || typeof raw !== "object" || Array.isArray(raw)) throw new Error(`Evidence item ${index2} must be an object`);
-    const item = raw;
-    for (const key of Object.keys(item)) if (!["verifierId", "state", "artifact", "digest", "note"].includes(key)) throw new Error(`Evidence item ${index2} has unknown property ${key}`);
-    if (typeof item.verifierId !== "string" || !expectedIds.has(item.verifierId)) throw new Error(`Evidence item ${index2} references an undeclared verifier`);
-    if (typeof item.state !== "string" || !STATES.has(item.state)) throw new Error(`Evidence item ${index2} has invalid state`);
-    for (const key of ["artifact", "digest", "note"]) if (item[key] !== void 0 && typeof item[key] !== "string") throw new Error(`Evidence item ${index2}.${key} must be a string`);
-    if (["attempted", "passed", "failed"].includes(item.state) && (typeof item.artifact !== "string" || typeof item.digest !== "string" || !/^sha256:[0-9a-f]{64}$/u.test(item.digest))) {
-      throw new Error(`Evidence item ${index2} in state ${item.state} requires an artifact and lowercase SHA-256 digest`);
-    }
-    return {
-      verifierId: item.verifierId,
-      state: item.state,
-      ...typeof item.artifact === "string" ? { artifact: item.artifact } : {},
-      ...typeof item.digest === "string" ? { digest: item.digest } : {},
-      ...typeof item.note === "string" ? { note: item.note } : {}
-    };
-  });
-}
-
 // src/evidence/prMetadata.ts
 function buildPrMetadata(receipt) {
   const verification = receipt.verification.length ? receipt.verification.map((item) => `- ${markdownCode(item.verifierId)}: **${markdownText(item.state)}**${item.artifact ? ` \u2014 ${markdownText(item.artifact)}` : ""}`) : ["- No verifier evidence was supplied or executed."];
@@ -35022,7 +35206,7 @@ function buildPrMetadata(receipt) {
 }
 
 // src/cli/transition.ts
-import { lstat, readFile as readFile12, writeFile as writeFile4 } from "node:fs/promises";
+import { lstat, readFile as readFile13, writeFile as writeFile4 } from "node:fs/promises";
 var MAX_TRANSITION_BYTES = 1024 * 1024;
 var ALLOWED = /* @__PURE__ */ new Map([
   ["draft", ["proposed", "rejected"]],
@@ -35032,7 +35216,7 @@ var ALLOWED = /* @__PURE__ */ new Map([
 async function transitionStatus(file, to, write = false) {
   const details = await lstat(file);
   if (!details.isFile() || details.size > MAX_TRANSITION_BYTES) throw new Error("Transition input must be a bounded EngineeringSpec file");
-  const source = await readFile12(file, "utf8");
+  const source = await readFile13(file, "utf8");
   const before = await validateMarkdown(source, file);
   if (!before.spec || before.diagnostics.some((item) => item.severity === "error")) throw new Error("Transition input must validate before editing");
   const from = before.spec.metadata.status;
@@ -35229,8 +35413,8 @@ var RepositorySnapshotReader = class _RepositorySnapshotReader {
     try {
       await execFileAsync4("git", ["cat-file", "-e", `${this.sha}:${repoPath}`], { cwd: this.root, encoding: "utf8", maxBuffer: 1024 });
     } catch (error) {
-      const code = error.code;
-      if (code === 128) return void 0;
+      const code2 = error.code;
+      if (code2 === 128) return void 0;
       throw error;
     }
     return this.readText(repoPath);
@@ -35248,13 +35432,13 @@ var RepositorySnapshotReader = class _RepositorySnapshotReader {
 };
 
 // src/replay/replay.ts
-import { createHash as createHash7 } from "node:crypto";
-import { readFile as readFile13 } from "node:fs/promises";
+import { createHash as createHash8 } from "node:crypto";
+import { readFile as readFile14 } from "node:fs/promises";
 var MAX_FIXTURE_BYTES = 1024 * 1024;
 var MAX_FIXTURE_CHANGES = 1e4;
 var KINDS = /* @__PURE__ */ new Set(["added", "modified", "deleted", "renamed"]);
 function fixtureDigest(bytes) {
-  return `sha256:${createHash7("sha256").update(bytes).digest("hex")}`;
+  return `sha256:${createHash8("sha256").update(bytes).digest("hex")}`;
 }
 function declaredDigest(value2) {
   if (typeof value2 === "string") return value2.toLowerCase();
@@ -35268,7 +35452,7 @@ async function validateSnapshotReferences(reader, spec, label) {
     try {
       const bytes = await reader.readBytes(reference.path);
       const expected = declaredDigest(reference.digest);
-      const actual = `sha256:${createHash7("sha256").update(bytes).digest("hex")}`;
+      const actual = `sha256:${createHash8("sha256").update(bytes).digest("hex")}`;
       if (expected && expected !== actual) diagnostics.push({ code: Codes.invalidDigest, severity: "error", file: label, message: `Snapshot-local reference ${reference.id} digest mismatch at ${reader.sha}:${reference.path}` });
     } catch (error) {
       diagnostics.push({ code: Codes.profileUnavailable, severity: "error", file: label, message: `Snapshot-local reference ${reference.id} is unavailable at ${reader.sha}:${reference.path}; workspace content was not consulted: ${error instanceof Error ? error.message : String(error)}` });
@@ -35316,7 +35500,7 @@ async function replayHistorical(options) {
     candidateSha = candidate.sha;
     changed = await snapshot.changedPaths(candidate);
   } else {
-    const bytes = await readFile13(options.changesFile);
+    const bytes = await readFile14(options.changesFile);
     changesFixtureDigest = fixtureDigest(bytes);
     changed = parseFixture(bytes);
   }
@@ -35348,7 +35532,7 @@ async function replayHistorical(options) {
 var ExitCode = { success: 0, validation: 1, usage: 2, io: 3, unsupported: 4, internal: 5 };
 
 // src/cli/guard.ts
-import { realpath as realpath3, stat as stat4 } from "node:fs/promises";
+import { realpath as realpath3, stat as stat5 } from "node:fs/promises";
 import path17 from "node:path";
 
 // src/guard/guard.ts
@@ -35387,7 +35571,7 @@ async function relativeToRoot(root, file, cwd) {
 }
 async function inferKind(root, file) {
   try {
-    await stat4(path17.join(root, file));
+    await stat5(path17.join(root, file));
     return "modified";
   } catch {
     return "added";
@@ -35474,8 +35658,13 @@ function selectorRequest(options) {
 }
 var bootstrapModeOption = () => new Option("--bootstrap-mode <mode>", "first-adoption advisory mode; ignored when the trusted base has engineering-spec.json or approved contracts").choices(["advisory"]);
 function createProgram(setCode) {
-  const formatOption = new Option("--format <format>", "output format").choices(["text", "json", "github", "markdown"]).default("text");
+  const formatOption = new Option("--format <format>", "output format").choices(["text", "json", "github", "markdown", "html"]).default("text");
   const program2 = new Command().name("engineeringspec").description("Validate and inspect versioned engineering change contracts").version(packageVersion()).addOption(formatOption).addOption(new Option("--quiet", "suppress non-essential output")).option("--strict", "treat warnings as failures");
+  program2.hook("preAction", (_command, actionCommand) => {
+    if (actionCommand.optsWithGlobals().format === "html" && !["review", "catalogue"].includes(actionCommand.name())) {
+      program2.error("HTML output is supported only by review and catalogue", { exitCode: ExitCode.usage });
+    }
+  });
   program2.command("init").argument("[path]", "output file", "ENGINEERING_SPEC.md").addOption(new Option("--template <name>").choices(["bug-fix", "feature", "api-change", "infrastructure"]).default("feature")).option("--id <id>", "spec ID", "ES-new-change").option("--title <title>", "title", "New engineering change").option("--owner <owner>", "owner", "engineering").option("--force", "overwrite an existing file").action(async (file, options) => {
     try {
       if (!options.force) {
@@ -35596,12 +35785,12 @@ function createProgram(setCode) {
       }
       const unknown = result.diagnostics.some((item) => item.code === Codes.profileUnavailable);
       const report = coverage(normalize(result.spec), { unknownExternal: unknown });
-      const text3 = `coverage: ${report.status}
+      const text4 = `coverage: ${report.status}
 source items: ${report.sourceItems.filter((item) => item.covered).length}/${report.sourceItems.length}
 constraints: ${report.constraints.filter((item) => item.covered).length}/${report.constraints.length}
 contracts: ${report.contracts.filter((item) => item.covered).length}/${report.contracts.length}
 evidence: ${report.evidence.filter((item) => item.covered).length}/${report.evidence.length}`;
-      output(global.format === "json" ? report : text3, global.format);
+      output(global.format === "json" ? report : text4, global.format);
       const fails = options.failOn === "unknown" && report.status === "unknown" || options.failOn === "partial" && report.status === "partial" || options.failOn === "uncovered" && [...report.sourceItems, ...report.constraints, ...report.contracts, ...report.evidence].some((item) => !item.covered);
       setCode(fails ? ExitCode.validation : validationCode(result.diagnostics, global.strict));
     } catch (error) {
@@ -35638,24 +35827,24 @@ evidence: ${report.evidence.filter((item) => item.covered).length}/${report.evid
       const global = command.optsWithGlobals();
       if (options.ceremony) {
         if (files2.length > 0) throw new Error("--ceremony does not accept benchmark record files");
-        const scenarios = JSON.parse(await readFile14("benchmarks/ceremony-scenarios.json", "utf8"));
+        const scenarios = JSON.parse(await readFile15("benchmarks/ceremony-scenarios.json", "utf8"));
         const report2 = await runCeremonyBenchmark(scenarios, { cli: fileURLToPath2(new URL("../cli.js", import.meta.url)) });
-        const text4 = `ceremony: ${report2.valid ? "pass" : "fail"}; scenarios A-G; ${report2.summary.commands} commands; ${report2.summary.pullRequests} pull requests; ${report2.summary.mutations} mutations; runners ${report2.summary.runnerExecutions}`;
-        if (!global.quiet) output(global.format === "json" ? report2 : text4, global.format);
+        const text5 = `ceremony: ${report2.valid ? "pass" : "fail"}; scenarios A-G; ${report2.summary.commands} commands; ${report2.summary.pullRequests} pull requests; ${report2.summary.mutations} mutations; runners ${report2.summary.runnerExecutions}`;
+        if (!global.quiet) output(global.format === "json" ? report2 : text5, global.format);
         setCode(report2.valid ? ExitCode.success : ExitCode.validation);
         return;
       }
       if (files2.length === 0) throw new Error("benchmark requires record files or --ceremony");
       const records = [];
       for (const file of files2) {
-        const parsed = JSON.parse(await readFile14(file, "utf8"));
+        const parsed = JSON.parse(await readFile15(file, "utf8"));
         records.push(...Array.isArray(parsed) ? parsed : [parsed]);
       }
       const report = summarizeAgentBenchmark(records);
       const percent = (value2) => `${(value2 * 100).toFixed(1)}%`;
       const optional = (value2, suffix = "") => value2 === null ? "missing" : `${value2.toFixed(2)}${suffix}`;
       const missing = Object.values(report.missingData).reduce((total, value2) => total + value2, 0);
-      const text3 = [
+      const text4 = [
         `benchmark: ${report.tasks} task(s), ${report.pairs} pair(s), ${report.runs} run(s)`,
         `evidence: ${report.interpretation.resultClass}; observed ${report.evidence.observedRuns}, example ${report.evidence.exampleRuns}, unclassified ${report.evidence.unclassifiedRuns}`,
         `evidence quality: ${report.interpretation.evidenceQuality}; publishable: ${report.interpretation.publishable}`,
@@ -35677,7 +35866,7 @@ evidence: ${report.evidence.filter((item) => item.covered).length}/${report.evid
         `missing optional observations: ${missing}`,
         `interpretation: ${report.interpretation.note}`
       ].join("\n");
-      if (!global.quiet) output(global.format === "json" ? report : text3, global.format);
+      if (!global.quiet) output(global.format === "json" ? report : text4, global.format);
       setCode(options.requirePublishable && !report.interpretation.publishable ? ExitCode.validation : ExitCode.success);
     } catch (error) {
       console.error(error instanceof Error ? error.message : String(error));
@@ -35693,13 +35882,13 @@ evidence: ${report.evidence.filter((item) => item.covered).length}/${report.evid
         base: options.base,
         strict: Boolean(global.strict)
       });
-      const text3 = [
+      const text4 = [
         `doctor: ${report.valid ? "ready" : "needs attention"}`,
         `base: ${report.baseSha ?? `${report.base} (unresolved)`}`,
         `contracts: ${report.candidates} (${report.lifecycle.approved} approved, ${report.lifecycle.proposed} proposed, ${report.lifecycle.implemented} implemented)`,
         ...report.checks.map((check) => `${check.status === "pass" ? "\u2713" : check.status === "warning" ? "!" : "x"} ${check.id}: ${check.message}${check.remediation ? ` Next: ${check.remediation}` : ""}`)
       ].join("\n");
-      if (!global.quiet) output(global.format === "json" ? report : text3, global.format);
+      if (!global.quiet) output(global.format === "json" ? report : text4, global.format);
       setCode(report.valid ? ExitCode.success : ExitCode.validation);
     } catch (error) {
       console.error(error instanceof Error ? error.message : String(error));
@@ -35726,7 +35915,7 @@ evidence: ${report.evidence.filter((item) => item.covered).length}/${report.evid
         allowContractOnly: Boolean(options.allowContractOnly)
       });
       const lifecycle = STATUS_VALUES.map((status) => `${status}=${report.lifecycle[status]}`).join(", ");
-      const text3 = [
+      const text4 = [
         `status: ${report.valid ? "ready" : "blocked"}`,
         `base: ${report.baseSha}`,
         `contracts: ${report.candidates} (${lifecycle})`,
@@ -35739,7 +35928,7 @@ evidence: ${report.evidence.filter((item) => item.covered).length}/${report.evid
         ...config.warnings.map((warning) => `warning: ${warning}`),
         ...report.routing.diagnostics.map((diagnostic) => `${diagnostic.severity}: ${diagnostic.code} ${diagnostic.message}`)
       ].join("\n");
-      if (!global.quiet) output(global.format === "json" ? { ...report, repositoryConfig: summarizeRepositoryConfig(config) } : text3, global.format);
+      if (!global.quiet) output(global.format === "json" ? { ...report, repositoryConfig: summarizeRepositoryConfig(config) } : text4, global.format);
       setCode(report.valid ? ExitCode.success : ExitCode.validation);
     } catch (error) {
       console.error(error instanceof Error ? error.message : String(error));
@@ -35767,7 +35956,7 @@ evidence: ${report.evidence.filter((item) => item.covered).length}/${report.evid
         ...options.headAt ? { headAt: options.headAt } : {},
         ...options.changesFile ? { changesFile: options.changesFile } : {}
       });
-      const text3 = [
+      const text4 = [
         `replay: ${report.valid ? "ready" : "blocked"}`,
         `authority mode: ${report.authorityMode}`,
         `current authority granted: ${report.currentAuthorityGranted}`,
@@ -35779,7 +35968,7 @@ evidence: ${report.evidence.filter((item) => item.covered).length}/${report.evid
         ...report.diagnostics.map((item) => `${item.severity}: ${item.code} ${item.message}`),
         ...report.limitations.map((item) => `limitation: ${item}`)
       ].join("\n");
-      if (!global.quiet) output(global.format === "json" ? report : text3, global.format);
+      if (!global.quiet) output(global.format === "json" ? report : text4, global.format);
       setCode(report.valid ? ExitCode.success : ExitCode.validation);
     } catch (error) {
       console.error(error instanceof Error ? error.message : String(error));
@@ -35812,7 +36001,7 @@ evidence: ${report.evidence.filter((item) => item.covered).length}/${report.evid
         writeClosure: Boolean(options.writeClosure),
         ...options.output ? { output: options.output } : {}
       });
-      const text3 = report.result === "ready" && report.receipt ? [
+      const text4 = report.result === "ready" && report.receipt ? [
         "finish: ready",
         `authority: base ${report.receipt.authority.baseSha}`,
         `contract: ${report.receipt.authority.contractId} revision ${report.receipt.authority.specRevision}`,
@@ -35825,7 +36014,7 @@ finish: blocked`;
       if (!global.quiet) {
         if (global.format === "json") output(report, "json");
         else if (global.format === "markdown" && report.pr) output(report.pr.body, "text");
-        else output(text3, "text");
+        else output(text4, "text");
       }
       setCode(report.result === "ready" ? ExitCode.success : ExitCode.validation);
     } catch (error) {
@@ -35842,14 +36031,14 @@ finish: blocked`;
         return;
       }
       const result = await transitionStatus(file, options.to, Boolean(options.write));
-      const text3 = [
+      const text4 = [
         `transition: ${result.changed ? result.written ? "written" : "preview" : "unchanged"}`,
         `file: ${result.file}`,
         `${result.from} -> ${result.to}`,
         result.preview,
         result.written ? "next: review and submit this lifecycle-only change; no Git action was performed" : "next: rerun with --write only after review"
       ].join("\n");
-      if (!global.quiet) output(global.format === "json" ? result : text3, global.format);
+      if (!global.quiet) output(global.format === "json" ? result : text4, global.format);
       setCode(ExitCode.success);
     } catch (error) {
       console.error(error instanceof Error ? error.message : String(error));
@@ -35894,9 +36083,14 @@ finish: blocked`;
       setCode(ExitCode.validation);
     }
   });
-  program2.command("review").description("Explain the base-pinned authorization decision for the complete working state").option("--spec-dir <directory>", "repository-relative EngineeringSpec directory; defaults from trusted config").option("--base <ref>", "trusted base ref; safely auto-resolved when omitted").option("--head <ref>", "Git head ref", "HEAD").option("--changed <path>", "explicit changed path (repeatable)", (value2, previous2 = []) => previous2.concat(value2), []).option("--staged", "inspect committed and staged changes only").option("--no-worktree", "exclude working-tree changes").option("--allow-contract-only", "allow strictly validated specification-directory-only governance changes").addOption(bootstrapModeOption()).option("--contract <id>", "narrow routing to one approved trusted-base contract (never widens authority)").option("--selector-label <label>", "PR label naming a contract; honored only with a trusted selection.label prefix (repeatable)", (value2, previous2 = []) => previous2.concat(value2), []).option("--selector-branch <name>", "PR branch naming a contract; honored only with a trusted selection.branch prefix").addOption(new Option("--change-kind <kind>").choices(["added", "modified", "deleted", "renamed"]).default("modified")).addOption(new Option("--format <format>", "output format").choices(["text", "json", "github", "markdown"])).action(async (options, command) => {
+  program2.command("review").description("Explain the base-pinned authorization decision for the complete working state").option("--spec-dir <directory>", "repository-relative EngineeringSpec directory; defaults from trusted config").option("--base <ref>", "trusted base ref; safely auto-resolved when omitted").option("--head <ref>", "Git head ref", "HEAD").option("--changed <path>", "explicit changed path (repeatable)", (value2, previous2 = []) => previous2.concat(value2), []).option("--staged", "inspect committed and staged changes only").option("--no-worktree", "exclude working-tree changes").option("--allow-contract-only", "allow strictly validated specification-directory-only governance changes").addOption(bootstrapModeOption()).option("--contract <id>", "narrow routing to one approved trusted-base contract (never widens authority)").option("--selector-label <label>", "PR label naming a contract; honored only with a trusted selection.label prefix (repeatable)", (value2, previous2 = []) => previous2.concat(value2), []).option("--selector-branch <name>", "PR branch naming a contract; honored only with a trusted selection.branch prefix").addOption(new Option("--change-kind <kind>").choices(["added", "modified", "deleted", "renamed"]).default("modified")).option("--evidence <path>", "bound evidence envelope for HTML only (repeatable)", (value2, previous2 = []) => previous2.concat(value2), []).addOption(new Option("--format <format>", "output format").choices(["text", "json", "github", "markdown", "html"])).action(async (options, command) => {
     try {
       const global = command.optsWithGlobals();
+      if (options.evidence.length && global.format !== "html") {
+        console.error("review --evidence requires --format html");
+        setCode(ExitCode.usage);
+        return;
+      }
       const config = await resolveRepositoryConfig({ ...options.base ? { base: options.base } : {} });
       if (options.changed.length > 0 && options.staged) {
         console.error("review accepts only one of --changed or --staged");
@@ -35916,8 +36110,18 @@ finish: blocked`;
         ...selectorRequest(options)
       });
       const markdown = reviewMarkdown(report);
+      let html;
+      if (global.format === "html") {
+        const scope = options.changed.length ? "explicit_paths" : options.staged ? "committed_and_staged" : options.worktree === false ? "committed_only" : "complete_working_state";
+        html = verificationBriefHtml(await buildVerificationBrief(report, {
+          scope,
+          evidenceFiles: options.evidence,
+          strict: Boolean(global.strict || config.config.strict)
+        }));
+      }
       if (!global.quiet) {
-        if (global.format === "json") output(report, "json");
+        if (global.format === "html") output(html, "text");
+        else if (global.format === "json") output(report, "json");
         else if (global.format === "markdown") output(markdown, "text");
         else if (global.format === "github") {
           for (const diagnostic of report.diagnostics) console.log(formatGitHubDiagnostic(annotated(diagnostic, report.enforcement)));
@@ -35956,13 +36160,13 @@ ${report.entries.map((entry) => `${entry.id}	${entry.status}	${entry.title}`).jo
     try {
       const global = command.optsWithGlobals();
       const report = await importBackstageCatalogue(file);
-      const text3 = [
+      const text4 = [
         "architecture: read_only",
         `components: ${report.components.length}`,
         ...report.components.map((component) => `${component.id}	owner=${component.owner ?? "unknown"}	dependencies=${component.dependencies.length}	paths=${component.paths.length}`),
         "authority: none \u2014 imported architecture cannot authorize implementation"
       ].join("\n");
-      if (!global.quiet) output(global.format === "json" ? report : text3, global.format);
+      if (!global.quiet) output(global.format === "json" ? report : text4, global.format);
       setCode(ExitCode.success);
     } catch (error) {
       console.error(error instanceof Error ? error.message : String(error));
@@ -35995,7 +36199,7 @@ ${report.entries.map((entry) => `${entry.id}	${entry.status}	${entry.title}`).jo
           ...options.bootstrapMode ? { bootstrapMode: options.bootstrapMode } : {},
           ...selectorRequest(options)
         });
-        const text4 = [
+        const text5 = [
           `check: ${routed.valid ? "pass" : "fail"}`,
           ...enforcementLines(routed.enforcement),
           `contracts: base ${routed.baseSha} (${routed.candidates.filter((item) => item.eligible).length} eligible)`,
@@ -36004,7 +36208,7 @@ ${report.entries.map((entry) => `${entry.id}	${entry.status}	${entry.title}`).jo
           `change classification: ${routed.governance.classification}`,
           ...routed.diagnostics.map((diagnostic) => `${diagnostic.severity}: ${diagnostic.code} ${diagnostic.message}`)
         ].join("\n");
-        if (!global.quiet) output(global.format === "json" ? routed : text4, global.format);
+        if (!global.quiet) output(global.format === "json" ? routed : text5, global.format);
         setCode(enforcementExitCode(routed.enforcement));
         return;
       }
@@ -36019,7 +36223,7 @@ ${report.entries.map((entry) => `${entry.id}	${entry.status}	${entry.title}`).jo
       });
       const changed = report.gate?.changed.length ?? 0;
       const violations = report.gate?.violations.length ?? 0;
-      const text3 = [
+      const text4 = [
         `check: ${report.valid ? "pass" : "fail"}`,
         `contract: ${report.specSource}${report.specDigest ? ` ${report.specDigest}` : ""}`,
         `working state: ${changed} changed, ${violations} violations`,
@@ -36041,7 +36245,7 @@ ${report.entries.map((entry) => `${entry.id}	${entry.status}	${entry.title}`).jo
       if (!global.quiet) {
         if (global.format === "json") output(report, "json");
         else if (global.format === "markdown") output(markdown, "text");
-        else output(text3, "text");
+        else output(text4, "text");
       }
       setCode(report.valid ? ExitCode.success : ExitCode.validation);
     } catch (error) {
@@ -36079,7 +36283,7 @@ ${report.entries.map((entry) => `${entry.id}	${entry.status}	${entry.title}`).jo
         ...options.bootstrapMode ? { bootstrapMode: options.bootstrapMode } : {},
         ...selectorRequest(options)
       });
-      const text3 = [
+      const text4 = [
         `select: ${report.valid ? "pass" : "fail"}`,
         ...enforcementLines(report.enforcement),
         `base: ${report.baseSha}`,
@@ -36091,7 +36295,7 @@ ${report.entries.map((entry) => `${entry.id}	${entry.status}	${entry.title}`).jo
       ].join("\n");
       if (!global.quiet) {
         if (global.format === "github") for (const diagnostic of report.diagnostics) console.log(formatGitHubDiagnostic(annotated(diagnostic, report.enforcement)));
-        else output(global.format === "json" ? report : text3, global.format);
+        else output(global.format === "json" ? report : text4, global.format);
       }
       setCode(enforcementExitCode(report.enforcement));
     } catch (error) {
@@ -36105,7 +36309,7 @@ ${report.entries.map((entry) => `${entry.id}	${entry.status}	${entry.title}`).jo
       const report = await measureScope({ contractId, specDirectory: options.specDir, base: options.base, head: options.head, strict: Boolean(global.strict), includePaths: Boolean(options.includePaths) });
       if (options.output) await writeFile7(options.output, `${JSON.stringify(report, null, 2)}
 `, "utf8");
-      const text3 = [
+      const text4 = [
         "measure: complete (unsigned; grants no authorization)",
         `contract: ${report.contract.id} revision ${report.contract.revision}`,
         `base/head: ${report.baseSha} / ${report.headSha}`,
@@ -36113,7 +36317,7 @@ ${report.entries.map((entry) => `${entry.id}	${entry.status}	${entry.title}`).jo
         `paths: approved ${report.counts.approvedWritablePaths}, actual ${report.counts.actualChangedPaths}, requested ${report.counts.selectedForRequestedContract}, other ${report.counts.selectedForOtherContracts}, denied ${report.counts.denied}, ambiguous ${report.counts.ambiguous}, uncovered ${report.counts.uncovered}`,
         `scope precision: ${report.metricEligibility.scopePrecision ? "eligible" : `unavailable (${report.metricEligibility.reason})`}`
       ].join("\n");
-      if (!global.quiet) output(global.format === "json" ? report : text3, global.format);
+      if (!global.quiet) output(global.format === "json" ? report : text4, global.format);
       setCode(ExitCode.success);
     } catch (error) {
       console.error(error instanceof Error ? error.message : String(error));
@@ -36395,7 +36599,7 @@ ${report.entries.map((entry) => `${entry.id}	${entry.status}	${entry.title}`).jo
       if (options.receipt) {
         await writeGateReceipt(options.receipt, receipt);
       }
-      const text3 = [
+      const text4 = [
         `${failed2 ? "gate: fail" : "gate: pass"} \u2014 ${report.specId ?? loadedLabel}`,
         `source: ${report.specSource ?? "workspace"}${report.specDigest ? ` digest=${report.specDigest}` : ""}`,
         report.baseSha || report.headSha ? `commits: base=${report.baseSha ?? "n/a"} head=${report.headSha ?? "n/a"}` : void 0,
@@ -36428,7 +36632,7 @@ ${report.entries.map((entry) => `${entry.id}	${entry.status}	${entry.title}`).jo
           if (process.env.GITHUB_STEP_SUMMARY) await appendFile(process.env.GITHUB_STEP_SUMMARY, `${markdown}
 `, "utf8");
         } else if (global.format === "markdown") output(markdown, "text");
-        else output(text3, "text");
+        else output(text4, "text");
       }
       setCode(failed2 ? ExitCode.validation : ExitCode.success);
     } catch (error) {
@@ -36439,9 +36643,9 @@ ${report.entries.map((entry) => `${entry.id}	${entry.status}	${entry.title}`).jo
   return program2;
 }
 async function run(argv = process.argv) {
-  let code = 0;
+  let code2 = 0;
   const program2 = createProgram((value2) => {
-    code = Math.max(code, value2);
+    code2 = Math.max(code2, value2);
   });
   program2.exitOverride();
   try {
@@ -36453,12 +36657,12 @@ async function run(argv = process.argv) {
     }
     throw error;
   }
-  return code;
+  return code2;
 }
 
 // src/cli.ts
-run().then((code) => {
-  process.exitCode = code;
+run().then((code2) => {
+  process.exitCode = code2;
 }).catch((error) => {
   console.error(error instanceof Error ? error.stack : String(error));
   process.exitCode = 5;

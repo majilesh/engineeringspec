@@ -4,6 +4,10 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+### Added
+
+- Visual Verification Brief: `review --format html` produces a standalone offline view of path routing, applicable constraints, verifier relationships, supplied evidence and trusted-base provenance. Repeatable `--evidence` inputs use existing binding validation. Reported passes remain assertions; the existing change digest binds paths and change kinds rather than implementation bytes. No verifiers execute and no authority is granted. Existing review formats and enforcement outcomes remain unchanged.
+
 ### Security
 
 - Patch transitive `brace-expansion` dependencies to 1.1.21, 2.1.7, and 5.0.12 and regenerate the Action bundle to address brace-expansion denial-of-service advisories. Direct dependency ranges and CLI behavior remain unchanged. The high-severity audit passes; three moderate Vitest-related findings remain outside this patch.

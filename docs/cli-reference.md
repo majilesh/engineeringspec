@@ -110,6 +110,16 @@ engineeringspec replay ES-change --at <full-authority-commit> \
 
 `--head-at` and `--changes-file` are mutually exclusive. The fixture accepts only bounded path/kind records. Replay has no staged, worktree, force, preference, runner, or write option. Its result always says `historical_read_only` and `currentAuthorityGranted: false`.
 
+## Visual Verification Brief
+
+`review --format html` emits a standalone offline report to stdout. Save it outside the evaluated Git worktree:
+
+```sh
+engineeringspec review --format html > /tmp/verification-brief.html
+```
+
+Optional repeatable `--evidence <path>` inputs use the existing bound evidence envelope and are accepted only with HTML. Scope authorization, advisory enforcement, partial evaluations and reported verification states remain distinct. HTML preserves existing review exit outcomes and executes no verifiers. The change digest binds paths and change kinds, not implementation bytes. See [Visual Verification Brief](visual-verification-brief.md) for evidence bindings, limitations and privacy guidance.
+
 ## CI and enforcement primitives
 
 | Command | Purpose |

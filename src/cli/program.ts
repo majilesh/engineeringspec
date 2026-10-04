@@ -40,6 +40,8 @@ import { buildCatalogue, catalogueHtml } from "./catalogue.js";
 import { importBackstageCatalogue } from "./architecture.js";
 import { proposeDraft } from "./propose.js";
 import { buildReview, reviewMarkdown, reviewText } from "./review.js";
+import { buildVerificationBrief, type BriefEvaluationScope } from "../query/verificationBrief.js";
+import { verificationBriefHtml } from "./verificationBrief.js";
 import { prepareChange, prepareMarkdown, prepareText } from "./prepare.js";
 import { measureScope } from "./measure.js";
 import { nextAction, nextText, nextTicket } from "./next.js";
@@ -50,7 +52,7 @@ import { replayHistorical } from "../replay/replay.js";
 
 const STATUS_VALUES = ["draft", "proposed", "approved", "implemented", "superseded", "rejected"] as const;
 
-type OutputFormat = "text" | "json" | "github" | "markdown";
+type OutputFormat = "text" | "json" | "github" | "markdown" | "html";
 interface GlobalOptions { format: OutputFormat; quiet?: boolean; strict?: boolean }
 
 function output(value: unknown, format: OutputFormat): void {
@@ -118,7 +120,7 @@ const bootstrapModeOption = () => new Option("--bootstrap-mode <mode>", "first-a
 
 export function createProgram(setCode: (code: number) => void): Command {
   const formatOption = new Option("--format <format>", "output format")
-    .choices(["text", "json", "github", "markdown"])
+    .choices(["text", "json", "github", "markdown", "html"])
     .default("text");
   const program = new Command()
     .name("engineeringspec")
@@ -127,6 +129,12 @@ export function createProgram(setCode: (code: number) => void): Command {
     .addOption(formatOption)
     .addOption(new Option("--quiet", "suppress non-essential output"))
     .option("--strict", "treat warnings as failures");
+
+  program.hook("preAction", (_command, actionCommand) => {
+    if (actionCommand.optsWithGlobals().format === "html" && !["review", "catalogue"].includes(actionCommand.name())) {
+      program.error("HTML output is supported only by review and catalogue", { exitCode: ExitCode.usage });
+    }
+  });
 
   program
     .command("init")
@@ -686,10 +694,16 @@ export function createProgram(setCode: (code: number) => void): Command {
     .option("--selector-label <label>", "PR label naming a contract; honored only with a trusted selection.label prefix (repeatable)", (value, previous: string[] = []) => previous.concat(value), [])
     .option("--selector-branch <name>", "PR branch naming a contract; honored only with a trusted selection.branch prefix")
     .addOption(new Option("--change-kind <kind>").choices(["added", "modified", "deleted", "renamed"]).default("modified"))
-    .addOption(new Option("--format <format>", "output format").choices(["text", "json", "github", "markdown"]))
+    .option("--evidence <path>", "bound evidence envelope for HTML only (repeatable)", (value, previous: string[] = []) => previous.concat(value), [])
+    .addOption(new Option("--format <format>", "output format").choices(["text", "json", "github", "markdown", "html"]))
     .action(async (options, command) => {
       try {
         const global = command.optsWithGlobals() as GlobalOptions;
+        if (options.evidence.length && global.format !== "html") {
+          console.error("review --evidence requires --format html");
+          setCode(ExitCode.usage);
+          return;
+        }
         const config = await resolveRepositoryConfig({ ...(options.base ? { base: options.base } : {}) });
         if (options.changed.length > 0 && options.staged) {
           console.error("review accepts only one of --changed or --staged");
@@ -709,8 +723,18 @@ export function createProgram(setCode: (code: number) => void): Command {
           ...selectorRequest(options),
         });
         const markdown = reviewMarkdown(report);
+        let html: string | undefined;
+        if (global.format === "html") {
+          const scope: BriefEvaluationScope = options.changed.length ? "explicit_paths"
+            : options.staged ? "committed_and_staged"
+              : options.worktree === false ? "committed_only" : "complete_working_state";
+          html = verificationBriefHtml(await buildVerificationBrief(report, {
+            scope, evidenceFiles: options.evidence, strict: Boolean(global.strict || config.config.strict),
+          }));
+        }
         if (!global.quiet) {
-          if (global.format === "json") output(report, "json");
+          if (global.format === "html") output(html, "text");
+          else if (global.format === "json") output(report, "json");
           else if (global.format === "markdown") output(markdown, "text");
           else if (global.format === "github") {
             for (const diagnostic of report.diagnostics) console.log(formatGitHubDiagnostic(annotated(diagnostic, report.enforcement)));
