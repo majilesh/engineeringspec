@@ -1,0 +1,1160 @@
+{
+  "_generated": "This file is generated. Do not edit manually.",
+  "package": {
+    "name": "@engineeringspec/cli",
+    "version": "0.1.0-rc.19",
+    "node": ">=20",
+    "description": "Change authority for AI coding agents: reviewed authority before code, final-diff verification after.",
+    "homepage": "https://engineeringspec.org",
+    "repository": "git+https://github.com/majilesh/engineeringspec.git",
+    "license": "MIT"
+  },
+  "specFormatVersion": "0.1",
+  "action": {
+    "reviewedAnchor": "7360ea935bb19d49912f055ec509b364f9e6ad9b",
+    "anchorPackageVersion": "0.1.0-rc.18",
+    "workspaceBundleVersion": "0.1.0-rc.19",
+    "bundledNodeTarget": "node20",
+    "adapterShell": "bash"
+  },
+  "globalOptions": [
+    {
+      "flags": "-V, --version",
+      "description": "output the version number"
+    },
+    {
+      "flags": "--format <format>",
+      "description": "output format",
+      "choices": [
+        "text",
+        "json",
+        "github",
+        "markdown",
+        "html"
+      ]
+    },
+    {
+      "flags": "--quiet",
+      "description": "suppress non-essential output"
+    },
+    {
+      "flags": "--strict",
+      "description": "treat warnings as failures"
+    }
+  ],
+  "commands": [
+    {
+      "name": "init",
+      "description": "",
+      "arguments": [
+        {
+          "name": "path",
+          "required": false,
+          "variadic": false
+        }
+      ],
+      "options": [
+        {
+          "flags": "--template <name>",
+          "description": "",
+          "choices": [
+            "bug-fix",
+            "feature",
+            "api-change",
+            "infrastructure"
+          ]
+        },
+        {
+          "flags": "--id <id>",
+          "description": "spec ID"
+        },
+        {
+          "flags": "--title <title>",
+          "description": "title"
+        },
+        {
+          "flags": "--owner <owner>",
+          "description": "owner"
+        },
+        {
+          "flags": "--force",
+          "description": "overwrite an existing file"
+        }
+      ]
+    },
+    {
+      "name": "validate",
+      "description": "",
+      "arguments": [
+        {
+          "name": "path",
+          "required": true,
+          "variadic": false
+        }
+      ],
+      "options": [
+        {
+          "flags": "--strict-external",
+          "description": ""
+        },
+        {
+          "flags": "--schema-only",
+          "description": ""
+        },
+        {
+          "flags": "--no-profile-resolution",
+          "description": ""
+        },
+        {
+          "flags": "--repository-root <path>",
+          "description": "repository root for repository-relative local source paths"
+        },
+        {
+          "flags": "--format <format>",
+          "description": "output format",
+          "choices": [
+            "text",
+            "json",
+            "github",
+            "markdown"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "normalize",
+      "description": "",
+      "arguments": [
+        {
+          "name": "file",
+          "required": true,
+          "variadic": false
+        }
+      ],
+      "options": [
+        {
+          "flags": "--output <path>",
+          "description": ""
+        },
+        {
+          "flags": "--include-source-locations",
+          "description": ""
+        },
+        {
+          "flags": "--digest",
+          "description": ""
+        }
+      ]
+    },
+    {
+      "name": "inspect",
+      "description": "",
+      "arguments": [
+        {
+          "name": "file",
+          "required": true,
+          "variadic": false
+        }
+      ],
+      "options": [
+        {
+          "flags": "--summary",
+          "description": ""
+        },
+        {
+          "flags": "--target <id>",
+          "description": ""
+        },
+        {
+          "flags": "--path <path>",
+          "description": ""
+        },
+        {
+          "flags": "--constraint <id>",
+          "description": ""
+        },
+        {
+          "flags": "--contract <id>",
+          "description": ""
+        },
+        {
+          "flags": "--verifier <id>",
+          "description": ""
+        },
+        {
+          "flags": "--source-item <id>",
+          "description": ""
+        },
+        {
+          "flags": "--parse-only",
+          "description": "skip semantic validation (debugging only)"
+        }
+      ]
+    },
+    {
+      "name": "coverage",
+      "description": "",
+      "arguments": [
+        {
+          "name": "file",
+          "required": true,
+          "variadic": false
+        }
+      ],
+      "options": [
+        {
+          "flags": "--format <format>",
+          "description": "output format",
+          "choices": [
+            "text",
+            "json"
+          ]
+        },
+        {
+          "flags": "--fail-on <level>",
+          "description": "",
+          "choices": [
+            "partial",
+            "unknown",
+            "uncovered"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "adopt",
+      "description": "Safely scaffold neutral agent and CI integration files",
+      "arguments": [
+        {
+          "name": "directory",
+          "required": false,
+          "variadic": false
+        }
+      ],
+      "options": [
+        {
+          "flags": "--spec <path>",
+          "description": "repository-relative EngineeringSpec path"
+        },
+        {
+          "flags": "--quickstart",
+          "description": "create a draft first contract, neutral agent guidance, CI, and CODEOWNERS"
+        },
+        {
+          "flags": "--id <id>",
+          "description": "quickstart draft identifier"
+        },
+        {
+          "flags": "--title <title>",
+          "description": "quickstart draft title"
+        },
+        {
+          "flags": "--owner <owner>",
+          "description": "quickstart owning team"
+        },
+        {
+          "flags": "--maintainer <github-owner>",
+          "description": "CODEOWNERS user or org/team; inferred from GitHub origin when possible"
+        },
+        {
+          "flags": "--base <ref>",
+          "description": "approved base ref (auto-detects origin/HEAD; falls back to origin/main)"
+        },
+        {
+          "flags": "--force",
+          "description": "overwrite existing integration files"
+        },
+        {
+          "flags": "--merge",
+          "description": "merge agent instructions into existing text files; structured files are skipped"
+        },
+        {
+          "flags": "--upgrade",
+          "description": "upgrade recognizably managed guidance and immutable Action pins"
+        },
+        {
+          "flags": "--dry-run",
+          "description": "report files without writing them"
+        }
+      ]
+    },
+    {
+      "name": "benchmark",
+      "description": "Summarize paired agent-impact benchmark records",
+      "arguments": [
+        {
+          "name": "files",
+          "required": false,
+          "variadic": true
+        }
+      ],
+      "options": [
+        {
+          "flags": "--format <format>",
+          "description": "output format",
+          "choices": [
+            "text",
+            "json"
+          ]
+        },
+        {
+          "flags": "--require-publishable",
+          "description": "fail unless retained evidence is complete, observed, and publishable"
+        },
+        {
+          "flags": "--ceremony",
+          "description": "execute the canonical ceremony scenarios with this CLI in temporary Git repositories"
+        }
+      ]
+    },
+    {
+      "name": "doctor",
+      "description": "Diagnose repository readiness without changing files",
+      "arguments": [
+        {
+          "name": "directory",
+          "required": false,
+          "variadic": false
+        }
+      ],
+      "options": [
+        {
+          "flags": "--spec-dir <directory>",
+          "description": "repository-relative EngineeringSpec directory"
+        },
+        {
+          "flags": "--base <ref>",
+          "description": "trusted base ref"
+        },
+        {
+          "flags": "--format <format>",
+          "description": "output format",
+          "choices": [
+            "text",
+            "json"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "status",
+      "description": "Summarize contract lifecycle and the complete working state",
+      "arguments": [],
+      "options": [
+        {
+          "flags": "--spec-dir <directory>",
+          "description": "repository-relative EngineeringSpec directory; defaults from trusted config"
+        },
+        {
+          "flags": "--base <ref>",
+          "description": "trusted base ref; safely auto-resolved when omitted"
+        },
+        {
+          "flags": "--head <ref>",
+          "description": "git head ref"
+        },
+        {
+          "flags": "--changed <path>",
+          "description": "explicit changed path (repeatable)"
+        },
+        {
+          "flags": "--staged",
+          "description": "inspect committed and staged changes only"
+        },
+        {
+          "flags": "--no-worktree",
+          "description": "exclude working-tree changes"
+        },
+        {
+          "flags": "--allow-contract-only",
+          "description": "allow strictly validated specification-directory-only governance changes"
+        },
+        {
+          "flags": "--change-kind <kind>",
+          "description": "",
+          "choices": [
+            "added",
+            "modified",
+            "deleted",
+            "renamed"
+          ]
+        },
+        {
+          "flags": "--format <format>",
+          "description": "output format",
+          "choices": [
+            "text",
+            "json"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "next",
+      "description": "Report the next safe action using trusted repository defaults",
+      "arguments": [],
+      "options": [
+        {
+          "flags": "--base <ref>",
+          "description": "trusted base ref override"
+        },
+        {
+          "flags": "--verbose",
+          "description": "restore the full pre-ticket status/routing payload"
+        },
+        {
+          "flags": "--format <format>",
+          "description": "output format",
+          "choices": [
+            "text",
+            "json"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "replay",
+      "description": "Simulate historical review or finish readiness without granting current authority",
+      "arguments": [
+        {
+          "name": "contract-id",
+          "required": true,
+          "variadic": false
+        }
+      ],
+      "options": [
+        {
+          "flags": "--at <commit>",
+          "description": "full immutable authority commit SHA"
+        },
+        {
+          "flags": "--operation <operation>",
+          "description": "",
+          "choices": [
+            "review",
+            "finish-readiness"
+          ]
+        },
+        {
+          "flags": "--head-at <commit>",
+          "description": "full immutable candidate commit SHA"
+        },
+        {
+          "flags": "--changes-file <path>",
+          "description": "bounded inert changed-path fixture"
+        },
+        {
+          "flags": "--format <format>",
+          "description": "output format",
+          "choices": [
+            "text",
+            "json"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "work",
+      "description": "Load a base-pinned implementation brief using trusted repository defaults",
+      "arguments": [
+        {
+          "name": "contract-id",
+          "required": true,
+          "variadic": false
+        }
+      ],
+      "options": [
+        {
+          "flags": "--base <ref>",
+          "description": "trusted base ref override"
+        },
+        {
+          "flags": "--verbose",
+          "description": "restore the full pre-ticket preparation payload"
+        },
+        {
+          "flags": "--format <format>",
+          "description": "output format",
+          "choices": [
+            "text",
+            "json",
+            "markdown"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "finish",
+      "description": "Check an implementation, prepare trusted evidence metadata, and optionally write its monotonic close",
+      "arguments": [
+        {
+          "name": "contract-id",
+          "required": true,
+          "variadic": false
+        }
+      ],
+      "options": [
+        {
+          "flags": "--base <ref>",
+          "description": "trusted base ref override"
+        },
+        {
+          "flags": "--staged",
+          "description": "evaluate committed and staged changes; disclose excluded working state"
+        },
+        {
+          "flags": "--evidence <path>",
+          "description": "bounded external verifier-state JSON"
+        },
+        {
+          "flags": "--write-closure",
+          "description": "write only the approved-to-implemented status transition"
+        },
+        {
+          "flags": "--output <path>",
+          "description": "write receipt and PR metadata JSON"
+        },
+        {
+          "flags": "--format <format>",
+          "description": "output format",
+          "choices": [
+            "text",
+            "json",
+            "markdown"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "transition",
+      "description": "Preview or write a validated lifecycle status-only transition",
+      "arguments": [
+        {
+          "name": "file",
+          "required": true,
+          "variadic": false
+        }
+      ],
+      "options": [
+        {
+          "flags": "--to <status>",
+          "description": "target lifecycle status"
+        },
+        {
+          "flags": "--write",
+          "description": "write the status-only transition after validation"
+        }
+      ]
+    },
+    {
+      "name": "propose",
+      "description": "Generate a deterministic draft contract from bounded local intent",
+      "arguments": [],
+      "options": [
+        {
+          "flags": "--id <id>",
+          "description": "EngineeringSpec identifier"
+        },
+        {
+          "flags": "--title <title>",
+          "description": "change title"
+        },
+        {
+          "flags": "--owner <owner>",
+          "description": "owning team"
+        },
+        {
+          "flags": "--output <path>",
+          "description": "repository-relative output path"
+        },
+        {
+          "flags": "--issue <reference>",
+          "description": "inert issue reference; no network request is made"
+        },
+        {
+          "flags": "--base <ref>",
+          "description": "base ref used by --from-diff"
+        },
+        {
+          "flags": "--path <path>",
+          "description": "explicit target path (repeatable)"
+        },
+        {
+          "flags": "--from-diff",
+          "description": "infer exact paths from the complete Git working state"
+        },
+        {
+          "flags": "--lite",
+          "description": "generate a lite-profile contract: frontmatter and targets only (RFC 0014)"
+        },
+        {
+          "flags": "--dry-run",
+          "description": "print the draft without writing it"
+        },
+        {
+          "flags": "--format <format>",
+          "description": "output format",
+          "choices": [
+            "text",
+            "json",
+            "markdown"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "review",
+      "description": "Explain the base-pinned authorization decision for the complete working state",
+      "arguments": [],
+      "options": [
+        {
+          "flags": "--spec-dir <directory>",
+          "description": "repository-relative EngineeringSpec directory; defaults from trusted config"
+        },
+        {
+          "flags": "--base <ref>",
+          "description": "trusted base ref; safely auto-resolved when omitted"
+        },
+        {
+          "flags": "--head <ref>",
+          "description": "Git head ref"
+        },
+        {
+          "flags": "--changed <path>",
+          "description": "explicit changed path (repeatable)"
+        },
+        {
+          "flags": "--staged",
+          "description": "inspect committed and staged changes only"
+        },
+        {
+          "flags": "--no-worktree",
+          "description": "exclude working-tree changes"
+        },
+        {
+          "flags": "--allow-contract-only",
+          "description": "allow strictly validated specification-directory-only governance changes"
+        },
+        {
+          "flags": "--bootstrap-mode <mode>",
+          "description": "first-adoption advisory mode; ignored when the trusted base has engineering-spec.json or approved contracts",
+          "choices": [
+            "advisory"
+          ]
+        },
+        {
+          "flags": "--contract <id>",
+          "description": "narrow routing to one approved trusted-base contract (never widens authority)"
+        },
+        {
+          "flags": "--selector-label <label>",
+          "description": "PR label naming a contract; honored only with a trusted selection.label prefix (repeatable)"
+        },
+        {
+          "flags": "--selector-branch <name>",
+          "description": "PR branch naming a contract; honored only with a trusted selection.branch prefix"
+        },
+        {
+          "flags": "--change-kind <kind>",
+          "description": "",
+          "choices": [
+            "added",
+            "modified",
+            "deleted",
+            "renamed"
+          ]
+        },
+        {
+          "flags": "--evidence <path>",
+          "description": "bound evidence envelope for HTML only (repeatable)"
+        },
+        {
+          "flags": "--format <format>",
+          "description": "output format",
+          "choices": [
+            "text",
+            "json",
+            "github",
+            "markdown",
+            "html"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "catalogue",
+      "description": "Build a deterministic searchable contract catalogue",
+      "arguments": [
+        {
+          "name": "directory",
+          "required": true,
+          "variadic": false
+        }
+      ],
+      "options": [
+        {
+          "flags": "--query <text>",
+          "description": "filter catalogue content"
+        },
+        {
+          "flags": "--path <path>",
+          "description": "filter contracts that affect a repository path"
+        },
+        {
+          "flags": "--format <format>",
+          "description": "output format",
+          "choices": [
+            "text",
+            "json",
+            "html"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "architecture",
+      "description": "Import a read-only architecture map from a Backstage component catalogue",
+      "arguments": [
+        {
+          "name": "file",
+          "required": true,
+          "variadic": false
+        }
+      ],
+      "options": [
+        {
+          "flags": "--format <format>",
+          "description": "output format",
+          "choices": [
+            "text",
+            "json"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "check",
+      "description": "Run the read-only agent pre-completion check over the complete working state",
+      "arguments": [
+        {
+          "name": "file",
+          "required": false,
+          "variadic": false
+        }
+      ],
+      "options": [
+        {
+          "flags": "--spec-dir <directory>",
+          "description": "base-pinned directory of approved EngineeringSpecs"
+        },
+        {
+          "flags": "--base <ref>",
+          "description": "approved base ref; loads the contract from base by default"
+        },
+        {
+          "flags": "--head <ref>",
+          "description": "git head ref"
+        },
+        {
+          "flags": "--spec-from <source>",
+          "description": "",
+          "choices": [
+            "workspace",
+            "base"
+          ]
+        },
+        {
+          "flags": "--staged",
+          "description": "check committed and staged changes only"
+        },
+        {
+          "flags": "--no-worktree",
+          "description": "exclude working-tree changes and check committed changes only"
+        },
+        {
+          "flags": "--allow-contract-only",
+          "description": "allow strictly validated specification-directory-only governance changes"
+        },
+        {
+          "flags": "--bootstrap-mode <mode>",
+          "description": "first-adoption advisory mode; ignored when the trusted base has engineering-spec.json or approved contracts",
+          "choices": [
+            "advisory"
+          ]
+        },
+        {
+          "flags": "--contract <id>",
+          "description": "narrow routing to one approved trusted-base contract (never widens authority)"
+        },
+        {
+          "flags": "--selector-label <label>",
+          "description": "PR label naming a contract; honored only with a trusted selection.label prefix (repeatable)"
+        },
+        {
+          "flags": "--selector-branch <name>",
+          "description": "PR branch naming a contract; honored only with a trusted selection.branch prefix"
+        },
+        {
+          "flags": "--format <format>",
+          "description": "output format",
+          "choices": [
+            "text",
+            "json",
+            "markdown"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "select",
+      "description": "Route changed paths to unique approved EngineeringSpecs from an immutable base tree",
+      "arguments": [
+        {
+          "name": "directory",
+          "required": true,
+          "variadic": false
+        }
+      ],
+      "options": [
+        {
+          "flags": "--base <ref>",
+          "description": "approved Git base ref"
+        },
+        {
+          "flags": "--head <ref>",
+          "description": "git head ref"
+        },
+        {
+          "flags": "--require-status <status>",
+          "description": "eligible lifecycle status (repeatable; defaults to approved)"
+        },
+        {
+          "flags": "--changed <path>",
+          "description": "explicit changed path (repeatable)"
+        },
+        {
+          "flags": "--worktree",
+          "description": "route the complete working state"
+        },
+        {
+          "flags": "--staged",
+          "description": "route committed and staged changes"
+        },
+        {
+          "flags": "--allow-contract-only",
+          "description": "allow strictly validated specification-directory-only governance changes"
+        },
+        {
+          "flags": "--bootstrap-mode <mode>",
+          "description": "first-adoption advisory mode; ignored when the trusted base has engineering-spec.json or approved contracts",
+          "choices": [
+            "advisory"
+          ]
+        },
+        {
+          "flags": "--contract <id>",
+          "description": "narrow routing to one approved trusted-base contract (never widens authority)"
+        },
+        {
+          "flags": "--selector-label <label>",
+          "description": "PR label naming a contract; honored only with a trusted selection.label prefix (repeatable)"
+        },
+        {
+          "flags": "--selector-branch <name>",
+          "description": "PR branch naming a contract; honored only with a trusted selection.branch prefix"
+        },
+        {
+          "flags": "--change-kind <kind>",
+          "description": "",
+          "choices": [
+            "added",
+            "modified",
+            "deleted",
+            "renamed"
+          ]
+        },
+        {
+          "flags": "--format <format>",
+          "description": "output format",
+          "choices": [
+            "text",
+            "json",
+            "github",
+            "markdown"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "measure",
+      "description": "Generate unsigned deterministic scope evidence from committed base and head revisions",
+      "arguments": [
+        {
+          "name": "contract-id",
+          "required": true,
+          "variadic": false
+        }
+      ],
+      "options": [
+        {
+          "flags": "--spec-dir <directory>",
+          "description": "base-pinned EngineeringSpec directory"
+        },
+        {
+          "flags": "--base <ref>",
+          "description": "approved Git base ref"
+        },
+        {
+          "flags": "--head <ref>",
+          "description": "committed Git head ref"
+        },
+        {
+          "flags": "--include-paths",
+          "description": "explicitly include repository paths in the receipt"
+        },
+        {
+          "flags": "--output <path>",
+          "description": "write the receipt to a file"
+        },
+        {
+          "flags": "--format <format>",
+          "description": "output format",
+          "choices": [
+            "text",
+            "json"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "prepare",
+      "description": "Load one approved base contract as a concise pre-code implementation brief",
+      "arguments": [
+        {
+          "name": "contract-id",
+          "required": true,
+          "variadic": false
+        }
+      ],
+      "options": [
+        {
+          "flags": "--spec-dir <directory>",
+          "description": "base-pinned EngineeringSpec directory; defaults from trusted config"
+        },
+        {
+          "flags": "--base <ref>",
+          "description": "approved Git base ref; safely auto-resolved when omitted"
+        },
+        {
+          "flags": "--format <format>",
+          "description": "output format",
+          "choices": [
+            "text",
+            "json",
+            "markdown"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "context",
+      "description": "Print the smallest relevant contract context for paths or the working state",
+      "arguments": [
+        {
+          "name": "file",
+          "required": true,
+          "variadic": false
+        }
+      ],
+      "options": [
+        {
+          "flags": "--path <path>",
+          "description": "path to include (repeatable)"
+        },
+        {
+          "flags": "--base <ref>",
+          "description": "base ref for --worktree or --staged"
+        },
+        {
+          "flags": "--head <ref>",
+          "description": "git head ref"
+        },
+        {
+          "flags": "--spec-from <source>",
+          "description": "",
+          "choices": [
+            "workspace",
+            "base"
+          ]
+        },
+        {
+          "flags": "--worktree",
+          "description": "derive paths from the complete working state"
+        },
+        {
+          "flags": "--staged",
+          "description": "derive paths from committed and staged changes"
+        },
+        {
+          "flags": "--format <format>",
+          "description": "output format",
+          "choices": [
+            "json",
+            "markdown"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "guard",
+      "description": "Check proposed edits against trusted-base authority before they happen (read-only guardrail for agent hooks)",
+      "arguments": [],
+      "options": [
+        {
+          "flags": "--path <path>",
+          "description": "proposed path; absolute or relative to the current directory (repeatable)"
+        },
+        {
+          "flags": "--change-kind <kind>",
+          "description": "change kind for every --path; inferred from the filesystem when omitted",
+          "choices": [
+            "added",
+            "modified",
+            "deleted"
+          ]
+        },
+        {
+          "flags": "--contract <id>",
+          "description": "narrow to one approved trusted-base contract (never widens authority)"
+        },
+        {
+          "flags": "--stdin",
+          "description": "read {\"paths\":[{\"path\",\"kind\"?}],\"contract\"?} from standard input"
+        },
+        {
+          "flags": "--base <ref>",
+          "description": "trusted base ref override"
+        },
+        {
+          "flags": "--format <format>",
+          "description": "output format",
+          "choices": [
+            "text",
+            "json"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "explain",
+      "description": "Explain why one path and change kind is allowed or denied",
+      "arguments": [
+        {
+          "name": "file",
+          "required": false,
+          "variadic": false
+        }
+      ],
+      "options": [
+        {
+          "flags": "--spec-dir <directory>",
+          "description": "explain through the complete approved-base candidate set"
+        },
+        {
+          "flags": "--path <path>",
+          "description": ""
+        },
+        {
+          "flags": "--base <ref>",
+          "description": "approved base ref; loads the contract from base by default"
+        },
+        {
+          "flags": "--spec-from <source>",
+          "description": "",
+          "choices": [
+            "workspace",
+            "base"
+          ]
+        },
+        {
+          "flags": "--change-kind <kind>",
+          "description": "",
+          "choices": [
+            "added",
+            "modified",
+            "deleted"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "gate",
+      "description": "Fail closed if git changes fall outside declared targets (diff-scope gate)",
+      "arguments": [
+        {
+          "name": "file",
+          "required": true,
+          "variadic": false
+        }
+      ],
+      "options": [
+        {
+          "flags": "--base <ref>",
+          "description": "git base ref for diff (e.g. origin/main)"
+        },
+        {
+          "flags": "--head <ref>",
+          "description": "git head ref"
+        },
+        {
+          "flags": "--spec-from <source>",
+          "description": "load contract from workspace file or git base SHA (default: base when --base is set)",
+          "choices": [
+            "workspace",
+            "base"
+          ]
+        },
+        {
+          "flags": "--require-status <status>",
+          "description": "require metadata.status (repeatable)"
+        },
+        {
+          "flags": "--changed <path>",
+          "description": "explicit changed path (repeatable; skips git)"
+        },
+        {
+          "flags": "--worktree",
+          "description": "gate committed, staged, unstaged, deleted, renamed, and untracked files"
+        },
+        {
+          "flags": "--staged",
+          "description": "gate committed and staged files relative to the selected base"
+        },
+        {
+          "flags": "--change-kind <kind>",
+          "description": "kind for --changed paths",
+          "choices": [
+            "added",
+            "modified",
+            "deleted",
+            "renamed"
+          ]
+        },
+        {
+          "flags": "--receipt <path>",
+          "description": "write durable gate-receipt.json to this path"
+        },
+        {
+          "flags": "--format <format>",
+          "description": "output format",
+          "choices": [
+            "text",
+            "json",
+            "github",
+            "markdown"
+          ]
+        }
+      ]
+    }
+  ]
+}
