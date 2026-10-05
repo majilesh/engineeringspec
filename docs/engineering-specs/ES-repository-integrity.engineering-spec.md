@@ -4,7 +4,7 @@ spec_format_version: "0.1"
 spec_revision: 1
 id: ES-repository-integrity
 title: Generate shared project facts and enforce repository integrity
-status: approved
+status: implemented
 owners:
   - team: EngineeringSpec maintainers
 repository:
