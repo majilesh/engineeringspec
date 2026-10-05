@@ -4,6 +4,10 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+- Add generated project release facts, CLI command metadata and Action compatibility metadata, with deterministic freshness checks.
+- Add the Repository Integrity CI job and pre-publication aggregate checks for versions, schemas, conformance, documented commands, examples, generated output, terminology, local links, security regressions and bounded public claims.
+- Generate the homepage release panel from package metadata and correct the getting-started CLI reference link. Keep historical releases and independently reviewed Action anchors intact. External link liveness remains a separately invoked network check.
+
 ## [0.1.0-rc.19] - 2026-10-05
 
 Ships the Visual Verification Brief and merged brace-expansion remediation. Current Action guidance pins the reviewed Visual Verification Brief runtime anchor `7360ea935bb19d49912f055ec509b364f9e6ad9b`.

@@ -1,0 +1,100 @@
+{
+  "formatVersion": 1,
+  "publicSurfaces": [
+    "README.md",
+    "docs/agent-control-plane.md",
+    "docs/agent-integration.md",
+    "docs/architecture-bridge.md",
+    "docs/cli-reference.md",
+    "docs/first-change-tutorial.md",
+    "docs/getting-started.md",
+    "docs/integrations.md",
+    "docs/lifecycle.md",
+    "docs/maintaining-specs.md",
+    "docs/production-gate.md",
+    "docs/roles-and-responsibilities.md",
+    "docs/troubleshooting.md",
+    "docs/upgrading.md",
+    "docs/visual-verification-brief.md",
+    "integrations/README.md",
+    "integrations/claude/README.md",
+    "integrations/codex/README.md",
+    "integrations/copilot/README.md",
+    "integrations/cursor/README.md",
+    "integrations/generic/README.md",
+    "skills/engineering-spec/SKILL.md",
+    "site/blog/change-authority-agentic-sdlc/index.html",
+    "site/blog/give-coding-agents-permission-not-just-prompts/index.html",
+    "site/blog/index.html",
+    "site/index.html",
+    "site/spec/0.1/index.html",
+    "SPEC.md",
+    "SECURITY.md",
+    "CONTRIBUTING.md",
+    "AGENTS.md",
+    "CLAUDE.md",
+    "docs/REPOSITORY_INVARIANTS.md"
+  ],
+  "historicalSurfaces": [
+    "CHANGELOG.md",
+    "rfcs/**",
+    "docs/engineering-specs/**",
+    "benchmarks/**",
+    "site/blog/**"
+  ],
+  "versionSurfaces": [
+    "README.md",
+    "docs/getting-started.md",
+    "docs/cli-reference.md",
+    "docs/agent-integration.md",
+    "docs/first-change-tutorial.md",
+    "docs/lifecycle.md",
+    "docs/maintaining-specs.md",
+    "docs/production-gate.md",
+    "docs/troubleshooting.md",
+    "docs/upgrading.md",
+    "skills/engineering-spec/SKILL.md",
+    "site/index.html",
+    "integrations/README.md",
+    "integrations/claude/README.md",
+    "integrations/codex/README.md",
+    "integrations/copilot/README.md",
+    "integrations/cursor/README.md",
+    "integrations/generic/README.md"
+  ],
+  "historicalActionPins": {
+    "docs/maintaining-specs.md": [
+      "RC14 generated enforcement pins runtime/version anchor `1b9fe313353584862456d607c495f4e660e3fdf3`. The final release commit is its descendant and contains the aligned pin plus the exact release-contract close.",
+      "Current enforcement (RC19) pins the separately reviewed Visual Verification Brief runtime anchor `7360ea935bb19d49912f055ec509b364f9e6ad9b`: the trusted `main` commit that merged the bundled Action runtime (`action/cli.mjs`). The RC16 anchor `ddf813e4e69d9b2f9a9eb3f0f241747746021cf3` and the RC14 identity above remain historical release facts."
+    ]
+  },
+  "versionExceptions": {
+    "README.md": [
+      "**Adoption modes (RFC 0014, since 0.1.0-rc.18).** `engineering-spec.json` can set `mode: advisory | standard | controlled`, with trusted-base policy for governed, exempt and protected paths. New installations start in advisory mode, which reports without blocking and grants nothing."
+    ],
+    "docs/production-gate.md": [
+      "Re-pin only to a separately reviewed immutable runtime anchor after changes to `action.yml` or Action-exercised gate semantics. The published `v0.1.0-rc.18` release-candidate tag is available, while the full reviewed SHA remains the stronger supply-chain default for production ([GitHub guidance](https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#using-third-party-actions))."
+    ],
+    "docs/cli-reference.md": [
+      "These options were added in `0.1.0-rc.18`. They take effect when the trusted-base `engineering-spec.json` sets `mode`; without it, routing is unchanged."
+    ]
+  },
+  "publicUrlMappings": {
+    "/schemas/0.1/engineering-spec.schema.json": "schemas/engineering-spec-0.1.schema.json",
+    "/schemas/0.1/implementation-receipt.schema.json": "schemas/implementation-receipt-0.1.schema.json",
+    "/schemas/0.1/profiles/productspec.schema.json": "schemas/profiles/productspec-0.1.schema.json",
+    "/spec/0.1/SPEC.md": "SPEC.md"
+  },
+  "forbiddenTerminology": [
+    "AI permissions system",
+    "runtime permissions system for agents",
+    "ASD-STE100 compliant"
+  ],
+  "forbiddenClaims": [
+    "EngineeringSpec is the only",
+    "EngineeringSpec guarantees code correctness",
+    "EngineeringSpec prevents all vulnerabilities",
+    "EngineeringSpec reduces security incidents"
+  ],
+  "claimRuleExceptions": {}
+}

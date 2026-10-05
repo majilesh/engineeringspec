@@ -1,0 +1,10 @@
+{
+  "_generated": "This file is generated. Do not edit manually.",
+  "reviewedAnchor": "7360ea935bb19d49912f055ec509b364f9e6ad9b",
+  "anchorPackageVersion": "0.1.0-rc.18",
+  "workspaceBundleVersion": "0.1.0-rc.19",
+  "bundledNodeTarget": "node20",
+  "adapterShell": "bash",
+  "supportedNode": ">=20",
+  "specFormatVersion": "0.1"
+}

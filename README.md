@@ -160,6 +160,8 @@ The portable [EngineeringSpec skill](skills/engineering-spec/SKILL.md), [AGENTS.
 
 Run the [local fail-closed demo](examples/demo/README.md) with `npm run demo`. Further references include [lifecycle](docs/lifecycle.md), [maintaining specs](docs/maintaining-specs.md), [roles and responsibilities](docs/roles-and-responsibilities.md), [architecture bridge](docs/architecture-bridge.md), [troubleshooting](docs/troubleshooting.md), [SECURITY.md](SECURITY.md), and the [v0.1 draft specification](SPEC.md).
 
+Repository maintenance follows the [repository invariants](docs/REPOSITORY_INVARIANTS.md). Run `npm run check:release` for the same checks as the **Repository Integrity** CI job. Shared release facts and CLI metadata are generated from their authoritative sources; historical releases remain historical.
+
 Private repositories are supported: the CLI and Action operate on the checked-out Git tree and do not upload repository source or specification content. Normal installation and GitHub Actions still use their configured package and network access.
 
 ## Status
