@@ -108,7 +108,7 @@ An all-specification governance change is an exception: `finish` may report `con
 - Resolve setup or routing failures with [Troubleshooting](troubleshooting.md).
 - Find all commands and flags in the [CLI reference](cli-reference.md).
 - Connect coding tools without changing the authority model through [Agent integration](agent-integration.md).
-- Explore lifecycle details and historical read-only tools in [Lifecycle](lifecycle.md) and the [CLI reference](cli-reference.md#replay).
+- Explore lifecycle details and historical read-only tools in [Lifecycle](lifecycle.md) and the [CLI reference](cli-reference.md#advanced-inspection-and-troubleshooting).
 
 EngineeringSpec is not an agent sandbox, filesystem containment layer, IDE or model router, generic command executor, or AST/API compatibility checker. `interface_only` remains path-level. Skills are optional guidance; the CLI's trusted-base decision is authoritative. Uncovered and ambiguous paths fail, and denial wins.
 

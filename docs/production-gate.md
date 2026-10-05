@@ -4,7 +4,7 @@ EngineeringSpec’s `gate` is a **diff-scope gate** (path + change-type allowlis
 
 ## Recommended pin (immutable Action)
 
-Prefer a full commit SHA. This is the reviewed RFC 0014 runtime anchor (RC18):
+Prefer a full commit SHA. This is the reviewed Visual Verification Brief runtime anchor, independent of the current package release:
 
 ```text
 majilesh/engineeringspec@7360ea935bb19d49912f055ec509b364f9e6ad9b

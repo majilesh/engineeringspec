@@ -63,7 +63,18 @@
     "package:check": "node scripts/check-package-contents.mjs",
     "format": "prettier --write .",
     "build:action": "node scripts/build-action.mjs",
-    "check:action": "node scripts/build-action.mjs --check"
+    "check:action": "node scripts/build-action.mjs --check",
+    "project:generate": "npm run build && node scripts/generate-project-state.mjs",
+    "check:versions": "npm run build && node scripts/check-repository-integrity.mjs versions",
+    "check:docs": "npm run build && node scripts/check-repository-integrity.mjs docs",
+    "check:links": "npm run build && node scripts/check-repository-integrity.mjs links",
+    "check:examples": "npm run build && node scripts/check-repository-integrity.mjs examples",
+    "check:schemas": "npm run build && node scripts/check-repository-integrity.mjs schemas",
+    "check:conformance": "npm run build && node scripts/check-repository-integrity.mjs conformance",
+    "check:generated": "npm run build && node scripts/check-repository-integrity.mjs generated",
+    "check:positioning": "npm run build && node scripts/check-repository-integrity.mjs positioning",
+    "check:release": "npm run build && node scripts/check-repository-integrity.mjs release",
+    "check:links:external": "npm run build && node scripts/check-repository-integrity.mjs links --external"
   },
   "dependencies": {
     "ajv": "^8.17.1",

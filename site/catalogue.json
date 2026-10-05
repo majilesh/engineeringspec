@@ -1,7 +1,8 @@
 {
+  "_generated": "This file is generated. Do not edit manually.",
   "valid": true,
   "directory": "docs/engineering-specs",
-  "documents": 41,
+  "documents": 47,
   "entries": [
     {
       "id": "ES-ONBOARDING-FRICTION-COLLAPSE",
@@ -2187,6 +2188,164 @@
       ]
     },
     {
+      "id": "ES-brace-expansion-remediation",
+      "title": "Remediate brace-expansion dependency advisories",
+      "status": "implemented",
+      "file": "ES-brace-expansion-remediation.engineering-spec.md",
+      "owners": [
+        "EngineeringSpec maintainers"
+      ],
+      "sourceRefs": [
+        {
+          "id": "SRC-AUDIT",
+          "type": "other",
+          "locator": "https://github.com/majilesh/engineeringspec/actions/runs/37240279325",
+          "title": "Contract PR 157 audit failure on existing locked brace-expansion packages"
+        },
+        {
+          "id": "SRC-ADVISORY",
+          "type": "other",
+          "locator": "https://github.com/advisories/GHSA-qhr7-859c-m2p7",
+          "title": "Nested brace group recursion denial of service"
+        },
+        {
+          "id": "SRC-REWRITE",
+          "type": "other",
+          "locator": "https://github.com/advisories/GHSA-q2hr-2g5m-vwhr",
+          "title": "Quadratic brace rewrite denial of service"
+        },
+        {
+          "id": "SRC-COMMA",
+          "type": "other",
+          "locator": "https://github.com/advisories/GHSA-6j4f-fj2g-mc7p",
+          "title": "Comma group recursion denial of service"
+        }
+      ],
+      "targets": [
+        {
+          "id": "TARGET-LOCK",
+          "paths": [
+            "package-lock.json"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-BUNDLE",
+          "paths": [
+            "action/cli.mjs"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-NOTES",
+          "paths": [
+            "CHANGELOG.md"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-CLOSE",
+          "paths": [
+            "docs/engineering-specs/ES-brace-expansion-remediation.engineering-spec.md"
+          ],
+          "changePolicy": "modify"
+        }
+      ],
+      "constraints": [
+        {
+          "id": "CON-PATCH",
+          "level": "must",
+          "statement": "Update only brace-expansion and unavoidable lockfile metadata within the existing dependency graph and semver-compatible major lines, at minimum 1.1.21, 2.1.7, and 5.0.12 where installed; do not change direct dependency ranges, package identity, or upgrade Vitest.",
+          "appliesTo": [
+            "TARGET-LOCK"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-AUDIT",
+          "level": "must",
+          "statement": "A clean npm ci and npm audit --audit-level=high must succeed, with remaining moderate advisories reported honestly and no advisory suppression or audit-level weakening.",
+          "appliesTo": [
+            "TARGET-LOCK"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-COMPATIBILITY",
+          "level": "must",
+          "statement": "Existing lint, typecheck, full tests, conformance, build, demo, and package-content checks must pass; routing and target matching must preserve existing semantics.",
+          "appliesTo": [
+            "TARGET-LOCK",
+            "TARGET-BUNDLE"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-BUNDLE",
+          "level": "must",
+          "statement": "Regenerate the committed Action bundle from the unchanged reviewed source and updated dependency graph using the existing build script; the Action consistency check must pass and its execution or authorization behavior must not be widened.",
+          "appliesTo": [
+            "TARGET-BUNDLE"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-SCOPE",
+          "level": "must_not",
+          "statement": "Do not change runtime source, core formats, schemas, CI configuration, Action inputs, package.json, trusted verifier policy, or feature implementation; specification runners remain inert.",
+          "appliesTo": [
+            "TARGET-LOCK",
+            "TARGET-BUNDLE",
+            "TARGET-NOTES",
+            "TARGET-CLOSE"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-CLOSE",
+          "level": "must",
+          "statement": "After trusted checks and complete-working-state routing pass, only the exact approved-to-implemented lifecycle close may accompany this dependency implementation.",
+          "appliesTo": [
+            "TARGET-CLOSE"
+          ],
+          "enforcement": "review"
+        }
+      ],
+      "contracts": [],
+      "verification": [
+        {
+          "id": "VER-AUDIT",
+          "kind": "security",
+          "proves": [
+            "CON-AUDIT"
+          ]
+        },
+        {
+          "id": "VER-REPOSITORY",
+          "kind": "test",
+          "proves": [
+            "CON-COMPATIBILITY"
+          ]
+        },
+        {
+          "id": "VER-BUNDLE",
+          "kind": "test",
+          "proves": [
+            "CON-BUNDLE"
+          ]
+        },
+        {
+          "id": "VER-REVIEW",
+          "kind": "human_review",
+          "proves": [
+            "CON-PATCH",
+            "CON-SCOPE",
+            "CON-CLOSE"
+          ]
+        }
+      ]
+    },
+    {
       "id": "ES-compact-agent-ticket",
       "title": "Compact agent permission ticket",
       "status": "implemented",
@@ -3237,7 +3396,7 @@
     {
       "id": "ES-external-adopter-pilot-execution",
       "title": "Prepare and run the external-adopter evidence pilot",
-      "status": "approved",
+      "status": "superseded",
       "file": "ES-external-adopter-pilot-execution.engineering-spec.md",
       "owners": [
         "EngineeringSpec maintainers"
@@ -5181,7 +5340,7 @@
     {
       "id": "ES-public-brand-uplift",
       "title": "Adopt the mark-first public identity and sharpen change-authority positioning",
-      "status": "approved",
+      "status": "implemented",
       "file": "ES-public-brand-uplift.engineering-spec.md",
       "owners": [
         "EngineeringSpec maintainers"
@@ -8396,6 +8555,540 @@
       ]
     },
     {
+      "id": "ES-rc18-release",
+      "title": "Prepare and publish 0.1.0-rc.18 with the RFC 0014 runtime",
+      "status": "implemented",
+      "file": "ES-rc18-release.engineering-spec.md",
+      "owners": [
+        "EngineeringSpec maintainers"
+      ],
+      "sourceRefs": [
+        {
+          "id": "SRC-RFC0014",
+          "type": "document",
+          "locator": "rfcs/0014-routing-v2-adoption-modes.md",
+          "title": "Accepted RFC 0014 and its recorded clarifications C1-C26"
+        },
+        {
+          "id": "SRC-IMPLEMENTATION",
+          "type": "document",
+          "locator": "docs/engineering-specs/ES-routing-v2-adoption-modes.engineering-spec.md",
+          "title": "Implemented RFC 0014 authority whose work this release ships"
+        },
+        {
+          "id": "SRC-RC17",
+          "type": "document",
+          "locator": "docs/engineering-specs/ES-rc17-release.engineering-spec.md",
+          "title": "Previous release preparation precedent"
+        },
+        {
+          "id": "SRC-RC17-PUBLICATION",
+          "type": "document",
+          "locator": "docs/engineering-specs/ES-RC17-PUBLICATION.engineering-spec.md",
+          "title": "Previous publication precedent (tag binding, provenance, partial-failure rules)"
+        },
+        {
+          "id": "SRC-AUDIT",
+          "type": "security_finding",
+          "locator": "npm-audit-2026-09-25",
+          "title": "High-severity fast-uri (runtime, via ajv) and js-yaml (development, via eslint) advisories failing CI audit"
+        },
+        {
+          "id": "SRC-NPM-STATE",
+          "type": "other",
+          "locator": "npm-dist-tags-2026-09-25",
+          "title": "Observed npm dist-tags before this release - latest 0.1.0-rc.15, next 0.1.0-rc.17"
+        }
+      ],
+      "targets": [
+        {
+          "id": "TARGET-PACKAGE",
+          "component": "rc18-version-and-security-lockfile",
+          "paths": [
+            "package.json",
+            "package-lock.json"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-NOTES",
+          "component": "rc18-release-notes",
+          "paths": [
+            "CHANGELOG.md"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-GUIDANCE",
+          "component": "current-version-and-action-pin-guidance",
+          "paths": [
+            "README.md",
+            "docs/agent-integration.md",
+            "docs/cli-reference.md",
+            "docs/first-change-tutorial.md",
+            "docs/getting-started.md",
+            "docs/lifecycle.md",
+            "docs/maintaining-specs.md",
+            "docs/production-gate.md",
+            "docs/troubleshooting.md",
+            "docs/upgrading.md",
+            "skills/engineering-spec/SKILL.md",
+            "site/index.html",
+            "SPEC.md",
+            "integrations/claude/README.md",
+            "integrations/codex/README.md",
+            "integrations/cursor/README.md"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-ACTION-PIN",
+          "component": "generated-action-runtime-pin",
+          "paths": [
+            "src/adoption/releases.ts",
+            "action/cli.mjs"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-RELEASE-WORKFLOW",
+          "component": "npm-dist-tag-promotion",
+          "paths": [
+            ".github/workflows/release.yml"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-IDENTITY-TESTS",
+          "component": "current-release-identity-fixtures",
+          "paths": [
+            "test/integration/cli.test.ts",
+            "test/unit/doctor.test.ts",
+            "test/unit/release-readiness.test.ts"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-CONTRACT",
+          "component": "rc18-release-lifecycle",
+          "paths": [
+            "docs/engineering-specs/ES-rc18-release.engineering-spec.md"
+          ],
+          "changePolicy": "modify"
+        }
+      ],
+      "constraints": [
+        {
+          "id": "CON-SEQUENCING",
+          "level": "must",
+          "statement": "Approve this contract only after ES-routing-v2-adoption-modes is implemented on the trusted base, and prepare the release in a single implementation change against that base before any tag or publication.",
+          "appliesTo": [],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-VERSION",
+          "level": "must",
+          "statement": "Set the package version to exactly 0.1.0-rc.18 in package.json and package-lock.json, and rebuild action/cli.mjs so its pinned version matches; change no package name, bin, exports, files list, engines, or license.",
+          "appliesTo": [
+            "TARGET-PACKAGE",
+            "TARGET-ACTION-PIN"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-SECURITY-LOCKFILE",
+          "level": "must",
+          "statement": "Resolve the fast-uri and js-yaml high-severity advisories with lockfile-only updates inside existing semver ranges (npm audit fix without --force) so that npm audit --audit-level=high passes; do not add dependencies, change package.json dependency ranges, or take major-version upgrades. The moderate vitest advisory that needs a breaking upgrade stays out of scope and is recorded in the release notes.",
+          "appliesTo": [
+            "TARGET-PACKAGE"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-ACTION-PIN",
+          "level": "must",
+          "statement": "Re-pin CURRENT_ACTION_SHA and every current Action reference in guidance to the full SHA of the trusted-base commit that merged the RFC 0014 phase 7 change, after verifying that commit contains action/cli.mjs, passes check:action, and runs without installing dependencies. Never use a mutable ref.",
+          "appliesTo": [
+            "TARGET-ACTION-PIN",
+            "TARGET-GUIDANCE"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-GUIDANCE",
+          "level": "must",
+          "statement": "Update current-version guidance and runnable examples from 0.1.0-rc.17 to 0.1.0-rc.18, remove the unreleased markers for RFC 0014 features that this release ships, and keep historical and pilot references to earlier versions unchanged.",
+          "appliesTo": [
+            "TARGET-GUIDANCE",
+            "TARGET-IDENTITY-TESTS"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-NOTES",
+          "level": "must",
+          "statement": "Move the Unreleased RFC 0014 entries into a 0.1.0-rc.18 CHANGELOG section with the release date, list the security lockfile fixes, and make no measured productivity, correctness or adoption claims.",
+          "appliesTo": [
+            "TARGET-NOTES"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-DIST-TAGS",
+          "level": "must",
+          "statement": "Keep the v-tag-triggered release.yml, tag/package version check, npm environment, trusted publishing, public access and provenance. Release candidates still publish to next; after a successful publish, add one step that moves latest to the same exact version using the existing NPM_TOKEN secret and fails loudly if it cannot. Do not add other credentials, change permissions, or publish manually.",
+          "appliesTo": [
+            "TARGET-RELEASE-WORKFLOW"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-TRUSTED-CHECKS",
+          "level": "must",
+          "statement": "Before merging the preparation change, run npm ci, lint, typecheck, npm test, test:conformance, build, package:check, check:action, npm audit --audit-level=high, strict validation of docs/engineering-specs, and the complete-working-state check against the approved trusted base; report actual results.",
+          "appliesTo": [],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-PACKAGED-SMOKE",
+          "level": "must",
+          "statement": "Pack the prepared package, install the exact tarball in a clean directory outside the worktree, and verify the installed bin reports 0.1.0-rc.18, validates strictly, and routes a disposable standard-mode fixture (exempt path passes, uncovered path fails, advisory passes without authority) without executing declared runners.",
+          "appliesTo": [],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-PUBLICATION",
+          "level": "must",
+          "statement": "After the preparation change is merged, create the annotated tag v0.1.0-rc.18 on that exact merge commit and push only that tag; let release.yml publish. Verify from the public registry in a clean directory that 0.1.0-rc.18 installs and reports its version, that next and latest both resolve to 0.1.0-rc.18, and that provenance is present; then create the GitHub prerelease v0.1.0-rc.18 from the reviewed notes.",
+          "appliesTo": [
+            "TARGET-CONTRACT"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-PARTIAL-FAILURE",
+          "level": "must_not",
+          "statement": "After any partial failure, do not move, delete or recreate the tag, publish the same version twice, or change release identities; complete only an independently missing dist-tag or GitHub prerelease step, or stop and obtain new reviewed authority.",
+          "appliesTo": [
+            "TARGET-CONTRACT"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-NO-FEATURE-CHANGE",
+          "level": "must_not",
+          "statement": "Change no runtime behavior, format semantics, schemas, routing, CLI options, tests other than release-identity fixtures, conformance fixtures, or measurement code.",
+          "appliesTo": [],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-EXACT-CLOSE",
+          "level": "must",
+          "statement": "After publication is verified, close only this contract from approved to implemented in a lifecycle-only change with every other byte unchanged.",
+          "appliesTo": [
+            "TARGET-CONTRACT"
+          ],
+          "enforcement": "review"
+        }
+      ],
+      "contracts": [],
+      "verification": [
+        {
+          "id": "VER-IDENTITY",
+          "kind": "test",
+          "proves": [
+            "CON-VERSION"
+          ]
+        },
+        {
+          "id": "VER-TRUSTED-CHECKS",
+          "kind": "test",
+          "proves": [
+            "CON-SECURITY-LOCKFILE",
+            "CON-TRUSTED-CHECKS",
+            "CON-NO-FEATURE-CHANGE"
+          ]
+        },
+        {
+          "id": "VER-PACKAGED-SMOKE",
+          "kind": "test",
+          "proves": [
+            "CON-PACKAGED-SMOKE"
+          ]
+        },
+        {
+          "id": "VER-RELEASE-REVIEW",
+          "kind": "human_review",
+          "proves": [
+            "CON-SEQUENCING",
+            "CON-ACTION-PIN",
+            "CON-GUIDANCE",
+            "CON-NOTES",
+            "CON-DIST-TAGS",
+            "CON-PUBLICATION",
+            "CON-PARTIAL-FAILURE",
+            "CON-EXACT-CLOSE"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ES-rc19-release",
+      "title": "Prepare and publish 0.1.0-rc.19 with the Visual Verification Brief runtime",
+      "status": "implemented",
+      "file": "ES-rc19-release.engineering-spec.md",
+      "owners": [
+        "EngineeringSpec maintainers"
+      ],
+      "sourceRefs": [
+        {
+          "id": "SRC-VISUAL-BRIEF",
+          "type": "document",
+          "locator": "rfcs/0015-visual-verification-brief.md",
+          "title": "Accepted RFC 0015 Visual Verification Brief design"
+        },
+        {
+          "id": "SRC-IMPLEMENTATION",
+          "type": "document",
+          "locator": "docs/engineering-specs/ES-visual-verification-brief.engineering-spec.md",
+          "title": "Implemented Visual Verification Brief authority whose work this release ships"
+        },
+        {
+          "id": "SRC-RC17",
+          "type": "document",
+          "locator": "docs/engineering-specs/ES-rc18-release.engineering-spec.md",
+          "title": "Previous release preparation precedent"
+        },
+        {
+          "id": "SRC-RC17-PUBLICATION",
+          "type": "document",
+          "locator": "docs/engineering-specs/ES-RC17-PUBLICATION.engineering-spec.md",
+          "title": "Previous publication precedent (tag binding, provenance, partial-failure rules)"
+        }
+      ],
+      "targets": [
+        {
+          "id": "TARGET-PACKAGE",
+          "component": "rc19-version-metadata",
+          "paths": [
+            "package.json",
+            "package-lock.json"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-NOTES",
+          "component": "rc19-release-notes",
+          "paths": [
+            "CHANGELOG.md"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-GUIDANCE",
+          "component": "current-version-and-action-pin-guidance",
+          "paths": [
+            "README.md",
+            "docs/agent-integration.md",
+            "docs/cli-reference.md",
+            "docs/first-change-tutorial.md",
+            "docs/getting-started.md",
+            "docs/lifecycle.md",
+            "docs/maintaining-specs.md",
+            "docs/production-gate.md",
+            "docs/troubleshooting.md",
+            "docs/upgrading.md",
+            "skills/engineering-spec/SKILL.md",
+            "site/index.html",
+            "SPEC.md",
+            "integrations/claude/README.md",
+            "integrations/codex/README.md",
+            "integrations/cursor/README.md"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-ACTION-PIN",
+          "component": "generated-action-runtime-pin",
+          "paths": [
+            "src/adoption/releases.ts",
+            "action/cli.mjs"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-IDENTITY-TESTS",
+          "component": "current-release-identity-fixtures",
+          "paths": [
+            "test/integration/cli.test.ts",
+            "test/unit/doctor.test.ts",
+            "test/unit/release-readiness.test.ts"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-CONTRACT",
+          "component": "rc19-release-lifecycle",
+          "paths": [
+            "docs/engineering-specs/ES-rc19-release.engineering-spec.md"
+          ],
+          "changePolicy": "modify"
+        }
+      ],
+      "constraints": [
+        {
+          "id": "CON-SEQUENCING",
+          "level": "must",
+          "statement": "Approve this contract only after ES-visual-verification-brief is implemented on the trusted base, and prepare the release in a single implementation change against that base before any tag or publication.",
+          "appliesTo": [],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-VERSION",
+          "level": "must",
+          "statement": "Set the package version to exactly 0.1.0-rc.19 in package.json and package-lock.json, and rebuild action/cli.mjs so its pinned version matches; change no package name, bin, exports, files list, engines, or license.",
+          "appliesTo": [
+            "TARGET-PACKAGE",
+            "TARGET-ACTION-PIN"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-SECURITY-LOCKFILE",
+          "level": "must",
+          "statement": "Preserve the merged brace-expansion fixes and all dependency ranges; package-lock changes are limited to root version metadata. npm audit --audit-level=high must pass. Record remaining moderate findings without claiming they are resolved.",
+          "appliesTo": [
+            "TARGET-PACKAGE"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-ACTION-PIN",
+          "level": "must",
+          "statement": "Re-pin CURRENT_ACTION_SHA and every current Action reference in guidance to the full SHA of the trusted-base commit that merged the Visual Verification Brief implementation, after verifying that commit contains action/cli.mjs, passes check:action, and runs without installing dependencies. Never use a mutable ref.",
+          "appliesTo": [
+            "TARGET-ACTION-PIN",
+            "TARGET-GUIDANCE"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-GUIDANCE",
+          "level": "must",
+          "statement": "Update current-version guidance and runnable examples from 0.1.0-rc.18 to 0.1.0-rc.19, remove the unreleased markers for Visual Verification Brief features that this release ships, and keep historical and pilot references to earlier versions unchanged.",
+          "appliesTo": [
+            "TARGET-GUIDANCE",
+            "TARGET-IDENTITY-TESTS"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-NOTES",
+          "level": "must",
+          "statement": "Move the Unreleased Visual Verification Brief and brace-expansion entries into a 0.1.0-rc.19 CHANGELOG section with the release date, list the security lockfile fixes, and make no measured productivity, correctness or adoption claims. Describe evidence as supplied assertions and explicitly state that the existing change digest binds paths and change kinds rather than implementation bytes; do not imply Karpathy endorsement.",
+          "appliesTo": [
+            "TARGET-NOTES"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-DIST-TAGS",
+          "level": "must",
+          "statement": "Keep the v-tag-triggered release.yml, tag/package version check, npm environment, trusted publishing, public access and provenance. Release candidates still publish to next; after a successful publish, retain the existing step that moves latest to the same exact version using the existing NPM_TOKEN secret and fails loudly if it cannot. Do not add other credentials, change permissions, or publish manually.",
+          "appliesTo": [],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-TRUSTED-CHECKS",
+          "level": "must",
+          "statement": "Before merging the preparation change, run npm ci, lint, typecheck, npm test, test:conformance, build, package:check, check:action, npm audit --audit-level=high, strict validation of docs/engineering-specs, and the complete-working-state check against the approved trusted base; report actual results.",
+          "appliesTo": [],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-PACKAGED-SMOKE",
+          "level": "must",
+          "statement": "Pack the prepared package, install the exact tarball in a clean directory outside the worktree, and verify the installed bin reports 0.1.0-rc.19, validates strictly, and routes a disposable standard-mode fixture (exempt path passes, uncovered path fails, advisory passes without authority) without executing declared runners.",
+          "appliesTo": [],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-PUBLICATION",
+          "level": "must",
+          "statement": "After the preparation change is merged, create the annotated tag v0.1.0-rc.19 on that exact merge commit and push only that tag; let release.yml publish. Verify from the public registry in a clean directory that 0.1.0-rc.19 installs and reports its version, that next and latest both resolve to 0.1.0-rc.19, and that provenance is present; then create the GitHub prerelease v0.1.0-rc.19 from the reviewed notes. Publication is authorized only after the preparation PR passes checks and is reviewed and merged; do not publish a workspace-only build.",
+          "appliesTo": [
+            "TARGET-CONTRACT"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-PARTIAL-FAILURE",
+          "level": "must_not",
+          "statement": "After any partial failure, do not move, delete or recreate the tag, publish the same version twice, or change release identities; complete only an independently missing dist-tag or GitHub prerelease step, or stop and obtain new reviewed authority.",
+          "appliesTo": [
+            "TARGET-CONTRACT"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-NO-FEATURE-CHANGE",
+          "level": "must_not",
+          "statement": "Change no runtime behavior, format semantics, schemas, routing, CLI options, tests other than release-identity fixtures, conformance fixtures, or measurement code.",
+          "appliesTo": [],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-EXACT-CLOSE",
+          "level": "must",
+          "statement": "After publication is verified, close only this contract from approved to implemented in a lifecycle-only change with every other byte unchanged.",
+          "appliesTo": [
+            "TARGET-CONTRACT"
+          ],
+          "enforcement": "review"
+        }
+      ],
+      "contracts": [],
+      "verification": [
+        {
+          "id": "VER-IDENTITY",
+          "kind": "test",
+          "proves": [
+            "CON-VERSION"
+          ]
+        },
+        {
+          "id": "VER-TRUSTED-CHECKS",
+          "kind": "test",
+          "proves": [
+            "CON-SECURITY-LOCKFILE",
+            "CON-TRUSTED-CHECKS",
+            "CON-NO-FEATURE-CHANGE"
+          ]
+        },
+        {
+          "id": "VER-PACKAGED-SMOKE",
+          "kind": "test",
+          "proves": [
+            "CON-PACKAGED-SMOKE"
+          ]
+        },
+        {
+          "id": "VER-RELEASE-REVIEW",
+          "kind": "human_review",
+          "proves": [
+            "CON-SEQUENCING",
+            "CON-ACTION-PIN",
+            "CON-GUIDANCE",
+            "CON-NOTES",
+            "CON-DIST-TAGS",
+            "CON-PUBLICATION",
+            "CON-PARTIAL-FAILURE",
+            "CON-EXACT-CLOSE"
+          ]
+        }
+      ]
+    },
+    {
       "id": "ES-rc3-release",
       "title": "Publish the agent-first RC3 release",
       "status": "superseded",
@@ -10015,6 +10708,207 @@
       ]
     },
     {
+      "id": "ES-repository-integrity",
+      "title": "Generate shared project facts and enforce repository integrity",
+      "status": "approved",
+      "file": "ES-repository-integrity.engineering-spec.md",
+      "owners": [
+        "EngineeringSpec maintainers"
+      ],
+      "sourceRefs": [
+        {
+          "id": "SRC-GUIDANCE",
+          "type": "document",
+          "locator": "AGENTS.md",
+          "title": "Repository lifecycle and trusted checks"
+        },
+        {
+          "id": "SRC-STANDARD",
+          "type": "document",
+          "locator": "SPEC.md",
+          "title": "Normative semantics and compatibility boundaries"
+        },
+        {
+          "id": "SRC-REQUEST",
+          "type": "other",
+          "locator": "user-request-2026-10-05-repository-consistency",
+          "title": "Repository consistency architecture and Repository Integrity CI request"
+        }
+      ],
+      "targets": [
+        {
+          "id": "TARGET-TOOLING",
+          "paths": [
+            "scripts/generate-project-state.mjs",
+            "scripts/check-repository-integrity.mjs",
+            "scripts/generate-site.mjs",
+            "scripts/build-action.mjs",
+            "engineering/repository-consistency.json"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-PACKAGE",
+          "paths": [
+            "package.json",
+            "package-lock.json"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-CI",
+          "paths": [
+            ".github/workflows/ci.yml",
+            ".github/workflows/release.yml",
+            ".github/workflows/pages.yml"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-GENERATED",
+          "paths": [
+            "docs/generated/**",
+            "site/generated/**",
+            "action/compatibility.json",
+            "site/catalogue.json",
+            "site/explorer.html"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-PUBLIC",
+          "paths": [
+            "README.md",
+            "docs/REPOSITORY_INVARIANTS.md",
+            "docs/cli-reference.md",
+            "docs/getting-started.md",
+            "docs/agent-integration.md",
+            "docs/first-change-tutorial.md",
+            "docs/lifecycle.md",
+            "docs/maintaining-specs.md",
+            "docs/production-gate.md",
+            "docs/troubleshooting.md",
+            "docs/upgrading.md",
+            "site/index.html",
+            "skills/engineering-spec/SKILL.md",
+            "integrations/**/README.md",
+            "CHANGELOG.md"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-TESTS",
+          "paths": [
+            "test/unit/repository-integrity.test.ts",
+            "test/unit/release-readiness.test.ts"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-CLOSURE",
+          "paths": [
+            "docs/engineering-specs/ES-repository-integrity.engineering-spec.md"
+          ],
+          "changePolicy": "modify"
+        }
+      ],
+      "constraints": [
+        {
+          "id": "CON-FACTS",
+          "level": "must",
+          "statement": "Generate shared release facts from package.json; document every authoritative source and dependent surface. Generated files must carry the notice \"This file is generated. Do not edit manually.\" using a comment or JSON metadata field. Check mode is read-only, deterministic, and fails on missing or stale output.",
+          "appliesTo": [],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-CATEGORIES",
+          "level": "must",
+          "statement": "Provide check:versions, check:docs, check:links, check:examples, check:schemas, check:conformance, check:generated, check:positioning and aggregate check:release scripts. The aggregate reports Version consistency, Specification/schema compatibility, Conformance corpus, CLI documentation, README commands, Website commands, Example contracts, GitHub Action metadata, Generated content, Terminology, Broken links, Security invariants and Public claims. Print success only after each actual check passes; accumulate failures and exit nonzero. Declare coverage and limitations for each category.",
+          "appliesTo": [],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-CI",
+          "level": "must",
+          "statement": "Add one CI job displayed as Repository Integrity on every pull request, push and merge group; run the same aggregate before npm publication. Preserve existing trusted-base enforcement, audit, provenance, tag binding, credentials and permissions. Release checks must not publish or modify dist-tags.",
+          "appliesTo": [],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-INERT",
+          "level": "must_not",
+          "statement": "Do not execute commands extracted from documentation or specification runners. Only explicitly coded repository-owned checks may execute. Check examples through strict validation, not execution of their declared verifiers. CLI documentation inspection must not run documented commands or contact external services.",
+          "appliesTo": [],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-SCOPE",
+          "level": "must_not",
+          "statement": "Change no normative semantics, schemas, core evaluator, parser, routing, CLI API, exit codes, integration hooks or Visual Verification decision logic. Introduce no dependencies, release bump or publication. Any semantic issue found requires a separate RFC and approved contract with matching conformance fixtures.",
+          "appliesTo": [],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-HISTORY",
+          "level": "must",
+          "statement": "Preserve historical versions, Action pins, experiments and claims with explicit narrow exceptions. Current guidance is checked against canonical facts; generated compatibility metadata distinguishes an older immutable Action anchor from the current package. Do not treat every historical RC occurrence as drift or silently refresh experimental evidence.",
+          "appliesTo": [],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-LINKS",
+          "level": "must",
+          "statement": "Deterministically check local links, fragments and repository-owned public URL mappings offline. External link liveness is a separately invoked network check with explicit timeout, redirect and error handling; report it as unverified unless executed. Do not print Broken links success implying external verification when only local links were checked.",
+          "appliesTo": [],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-CLAIMS",
+          "level": "must",
+          "statement": "Document authoritative positioning, glossary, security invariants, limitations and release checklist. Automated terminology and public-claim rules have stated bounded coverage; existing security tests and conformance remain required. Human review assesses prose, claims and security boundaries; regex checks must not be described as proofs of semantic or security correctness.",
+          "appliesTo": [],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-VERIFY",
+          "level": "must",
+          "statement": "Run separately trusted repository checks and the complete-working-state strict check against origin/main before closure; inspect actual changed paths. Report observed evidence, compatibility and security assessment. Close only through finish after required checks and reviews; never manufacture receipts.",
+          "appliesTo": [],
+          "enforcement": "test"
+        }
+      ],
+      "contracts": [],
+      "verification": [
+        {
+          "id": "VER-INTEGRITY",
+          "kind": "test",
+          "proves": [
+            "CON-FACTS",
+            "CON-CATEGORIES",
+            "CON-INERT",
+            "CON-HISTORY",
+            "CON-LINKS"
+          ]
+        },
+        {
+          "id": "VER-REPOSITORY",
+          "kind": "test",
+          "proves": [
+            "CON-VERIFY"
+          ]
+        },
+        {
+          "id": "VER-REVIEW",
+          "kind": "human_review",
+          "proves": [
+            "CON-CI",
+            "CON-SCOPE",
+            "CON-CLAIMS"
+          ]
+        }
+      ]
+    },
+    {
       "id": "ES-risk-stratified-pilot-evidence",
       "title": "Stratify pilot evidence by task risk",
       "status": "implemented",
@@ -10577,7 +11471,924 @@
           ]
         }
       ]
+    },
+    {
+      "id": "ES-routing-v2-adoption-modes",
+      "title": "Routing v2, adoption modes, and adoption safety",
+      "status": "implemented",
+      "file": "ES-routing-v2-adoption-modes.engineering-spec.md",
+      "owners": [
+        "EngineeringSpec maintainers"
+      ],
+      "sourceRefs": [
+        {
+          "id": "SRC-REVIEW",
+          "type": "other",
+          "locator": "maintainer-engineering-review-2026-09-25",
+          "title": "Maintainer engineering review reproducing routing, onboarding, wiring, benchmark, coverage, and Action findings (summarized in RFC 0014 Motivation)"
+        },
+        {
+          "id": "SRC-RFC",
+          "type": "document",
+          "locator": "rfcs/0014-routing-v2-adoption-modes.md",
+          "title": "Proposed Routing v2 and adoption modes design, threat model, and unresolved questions"
+        },
+        {
+          "id": "SRC-PILOT",
+          "type": "document",
+          "locator": "docs/engineering-specs/ES-external-adopter-pilot-execution.engineering-spec.md",
+          "title": "Approved pilot authority whose CON-NO-PRODUCT-WORK freeze this contract supersedes"
+        },
+        {
+          "id": "SRC-SEQUENCING",
+          "type": "document",
+          "locator": "rfcs/0013-rc16-historical-replay-maintenance-sequencing.md",
+          "title": "Existing maintenance-sequencing design that remains supported and unchanged"
+        },
+        {
+          "id": "SRC-RC14",
+          "type": "document",
+          "locator": "rfcs/0011-maximum-safety-minimum-ceremony.md",
+          "title": "Accepted immutable authority and implementation-plus-close design"
+        },
+        {
+          "id": "SRC-SECOND-REVIEW",
+          "type": "other",
+          "locator": "independent-second-review-2026-09-25",
+          "title": "Independent reproduction of the review findings, with verified vendor-hook and GitHub ruleset references"
+        }
+      ],
+      "targets": [
+        {
+          "id": "TARGET-RFC",
+          "component": "routing-v2-design-record",
+          "paths": [
+            "rfcs/0014-routing-v2-adoption-modes.md"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-CONTRACT",
+          "component": "routing-v2-contract-lifecycle",
+          "paths": [
+            "docs/engineering-specs/ES-routing-v2-adoption-modes.engineering-spec.md"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-ROUTING",
+          "component": "routing-decision-algorithm",
+          "paths": [
+            "src/routing/route.ts",
+            "src/routing/select.ts",
+            "src/routing/governance.ts",
+            "src/routing/loadCandidates.ts",
+            "src/routing/types.ts",
+            "src/gate/gate.ts",
+            "src/gate/collectDiff.ts",
+            "src/gate/types.ts",
+            "src/authority/diff.ts",
+            "src/query/applicability.ts",
+            "src/query/changeBrief.ts"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-POLICY-NEW",
+          "component": "modes-policy-selector-standing-budget-receipt-modules",
+          "paths": [
+            "src/policy/**",
+            "src/receipts/**",
+            "src/profiles/lite/**"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-CONFIG",
+          "component": "trusted-base-repository-config",
+          "paths": [
+            "src/config/repositoryConfig.ts",
+            "schemas/repository-config-0.1.schema.json"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-SCHEMAS-NEW",
+          "component": "new-versioned-schemas",
+          "paths": [
+            "schemas/repository-config-0.2.schema.json",
+            "schemas/closure-receipt-0.1.schema.json",
+            "schemas/profiles/lite-0.1.schema.json"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-FORMAT",
+          "component": "additive-draft-format-fields",
+          "paths": [
+            "schemas/engineering-spec-0.1.schema.json",
+            "src/model/types.ts",
+            "src/model/constants.ts",
+            "src/parser/parseMarkdown.ts",
+            "src/normalizer/normalize.ts",
+            "src/normalizer/digest.ts",
+            "src/validator/validateStructure.ts",
+            "src/validator/validateSemantics.ts",
+            "src/validator/validateReferences.ts",
+            "src/validator/validateProfiles.ts",
+            "src/diagnostics/codes.ts",
+            "src/diagnostics/formatter.ts",
+            "src/diagnostics/github.ts"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-EVIDENCE",
+          "component": "implementation-receipt-integration",
+          "paths": [
+            "src/evidence/receipt.ts",
+            "src/evidence/prMetadata.ts"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-CLI",
+          "component": "cli-workflow-commands",
+          "paths": [
+            "src/cli/program.ts",
+            "src/cli/adopt.ts",
+            "src/cli/templates.ts",
+            "src/cli/propose.ts",
+            "src/cli/next.ts",
+            "src/cli/work.ts",
+            "src/cli/finish.ts",
+            "src/cli/doctor.ts",
+            "src/cli/status.ts",
+            "src/cli/review.ts",
+            "src/cli/prepare.ts",
+            "src/cli/benchmark.ts",
+            "src/cli/render.ts",
+            "src/adoption/releases.ts",
+            "src/index.ts"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-GUARD-NEW",
+          "component": "vendor-neutral-edit-guard-and-adapters",
+          "paths": [
+            "src/cli/guard.ts",
+            "src/guard/**",
+            "integrations/claude/hooks/**",
+            "integrations/codex/hooks/**",
+            "integrations/cursor/hooks/**"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-INTEGRATION-DOCS",
+          "component": "agent-integration-guidance",
+          "paths": [
+            "integrations/README.md",
+            "integrations/claude/README.md",
+            "integrations/codex/README.md",
+            "integrations/cursor/README.md",
+            "integrations/copilot/README.md",
+            "integrations/generic/README.md",
+            "skills/engineering-spec/SKILL.md",
+            "AGENTS.md",
+            "CLAUDE.md"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-TESTS",
+          "component": "tests-and-conformance",
+          "paths": [
+            "test/**",
+            "conformance/**",
+            "vitest.config.ts"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-BENCHMARK",
+          "component": "executable-ceremony-benchmark",
+          "paths": [
+            "benchmarks/ceremony-scenarios.json",
+            "benchmarks/ceremony.schema.json",
+            "benchmarks/README.md"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-ACTION",
+          "component": "action-runtime-and-ci",
+          "paths": [
+            "action.yml",
+            ".github/workflows/ci.yml",
+            "package.json",
+            "package-lock.json",
+            "scripts/check-package-contents.mjs"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-ACTION-NEW",
+          "component": "bundled-action-runtime",
+          "paths": [
+            "action/**",
+            "scripts/build-action.mjs"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-DOCS",
+          "component": "normative-and-user-documentation",
+          "paths": [
+            "SPEC.md",
+            "README.md",
+            "CHANGELOG.md",
+            "docs/getting-started.md",
+            "docs/first-change-tutorial.md",
+            "docs/production-gate.md",
+            "docs/cli-reference.md",
+            "docs/troubleshooting.md",
+            "docs/lifecycle.md",
+            "docs/maintaining-specs.md",
+            "docs/agent-integration.md",
+            "docs/integrations.md",
+            "examples/adopters/CODEOWNERS.example"
+          ],
+          "changePolicy": "modify"
+        }
+      ],
+      "constraints": [
+        {
+          "id": "CON-PRESERVE-INVARIANTS",
+          "level": "must",
+          "statement": "Preserve trusted-base-pinned authority loading at immutable resolved SHAs, deny-overrides-allow, inert specification runners, byte-identical canonical JSON and digests for all existing valid fixtures, the restricted EngineeringSpec glob dialect for every new policy or selector path, and agent neutrality of the core format.",
+          "appliesTo": [],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-LEGACY-COMPAT",
+          "level": "must",
+          "statement": "A trusted-base repository configuration without mode must produce identical routing decisions, outcomes, diagnostics, and changed digests for every existing routing, governance, authority-diff, sequencing, and replay conformance fixture and integration test.",
+          "appliesTo": [],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-MODES",
+          "level": "must",
+          "statement": "Implement advisory, standard, and controlled modes exactly as the RFC 0014 decision-and-outcome table defines; decisions must be identical across modes, only outcomes may differ, and advisory output must state that it is not enforced.",
+          "appliesTo": [
+            "TARGET-ROUTING",
+            "TARGET-POLICY-NEW",
+            "TARGET-CONFIG",
+            "TARGET-CLI"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-ZERO-CONTRACT",
+          "level": "must",
+          "statement": "A fresh repository adopted with default adopt options must be configured for advisory mode and its adoption pull request must pass the generated workflow check with zero contracts, verified end to end in a temporary Git repository with the built CLI.",
+          "appliesTo": [
+            "TARGET-CLI",
+            "TARGET-ACTION"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-POLICY",
+          "level": "must",
+          "statement": "Governed, exempt, protected, and grant-before-spend paths, budgets, and selector settings must be read only from the trusted-base configuration; protected must override exempt; the specification directory, repository configuration, and CODEOWNERS must be implicitly protected in standard and controlled modes.",
+          "appliesTo": [
+            "TARGET-CONFIG",
+            "TARGET-POLICY-NEW",
+            "TARGET-ROUTING"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-SELECTOR-NARROW",
+          "level": "must",
+          "statement": "A contract selector must be treated as untrusted data, must resolve to exactly one eligible trusted-base contract or fail closed without falling back, and may only narrow the positive claims considered; it must never widen targets, select workspace, head, draft, proposed, spent, or expired authority, satisfy protected or grant-before-spend paths with standing authority, or change mode or policy.",
+          "appliesTo": [
+            "TARGET-ROUTING",
+            "TARGET-POLICY-NEW",
+            "TARGET-CLI",
+            "TARGET-ACTION"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-DENY-FIRST",
+          "level": "must_not",
+          "statement": "No selector, mode, tier, exemption, standing authority, receipt, budget, lite profile, or guard result may suppress or reorder a read_only, observe, or change-policy denial from any eligible approved contract.",
+          "appliesTo": [
+            "TARGET-ROUTING",
+            "TARGET-POLICY-NEW",
+            "TARGET-GUARD-NEW"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-STANDING",
+          "level": "must",
+          "statement": "Standing authority must declare expires_at, become ineligible after expiry evaluated against the trusted base commit timestamp rather than wall-clock time, never be closed by a receipt, and never positively satisfy protected or grant-before-spend paths.",
+          "appliesTo": [
+            "TARGET-FORMAT",
+            "TARGET-POLICY-NEW",
+            "TARGET-ROUTING"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-RECEIPT-FAILSAFE",
+          "level": "must",
+          "statement": "Closure receipts must bind contract ID, revision, closure semantic digest, trusted base SHA, and routed change digest; must only remove eligibility of change authority; and receipt location and timing must be resolved in RFC 0014 before any receipt implementation begins.",
+          "appliesTo": [
+            "TARGET-POLICY-NEW",
+            "TARGET-EVIDENCE",
+            "TARGET-SCHEMAS-NEW",
+            "TARGET-ROUTING"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-LITE",
+          "level": "must",
+          "statement": "The lite profile must require only frontmatter and targets, validate any optional blocks it contains as today, be rejected with an unsupported-profile diagnostic by implementations that do not support it, and never satisfy a protected path.",
+          "appliesTo": [
+            "TARGET-FORMAT",
+            "TARGET-POLICY-NEW",
+            "TARGET-SCHEMAS-NEW",
+            "TARGET-CLI"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-BUDGETS",
+          "level": "must",
+          "statement": "Optional contract and repository change budgets must count files and changed lines deterministically from the same resolved base and head range as routing, count binary files toward files only, and report over_budget as a whole-change decision.",
+          "appliesTo": [
+            "TARGET-ROUTING",
+            "TARGET-POLICY-NEW"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-SECURE-WIRING",
+          "level": "must",
+          "statement": "adopt must generate CODEOWNERS entries for the specification directory, .github/workflows, .github/CODEOWNERS, and engineering-spec.json; doctor must warn when any are missing; production guidance must specify required check, required code-owner review, stale-approval dismissal, most-recent-push approval, and the residual workflow-modification risk with organization-level mitigations; adopt must stop generating the Copilot prompt file.",
+          "appliesTo": [
+            "TARGET-CLI",
+            "TARGET-DOCS",
+            "TARGET-INTEGRATION-DOCS"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-GUARD",
+          "level": "must",
+          "statement": "engineeringspec guard must be read-only, make no network requests, execute no runners, and use the same trusted-base authority, policy, and decision algorithm as routing; vendor adapters must stay thin, be described as guardrails rather than enforcement boundaries, run complete-state check for shell-write coverage, and be re-verified against current vendor hook documentation at implementation time.",
+          "appliesTo": [
+            "TARGET-GUARD-NEW",
+            "TARGET-INTEGRATION-DOCS"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-BENCHMARK-EXECUTABLE",
+          "level": "must",
+          "statement": "Ceremony benchmark scenarios must declare inputs and expected outcomes only; the harness must derive actual outcomes, command counts, mutations, and diagnostics by executing the real CLI in temporary Git repositories, and must reject authored actual outcomes.",
+          "appliesTo": [
+            "TARGET-BENCHMARK",
+            "TARGET-CLI",
+            "TARGET-TESTS"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-COVERAGE",
+          "level": "must",
+          "statement": "Coverage thresholds of at least 85 statements, 80 branches, 85 functions, and 85 lines must include src/routing, src/authority, src/config, src/gate, src/policy, src/receipts, src/guard, and the next, work, finish, adopt, and guard CLI modules; tests must not call process.chdir.",
+          "appliesTo": [
+            "TARGET-TESTS"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-ACTION-STARTUP",
+          "level": "must",
+          "statement": "The Action must not compile TypeScript or install development dependencies at runtime, must declare outputs for result, mode, classification, and selected contract, and production guidance must continue to pin a reviewed immutable SHA.",
+          "appliesTo": [
+            "TARGET-ACTION",
+            "TARGET-ACTION-NEW",
+            "TARGET-DOCS"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-SELF-GATING",
+          "level": "must",
+          "statement": "Before any routing, authority, config, policy, or guard semantic change, repository CI must evaluate pull-request routing with a CLI built from the trusted base or a pinned reviewed SHA rather than the pull request head.",
+          "appliesTo": [
+            "TARGET-ACTION"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-PHASE-ORDER",
+          "level": "must",
+          "statement": "Implement in separately reviewed pull requests in this order - phase 0 self-gating, test hygiene, and coverage scope; phase 1 conformance fixtures; phase 2 config, modes, policy, and zero-contract advisory; phase 3 selector, standing authority, and budgets; phase 4 receipts and lite profile; phase 5 secure adoption wiring and documentation; phase 6 guard and adapters; phase 7 executable ceremony benchmark and Action startup. The first implementation PR must record RFC 0014 as Accepted with resolved decisions.",
+          "appliesTo": [],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-PACKAGE-SCOPE",
+          "level": "must_not",
+          "statement": "Changes to package.json and package-lock.json must not add runtime dependencies, change package identity, or bump the package version; only development tooling needed for Action bundling or tests is authorized.",
+          "appliesTo": [
+            "TARGET-ACTION"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-SCOPE",
+          "level": "must_not",
+          "statement": "This authority must not publish, tag, release, or version the package or Action; modify site, brand, pages or release workflows, replay, catalogue, architecture, measurement, or pilot evidence; add MCP, ACP, hosted services or integrations, telemetry, or network access in validation, routing, guard, or receipts; or change maintenance-sequencing semantics.",
+          "appliesTo": [],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-SUPERSESSION",
+          "level": "must",
+          "statement": "The approval change must move this contract to approved and ES-external-adopter-pilot-execution from approved to superseded in the same contract-only change, and no implementation may begin until that change is merged to the trusted base.",
+          "appliesTo": [
+            "TARGET-CONTRACT"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-CLOSE",
+          "level": "must",
+          "statement": "After all phases, separately trusted checks, and security review are complete, close this contract only through the exact approved to implemented monotonic lifecycle transition.",
+          "appliesTo": [
+            "TARGET-CONTRACT"
+          ],
+          "enforcement": "review"
+        }
+      ],
+      "contracts": [],
+      "verification": [
+        {
+          "id": "VER-CONFORMANCE",
+          "kind": "test",
+          "proves": [
+            "CON-PRESERVE-INVARIANTS",
+            "CON-LEGACY-COMPAT",
+            "CON-MODES",
+            "CON-POLICY",
+            "CON-SELECTOR-NARROW",
+            "CON-DENY-FIRST",
+            "CON-STANDING",
+            "CON-RECEIPT-FAILSAFE",
+            "CON-LITE",
+            "CON-BUDGETS"
+          ]
+        },
+        {
+          "id": "VER-UNIT",
+          "kind": "test",
+          "proves": [
+            "CON-COVERAGE"
+          ]
+        },
+        {
+          "id": "VER-ADOPTION",
+          "kind": "test",
+          "proves": [
+            "CON-ZERO-CONTRACT",
+            "CON-SECURE-WIRING"
+          ]
+        },
+        {
+          "id": "VER-GUARD",
+          "kind": "test",
+          "proves": [
+            "CON-GUARD"
+          ]
+        },
+        {
+          "id": "VER-BENCHMARK",
+          "kind": "test",
+          "proves": [
+            "CON-BENCHMARK-EXECUTABLE"
+          ]
+        },
+        {
+          "id": "VER-ACTION",
+          "kind": "static_analysis",
+          "proves": [
+            "CON-ACTION-STARTUP"
+          ]
+        },
+        {
+          "id": "VER-SELF-GATING",
+          "kind": "test",
+          "proves": [
+            "CON-SELF-GATING",
+            "CON-SCOPE"
+          ]
+        },
+        {
+          "id": "VER-REVIEW",
+          "kind": "human_review",
+          "proves": [
+            "CON-PHASE-ORDER",
+            "CON-PACKAGE-SCOPE",
+            "CON-SUPERSESSION",
+            "CON-CLOSE",
+            "CON-SELECTOR-NARROW",
+            "CON-DENY-FIRST",
+            "CON-RECEIPT-FAILSAFE"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ES-visual-verification-brief",
+      "title": "Visual Verification Brief",
+      "status": "implemented",
+      "file": "ES-visual-verification-brief.engineering-spec.md",
+      "owners": [
+        "EngineeringSpec maintainers"
+      ],
+      "sourceRefs": [
+        {
+          "id": "SRC-REVIEW",
+          "type": "document",
+          "locator": "src/cli/review.ts",
+          "title": "Existing deterministic complete-state review and trusted-base contract projection"
+        },
+        {
+          "id": "SRC-EVIDENCE",
+          "type": "document",
+          "locator": "src/evidence/receipt.ts",
+          "title": "Existing bound evidence envelope and verification states"
+        },
+        {
+          "id": "SRC-BOUNDARY",
+          "type": "document",
+          "locator": "docs/agent-control-plane.md",
+          "title": "Separation of reviewed authority from runtime execution and evidence collection"
+        },
+        {
+          "id": "SRC-EXPLORER",
+          "type": "document",
+          "locator": "src/catalogue/catalogue.ts",
+          "title": "Existing read-only HTML presentation precedent"
+        },
+        {
+          "id": "SRC-WORKFLOW",
+          "type": "document",
+          "locator": "AGENTS.md",
+          "title": "Reviewed authority before implementation and separately trusted verification"
+        }
+      ],
+      "targets": [
+        {
+          "id": "TARGET-MODEL",
+          "component": "visual-verification-projection",
+          "paths": [
+            "src/query/verificationBrief.ts"
+          ],
+          "changePolicy": "create"
+        },
+        {
+          "id": "TARGET-RENDERER",
+          "component": "standalone-html-renderer",
+          "paths": [
+            "src/cli/verificationBrief.ts"
+          ],
+          "changePolicy": "create"
+        },
+        {
+          "id": "TARGET-INTEGRATION",
+          "component": "additive-review-html-output",
+          "paths": [
+            "src/cli/program.ts",
+            "src/cli/review.ts",
+            "src/index.ts"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-SCHEMA",
+          "component": "versioned-presentation-contract",
+          "paths": [
+            "schemas/verification-brief-0.1.schema.json"
+          ],
+          "changePolicy": "create"
+        },
+        {
+          "id": "TARGET-TESTS",
+          "component": "projection-rendering-and-cli-tests",
+          "paths": [
+            "test/unit/verification-brief.test.ts",
+            "test/integration/verification-brief.test.ts",
+            "test/conformance/verification-brief.test.ts"
+          ],
+          "changePolicy": "create"
+        },
+        {
+          "id": "TARGET-FIXTURES",
+          "component": "visual-brief-conformance-inputs",
+          "paths": [
+            "conformance/verification-brief/cases.json"
+          ],
+          "changePolicy": "create"
+        },
+        {
+          "id": "TARGET-EXISTING-TESTS",
+          "component": "existing-review-compatibility",
+          "paths": [
+            "test/unit/review.test.ts",
+            "test/integration/cli.test.ts"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-RFC",
+          "component": "reviewed-presentation-semantics",
+          "paths": [
+            "rfcs/0015-visual-verification-brief.md"
+          ],
+          "changePolicy": "create"
+        },
+        {
+          "id": "TARGET-DOCS",
+          "component": "feature-usage-and-limitations",
+          "paths": [
+            "docs/visual-verification-brief.md"
+          ],
+          "changePolicy": "create"
+        },
+        {
+          "id": "TARGET-CURRENT-DOCS",
+          "component": "command-discovery-and-release-notes",
+          "paths": [
+            "docs/cli-reference.md",
+            "README.md",
+            "CHANGELOG.md"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-ACTION",
+          "component": "generated-cli-bundle-consistency",
+          "paths": [
+            "action/cli.mjs"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-CLOSE",
+          "component": "exact-contract-lifecycle-close",
+          "paths": [
+            "docs/engineering-specs/ES-visual-verification-brief.engineering-spec.md"
+          ],
+          "changePolicy": "modify"
+        }
+      ],
+      "constraints": [
+        {
+          "id": "CON-AUTHORITY",
+          "level": "must",
+          "statement": "The brief must project the existing trusted-base repository-wide review without changing routing, selection, governance, enforcement, permissions, or lifecycle semantics; workspace content, renderer state, and supplied evidence grant no authority.",
+          "appliesTo": [
+            "TARGET-MODEL",
+            "TARGET-INTEGRATION",
+            "TARGET-RENDERER"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-PROVENANCE",
+          "level": "must",
+          "statement": "Preserve base and change identity, contract revision and semantic digest, evaluation completeness, every route decision, classification, diagnostics, and next action; advisory success and partial evaluation must not imply authorization or complete verification.",
+          "appliesTo": [
+            "TARGET-MODEL",
+            "TARGET-INTEGRATION",
+            "TARGET-RENDERER",
+            "TARGET-SCHEMA"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-RELATIONSHIPS",
+          "level": "must",
+          "statement": "The obligation view must derive edges from trusted declarations, namespace IDs by contract, preserve missing-verifier and multi-proof relationships, and never infer correctness or impact from visual coverage.",
+          "appliesTo": [
+            "TARGET-MODEL",
+            "TARGET-RENDERER"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-EVIDENCE",
+          "level": "must",
+          "statement": "Validate supplied evidence against exact checked authority and change identity with the existing reader, reject duplicates and invalid input, preserve evidence states, and label reported passes as supplied assertions rather than independently verified execution.",
+          "appliesTo": [
+            "TARGET-MODEL",
+            "TARGET-INTEGRATION",
+            "TARGET-RENDERER"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-INERT",
+          "level": "must_not",
+          "statement": "The feature must not execute specification runners or trusted verifiers, resolve evidence artifacts, read artifact contents, fetch references, invoke a model, send telemetry, launch a browser, mutate contracts, or publish a brief.",
+          "appliesTo": [
+            "TARGET-MODEL",
+            "TARGET-INTEGRATION",
+            "TARGET-RENDERER"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-RENDER-SAFETY",
+          "level": "must",
+          "statement": "Escape all untrusted content and script boundaries, neutralize unsafe display controls, omit runner payloads, prohibit active artifact URLs, and apply a restrictive hash-based content security policy with no external resources or dynamic code evaluation.",
+          "appliesTo": [
+            "TARGET-RENDERER",
+            "TARGET-MODEL"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-USABILITY",
+          "level": "must",
+          "statement": "The standalone brief must expose readable content without JavaScript, accessible keyboard filters, textual relationship equivalents, light and dark themes, print and narrow-screen layouts, and status labels that do not depend on color; wording must distinguish scope authorization from verification and avoid compliance or productivity claims.",
+          "appliesTo": [
+            "TARGET-RENDERER",
+            "TARGET-DOCS",
+            "TARGET-CURRENT-DOCS"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-COMPATIBILITY",
+          "level": "must",
+          "statement": "Existing text, JSON, Markdown, GitHub output, review selectors and exit behavior must remain compatible; the new HTML model must be schema-versioned and deterministic for identical inputs, with no nondeterministic generation time or random identity.",
+          "appliesTo": [
+            "TARGET-MODEL",
+            "TARGET-INTEGRATION",
+            "TARGET-SCHEMA",
+            "TARGET-EXISTING-TESTS"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-RFC",
+          "level": "must",
+          "statement": "RFC 0015 must document the presentation and evidence semantics before dependent runtime changes, with matching conformance cases for no changes, governance, complete and partial checks, all routing outcomes, advisory enforcement, evidence bindings, and renderer injection boundaries.",
+          "appliesTo": [
+            "TARGET-RFC",
+            "TARGET-FIXTURES",
+            "TARGET-TESTS",
+            "TARGET-SCHEMA"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-BOUNDED-SCOPE",
+          "level": "must_not",
+          "statement": "This feature must not change core format 0.1, repository configuration, existing evidence or receipt schemas, dependency or package versions, Action inputs or enforcement behavior, trusted verifier execution, CI workflows, adoption generation, the public website, or model-specific integrations; it must not add video, audio, hosted services, cryptographic attestation, inferred architecture, or telemetry.",
+          "appliesTo": [
+            "TARGET-MODEL",
+            "TARGET-RENDERER",
+            "TARGET-INTEGRATION",
+            "TARGET-SCHEMA",
+            "TARGET-DOCS",
+            "TARGET-CURRENT-DOCS",
+            "TARGET-ACTION"
+          ],
+          "enforcement": "review"
+        },
+        {
+          "id": "CON-BUNDLE",
+          "level": "must",
+          "statement": "The committed Action bundle may change only as deterministic regeneration of the reviewed CLI source and must pass the existing bundle consistency check without changing Action authorization or execution policy.",
+          "appliesTo": [
+            "TARGET-ACTION"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-CLOSE",
+          "level": "must",
+          "statement": "Only the exact approved-to-implemented lifecycle transition may accompany verified implementation; this proposed workspace contract grants no permission and must not be approved or widened and spent in the same change.",
+          "appliesTo": [
+            "TARGET-CLOSE"
+          ],
+          "enforcement": "review"
+        }
+      ],
+      "contracts": [],
+      "verification": [
+        {
+          "id": "VER-PROJECTION",
+          "kind": "test",
+          "proves": [
+            "CON-RELATIONSHIPS"
+          ]
+        },
+        {
+          "id": "VER-EVIDENCE",
+          "kind": "test",
+          "proves": [
+            "CON-EVIDENCE"
+          ]
+        },
+        {
+          "id": "VER-SECURITY",
+          "kind": "security",
+          "proves": [
+            "CON-INERT",
+            "CON-RENDER-SAFETY"
+          ]
+        },
+        {
+          "id": "VER-CONFORMANCE",
+          "kind": "test",
+          "proves": [
+            "CON-AUTHORITY",
+            "CON-PROVENANCE"
+          ]
+        },
+        {
+          "id": "VER-CLI",
+          "kind": "test",
+          "proves": [
+            "CON-COMPATIBILITY"
+          ]
+        },
+        {
+          "id": "VER-REPOSITORY",
+          "kind": "test",
+          "proves": [
+            "CON-BUNDLE"
+          ]
+        },
+        {
+          "id": "VER-ACCESSIBILITY",
+          "kind": "human_review",
+          "proves": [
+            "CON-USABILITY"
+          ]
+        },
+        {
+          "id": "VER-STANDARDS",
+          "kind": "human_review",
+          "proves": [
+            "CON-RFC"
+          ]
+        },
+        {
+          "id": "VER-BOUNDARY",
+          "kind": "human_review",
+          "proves": [
+            "CON-BOUNDED-SCOPE",
+            "CON-CLOSE"
+          ]
+        }
+      ]
     }
   ],
-  "diagnostics": []
+  "diagnostics": [
+    {
+      "code": "ESP005",
+      "severity": "info",
+      "message": "Unknown structured block \"engineering-x-engineeringspec-conformance-inventory\" is preserved as an extension",
+      "file": "docs/engineering-specs/ES-routing-v2-adoption-modes.engineering-spec.md",
+      "location": {
+        "file": "docs/engineering-specs/ES-routing-v2-adoption-modes.engineering-spec.md",
+        "start": {
+          "line": 443,
+          "column": 1,
+          "offset": 24161
+        },
+        "end": {
+          "line": 486,
+          "column": 4,
+          "offset": 26944
+        }
+      }
+    }
+  ]
 }
