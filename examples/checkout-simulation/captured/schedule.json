@@ -1,0 +1,1 @@
+{"version":1,"seed":1,"initial":"empty bank and receipt store","order":"order-1","scheduler":"virtual ticks, FIFO","outageStart":1,"outageEnd":2,"replyTick":1,"retryDelay":2}
