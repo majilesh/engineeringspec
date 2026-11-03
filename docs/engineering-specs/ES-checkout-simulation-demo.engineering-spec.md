@@ -4,7 +4,7 @@ spec_format_version: "0.1"
 spec_revision: 3
 id: ES-checkout-simulation-demo
 title: Replayable checkout simulation evidence
-status: approved
+status: implemented
 owners:
   - team: EngineeringSpec maintainers
 repository:

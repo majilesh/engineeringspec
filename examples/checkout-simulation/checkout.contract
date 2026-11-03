@@ -1,0 +1,38 @@
+---
+spec_format: engineering-spec
+spec_format_version: "0.1"
+spec_revision: 1
+id: ES-receipt
+title: Recover the receipt after a confirmed charge
+status: approved
+owners: [{ team: checkout }]
+---
+
+# Controlled checkout fixture
+
+```engineering-source-refs
+- id: SRC-1
+  type: document
+  ref: checkout.mjs
+```
+
+```engineering-targets
+- id: TARGET-1
+  component: checkout
+  paths: [checkout.mjs]
+  change_policy: modify
+```
+
+```engineering-constraints
+- id: RECEIPT-ONE
+  level: must
+  statement: After recovery each successfully charged order has exactly one receipt.
+  enforcement: { kind: test, verifier_ref: VER-RECEIPT }
+```
+
+```engineering-verification
+- id: VER-RECEIPT
+  kind: test
+  proves: [RECEIPT-ONE]
+  runner: { type: reference, reference: controlled checkout corpus }
+```
