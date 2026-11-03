@@ -4,7 +4,7 @@ spec_format_version: "0.1"
 spec_revision: 1
 id: ES-skill-install-site
 title: Install the EngineeringSpec agent skill
-status: approved
+status: implemented
 owners:
   - team: EngineeringSpec maintainers
 repository:
