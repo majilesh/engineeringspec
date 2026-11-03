@@ -29,7 +29,7 @@
     <header>
       <nav class="site-nav" aria-label="Primary">
         <a class="brand" href="/" aria-label="EngineeringSpec home"><img src="/assets/lockup.svg" alt="EngineeringSpec" width="1052" height="172"></a>
-        <span class="nav-links"><a href="/blog/">Journal</a><a href="/explorer.html">Explorer</a><a href="https://github.com/majilesh/engineeringspec">GitHub</a><a href="/spec/0.1/">Specification</a></span>
+        <span class="nav-links"><a href="#agent-skill">Agent skill</a><a href="/blog/">Journal</a><a href="/explorer.html">Explorer</a><a href="https://github.com/majilesh/engineeringspec">GitHub</a><a href="/spec/0.1/">Specification</a></span>
       </nav>
     </header>
 
@@ -93,6 +93,21 @@ engineeringspec work ES-change
 engineeringspec finish ES-change</code></pre>
         <!-- project-state:end -->
         <div class="actions"><a class="button" style="background:var(--mint);border-color:var(--mint);color:var(--forest-800)" href="https://github.com/majilesh/engineeringspec/blob/main/benchmarks/pilot-guide.md">Try a paired pilot</a><a class="button secondary" style="border-color:var(--cloud);color:var(--cloud)" href="/blog/give-coding-agents-permission-not-just-prompts/">Read the argument</a></div>
+      </section>
+      <section class="quickstart" id="agent-skill" aria-labelledby="skill-title">
+        <p class="eyebrow" style="color:var(--mint)">Agent skill</p>
+        <h2 id="skill-title">Use EngineeringSpec with Codex</h2>
+        <p>From your project directory, install the skill with the command below. It teaches Codex how to use your repository’s configured EngineeringSpec CLI. The approved contract on your trusted Git base determines what Codex can change.</p>
+        <pre><code>npx --yes skills add majilesh/engineeringspec --skill engineering-spec --agent codex --copy --yes</code></pre>
+        <h3>Try a prompt</h3>
+        <dl>
+          <dt><strong>Before coding</strong></dt>
+          <dd>Use EngineeringSpec to tell me whether I can change checkout retries and which files the approved contract covers.</dd>
+          <dt><strong>When proposing a guarantee</strong></dt>
+          <dd>Draft a contract requiring every successful charge to have a receipt after recovery. Include how we would verify it.</dd>
+          <dt><strong>Before merging</strong></dt>
+          <dd>Review this change against its approved contract. Show which guarantees have evidence and which still need a check.</dd>
+        </dl>
       </section>
     </main>
 
