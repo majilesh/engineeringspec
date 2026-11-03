@@ -2380,6 +2380,13 @@
           "changePolicy": "modify"
         },
         {
+          "id": "TARGET-INVENTORY",
+          "paths": [
+            "engineering/repository-consistency.json"
+          ],
+          "changePolicy": "modify"
+        },
+        {
           "id": "TARGET-GENERATED",
           "paths": [
             "action/cli.mjs",
@@ -2393,10 +2400,11 @@
         {
           "id": "CON-CI",
           "level": "must",
-          "statement": "Resolve the high and critical dependency advisories using supported releases compatible with Node 20 and 22. Keep test coverage thresholds and CI gates intact. Limit test configuration changes to necessary runner compatibility. Regenerate catalogue outputs from the final lifecycle state and rebuild the Action only if its inputs change. Verify clean installation, audit, release integrity, Action consistency and the existing quality suite.",
+          "statement": "Resolve the high and critical dependency advisories using supported releases compatible with Node 20 and 22. Keep test coverage thresholds and CI gates intact. Limit test configuration changes to necessary runner compatibility. Register only the new checkout walkthrough in the public surface inventory. Regenerate catalogue outputs from the final lifecycle state and rebuild the Action only if its inputs change. Verify clean installation, audit, release integrity, Action consistency and the existing quality suite.",
           "appliesTo": [
             "TARGET-AUDIT",
-            "TARGET-GENERATED"
+            "TARGET-GENERATED",
+            "TARGET-INVENTORY"
           ],
           "enforcement": "test"
         },
