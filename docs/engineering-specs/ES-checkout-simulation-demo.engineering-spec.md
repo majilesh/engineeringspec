@@ -1,7 +1,7 @@
 ---
 spec_format: engineering-spec
 spec_format_version: "0.1"
-spec_revision: 2
+spec_revision: 3
 id: ES-checkout-simulation-demo
 title: Replayable checkout simulation evidence
 status: implemented
@@ -38,6 +38,9 @@ Acceptance requires a detected missing receipt, repeatable failure, passing fixe
 - id: TARGET-AUDIT
   paths: [package.json, package-lock.json, vitest.config.ts]
   change_policy: modify
+- id: TARGET-INVENTORY
+  paths: [engineering/repository-consistency.json]
+  change_policy: modify
 - id: TARGET-GENERATED
   paths: [action/cli.mjs, site/catalogue.json, site/explorer.html]
   change_policy: modify
@@ -46,8 +49,8 @@ Acceptance requires a detected missing receipt, repeatable failure, passing fixe
 ```engineering-constraints
 - id: CON-CI
   level: must
-  statement: Resolve the high and critical dependency advisories using supported releases compatible with Node 20 and 22. Keep test coverage thresholds and CI gates intact. Limit test configuration changes to necessary runner compatibility. Regenerate catalogue outputs from the final lifecycle state and rebuild the Action only if its inputs change. Verify clean installation, audit, release integrity, Action consistency and the existing quality suite.
-  applies_to: [TARGET-AUDIT, TARGET-GENERATED]
+  statement: Resolve the high and critical dependency advisories using supported releases compatible with Node 20 and 22. Keep test coverage thresholds and CI gates intact. Limit test configuration changes to necessary runner compatibility. Register only the new checkout walkthrough in the public surface inventory. Regenerate catalogue outputs from the final lifecycle state and rebuild the Action only if its inputs change. Verify clean installation, audit, release integrity, Action consistency and the existing quality suite.
+  applies_to: [TARGET-AUDIT, TARGET-GENERATED, TARGET-INVENTORY]
   enforcement: { kind: test, verifier_ref: VER-CI }
 - id: CON-DELIVERY
   level: must
