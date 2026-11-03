@@ -2,7 +2,7 @@
   "_generated": "This file is generated. Do not edit manually.",
   "valid": true,
   "directory": "docs/engineering-specs",
-  "documents": 47,
+  "documents": 49,
   "entries": [
     {
       "id": "ES-ONBOARDING-FRICTION-COLLAPSE",
@@ -2341,6 +2341,89 @@
             "CON-PATCH",
             "CON-SCOPE",
             "CON-CLOSE"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ES-checkout-simulation-demo",
+      "title": "Replayable checkout simulation evidence",
+      "status": "implemented",
+      "file": "ES-checkout-simulation-demo.engineering-spec.md",
+      "owners": [
+        "EngineeringSpec maintainers"
+      ],
+      "sourceRefs": [
+        {
+          "id": "SRC-WORKFLOW",
+          "type": "document",
+          "locator": "docs/visual-verification-brief.md"
+        }
+      ],
+      "targets": [
+        {
+          "id": "TARGET-DELIVERY",
+          "component": "checkout-simulation-demo",
+          "paths": [
+            "examples/checkout-simulation/**",
+            "site/checkout-replay.html"
+          ],
+          "changePolicy": "create"
+        },
+        {
+          "id": "TARGET-AUDIT",
+          "paths": [
+            "package.json",
+            "package-lock.json",
+            "vitest.config.ts"
+          ],
+          "changePolicy": "modify"
+        },
+        {
+          "id": "TARGET-GENERATED",
+          "paths": [
+            "action/cli.mjs",
+            "site/catalogue.json",
+            "site/explorer.html"
+          ],
+          "changePolicy": "modify"
+        }
+      ],
+      "constraints": [
+        {
+          "id": "CON-CI",
+          "level": "must",
+          "statement": "Resolve the high and critical dependency advisories using supported releases compatible with Node 20 and 22. Keep test coverage thresholds and CI gates intact. Limit test configuration changes to necessary runner compatibility. Regenerate catalogue outputs from the final lifecycle state and rebuild the Action only if its inputs change. Verify clean installation, audit, release integrity, Action consistency and the existing quality suite.",
+          "appliesTo": [
+            "TARGET-AUDIT",
+            "TARGET-GENERATED"
+          ],
+          "enforcement": "test"
+        },
+        {
+          "id": "CON-DELIVERY",
+          "level": "must",
+          "statement": "The demo must report actual externally generated run evidence and preserve read-only core verification and provider neutrality.",
+          "appliesTo": [
+            "TARGET-DELIVERY"
+          ],
+          "enforcement": "review"
+        }
+      ],
+      "contracts": [],
+      "verification": [
+        {
+          "id": "VER-CI",
+          "kind": "test",
+          "proves": [
+            "CON-CI"
+          ]
+        },
+        {
+          "id": "VER-DELIVERY",
+          "kind": "human_review",
+          "proves": [
+            "CON-DELIVERY"
           ]
         }
       ]
@@ -12015,6 +12098,53 @@
             "CON-SELECTOR-NARROW",
             "CON-DENY-FIRST",
             "CON-RECEIPT-FAILSAFE"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ES-skill-install-site",
+      "title": "Install the EngineeringSpec agent skill",
+      "status": "implemented",
+      "file": "ES-skill-install-site.engineering-spec.md",
+      "owners": [
+        "EngineeringSpec maintainers"
+      ],
+      "sourceRefs": [
+        {
+          "id": "SRC-WORKFLOW",
+          "type": "document",
+          "locator": "skills/engineering-spec/SKILL.md"
+        }
+      ],
+      "targets": [
+        {
+          "id": "TARGET-DELIVERY",
+          "component": "skill-install-site",
+          "paths": [
+            "site/index.html"
+          ],
+          "changePolicy": "modify"
+        }
+      ],
+      "constraints": [
+        {
+          "id": "CON-DELIVERY",
+          "level": "must",
+          "statement": "The published example must install the canonical skill project-locally and must preserve the trusted-base authority boundary.",
+          "appliesTo": [
+            "TARGET-DELIVERY"
+          ],
+          "enforcement": "review"
+        }
+      ],
+      "contracts": [],
+      "verification": [
+        {
+          "id": "VER-DELIVERY",
+          "kind": "human_review",
+          "proves": [
+            "CON-DELIVERY"
           ]
         }
       ]
